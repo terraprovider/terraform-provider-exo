@@ -55,10 +55,6 @@ func (d *meetingInsightsSettingsDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 	identity := firstNonEmptyStr(data.Identity.ValueString(), data.ID.ValueString())
-	if identity == "" {
-		resp.Diagnostics.AddError("Missing lookup key", "set identity to select the object")
-		return
-	}
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := d.client.EXO.GetMeetingInsightsSettings(ctx, exo.GetMeetingInsightsSettingsParams{})

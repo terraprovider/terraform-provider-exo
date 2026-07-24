@@ -96,7 +96,15 @@ func (p *exoProvider) Configure(ctx context.Context, req provider.ConfigureReque
 }
 
 func (p *exoProvider) Resources(_ context.Context) []func() resource.Resource {
-	return generatedResources()
+	// generatedResources() is code-generated; hand-written resources (for non-CRUD
+	// cmdlets — Enable-OrganizationCustomization and the per-domain Enable/Disable
+	// feature toggles) are appended here.
+	return append(generatedResources(),
+		NewOrganizationCustomizationResource,
+		NewDnssecVerifiedDomainResource,
+		NewSmtpDaneInboundResource,
+		NewIPv6AcceptedDomainResource,
+	)
 }
 
 func (p *exoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
