@@ -1,0 +1,50 @@
+name: Release
+
+# Publishes a GPG-signed release (for the Terraform + OpenTofu registries) when a
+# semver tag is pushed. The signing secrets live on the `release` environment
+# (approval-gated, restricted to v* tags), not on the repo:
+#   GPG_PRIVATE_KEY  - the ASCII-armored private signing key
+#   PASSPHRASE       - its passphrase
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest-8cpu
+    # Bind to the `release` environment so its secrets (GPG_PRIVATE_KEY, PASSPHRASE)
+    # are exposed to this job. Doing so also enforces the environment's protection
+    # rules: manual reviewer approval and the v* tag deployment restriction.
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install aqua (pins goreleaser + cosign)
+        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
+        with:
+          aqua_version: v2.53.4
+        env:
+          AQUA_GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+
+      - name: GoReleaser (release)
+        run: goreleaser release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}

@@ -1,0 +1,15 @@
+version: "2"
+
+linters:
+  default: standard
+  exclusions:
+    generated: lax
+    paths:
+      # Generated files carry a DO NOT EDIT header; skip style-only noise.
+      - "internal/provider/.*_resource.go"
+      - "internal/provider/.*_data_source.go"
+      - "internal/provider/zz_generated_.*.go"
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

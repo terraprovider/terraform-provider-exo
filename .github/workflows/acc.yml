@@ -1,0 +1,42 @@
+name: Acceptance Tests
+
+# Runs the TF_ACC acceptance tests against a LIVE tenant, so it is gated to manual
+# dispatch and a weekly schedule — never on PRs. Point it at a disposable dev
+# tenant with no real data.
+#
+# Required repository configuration:
+#   vars.ARM_TENANT_ID, vars.ARM_CLIENT_ID  - the test app (non-secret)
+#   an Entra federated credential on that app for this repo, e.g. subject
+#   repo:philband/terraform-provider-exo:ref:refs/heads/main (OIDC, no secret).
+# Alternatively set an ARM_CLIENT_SECRET secret and drop ARM_USE_OIDC below.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1" # weekly, Monday 05:00 UTC
+
+permissions:
+  contents: read
+  id-token: write # mint the GitHub OIDC token for federated auth
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    env:
+      TF_ACC: "1"
+      ARM_USE_OIDC: "true"
+      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_wrapper: false
+
+      - name: Acceptance tests
+        run: go test -run '^TestAcc' -timeout 45m -v ./internal/provider/

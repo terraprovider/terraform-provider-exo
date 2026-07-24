@@ -1,0 +1,26 @@
+# Compiled provider + release artifacts
+/terraform-provider-exo
+/gen-tf
+dist/
+bin/
+*.test
+
+# Local dev multi-module workspace (points at sibling checkouts)
+go.work
+go.work.sum
+
+# Terraform / OpenTofu working files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Local auth material — never commit
+*.pfx
+*.pem
+*.jwt
+.env
+.env*
+
+.DS_Store

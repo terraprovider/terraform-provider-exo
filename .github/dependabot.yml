@@ -1,0 +1,39 @@
+version: 2
+
+updates:
+  # Provider Go module.
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      philband:
+        patterns:
+          - "github.com/terraprovider/*"
+      go-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Documentation tooling module.
+  - package-ecosystem: gomod
+    directory: "/tools"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      tools:
+        patterns:
+          - "*"
+
+  # GitHub Actions used by the workflows (all SHA-pinned).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      github-actions:
+        patterns:
+          - "*"
