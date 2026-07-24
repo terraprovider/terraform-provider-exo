@@ -15,7 +15,7 @@ Manage Exchange Online via the Admin API. Authentication mirrors the AzureAD/Azu
 terraform {
   required_providers {
     exo = {
-      source = "philband/exo"
+      source = "terraprovider/exo"
     }
   }
 }
