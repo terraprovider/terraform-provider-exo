@@ -396,7 +396,7 @@ func (r *mailboxCalendarConfigurationResource) ImportState(ctx context.Context, 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxCalendarConfigurationResource) identityOf(m mailboxCalendarConfigurationModel) any {
+func (r *mailboxCalendarConfigurationResource) identityOf(m mailboxCalendarConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -406,7 +406,7 @@ func (r *mailboxCalendarConfigurationResource) identityOf(m mailboxCalendarConfi
 	return ""
 }
 
-func (r *mailboxCalendarConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxCalendarConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxCalendarConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxCalendarConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxCalendarConfiguration(ctx, exo.GetMailboxCalendarConfigurationParams{Identity: identity})
 		if gerr != nil {

@@ -134,7 +134,7 @@ func (r *mailboxAuditBypassAssociationResource) ImportState(ctx context.Context,
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxAuditBypassAssociationResource) identityOf(m mailboxAuditBypassAssociationModel) any {
+func (r *mailboxAuditBypassAssociationResource) identityOf(m mailboxAuditBypassAssociationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -144,7 +144,7 @@ func (r *mailboxAuditBypassAssociationResource) identityOf(m mailboxAuditBypassA
 	return ""
 }
 
-func (r *mailboxAuditBypassAssociationResource) refresh(ctx context.Context, identity any, m *mailboxAuditBypassAssociationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxAuditBypassAssociationResource) refresh(ctx context.Context, identity string, m *mailboxAuditBypassAssociationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxAuditBypassAssociation(ctx, exo.GetMailboxAuditBypassAssociationParams{Identity: identity})
 		if gerr != nil {

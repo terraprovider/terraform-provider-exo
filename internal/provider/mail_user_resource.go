@@ -284,14 +284,14 @@ func (r *mailUserResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-MailUser returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-MailUser returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readMailUser(ctx, obj, &plan)
@@ -547,7 +547,7 @@ func (r *mailUserResource) ImportState(ctx context.Context, req resource.ImportS
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailUserResource) identityOf(m mailUserModel) any {
+func (r *mailUserResource) identityOf(m mailUserModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -557,7 +557,7 @@ func (r *mailUserResource) identityOf(m mailUserModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *mailUserResource) refresh(ctx context.Context, identity any, m *mailUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailUserResource) refresh(ctx context.Context, identity string, m *mailUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailUser(ctx, exo.GetMailUserParams{Identity: identity})
 		if gerr != nil {

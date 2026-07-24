@@ -177,7 +177,7 @@ func (r *ldapDirectoryResource) ImportState(ctx context.Context, req resource.Im
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *ldapDirectoryResource) identityOf(m ldapDirectoryModel) any {
+func (r *ldapDirectoryResource) identityOf(m ldapDirectoryModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -187,7 +187,7 @@ func (r *ldapDirectoryResource) identityOf(m ldapDirectoryModel) any {
 	return ""
 }
 
-func (r *ldapDirectoryResource) refresh(ctx context.Context, identity any, m *ldapDirectoryModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *ldapDirectoryResource) refresh(ctx context.Context, identity string, m *ldapDirectoryModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetLdapDirectory(ctx, exo.GetLdapDirectoryParams{})

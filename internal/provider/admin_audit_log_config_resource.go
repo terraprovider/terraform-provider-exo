@@ -130,7 +130,7 @@ func (r *adminAuditLogConfigResource) ImportState(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *adminAuditLogConfigResource) identityOf(m adminAuditLogConfigModel) any {
+func (r *adminAuditLogConfigResource) identityOf(m adminAuditLogConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -140,7 +140,7 @@ func (r *adminAuditLogConfigResource) identityOf(m adminAuditLogConfigModel) any
 	return ""
 }
 
-func (r *adminAuditLogConfigResource) refresh(ctx context.Context, identity any, m *adminAuditLogConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *adminAuditLogConfigResource) refresh(ctx context.Context, identity string, m *adminAuditLogConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetAdminAuditLogConfig(ctx, exo.GetAdminAuditLogConfigParams{})

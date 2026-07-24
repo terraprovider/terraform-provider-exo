@@ -206,7 +206,7 @@ func (r *iRMConfigurationResource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *iRMConfigurationResource) identityOf(m iRMConfigurationModel) any {
+func (r *iRMConfigurationResource) identityOf(m iRMConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -216,7 +216,7 @@ func (r *iRMConfigurationResource) identityOf(m iRMConfigurationModel) any {
 	return ""
 }
 
-func (r *iRMConfigurationResource) refresh(ctx context.Context, identity any, m *iRMConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *iRMConfigurationResource) refresh(ctx context.Context, identity string, m *iRMConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetIRMConfiguration(ctx, exo.GetIRMConfigurationParams{})

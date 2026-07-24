@@ -30,6 +30,8 @@ func TestAccRoleGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "identity"),
 					resource.TestCheckResourceAttr("data.exo_role_group.by_identity", "display_name", "Acc created"),
 					resource.TestCheckResourceAttrPair("data.exo_role_group.by_identity", "id", resourceName, "id"),
+					// plural list-all returns at least the role group we just created
+					resource.TestCheckResourceAttrSet("data.exo_role_groups.all", "role_groups.#"),
 				),
 			},
 			{ // import by name (role groups are addressable by name/identity, not GUID).
@@ -61,6 +63,10 @@ resource "exo_role_group" "test" {
 
 data "exo_role_group" "by_identity" {
   identity = exo_role_group.test.identity
+}
+
+data "exo_role_groups" "all" {
+  depends_on = [exo_role_group.test]
 }
 `, name, displayName)
 }

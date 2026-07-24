@@ -94,14 +94,14 @@ func (r *applicationAccessPolicyResource) Create(ctx context.Context, req resour
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ApplicationAccessPolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ApplicationAccessPolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readApplicationAccessPolicy(ctx, obj, &plan)
@@ -170,7 +170,7 @@ func (r *applicationAccessPolicyResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *applicationAccessPolicyResource) identityOf(m applicationAccessPolicyModel) any {
+func (r *applicationAccessPolicyResource) identityOf(m applicationAccessPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -180,7 +180,7 @@ func (r *applicationAccessPolicyResource) identityOf(m applicationAccessPolicyMo
 	return ""
 }
 
-func (r *applicationAccessPolicyResource) refresh(ctx context.Context, identity any, m *applicationAccessPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *applicationAccessPolicyResource) refresh(ctx context.Context, identity string, m *applicationAccessPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetApplicationAccessPolicy(ctx, exo.GetApplicationAccessPolicyParams{Identity: identity})
 		if gerr != nil {

@@ -178,7 +178,7 @@ func (r *mailboxJunkEmailConfigurationResource) ImportState(ctx context.Context,
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxJunkEmailConfigurationResource) identityOf(m mailboxJunkEmailConfigurationModel) any {
+func (r *mailboxJunkEmailConfigurationResource) identityOf(m mailboxJunkEmailConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -188,7 +188,7 @@ func (r *mailboxJunkEmailConfigurationResource) identityOf(m mailboxJunkEmailCon
 	return ""
 }
 
-func (r *mailboxJunkEmailConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxJunkEmailConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxJunkEmailConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxJunkEmailConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxJunkEmailConfiguration(ctx, exo.GetMailboxJunkEmailConfigurationParams{Identity: identity})
 		if gerr != nil {

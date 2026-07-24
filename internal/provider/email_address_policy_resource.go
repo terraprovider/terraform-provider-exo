@@ -100,14 +100,14 @@ func (r *emailAddressPolicyResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-EmailAddressPolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-EmailAddressPolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readEmailAddressPolicy(ctx, obj, &plan)
@@ -179,7 +179,7 @@ func (r *emailAddressPolicyResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *emailAddressPolicyResource) identityOf(m emailAddressPolicyModel) any {
+func (r *emailAddressPolicyResource) identityOf(m emailAddressPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -189,7 +189,7 @@ func (r *emailAddressPolicyResource) identityOf(m emailAddressPolicyModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *emailAddressPolicyResource) refresh(ctx context.Context, identity any, m *emailAddressPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *emailAddressPolicyResource) refresh(ctx context.Context, identity string, m *emailAddressPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetEmailAddressPolicy(ctx, exo.GetEmailAddressPolicyParams{Identity: identity})
 		if gerr != nil {

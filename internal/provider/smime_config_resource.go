@@ -257,7 +257,7 @@ func (r *smimeConfigResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *smimeConfigResource) identityOf(m smimeConfigModel) any {
+func (r *smimeConfigResource) identityOf(m smimeConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -267,7 +267,7 @@ func (r *smimeConfigResource) identityOf(m smimeConfigModel) any {
 	return ""
 }
 
-func (r *smimeConfigResource) refresh(ctx context.Context, identity any, m *smimeConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *smimeConfigResource) refresh(ctx context.Context, identity string, m *smimeConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetSmimeConfig(ctx, exo.GetSmimeConfigParams{Identity: identity})
 		if gerr != nil {

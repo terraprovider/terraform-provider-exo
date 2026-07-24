@@ -309,14 +309,14 @@ func (r *hostedContentFilterPolicyResource) Create(ctx context.Context, req reso
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-HostedContentFilterPolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-HostedContentFilterPolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readHostedContentFilterPolicy(ctx, obj, &plan)
@@ -547,7 +547,7 @@ func (r *hostedContentFilterPolicyResource) ImportState(ctx context.Context, req
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *hostedContentFilterPolicyResource) identityOf(m hostedContentFilterPolicyModel) any {
+func (r *hostedContentFilterPolicyResource) identityOf(m hostedContentFilterPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -557,7 +557,7 @@ func (r *hostedContentFilterPolicyResource) identityOf(m hostedContentFilterPoli
 	return m.Name.ValueString()
 }
 
-func (r *hostedContentFilterPolicyResource) refresh(ctx context.Context, identity any, m *hostedContentFilterPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *hostedContentFilterPolicyResource) refresh(ctx context.Context, identity string, m *hostedContentFilterPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetHostedContentFilterPolicy(ctx, exo.GetHostedContentFilterPolicyParams{Identity: identity})
 		if gerr != nil {

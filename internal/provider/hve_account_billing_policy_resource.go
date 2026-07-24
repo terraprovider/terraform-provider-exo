@@ -135,7 +135,7 @@ func (r *hVEAccountBillingPolicyResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *hVEAccountBillingPolicyResource) identityOf(m hVEAccountBillingPolicyModel) any {
+func (r *hVEAccountBillingPolicyResource) identityOf(m hVEAccountBillingPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -145,7 +145,7 @@ func (r *hVEAccountBillingPolicyResource) identityOf(m hVEAccountBillingPolicyMo
 	return ""
 }
 
-func (r *hVEAccountBillingPolicyResource) refresh(ctx context.Context, identity any, m *hVEAccountBillingPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *hVEAccountBillingPolicyResource) refresh(ctx context.Context, identity string, m *hVEAccountBillingPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetHVEAccountBillingPolicy(ctx, exo.GetHVEAccountBillingPolicyParams{Identity: identity})
 		if gerr != nil {

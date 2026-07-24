@@ -185,7 +185,7 @@ func (r *mailboxCalendarFolderResource) ImportState(ctx context.Context, req res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxCalendarFolderResource) identityOf(m mailboxCalendarFolderModel) any {
+func (r *mailboxCalendarFolderResource) identityOf(m mailboxCalendarFolderModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -195,7 +195,7 @@ func (r *mailboxCalendarFolderResource) identityOf(m mailboxCalendarFolderModel)
 	return ""
 }
 
-func (r *mailboxCalendarFolderResource) refresh(ctx context.Context, identity any, m *mailboxCalendarFolderModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxCalendarFolderResource) refresh(ctx context.Context, identity string, m *mailboxCalendarFolderModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxCalendarFolder(ctx, exo.GetMailboxCalendarFolderParams{Identity: identity})
 		if gerr != nil {

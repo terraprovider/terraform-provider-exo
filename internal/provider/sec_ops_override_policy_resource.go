@@ -94,14 +94,14 @@ func (r *secOpsOverridePolicyResource) Create(ctx context.Context, req resource.
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-SecOpsOverridePolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-SecOpsOverridePolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readSecOpsOverridePolicy(ctx, obj, &plan)
@@ -179,7 +179,7 @@ func (r *secOpsOverridePolicyResource) ImportState(ctx context.Context, req reso
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *secOpsOverridePolicyResource) identityOf(m secOpsOverridePolicyModel) any {
+func (r *secOpsOverridePolicyResource) identityOf(m secOpsOverridePolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -189,7 +189,7 @@ func (r *secOpsOverridePolicyResource) identityOf(m secOpsOverridePolicyModel) a
 	return m.Name.ValueString()
 }
 
-func (r *secOpsOverridePolicyResource) refresh(ctx context.Context, identity any, m *secOpsOverridePolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *secOpsOverridePolicyResource) refresh(ctx context.Context, identity string, m *secOpsOverridePolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetSecOpsOverridePolicy(ctx, exo.GetSecOpsOverridePolicyParams{Identity: identity})
 		if gerr != nil {

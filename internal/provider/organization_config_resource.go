@@ -845,7 +845,7 @@ func (r *organizationConfigResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *organizationConfigResource) identityOf(m organizationConfigModel) any {
+func (r *organizationConfigResource) identityOf(m organizationConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -855,7 +855,7 @@ func (r *organizationConfigResource) identityOf(m organizationConfigModel) any {
 	return ""
 }
 
-func (r *organizationConfigResource) refresh(ctx context.Context, identity any, m *organizationConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *organizationConfigResource) refresh(ctx context.Context, identity string, m *organizationConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetOrganizationConfig(ctx, exo.GetOrganizationConfigParams{})

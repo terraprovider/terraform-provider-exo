@@ -146,7 +146,7 @@ func (r *externalInOutlookResource) ImportState(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *externalInOutlookResource) identityOf(m externalInOutlookModel) any {
+func (r *externalInOutlookResource) identityOf(m externalInOutlookModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -156,7 +156,7 @@ func (r *externalInOutlookResource) identityOf(m externalInOutlookModel) any {
 	return ""
 }
 
-func (r *externalInOutlookResource) refresh(ctx context.Context, identity any, m *externalInOutlookModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *externalInOutlookResource) refresh(ctx context.Context, identity string, m *externalInOutlookModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetExternalInOutlook(ctx, exo.GetExternalInOutlookParams{Identity: identity})
 		if gerr != nil {

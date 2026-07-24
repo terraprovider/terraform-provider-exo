@@ -138,7 +138,7 @@ func (r *m365CrossTenantAccessPolicyResource) ImportState(ctx context.Context, r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *m365CrossTenantAccessPolicyResource) identityOf(m m365CrossTenantAccessPolicyModel) any {
+func (r *m365CrossTenantAccessPolicyResource) identityOf(m m365CrossTenantAccessPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -148,7 +148,7 @@ func (r *m365CrossTenantAccessPolicyResource) identityOf(m m365CrossTenantAccess
 	return ""
 }
 
-func (r *m365CrossTenantAccessPolicyResource) refresh(ctx context.Context, identity any, m *m365CrossTenantAccessPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *m365CrossTenantAccessPolicyResource) refresh(ctx context.Context, identity string, m *m365CrossTenantAccessPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetM365CrossTenantAccessPolicy(ctx, exo.GetM365CrossTenantAccessPolicyParams{})

@@ -136,7 +136,7 @@ func (r *emailTenantSettingsResource) ImportState(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *emailTenantSettingsResource) identityOf(m emailTenantSettingsModel) any {
+func (r *emailTenantSettingsResource) identityOf(m emailTenantSettingsModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -146,7 +146,7 @@ func (r *emailTenantSettingsResource) identityOf(m emailTenantSettingsModel) any
 	return ""
 }
 
-func (r *emailTenantSettingsResource) refresh(ctx context.Context, identity any, m *emailTenantSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *emailTenantSettingsResource) refresh(ctx context.Context, identity string, m *emailTenantSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetEmailTenantSettings(ctx, exo.GetEmailTenantSettingsParams{Identity: identity})
 		if gerr != nil {

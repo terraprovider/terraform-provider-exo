@@ -130,7 +130,7 @@ func (r *arcConfigResource) ImportState(ctx context.Context, req resource.Import
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *arcConfigResource) identityOf(m arcConfigModel) any {
+func (r *arcConfigResource) identityOf(m arcConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -140,7 +140,7 @@ func (r *arcConfigResource) identityOf(m arcConfigModel) any {
 	return ""
 }
 
-func (r *arcConfigResource) refresh(ctx context.Context, identity any, m *arcConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *arcConfigResource) refresh(ctx context.Context, identity string, m *arcConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetArcConfig(ctx, exo.GetArcConfigParams{})

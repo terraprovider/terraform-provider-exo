@@ -137,7 +137,7 @@ func (r *perimeterConfigResource) ImportState(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *perimeterConfigResource) identityOf(m perimeterConfigModel) any {
+func (r *perimeterConfigResource) identityOf(m perimeterConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -147,7 +147,7 @@ func (r *perimeterConfigResource) identityOf(m perimeterConfigModel) any {
 	return ""
 }
 
-func (r *perimeterConfigResource) refresh(ctx context.Context, identity any, m *perimeterConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *perimeterConfigResource) refresh(ctx context.Context, identity string, m *perimeterConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPerimeterConfig(ctx, exo.GetPerimeterConfigParams{Identity: identity})
 		if gerr != nil {

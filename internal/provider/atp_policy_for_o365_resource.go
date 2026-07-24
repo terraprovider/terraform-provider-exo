@@ -140,7 +140,7 @@ func (r *atpPolicyForO365Resource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *atpPolicyForO365Resource) identityOf(m atpPolicyForO365Model) any {
+func (r *atpPolicyForO365Resource) identityOf(m atpPolicyForO365Model) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -150,7 +150,7 @@ func (r *atpPolicyForO365Resource) identityOf(m atpPolicyForO365Model) any {
 	return ""
 }
 
-func (r *atpPolicyForO365Resource) refresh(ctx context.Context, identity any, m *atpPolicyForO365Model, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *atpPolicyForO365Resource) refresh(ctx context.Context, identity string, m *atpPolicyForO365Model, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetAtpPolicyForO365(ctx, exo.GetAtpPolicyForO365Params{Identity: identity})
 		if gerr != nil {

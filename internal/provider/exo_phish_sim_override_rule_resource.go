@@ -106,14 +106,14 @@ func (r *exoPhishSimOverrideRuleResource) Create(ctx context.Context, req resour
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ExoPhishSimOverrideRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ExoPhishSimOverrideRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readExoPhishSimOverrideRule(ctx, obj, &plan)
@@ -198,7 +198,7 @@ func (r *exoPhishSimOverrideRuleResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *exoPhishSimOverrideRuleResource) identityOf(m exoPhishSimOverrideRuleModel) any {
+func (r *exoPhishSimOverrideRuleResource) identityOf(m exoPhishSimOverrideRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -208,7 +208,7 @@ func (r *exoPhishSimOverrideRuleResource) identityOf(m exoPhishSimOverrideRuleMo
 	return m.Name.ValueString()
 }
 
-func (r *exoPhishSimOverrideRuleResource) refresh(ctx context.Context, identity any, m *exoPhishSimOverrideRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *exoPhishSimOverrideRuleResource) refresh(ctx context.Context, identity string, m *exoPhishSimOverrideRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetExoPhishSimOverrideRule(ctx, exo.GetExoPhishSimOverrideRuleParams{Identity: identity})
 		if gerr != nil {

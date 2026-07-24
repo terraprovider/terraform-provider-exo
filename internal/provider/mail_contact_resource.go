@@ -213,14 +213,14 @@ func (r *mailContactResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-MailContact returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-MailContact returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readMailContact(ctx, obj, &plan)
@@ -426,7 +426,7 @@ func (r *mailContactResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailContactResource) identityOf(m mailContactModel) any {
+func (r *mailContactResource) identityOf(m mailContactModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -436,7 +436,7 @@ func (r *mailContactResource) identityOf(m mailContactModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *mailContactResource) refresh(ctx context.Context, identity any, m *mailContactModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailContactResource) refresh(ctx context.Context, identity string, m *mailContactModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailContact(ctx, exo.GetMailContactParams{Identity: identity})
 		if gerr != nil {

@@ -90,14 +90,14 @@ func (r *activeSyncDeviceAccessRuleResource) Create(ctx context.Context, req res
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ActiveSyncDeviceAccessRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ActiveSyncDeviceAccessRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readActiveSyncDeviceAccessRule(ctx, obj, &plan)
@@ -163,7 +163,7 @@ func (r *activeSyncDeviceAccessRuleResource) ImportState(ctx context.Context, re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *activeSyncDeviceAccessRuleResource) identityOf(m activeSyncDeviceAccessRuleModel) any {
+func (r *activeSyncDeviceAccessRuleResource) identityOf(m activeSyncDeviceAccessRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -173,7 +173,7 @@ func (r *activeSyncDeviceAccessRuleResource) identityOf(m activeSyncDeviceAccess
 	return ""
 }
 
-func (r *activeSyncDeviceAccessRuleResource) refresh(ctx context.Context, identity any, m *activeSyncDeviceAccessRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *activeSyncDeviceAccessRuleResource) refresh(ctx context.Context, identity string, m *activeSyncDeviceAccessRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetActiveSyncDeviceAccessRule(ctx, exo.GetActiveSyncDeviceAccessRuleParams{Identity: identity})
 		if gerr != nil {

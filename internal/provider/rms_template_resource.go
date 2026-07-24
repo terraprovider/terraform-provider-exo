@@ -137,7 +137,7 @@ func (r *rMSTemplateResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *rMSTemplateResource) identityOf(m rMSTemplateModel) any {
+func (r *rMSTemplateResource) identityOf(m rMSTemplateModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -147,7 +147,7 @@ func (r *rMSTemplateResource) identityOf(m rMSTemplateModel) any {
 	return ""
 }
 
-func (r *rMSTemplateResource) refresh(ctx context.Context, identity any, m *rMSTemplateModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *rMSTemplateResource) refresh(ctx context.Context, identity string, m *rMSTemplateModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetRMSTemplate(ctx, exo.GetRMSTemplateParams{Identity: identity})
 		if gerr != nil {

@@ -109,14 +109,14 @@ func (r *antiPhishRuleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-AntiPhishRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-AntiPhishRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readAntiPhishRule(ctx, obj, &plan)
@@ -191,7 +191,7 @@ func (r *antiPhishRuleResource) ImportState(ctx context.Context, req resource.Im
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *antiPhishRuleResource) identityOf(m antiPhishRuleModel) any {
+func (r *antiPhishRuleResource) identityOf(m antiPhishRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -201,7 +201,7 @@ func (r *antiPhishRuleResource) identityOf(m antiPhishRuleModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *antiPhishRuleResource) refresh(ctx context.Context, identity any, m *antiPhishRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *antiPhishRuleResource) refresh(ctx context.Context, identity string, m *antiPhishRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetAntiPhishRule(ctx, exo.GetAntiPhishRuleParams{Identity: identity})
 		if gerr != nil {

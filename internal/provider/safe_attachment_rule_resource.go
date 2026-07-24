@@ -109,14 +109,14 @@ func (r *safeAttachmentRuleResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-SafeAttachmentRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-SafeAttachmentRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readSafeAttachmentRule(ctx, obj, &plan)
@@ -191,7 +191,7 @@ func (r *safeAttachmentRuleResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *safeAttachmentRuleResource) identityOf(m safeAttachmentRuleModel) any {
+func (r *safeAttachmentRuleResource) identityOf(m safeAttachmentRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -201,7 +201,7 @@ func (r *safeAttachmentRuleResource) identityOf(m safeAttachmentRuleModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *safeAttachmentRuleResource) refresh(ctx context.Context, identity any, m *safeAttachmentRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *safeAttachmentRuleResource) refresh(ctx context.Context, identity string, m *safeAttachmentRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetSafeAttachmentRule(ctx, exo.GetSafeAttachmentRuleParams{Identity: identity})
 		if gerr != nil {

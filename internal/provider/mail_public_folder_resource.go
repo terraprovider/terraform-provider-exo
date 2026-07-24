@@ -484,7 +484,7 @@ func (r *mailPublicFolderResource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailPublicFolderResource) identityOf(m mailPublicFolderModel) any {
+func (r *mailPublicFolderResource) identityOf(m mailPublicFolderModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -494,7 +494,7 @@ func (r *mailPublicFolderResource) identityOf(m mailPublicFolderModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *mailPublicFolderResource) refresh(ctx context.Context, identity any, m *mailPublicFolderModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailPublicFolderResource) refresh(ctx context.Context, identity string, m *mailPublicFolderModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailPublicFolder(ctx, exo.GetMailPublicFolderParams{Identity: identity})
 		if gerr != nil {

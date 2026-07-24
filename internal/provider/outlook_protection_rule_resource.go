@@ -102,14 +102,14 @@ func (r *outlookProtectionRuleResource) Create(ctx context.Context, req resource
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-OutlookProtectionRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-OutlookProtectionRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readOutlookProtectionRule(ctx, obj, &plan)
@@ -183,7 +183,7 @@ func (r *outlookProtectionRuleResource) ImportState(ctx context.Context, req res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *outlookProtectionRuleResource) identityOf(m outlookProtectionRuleModel) any {
+func (r *outlookProtectionRuleResource) identityOf(m outlookProtectionRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -193,7 +193,7 @@ func (r *outlookProtectionRuleResource) identityOf(m outlookProtectionRuleModel)
 	return m.Name.ValueString()
 }
 
-func (r *outlookProtectionRuleResource) refresh(ctx context.Context, identity any, m *outlookProtectionRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *outlookProtectionRuleResource) refresh(ctx context.Context, identity string, m *outlookProtectionRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetOutlookProtectionRule(ctx, exo.GetOutlookProtectionRuleParams{Identity: identity})
 		if gerr != nil {

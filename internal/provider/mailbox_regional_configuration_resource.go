@@ -180,7 +180,7 @@ func (r *mailboxRegionalConfigurationResource) ImportState(ctx context.Context, 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxRegionalConfigurationResource) identityOf(m mailboxRegionalConfigurationModel) any {
+func (r *mailboxRegionalConfigurationResource) identityOf(m mailboxRegionalConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -190,7 +190,7 @@ func (r *mailboxRegionalConfigurationResource) identityOf(m mailboxRegionalConfi
 	return ""
 }
 
-func (r *mailboxRegionalConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxRegionalConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxRegionalConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxRegionalConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxRegionalConfiguration(ctx, exo.GetMailboxRegionalConfigurationParams{Identity: identity})
 		if gerr != nil {

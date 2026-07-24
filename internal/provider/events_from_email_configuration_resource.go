@@ -179,7 +179,7 @@ func (r *eventsFromEmailConfigurationResource) ImportState(ctx context.Context, 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *eventsFromEmailConfigurationResource) identityOf(m eventsFromEmailConfigurationModel) any {
+func (r *eventsFromEmailConfigurationResource) identityOf(m eventsFromEmailConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -189,7 +189,7 @@ func (r *eventsFromEmailConfigurationResource) identityOf(m eventsFromEmailConfi
 	return ""
 }
 
-func (r *eventsFromEmailConfigurationResource) refresh(ctx context.Context, identity any, m *eventsFromEmailConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *eventsFromEmailConfigurationResource) refresh(ctx context.Context, identity string, m *eventsFromEmailConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetEventsFromEmailConfiguration(ctx, exo.GetEventsFromEmailConfigurationParams{Identity: identity})
 		if gerr != nil {

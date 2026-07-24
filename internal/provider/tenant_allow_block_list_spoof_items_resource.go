@@ -92,14 +92,14 @@ func (r *tenantAllowBlockListSpoofItemsResource) Create(ctx context.Context, req
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-TenantAllowBlockListSpoofItems returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-TenantAllowBlockListSpoofItems returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readTenantAllowBlockListSpoofItems(ctx, obj, &plan)
@@ -166,7 +166,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) ImportState(ctx context.Context
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *tenantAllowBlockListSpoofItemsResource) identityOf(m tenantAllowBlockListSpoofItemsModel) any {
+func (r *tenantAllowBlockListSpoofItemsResource) identityOf(m tenantAllowBlockListSpoofItemsModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -176,7 +176,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) identityOf(m tenantAllowBlockLi
 	return ""
 }
 
-func (r *tenantAllowBlockListSpoofItemsResource) refresh(ctx context.Context, identity any, m *tenantAllowBlockListSpoofItemsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *tenantAllowBlockListSpoofItemsResource) refresh(ctx context.Context, identity string, m *tenantAllowBlockListSpoofItemsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetTenantAllowBlockListSpoofItems(ctx, exo.GetTenantAllowBlockListSpoofItemsParams{Identity: identity})
 		if gerr != nil {

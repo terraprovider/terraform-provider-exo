@@ -158,7 +158,7 @@ func (r *mailboxFolderPermissionResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxFolderPermissionResource) identityOf(m mailboxFolderPermissionModel) any {
+func (r *mailboxFolderPermissionResource) identityOf(m mailboxFolderPermissionModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -168,7 +168,7 @@ func (r *mailboxFolderPermissionResource) identityOf(m mailboxFolderPermissionMo
 	return ""
 }
 
-func (r *mailboxFolderPermissionResource) refresh(ctx context.Context, identity any, m *mailboxFolderPermissionModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxFolderPermissionResource) refresh(ctx context.Context, identity string, m *mailboxFolderPermissionModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxFolderPermission(ctx, exo.GetMailboxFolderPermissionParams{Identity: identity})
 		if gerr != nil {

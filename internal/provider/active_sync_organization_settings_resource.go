@@ -180,7 +180,7 @@ func (r *activeSyncOrganizationSettingsResource) ImportState(ctx context.Context
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *activeSyncOrganizationSettingsResource) identityOf(m activeSyncOrganizationSettingsModel) any {
+func (r *activeSyncOrganizationSettingsResource) identityOf(m activeSyncOrganizationSettingsModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -190,7 +190,7 @@ func (r *activeSyncOrganizationSettingsResource) identityOf(m activeSyncOrganiza
 	return ""
 }
 
-func (r *activeSyncOrganizationSettingsResource) refresh(ctx context.Context, identity any, m *activeSyncOrganizationSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *activeSyncOrganizationSettingsResource) refresh(ctx context.Context, identity string, m *activeSyncOrganizationSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetActiveSyncOrganizationSettings(ctx, exo.GetActiveSyncOrganizationSettingsParams{Identity: identity})
 		if gerr != nil {

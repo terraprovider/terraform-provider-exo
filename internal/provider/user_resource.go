@@ -419,7 +419,7 @@ func (r *userResource) ImportState(ctx context.Context, req resource.ImportState
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *userResource) identityOf(m userModel) any {
+func (r *userResource) identityOf(m userModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -429,7 +429,7 @@ func (r *userResource) identityOf(m userModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *userResource) refresh(ctx context.Context, identity any, m *userModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *userResource) refresh(ctx context.Context, identity string, m *userModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetUser(ctx, exo.GetUserParams{Identity: identity})
 		if gerr != nil {

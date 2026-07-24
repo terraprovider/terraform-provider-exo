@@ -214,7 +214,7 @@ func (r *mailboxPlanResource) ImportState(ctx context.Context, req resource.Impo
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxPlanResource) identityOf(m mailboxPlanModel) any {
+func (r *mailboxPlanResource) identityOf(m mailboxPlanModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -224,7 +224,7 @@ func (r *mailboxPlanResource) identityOf(m mailboxPlanModel) any {
 	return ""
 }
 
-func (r *mailboxPlanResource) refresh(ctx context.Context, identity any, m *mailboxPlanModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxPlanResource) refresh(ctx context.Context, identity string, m *mailboxPlanModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxPlan(ctx, exo.GetMailboxPlanParams{Identity: identity})
 		if gerr != nil {

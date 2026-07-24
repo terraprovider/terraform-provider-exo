@@ -131,14 +131,14 @@ func (r *placeMailboxResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-PlaceMailbox returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "PlaceMailboxId"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-PlaceMailbox returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readPlaceMailbox(ctx, obj, &plan)
@@ -234,7 +234,7 @@ func (r *placeMailboxResource) ImportState(ctx context.Context, req resource.Imp
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *placeMailboxResource) identityOf(m placeMailboxModel) any {
+func (r *placeMailboxResource) identityOf(m placeMailboxModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -244,7 +244,7 @@ func (r *placeMailboxResource) identityOf(m placeMailboxModel) any {
 	return ""
 }
 
-func (r *placeMailboxResource) refresh(ctx context.Context, identity any, m *placeMailboxModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *placeMailboxResource) refresh(ctx context.Context, identity string, m *placeMailboxModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPlaceMailbox(ctx, exo.GetPlaceMailboxParams{PlaceMailboxId: identity})
 		if gerr != nil {

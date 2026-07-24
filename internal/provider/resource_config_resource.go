@@ -135,7 +135,7 @@ func (r *resourceConfigResource) ImportState(ctx context.Context, req resource.I
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *resourceConfigResource) identityOf(m resourceConfigModel) any {
+func (r *resourceConfigResource) identityOf(m resourceConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -145,7 +145,7 @@ func (r *resourceConfigResource) identityOf(m resourceConfigModel) any {
 	return ""
 }
 
-func (r *resourceConfigResource) refresh(ctx context.Context, identity any, m *resourceConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *resourceConfigResource) refresh(ctx context.Context, identity string, m *resourceConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetResourceConfig(ctx, exo.GetResourceConfigParams{})

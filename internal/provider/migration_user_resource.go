@@ -164,7 +164,7 @@ func (r *migrationUserResource) ImportState(ctx context.Context, req resource.Im
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *migrationUserResource) identityOf(m migrationUserModel) any {
+func (r *migrationUserResource) identityOf(m migrationUserModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -174,7 +174,7 @@ func (r *migrationUserResource) identityOf(m migrationUserModel) any {
 	return ""
 }
 
-func (r *migrationUserResource) refresh(ctx context.Context, identity any, m *migrationUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *migrationUserResource) refresh(ctx context.Context, identity string, m *migrationUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMigrationUser(ctx, exo.GetMigrationUserParams{Identity: identity})
 		if gerr != nil {

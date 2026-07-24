@@ -86,14 +86,14 @@ func (r *exoSecOpsOverrideRuleResource) Create(ctx context.Context, req resource
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ExoSecOpsOverrideRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ExoSecOpsOverrideRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readExoSecOpsOverrideRule(ctx, obj, &plan)
@@ -162,7 +162,7 @@ func (r *exoSecOpsOverrideRuleResource) ImportState(ctx context.Context, req res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *exoSecOpsOverrideRuleResource) identityOf(m exoSecOpsOverrideRuleModel) any {
+func (r *exoSecOpsOverrideRuleResource) identityOf(m exoSecOpsOverrideRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -172,7 +172,7 @@ func (r *exoSecOpsOverrideRuleResource) identityOf(m exoSecOpsOverrideRuleModel)
 	return m.Name.ValueString()
 }
 
-func (r *exoSecOpsOverrideRuleResource) refresh(ctx context.Context, identity any, m *exoSecOpsOverrideRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *exoSecOpsOverrideRuleResource) refresh(ctx context.Context, identity string, m *exoSecOpsOverrideRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetExoSecOpsOverrideRule(ctx, exo.GetExoSecOpsOverrideRuleParams{Identity: identity})
 		if gerr != nil {

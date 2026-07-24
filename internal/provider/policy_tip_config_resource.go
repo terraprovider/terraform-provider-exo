@@ -81,14 +81,14 @@ func (r *policyTipConfigResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-PolicyTipConfig returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-PolicyTipConfig returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readPolicyTipConfig(ctx, obj, &plan)
@@ -154,7 +154,7 @@ func (r *policyTipConfigResource) ImportState(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *policyTipConfigResource) identityOf(m policyTipConfigModel) any {
+func (r *policyTipConfigResource) identityOf(m policyTipConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -164,7 +164,7 @@ func (r *policyTipConfigResource) identityOf(m policyTipConfigModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *policyTipConfigResource) refresh(ctx context.Context, identity any, m *policyTipConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *policyTipConfigResource) refresh(ctx context.Context, identity string, m *policyTipConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPolicyTipConfig(ctx, exo.GetPolicyTipConfigParams{Identity: identity})
 		if gerr != nil {

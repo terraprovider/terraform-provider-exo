@@ -142,7 +142,7 @@ func (r *clutterResource) ImportState(ctx context.Context, req resource.ImportSt
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *clutterResource) identityOf(m clutterModel) any {
+func (r *clutterResource) identityOf(m clutterModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -152,7 +152,7 @@ func (r *clutterResource) identityOf(m clutterModel) any {
 	return ""
 }
 
-func (r *clutterResource) refresh(ctx context.Context, identity any, m *clutterModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *clutterResource) refresh(ctx context.Context, identity string, m *clutterModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetClutter(ctx, exo.GetClutterParams{Identity: identity})
 		if gerr != nil {

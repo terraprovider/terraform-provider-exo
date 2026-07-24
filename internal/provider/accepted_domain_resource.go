@@ -167,7 +167,7 @@ func (r *acceptedDomainResource) ImportState(ctx context.Context, req resource.I
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *acceptedDomainResource) identityOf(m acceptedDomainModel) any {
+func (r *acceptedDomainResource) identityOf(m acceptedDomainModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -177,7 +177,7 @@ func (r *acceptedDomainResource) identityOf(m acceptedDomainModel) any {
 	return ""
 }
 
-func (r *acceptedDomainResource) refresh(ctx context.Context, identity any, m *acceptedDomainModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *acceptedDomainResource) refresh(ctx context.Context, identity string, m *acceptedDomainModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetAcceptedDomain(ctx, exo.GetAcceptedDomainParams{Identity: identity})
 		if gerr != nil {

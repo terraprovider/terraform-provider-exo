@@ -233,7 +233,7 @@ func (r *clientAccessRuleResource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *clientAccessRuleResource) identityOf(m clientAccessRuleModel) any {
+func (r *clientAccessRuleResource) identityOf(m clientAccessRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -243,7 +243,7 @@ func (r *clientAccessRuleResource) identityOf(m clientAccessRuleModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *clientAccessRuleResource) refresh(ctx context.Context, identity any, m *clientAccessRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *clientAccessRuleResource) refresh(ctx context.Context, identity string, m *clientAccessRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetClientAccessRule(ctx, exo.GetClientAccessRuleParams{Identity: identity})
 		if gerr != nil {

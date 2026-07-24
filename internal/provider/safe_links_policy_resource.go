@@ -141,14 +141,14 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-SafeLinksPolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-SafeLinksPolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readSafeLinksPolicy(ctx, obj, &plan)
@@ -243,7 +243,7 @@ func (r *safeLinksPolicyResource) ImportState(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *safeLinksPolicyResource) identityOf(m safeLinksPolicyModel) any {
+func (r *safeLinksPolicyResource) identityOf(m safeLinksPolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -253,7 +253,7 @@ func (r *safeLinksPolicyResource) identityOf(m safeLinksPolicyModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *safeLinksPolicyResource) refresh(ctx context.Context, identity any, m *safeLinksPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *safeLinksPolicyResource) refresh(ctx context.Context, identity string, m *safeLinksPolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetSafeLinksPolicy(ctx, exo.GetSafeLinksPolicyParams{Identity: identity})
 		if gerr != nil {

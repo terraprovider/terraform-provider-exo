@@ -240,14 +240,14 @@ func (r *distributionGroupResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-DistributionGroup returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-DistributionGroup returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readDistributionGroup(ctx, obj, &plan)
@@ -479,7 +479,7 @@ func (r *distributionGroupResource) ImportState(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *distributionGroupResource) identityOf(m distributionGroupModel) any {
+func (r *distributionGroupResource) identityOf(m distributionGroupModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -489,7 +489,7 @@ func (r *distributionGroupResource) identityOf(m distributionGroupModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *distributionGroupResource) refresh(ctx context.Context, identity any, m *distributionGroupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *distributionGroupResource) refresh(ctx context.Context, identity string, m *distributionGroupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetDistributionGroup(ctx, exo.GetDistributionGroupParams{Identity: identity})
 		if gerr != nil {
@@ -646,7 +646,7 @@ func (r *distributionGroupResource) reconcileState(cfg, read *distributionGroupM
 	read.Members = reconcile.KeepSet(cfg.Members, read.Members)
 }
 
-func readDistributionGroupMembers(ctx context.Context, svc *exo.Service, identity any, m *distributionGroupModel) {
+func readDistributionGroupMembers(ctx context.Context, svc *exo.Service, identity string, m *distributionGroupModel) {
 	vals, present, err := resourcex.LoadUntil(ctx, consistency.Config{}, func(ctx context.Context) ([]map[string]any, bool, error) {
 		res, gerr := svc.GetDistributionGroupMember(ctx, exo.GetDistributionGroupMemberParams{Identity: identity})
 		if gerr != nil {

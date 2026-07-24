@@ -141,7 +141,7 @@ func (r *managementRoleEntryResource) ImportState(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *managementRoleEntryResource) identityOf(m managementRoleEntryModel) any {
+func (r *managementRoleEntryResource) identityOf(m managementRoleEntryModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -151,7 +151,7 @@ func (r *managementRoleEntryResource) identityOf(m managementRoleEntryModel) any
 	return ""
 }
 
-func (r *managementRoleEntryResource) refresh(ctx context.Context, identity any, m *managementRoleEntryModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *managementRoleEntryResource) refresh(ctx context.Context, identity string, m *managementRoleEntryModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetManagementRoleEntry(ctx, exo.GetManagementRoleEntryParams{Identity: identity})
 		if gerr != nil {

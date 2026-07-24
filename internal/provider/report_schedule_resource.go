@@ -145,14 +145,14 @@ func (r *reportScheduleResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ReportSchedule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "ScheduleId"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ReportSchedule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readReportSchedule(ctx, obj, &plan)
@@ -248,7 +248,7 @@ func (r *reportScheduleResource) ImportState(ctx context.Context, req resource.I
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *reportScheduleResource) identityOf(m reportScheduleModel) any {
+func (r *reportScheduleResource) identityOf(m reportScheduleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -258,7 +258,7 @@ func (r *reportScheduleResource) identityOf(m reportScheduleModel) any {
 	return ""
 }
 
-func (r *reportScheduleResource) refresh(ctx context.Context, identity any, m *reportScheduleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *reportScheduleResource) refresh(ctx context.Context, identity string, m *reportScheduleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetReportSchedule(ctx, exo.GetReportScheduleParams{ScheduleId: identity})
 		if gerr != nil {

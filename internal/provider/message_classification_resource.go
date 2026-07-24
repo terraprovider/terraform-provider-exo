@@ -109,14 +109,14 @@ func (r *messageClassificationResource) Create(ctx context.Context, req resource
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-MessageClassification returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-MessageClassification returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readMessageClassification(ctx, obj, &plan)
@@ -195,7 +195,7 @@ func (r *messageClassificationResource) ImportState(ctx context.Context, req res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *messageClassificationResource) identityOf(m messageClassificationModel) any {
+func (r *messageClassificationResource) identityOf(m messageClassificationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -205,7 +205,7 @@ func (r *messageClassificationResource) identityOf(m messageClassificationModel)
 	return m.Name.ValueString()
 }
 
-func (r *messageClassificationResource) refresh(ctx context.Context, identity any, m *messageClassificationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *messageClassificationResource) refresh(ctx context.Context, identity string, m *messageClassificationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMessageClassification(ctx, exo.GetMessageClassificationParams{Identity: identity})
 		if gerr != nil {

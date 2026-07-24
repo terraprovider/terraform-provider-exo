@@ -109,14 +109,14 @@ func (r *onPremisesOrganizationResource) Create(ctx context.Context, req resourc
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-OnPremisesOrganization returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-OnPremisesOrganization returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readOnPremisesOrganization(ctx, obj, &plan)
@@ -191,7 +191,7 @@ func (r *onPremisesOrganizationResource) ImportState(ctx context.Context, req re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *onPremisesOrganizationResource) identityOf(m onPremisesOrganizationModel) any {
+func (r *onPremisesOrganizationResource) identityOf(m onPremisesOrganizationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -201,7 +201,7 @@ func (r *onPremisesOrganizationResource) identityOf(m onPremisesOrganizationMode
 	return m.Name.ValueString()
 }
 
-func (r *onPremisesOrganizationResource) refresh(ctx context.Context, identity any, m *onPremisesOrganizationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *onPremisesOrganizationResource) refresh(ctx context.Context, identity string, m *onPremisesOrganizationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetOnPremisesOrganization(ctx, exo.GetOnPremisesOrganizationParams{Identity: identity})
 		if gerr != nil {

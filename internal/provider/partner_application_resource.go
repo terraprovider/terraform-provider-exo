@@ -101,14 +101,14 @@ func (r *partnerApplicationResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-PartnerApplication returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-PartnerApplication returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readPartnerApplication(ctx, obj, &plan)
@@ -186,7 +186,7 @@ func (r *partnerApplicationResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *partnerApplicationResource) identityOf(m partnerApplicationModel) any {
+func (r *partnerApplicationResource) identityOf(m partnerApplicationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -196,7 +196,7 @@ func (r *partnerApplicationResource) identityOf(m partnerApplicationModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *partnerApplicationResource) refresh(ctx context.Context, identity any, m *partnerApplicationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *partnerApplicationResource) refresh(ctx context.Context, identity string, m *partnerApplicationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPartnerApplication(ctx, exo.GetPartnerApplicationParams{Identity: identity})
 		if gerr != nil {

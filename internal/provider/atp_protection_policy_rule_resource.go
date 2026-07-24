@@ -116,14 +116,14 @@ func (r *aTPProtectionPolicyRuleResource) Create(ctx context.Context, req resour
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-ATPProtectionPolicyRule returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-ATPProtectionPolicyRule returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readATPProtectionPolicyRule(ctx, obj, &plan)
@@ -198,7 +198,7 @@ func (r *aTPProtectionPolicyRuleResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *aTPProtectionPolicyRuleResource) identityOf(m aTPProtectionPolicyRuleModel) any {
+func (r *aTPProtectionPolicyRuleResource) identityOf(m aTPProtectionPolicyRuleModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -208,7 +208,7 @@ func (r *aTPProtectionPolicyRuleResource) identityOf(m aTPProtectionPolicyRuleMo
 	return m.Name.ValueString()
 }
 
-func (r *aTPProtectionPolicyRuleResource) refresh(ctx context.Context, identity any, m *aTPProtectionPolicyRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *aTPProtectionPolicyRuleResource) refresh(ctx context.Context, identity string, m *aTPProtectionPolicyRuleModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetATPProtectionPolicyRule(ctx, exo.GetATPProtectionPolicyRuleParams{Identity: identity})
 		if gerr != nil {

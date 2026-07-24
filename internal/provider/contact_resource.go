@@ -329,7 +329,7 @@ func (r *contactResource) ImportState(ctx context.Context, req resource.ImportSt
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *contactResource) identityOf(m contactModel) any {
+func (r *contactResource) identityOf(m contactModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -339,7 +339,7 @@ func (r *contactResource) identityOf(m contactModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *contactResource) refresh(ctx context.Context, identity any, m *contactModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *contactResource) refresh(ctx context.Context, identity string, m *contactModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetContact(ctx, exo.GetContactParams{Identity: identity})
 		if gerr != nil {

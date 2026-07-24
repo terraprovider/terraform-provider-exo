@@ -208,7 +208,7 @@ func (r *mailboxAutoReplyConfigurationResource) ImportState(ctx context.Context,
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxAutoReplyConfigurationResource) identityOf(m mailboxAutoReplyConfigurationModel) any {
+func (r *mailboxAutoReplyConfigurationResource) identityOf(m mailboxAutoReplyConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -218,7 +218,7 @@ func (r *mailboxAutoReplyConfigurationResource) identityOf(m mailboxAutoReplyCon
 	return ""
 }
 
-func (r *mailboxAutoReplyConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxAutoReplyConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxAutoReplyConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxAutoReplyConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxAutoReplyConfiguration(ctx, exo.GetMailboxAutoReplyConfigurationParams{Identity: identity})
 		if gerr != nil {

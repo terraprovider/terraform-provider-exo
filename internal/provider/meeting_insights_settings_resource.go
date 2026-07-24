@@ -133,7 +133,7 @@ func (r *meetingInsightsSettingsResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *meetingInsightsSettingsResource) identityOf(m meetingInsightsSettingsModel) any {
+func (r *meetingInsightsSettingsResource) identityOf(m meetingInsightsSettingsModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -143,7 +143,7 @@ func (r *meetingInsightsSettingsResource) identityOf(m meetingInsightsSettingsMo
 	return ""
 }
 
-func (r *meetingInsightsSettingsResource) refresh(ctx context.Context, identity any, m *meetingInsightsSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *meetingInsightsSettingsResource) refresh(ctx context.Context, identity string, m *meetingInsightsSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetMeetingInsightsSettings(ctx, exo.GetMeetingInsightsSettingsParams{})

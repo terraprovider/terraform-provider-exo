@@ -152,7 +152,7 @@ func (r *mailboxSpellingConfigurationResource) ImportState(ctx context.Context, 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxSpellingConfigurationResource) identityOf(m mailboxSpellingConfigurationModel) any {
+func (r *mailboxSpellingConfigurationResource) identityOf(m mailboxSpellingConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -162,7 +162,7 @@ func (r *mailboxSpellingConfigurationResource) identityOf(m mailboxSpellingConfi
 	return ""
 }
 
-func (r *mailboxSpellingConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxSpellingConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxSpellingConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxSpellingConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxSpellingConfiguration(ctx, exo.GetMailboxSpellingConfigurationParams{Identity: identity})
 		if gerr != nil {

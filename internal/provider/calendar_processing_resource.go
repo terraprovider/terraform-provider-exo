@@ -269,7 +269,7 @@ func (r *calendarProcessingResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *calendarProcessingResource) identityOf(m calendarProcessingModel) any {
+func (r *calendarProcessingResource) identityOf(m calendarProcessingModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -279,7 +279,7 @@ func (r *calendarProcessingResource) identityOf(m calendarProcessingModel) any {
 	return ""
 }
 
-func (r *calendarProcessingResource) refresh(ctx context.Context, identity any, m *calendarProcessingModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *calendarProcessingResource) refresh(ctx context.Context, identity string, m *calendarProcessingModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetCalendarProcessing(ctx, exo.GetCalendarProcessingParams{Identity: identity})
 		if gerr != nil {

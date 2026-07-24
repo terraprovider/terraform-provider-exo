@@ -183,6 +183,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		Update:            op(setCmd, exportNameOrEmpty(setKey)),
 		Delete:            op(removeCmd, exportName(removeKey)),
 		Members:           members,
+		Plural:            true, // also expose a list-all data source
 	}, true, ""
 }
 
@@ -273,6 +274,7 @@ func buildJSONDataSource(noun string, verbs map[string]spec.Cmdlet) genframework
 		Read:           genframework.Op{Method: goName(getc.Cmdlet), Params: goName(getc.Cmdlet) + "Params", IdentityField: "Identity"},
 		DataSourceOnly: true,
 		RawJSON:        true,
+		Plural:         true, // also expose a list-all data source
 	}
 }
 
@@ -353,6 +355,7 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 		Update:      genframework.Op{Method: goName(setc.Cmdlet), Params: goName(setc.Cmdlet) + "Params", IdentityField: updID},
 		Config:      true,
 		Singleton:   singleton,
+		Plural:      !singleton, // list-all makes sense only for per-object configs
 	}, true, ""
 }
 

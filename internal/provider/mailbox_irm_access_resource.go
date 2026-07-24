@@ -146,7 +146,7 @@ func (r *mailboxIRMAccessResource) ImportState(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxIRMAccessResource) identityOf(m mailboxIRMAccessModel) any {
+func (r *mailboxIRMAccessResource) identityOf(m mailboxIRMAccessModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -156,7 +156,7 @@ func (r *mailboxIRMAccessResource) identityOf(m mailboxIRMAccessModel) any {
 	return ""
 }
 
-func (r *mailboxIRMAccessResource) refresh(ctx context.Context, identity any, m *mailboxIRMAccessModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxIRMAccessResource) refresh(ctx context.Context, identity string, m *mailboxIRMAccessModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxIRMAccess(ctx, exo.GetMailboxIRMAccessParams{Identity: identity})
 		if gerr != nil {

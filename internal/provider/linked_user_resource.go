@@ -137,7 +137,7 @@ func (r *linkedUserResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *linkedUserResource) identityOf(m linkedUserModel) any {
+func (r *linkedUserResource) identityOf(m linkedUserModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -147,7 +147,7 @@ func (r *linkedUserResource) identityOf(m linkedUserModel) any {
 	return ""
 }
 
-func (r *linkedUserResource) refresh(ctx context.Context, identity any, m *linkedUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *linkedUserResource) refresh(ctx context.Context, identity string, m *linkedUserModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetLinkedUser(ctx, exo.GetLinkedUserParams{Identity: identity})
 		if gerr != nil {

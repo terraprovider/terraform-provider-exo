@@ -308,14 +308,14 @@ func (r *dynamicDistributionGroupResource) Create(ctx context.Context, req resou
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-DynamicDistributionGroup returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-DynamicDistributionGroup returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readDynamicDistributionGroup(ctx, obj, &plan)
@@ -590,7 +590,7 @@ func (r *dynamicDistributionGroupResource) ImportState(ctx context.Context, req 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *dynamicDistributionGroupResource) identityOf(m dynamicDistributionGroupModel) any {
+func (r *dynamicDistributionGroupResource) identityOf(m dynamicDistributionGroupModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -600,7 +600,7 @@ func (r *dynamicDistributionGroupResource) identityOf(m dynamicDistributionGroup
 	return m.Name.ValueString()
 }
 
-func (r *dynamicDistributionGroupResource) refresh(ctx context.Context, identity any, m *dynamicDistributionGroupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *dynamicDistributionGroupResource) refresh(ctx context.Context, identity string, m *dynamicDistributionGroupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetDynamicDistributionGroup(ctx, exo.GetDynamicDistributionGroupParams{Identity: identity})
 		if gerr != nil {

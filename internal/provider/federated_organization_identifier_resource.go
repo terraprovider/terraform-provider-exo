@@ -171,7 +171,7 @@ func (r *federatedOrganizationIdentifierResource) ImportState(ctx context.Contex
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *federatedOrganizationIdentifierResource) identityOf(m federatedOrganizationIdentifierModel) any {
+func (r *federatedOrganizationIdentifierResource) identityOf(m federatedOrganizationIdentifierModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -181,7 +181,7 @@ func (r *federatedOrganizationIdentifierResource) identityOf(m federatedOrganiza
 	return ""
 }
 
-func (r *federatedOrganizationIdentifierResource) refresh(ctx context.Context, identity any, m *federatedOrganizationIdentifierModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *federatedOrganizationIdentifierResource) refresh(ctx context.Context, identity string, m *federatedOrganizationIdentifierModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetFederatedOrganizationIdentifier(ctx, exo.GetFederatedOrganizationIdentifierParams{Identity: identity})
 		if gerr != nil {

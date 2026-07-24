@@ -238,7 +238,7 @@ func (r *placeResource) ImportState(ctx context.Context, req resource.ImportStat
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *placeResource) identityOf(m placeModel) any {
+func (r *placeResource) identityOf(m placeModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -248,7 +248,7 @@ func (r *placeResource) identityOf(m placeModel) any {
 	return ""
 }
 
-func (r *placeResource) refresh(ctx context.Context, identity any, m *placeModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *placeResource) refresh(ctx context.Context, identity string, m *placeModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPlace(ctx, exo.GetPlaceParams{Identity: identity})
 		if gerr != nil {

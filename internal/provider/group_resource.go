@@ -194,7 +194,7 @@ func (r *groupResource) ImportState(ctx context.Context, req resource.ImportStat
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *groupResource) identityOf(m groupModel) any {
+func (r *groupResource) identityOf(m groupModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -204,7 +204,7 @@ func (r *groupResource) identityOf(m groupModel) any {
 	return m.Name.ValueString()
 }
 
-func (r *groupResource) refresh(ctx context.Context, identity any, m *groupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *groupResource) refresh(ctx context.Context, identity string, m *groupModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetGroup(ctx, exo.GetGroupParams{Identity: identity})
 		if gerr != nil {

@@ -85,14 +85,14 @@ func (r *phishSimOverridePolicyResource) Create(ctx context.Context, req resourc
 		return
 	}
 	obj := firstObject(res.Value)
-	if obj == nil {
-		resp.Diagnostics.AddError("New-PhishSimOverridePolicy returned no object", "the cmdlet did not return the created object")
-		return
-	}
 	cfg := plan
 	ident := firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name"))
 	if !r.refresh(ctx, ident, &plan, &resp.Diagnostics, nil) {
 		if resp.Diagnostics.HasError() {
+			return
+		}
+		if obj == nil {
+			resp.Diagnostics.AddError("New-PhishSimOverridePolicy returned no object", "the cmdlet did not return the created object and it could not be read back")
 			return
 		}
 		readPhishSimOverridePolicy(ctx, obj, &plan)
@@ -162,7 +162,7 @@ func (r *phishSimOverridePolicyResource) ImportState(ctx context.Context, req re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *phishSimOverridePolicyResource) identityOf(m phishSimOverridePolicyModel) any {
+func (r *phishSimOverridePolicyResource) identityOf(m phishSimOverridePolicyModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -172,7 +172,7 @@ func (r *phishSimOverridePolicyResource) identityOf(m phishSimOverridePolicyMode
 	return m.Name.ValueString()
 }
 
-func (r *phishSimOverridePolicyResource) refresh(ctx context.Context, identity any, m *phishSimOverridePolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *phishSimOverridePolicyResource) refresh(ctx context.Context, identity string, m *phishSimOverridePolicyModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetPhishSimOverridePolicy(ctx, exo.GetPhishSimOverridePolicyParams{Identity: identity})
 		if gerr != nil {

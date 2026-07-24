@@ -137,7 +137,7 @@ func (r *hVEAccountSettingsResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *hVEAccountSettingsResource) identityOf(m hVEAccountSettingsModel) any {
+func (r *hVEAccountSettingsResource) identityOf(m hVEAccountSettingsModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -147,7 +147,7 @@ func (r *hVEAccountSettingsResource) identityOf(m hVEAccountSettingsModel) any {
 	return ""
 }
 
-func (r *hVEAccountSettingsResource) refresh(ctx context.Context, identity any, m *hVEAccountSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *hVEAccountSettingsResource) refresh(ctx context.Context, identity string, m *hVEAccountSettingsModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetHVEAccountSettings(ctx, exo.GetHVEAccountSettingsParams{Identity: identity})
 		if gerr != nil {

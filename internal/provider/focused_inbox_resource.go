@@ -142,7 +142,7 @@ func (r *focusedInboxResource) ImportState(ctx context.Context, req resource.Imp
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *focusedInboxResource) identityOf(m focusedInboxModel) any {
+func (r *focusedInboxResource) identityOf(m focusedInboxModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -152,7 +152,7 @@ func (r *focusedInboxResource) identityOf(m focusedInboxModel) any {
 	return ""
 }
 
-func (r *focusedInboxResource) refresh(ctx context.Context, identity any, m *focusedInboxModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *focusedInboxResource) refresh(ctx context.Context, identity string, m *focusedInboxModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetFocusedInbox(ctx, exo.GetFocusedInboxParams{Identity: identity})
 		if gerr != nil {

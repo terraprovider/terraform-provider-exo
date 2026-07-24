@@ -282,7 +282,7 @@ func (r *transportConfigResource) ImportState(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *transportConfigResource) identityOf(m transportConfigModel) any {
+func (r *transportConfigResource) identityOf(m transportConfigModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -292,7 +292,7 @@ func (r *transportConfigResource) identityOf(m transportConfigModel) any {
 	return ""
 }
 
-func (r *transportConfigResource) refresh(ctx context.Context, identity any, m *transportConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *transportConfigResource) refresh(ctx context.Context, identity string, m *transportConfigModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetTransportConfig(ctx, exo.GetTransportConfigParams{})

@@ -156,7 +156,7 @@ func (r *accessToCustomerDataRequestResource) ImportState(ctx context.Context, r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *accessToCustomerDataRequestResource) identityOf(m accessToCustomerDataRequestModel) any {
+func (r *accessToCustomerDataRequestResource) identityOf(m accessToCustomerDataRequestModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -166,7 +166,7 @@ func (r *accessToCustomerDataRequestResource) identityOf(m accessToCustomerDataR
 	return ""
 }
 
-func (r *accessToCustomerDataRequestResource) refresh(ctx context.Context, identity any, m *accessToCustomerDataRequestModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *accessToCustomerDataRequestResource) refresh(ctx context.Context, identity string, m *accessToCustomerDataRequestModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetAccessToCustomerDataRequest(ctx, exo.GetAccessToCustomerDataRequestParams{})

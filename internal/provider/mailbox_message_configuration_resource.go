@@ -428,7 +428,7 @@ func (r *mailboxMessageConfigurationResource) ImportState(ctx context.Context, r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *mailboxMessageConfigurationResource) identityOf(m mailboxMessageConfigurationModel) any {
+func (r *mailboxMessageConfigurationResource) identityOf(m mailboxMessageConfigurationModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -438,7 +438,7 @@ func (r *mailboxMessageConfigurationResource) identityOf(m mailboxMessageConfigu
 	return ""
 }
 
-func (r *mailboxMessageConfigurationResource) refresh(ctx context.Context, identity any, m *mailboxMessageConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *mailboxMessageConfigurationResource) refresh(ctx context.Context, identity string, m *mailboxMessageConfigurationModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		res, gerr := r.client.EXO.GetMailboxMessageConfiguration(ctx, exo.GetMailboxMessageConfigurationParams{Identity: identity})
 		if gerr != nil {

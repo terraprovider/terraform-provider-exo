@@ -137,7 +137,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) ImportState(ctx conte
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
 }
 
-func (r *m365DataAtRestEncryptionPolicyAssignmentResource) identityOf(m m365DataAtRestEncryptionPolicyAssignmentModel) any {
+func (r *m365DataAtRestEncryptionPolicyAssignmentResource) identityOf(m m365DataAtRestEncryptionPolicyAssignmentModel) string {
 	if v := m.Identity.ValueString(); v != "" {
 		return v
 	}
@@ -147,7 +147,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) identityOf(m m365Data
 	return ""
 }
 
-func (r *m365DataAtRestEncryptionPolicyAssignmentResource) refresh(ctx context.Context, identity any, m *m365DataAtRestEncryptionPolicyAssignmentModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
+func (r *m365DataAtRestEncryptionPolicyAssignmentResource) refresh(ctx context.Context, identity string, m *m365DataAtRestEncryptionPolicyAssignmentModel, diags *diag.Diagnostics, reflected func(map[string]any) bool) bool {
 	get := func(ctx context.Context) (map[string]any, bool, error) {
 		_ = identity
 		res, gerr := r.client.EXO.GetM365DataAtRestEncryptionPolicyAssignment(ctx, exo.GetM365DataAtRestEncryptionPolicyAssignmentParams{})
