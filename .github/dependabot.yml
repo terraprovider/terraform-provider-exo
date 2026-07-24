@@ -8,7 +8,7 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
-      philband:
+      terraprovider:
         patterns:
           - "github.com/terraprovider/*"
       go-minor-patch:

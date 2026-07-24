@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     exo = {
-      source = "philband/exo"
+      source = "terraprovider/exo"
     }
   }
 }

@@ -7,7 +7,7 @@ name: Acceptance Tests
 # Required repository configuration:
 #   vars.ARM_TENANT_ID, vars.ARM_CLIENT_ID  - the test app (non-secret)
 #   an Entra federated credential on that app for this repo, e.g. subject
-#   repo:philband/terraform-provider-exo:ref:refs/heads/main (OIDC, no secret).
+#   repo:terraprovider/terraform-provider-exo:ref:refs/heads/main (OIDC, no secret).
 # Alternatively set an ARM_CLIENT_SECRET secret and drop ARM_USE_OIDC below.
 on:
   workflow_dispatch:
