@@ -159,10 +159,10 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/terraprovider/go-exoscc v0.2.0 h1:d43fIMliohM/i2T6PM0LaFNKB3wpIt0bTo73qs+wZxM=
 github.com/terraprovider/go-exoscc v0.2.0/go.mod h1:zdVKCU3J4dbxAuMGMDQJStcDlYTp7T7NfTafOBWAc4o=
-github.com/terraprovider/go-msadmin v0.2.0 h1:VlUdDWnX/Win7VvghgvH/k2wjjwhzxZCAFNi152pJhg=
-github.com/terraprovider/go-msadmin v0.2.0/go.mod h1:ZXE9dxcz1dtzsMeXJs6gVXQrWv+66vzf7OT5C+rshK0=
-github.com/terraprovider/tf-msadmin v0.7.0 h1:EZyvm3Vd8BP2GaO7yUS87FgkPsNqsUeGzaBqRI0NtFA=
-github.com/terraprovider/tf-msadmin v0.7.0/go.mod h1:jFe2E+aYB60ym6kvE8IZbr0FDa0RU9KLZRiiQhDgEBU=
+github.com/terraprovider/go-msadmin v0.3.0 h1:DD6R/vMKxlTwedgqd/edX8Jz+hFiUk1Z8Kd+oWLHwZE=
+github.com/terraprovider/go-msadmin v0.3.0/go.mod h1:ZXE9dxcz1dtzsMeXJs6gVXQrWv+66vzf7OT5C+rshK0=
+github.com/terraprovider/tf-msadmin v0.8.0 h1:ouz71t3GgxlSaCwbNt4Lgwz22qXXagUWioUVF74UZ3Q=
+github.com/terraprovider/tf-msadmin v0.8.0/go.mod h1:jFe2E+aYB60ym6kvE8IZbr0FDa0RU9KLZRiiQhDgEBU=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
