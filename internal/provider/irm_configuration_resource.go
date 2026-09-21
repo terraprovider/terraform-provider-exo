@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -43,7 +44,7 @@ type iRMConfigurationModel struct {
 	EnablePortalTrackingLogs                   types.Bool   `tfsdk:"enable_portal_tracking_logs"`
 	InternalLicensingEnabled                   types.Bool   `tfsdk:"internal_licensing_enabled"`
 	JournalReportDecryptionEnabled             types.Bool   `tfsdk:"journal_report_decryption_enabled"`
-	LicensingLocation                          types.String `tfsdk:"licensing_location"`
+	LicensingLocation                          types.Set    `tfsdk:"licensing_location"`
 	RMSOnlineKeySharingLocation                types.String `tfsdk:"rms_online_key_sharing_location"`
 	RejectIfRecipientHasNoRights               types.Bool   `tfsdk:"reject_if_recipient_has_no_rights"`
 	SearchEnabled                              types.Bool   `tfsdk:"search_enabled"`
@@ -71,7 +72,7 @@ func (r *iRMConfigurationResource) Schema(_ context.Context, _ resource.SchemaRe
 			"enable_portal_tracking_logs":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnablePortalTrackingLogs parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"internal_licensing_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalLicensingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"journal_report_decryption_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalReportDecryptionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"licensing_location":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LicensingLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"licensing_location":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LicensingLocation parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"rms_online_key_sharing_location":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RMSOnlineKeySharingLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"reject_if_recipient_has_no_rights":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectIfRecipientHasNoRights parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"search_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SearchEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -105,9 +106,7 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 	sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBool()
 	sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBool()
 	sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBool()
-	if v := plan.LicensingLocation.ValueString(); v != "" {
-		sp.LicensingLocation = v
-	}
+	sp.LicensingLocation = toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)
 	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
 		sp.RMSOnlineKeySharingLocation = v
 	}
@@ -165,9 +164,7 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBool()
 	sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBool()
 	sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBool()
-	if v := plan.LicensingLocation.ValueString(); v != "" {
-		sp.LicensingLocation = v
-	}
+	sp.LicensingLocation = toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)
 	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
 		sp.RMSOnlineKeySharingLocation = v
 	}
@@ -188,7 +185,6 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"LicensingLocation":           cfg.LicensingLocation,
 		"RMSOnlineKeySharingLocation": cfg.RMSOnlineKeySharingLocation,
 		"TransportDecryptionSetting":  cfg.TransportDecryptionSetting,
 	}, getString)
@@ -252,7 +248,7 @@ func readIRMConfiguration(ctx context.Context, obj map[string]any, m *iRMConfigu
 	m.EnablePortalTrackingLogs = types.BoolValue(getBool(obj, "EnablePortalTrackingLogs"))
 	m.InternalLicensingEnabled = types.BoolValue(getBool(obj, "InternalLicensingEnabled"))
 	m.JournalReportDecryptionEnabled = types.BoolValue(getBool(obj, "JournalReportDecryptionEnabled"))
-	m.LicensingLocation = types.StringValue(getString(obj, "LicensingLocation"))
+	m.LicensingLocation = stringSetValue(ctx, getStringSlice(obj, "LicensingLocation"))
 	m.RMSOnlineKeySharingLocation = types.StringValue(getString(obj, "RMSOnlineKeySharingLocation"))
 	m.RejectIfRecipientHasNoRights = types.BoolValue(getBool(obj, "RejectIfRecipientHasNoRights"))
 	m.SearchEnabled = types.BoolValue(getBool(obj, "SearchEnabled"))
@@ -272,7 +268,7 @@ func (r *iRMConfigurationResource) reconcileState(cfg, read *iRMConfigurationMod
 	read.EnablePortalTrackingLogs = reconcile.KeepBool(cfg.EnablePortalTrackingLogs, read.EnablePortalTrackingLogs)
 	read.InternalLicensingEnabled = reconcile.KeepBool(cfg.InternalLicensingEnabled, read.InternalLicensingEnabled)
 	read.JournalReportDecryptionEnabled = reconcile.KeepBool(cfg.JournalReportDecryptionEnabled, read.JournalReportDecryptionEnabled)
-	read.LicensingLocation = reconcile.KeepStr(cfg.LicensingLocation, read.LicensingLocation)
+	read.LicensingLocation = reconcile.KeepSet(cfg.LicensingLocation, read.LicensingLocation)
 	read.RMSOnlineKeySharingLocation = reconcile.KeepStr(cfg.RMSOnlineKeySharingLocation, read.RMSOnlineKeySharingLocation)
 	read.RejectIfRecipientHasNoRights = reconcile.KeepBool(cfg.RejectIfRecipientHasNoRights, read.RejectIfRecipientHasNoRights)
 	read.SearchEnabled = reconcile.KeepBool(cfg.SearchEnabled, read.SearchEnabled)

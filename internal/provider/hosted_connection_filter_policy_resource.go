@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,8 +41,8 @@ type hostedConnectionFilterPolicyModel struct {
 	AdminDisplayName    types.String `tfsdk:"admin_display_name"`
 	ConfigurationXmlRaw types.String `tfsdk:"configuration_xml_raw"`
 	EnableSafeList      types.Bool   `tfsdk:"enable_safe_list"`
-	IPAllowList         types.String `tfsdk:"ip_allow_list"`
-	IPBlockList         types.String `tfsdk:"ip_block_list"`
+	IPAllowList         types.Set    `tfsdk:"ip_allow_list"`
+	IPBlockList         types.Set    `tfsdk:"ip_block_list"`
 	MakeDefault         types.Bool   `tfsdk:"make_default"`
 	Name                types.String `tfsdk:"name"`
 }
@@ -59,8 +60,8 @@ func (r *hostedConnectionFilterPolicyResource) Schema(_ context.Context, _ resou
 			"admin_display_name":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"configuration_xml_raw": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConfigurationXmlRaw parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enable_safe_list":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeList parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ip_allow_list":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPAllowList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ip_block_list":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ip_allow_list":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPAllowList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"ip_block_list":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPBlockList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"make_default":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MakeDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -85,13 +86,9 @@ func (r *hostedConnectionFilterPolicyResource) Create(ctx context.Context, req r
 		AdminDisplayName:    plan.AdminDisplayName.ValueString(),
 		ConfigurationXmlRaw: plan.ConfigurationXmlRaw.ValueString(),
 		EnableSafeList:      plan.EnableSafeList.ValueBool(),
+		IPAllowList:         toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics),
+		IPBlockList:         toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics),
 		Name:                plan.Name.ValueString(),
-	}
-	if v := plan.IPAllowList.ValueString(); v != "" {
-		p.IPAllowList = v
-	}
-	if v := plan.IPBlockList.ValueString(); v != "" {
-		p.IPBlockList = v
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -146,12 +143,8 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	sp.ConfigurationXmlRaw = plan.ConfigurationXmlRaw.ValueString()
 	sp.EnableSafeList = plan.EnableSafeList.ValueBool()
-	if v := plan.IPAllowList.ValueString(); v != "" {
-		sp.IPAllowList = v
-	}
-	if v := plan.IPBlockList.ValueString(); v != "" {
-		sp.IPBlockList = v
-	}
+	sp.IPAllowList = toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics)
+	sp.IPBlockList = toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics)
 	sp.MakeDefault = plan.MakeDefault.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
@@ -164,8 +157,6 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdminDisplayName":    cfg.AdminDisplayName,
 		"ConfigurationXmlRaw": cfg.ConfigurationXmlRaw,
-		"IPAllowList":         cfg.IPAllowList,
-		"IPBlockList":         cfg.IPBlockList,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -230,8 +221,8 @@ func readHostedConnectionFilterPolicy(ctx context.Context, obj map[string]any, m
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.ConfigurationXmlRaw = types.StringValue(getString(obj, "ConfigurationXmlRaw"))
 	m.EnableSafeList = types.BoolValue(getBool(obj, "EnableSafeList"))
-	m.IPAllowList = types.StringValue(getString(obj, "IPAllowList"))
-	m.IPBlockList = types.StringValue(getString(obj, "IPBlockList"))
+	m.IPAllowList = stringSetValue(ctx, getStringSlice(obj, "IPAllowList"))
+	m.IPBlockList = stringSetValue(ctx, getStringSlice(obj, "IPBlockList"))
 	m.MakeDefault = types.BoolValue(getBool(obj, "MakeDefault"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	_ = ctx
@@ -241,8 +232,8 @@ func (r *hostedConnectionFilterPolicyResource) reconcileState(cfg, read *hostedC
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
 	read.ConfigurationXmlRaw = reconcile.KeepStr(cfg.ConfigurationXmlRaw, read.ConfigurationXmlRaw)
 	read.EnableSafeList = reconcile.KeepBool(cfg.EnableSafeList, read.EnableSafeList)
-	read.IPAllowList = reconcile.KeepStr(cfg.IPAllowList, read.IPAllowList)
-	read.IPBlockList = reconcile.KeepStr(cfg.IPBlockList, read.IPBlockList)
+	read.IPAllowList = reconcile.KeepSet(cfg.IPAllowList, read.IPAllowList)
+	read.IPBlockList = reconcile.KeepSet(cfg.IPBlockList, read.IPBlockList)
 	read.MakeDefault = reconcile.KeepBool(cfg.MakeDefault, read.MakeDefault)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 }

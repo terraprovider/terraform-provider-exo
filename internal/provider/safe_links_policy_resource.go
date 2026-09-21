@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -38,16 +39,16 @@ type safeLinksPolicyModel struct {
 	AdminDisplayName              types.String `tfsdk:"admin_display_name"`
 	AllowClickThrough             types.Bool   `tfsdk:"allow_click_through"`
 	CustomNotificationText        types.String `tfsdk:"custom_notification_text"`
-	CustomUrlList                 types.String `tfsdk:"custom_url_list"`
+	CustomUrlList                 types.Set    `tfsdk:"custom_url_list"`
 	DeliverMessageAfterScan       types.Bool   `tfsdk:"deliver_message_after_scan"`
 	DisableUrlRewrite             types.Bool   `tfsdk:"disable_url_rewrite"`
-	DoNotRewriteUrls              types.String `tfsdk:"do_not_rewrite_urls"`
+	DoNotRewriteUrls              types.Set    `tfsdk:"do_not_rewrite_urls"`
 	EnableForInternalSenders      types.Bool   `tfsdk:"enable_for_internal_senders"`
 	EnableOrganizationBranding    types.Bool   `tfsdk:"enable_organization_branding"`
 	EnableSafeLinksForEmail       types.Bool   `tfsdk:"enable_safe_links_for_email"`
 	EnableSafeLinksForOffice      types.Bool   `tfsdk:"enable_safe_links_for_office"`
 	EnableSafeLinksForTeams       types.Bool   `tfsdk:"enable_safe_links_for_teams"`
-	LocalizedNotificationTextList types.String `tfsdk:"localized_notification_text_list"`
+	LocalizedNotificationTextList types.Set    `tfsdk:"localized_notification_text_list"`
 	MakeBuiltInProtection         types.Bool   `tfsdk:"make_built_in_protection"`
 	Name                          types.String `tfsdk:"name"`
 	RecommendedPolicyType         types.String `tfsdk:"recommended_policy_type"`
@@ -70,16 +71,16 @@ func (r *safeLinksPolicyResource) Schema(_ context.Context, _ resource.SchemaReq
 			"admin_display_name":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allow_click_through":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowClickThrough parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"custom_notification_text":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomNotificationText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"custom_url_list":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomUrlList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"custom_url_list":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -CustomUrlList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"deliver_message_after_scan":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverMessageAfterScan parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disable_url_rewrite":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisableUrlRewrite parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"do_not_rewrite_urls":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"do_not_rewrite_urls":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enable_for_internal_senders":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableForInternalSenders parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_organization_branding":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableOrganizationBranding parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_safe_links_for_email":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeLinksForEmail parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_safe_links_for_office":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeLinksForOffice parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_safe_links_for_teams":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeLinksForTeams parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"localized_notification_text_list": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalizedNotificationTextList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"localized_notification_text_list": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LocalizedNotificationTextList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"make_built_in_protection":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MakeBuiltInProtection parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"recommended_policy_type":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecommendedPolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -109,8 +110,10 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 		AdminDisplayName:              plan.AdminDisplayName.ValueString(),
 		AllowClickThrough:             plan.AllowClickThrough.ValueBool(),
 		CustomNotificationText:        plan.CustomNotificationText.ValueString(),
+		CustomUrlList:                 toStringSlice(ctx, plan.CustomUrlList, &resp.Diagnostics),
 		DeliverMessageAfterScan:       plan.DeliverMessageAfterScan.ValueBool(),
 		DisableUrlRewrite:             plan.DisableUrlRewrite.ValueBool(),
+		DoNotRewriteUrls:              toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics),
 		EnableForInternalSenders:      plan.EnableForInternalSenders.ValueBool(),
 		EnableOrganizationBranding:    plan.EnableOrganizationBranding.ValueBool(),
 		EnableSafeLinksForEmail:       plan.EnableSafeLinksForEmail.ValueBool(),
@@ -122,12 +125,6 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 		TrackClicks:                   plan.TrackClicks.ValueBool(),
 		UseTranslatedNotificationText: plan.UseTranslatedNotificationText.ValueBool(),
 		UseTranslatedUrlText:          plan.UseTranslatedUrlText.ValueBool(),
-	}
-	if v := plan.CustomUrlList.ValueString(); v != "" {
-		p.CustomUrlList = v
-	}
-	if v := plan.DoNotRewriteUrls.ValueString(); v != "" {
-		p.DoNotRewriteUrls = v
 	}
 	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
 		p.RecommendedPolicyType = v
@@ -185,22 +182,16 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	sp.AllowClickThrough = plan.AllowClickThrough.ValueBool()
 	sp.CustomNotificationText = plan.CustomNotificationText.ValueString()
-	if v := plan.CustomUrlList.ValueString(); v != "" {
-		sp.CustomUrlList = v
-	}
+	sp.CustomUrlList = toStringSlice(ctx, plan.CustomUrlList, &resp.Diagnostics)
 	sp.DeliverMessageAfterScan = plan.DeliverMessageAfterScan.ValueBool()
 	sp.DisableUrlRewrite = plan.DisableUrlRewrite.ValueBool()
-	if v := plan.DoNotRewriteUrls.ValueString(); v != "" {
-		sp.DoNotRewriteUrls = v
-	}
+	sp.DoNotRewriteUrls = toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics)
 	sp.EnableForInternalSenders = plan.EnableForInternalSenders.ValueBool()
 	sp.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBool()
 	sp.EnableSafeLinksForEmail = plan.EnableSafeLinksForEmail.ValueBool()
 	sp.EnableSafeLinksForOffice = plan.EnableSafeLinksForOffice.ValueBool()
 	sp.EnableSafeLinksForTeams = plan.EnableSafeLinksForTeams.ValueBool()
-	if v := plan.LocalizedNotificationTextList.ValueString(); v != "" {
-		sp.LocalizedNotificationTextList = v
-	}
+	sp.LocalizedNotificationTextList = toStringSlice(ctx, plan.LocalizedNotificationTextList, &resp.Diagnostics)
 	sp.ScanUrls = plan.ScanUrls.ValueBool()
 	sp.TrackClicks = plan.TrackClicks.ValueBool()
 	sp.UseTranslatedNotificationText = plan.UseTranslatedNotificationText.ValueBool()
@@ -214,11 +205,8 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminDisplayName":              cfg.AdminDisplayName,
-		"CustomNotificationText":        cfg.CustomNotificationText,
-		"CustomUrlList":                 cfg.CustomUrlList,
-		"DoNotRewriteUrls":              cfg.DoNotRewriteUrls,
-		"LocalizedNotificationTextList": cfg.LocalizedNotificationTextList,
+		"AdminDisplayName":       cfg.AdminDisplayName,
+		"CustomNotificationText": cfg.CustomNotificationText,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -283,16 +271,16 @@ func readSafeLinksPolicy(ctx context.Context, obj map[string]any, m *safeLinksPo
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.AllowClickThrough = types.BoolValue(getBool(obj, "AllowClickThrough"))
 	m.CustomNotificationText = types.StringValue(getString(obj, "CustomNotificationText"))
-	m.CustomUrlList = types.StringValue(getString(obj, "CustomUrlList"))
+	m.CustomUrlList = stringSetValue(ctx, getStringSlice(obj, "CustomUrlList"))
 	m.DeliverMessageAfterScan = types.BoolValue(getBool(obj, "DeliverMessageAfterScan"))
 	m.DisableUrlRewrite = types.BoolValue(getBool(obj, "DisableUrlRewrite"))
-	m.DoNotRewriteUrls = types.StringValue(getString(obj, "DoNotRewriteUrls"))
+	m.DoNotRewriteUrls = stringSetValue(ctx, getStringSlice(obj, "DoNotRewriteUrls"))
 	m.EnableForInternalSenders = types.BoolValue(getBool(obj, "EnableForInternalSenders"))
 	m.EnableOrganizationBranding = types.BoolValue(getBool(obj, "EnableOrganizationBranding"))
 	m.EnableSafeLinksForEmail = types.BoolValue(getBool(obj, "EnableSafeLinksForEmail"))
 	m.EnableSafeLinksForOffice = types.BoolValue(getBool(obj, "EnableSafeLinksForOffice"))
 	m.EnableSafeLinksForTeams = types.BoolValue(getBool(obj, "EnableSafeLinksForTeams"))
-	m.LocalizedNotificationTextList = types.StringValue(getString(obj, "LocalizedNotificationTextList"))
+	m.LocalizedNotificationTextList = stringSetValue(ctx, getStringSlice(obj, "LocalizedNotificationTextList"))
 	m.MakeBuiltInProtection = types.BoolValue(getBool(obj, "MakeBuiltInProtection"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
@@ -307,16 +295,16 @@ func (r *safeLinksPolicyResource) reconcileState(cfg, read *safeLinksPolicyModel
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
 	read.AllowClickThrough = reconcile.KeepBool(cfg.AllowClickThrough, read.AllowClickThrough)
 	read.CustomNotificationText = reconcile.KeepStr(cfg.CustomNotificationText, read.CustomNotificationText)
-	read.CustomUrlList = reconcile.KeepStr(cfg.CustomUrlList, read.CustomUrlList)
+	read.CustomUrlList = reconcile.KeepSet(cfg.CustomUrlList, read.CustomUrlList)
 	read.DeliverMessageAfterScan = reconcile.KeepBool(cfg.DeliverMessageAfterScan, read.DeliverMessageAfterScan)
 	read.DisableUrlRewrite = reconcile.KeepBool(cfg.DisableUrlRewrite, read.DisableUrlRewrite)
-	read.DoNotRewriteUrls = reconcile.KeepStr(cfg.DoNotRewriteUrls, read.DoNotRewriteUrls)
+	read.DoNotRewriteUrls = reconcile.KeepSet(cfg.DoNotRewriteUrls, read.DoNotRewriteUrls)
 	read.EnableForInternalSenders = reconcile.KeepBool(cfg.EnableForInternalSenders, read.EnableForInternalSenders)
 	read.EnableOrganizationBranding = reconcile.KeepBool(cfg.EnableOrganizationBranding, read.EnableOrganizationBranding)
 	read.EnableSafeLinksForEmail = reconcile.KeepBool(cfg.EnableSafeLinksForEmail, read.EnableSafeLinksForEmail)
 	read.EnableSafeLinksForOffice = reconcile.KeepBool(cfg.EnableSafeLinksForOffice, read.EnableSafeLinksForOffice)
 	read.EnableSafeLinksForTeams = reconcile.KeepBool(cfg.EnableSafeLinksForTeams, read.EnableSafeLinksForTeams)
-	read.LocalizedNotificationTextList = reconcile.KeepStr(cfg.LocalizedNotificationTextList, read.LocalizedNotificationTextList)
+	read.LocalizedNotificationTextList = reconcile.KeepSet(cfg.LocalizedNotificationTextList, read.LocalizedNotificationTextList)
 	read.MakeBuiltInProtection = reconcile.KeepBool(cfg.MakeBuiltInProtection, read.MakeBuiltInProtection)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.RecommendedPolicyType = reconcile.KeepStr(cfg.RecommendedPolicyType, read.RecommendedPolicyType)

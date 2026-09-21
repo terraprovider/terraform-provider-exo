@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -56,6 +57,7 @@ type migrationEndpointModel struct {
 	NspiServer                         types.String `tfsdk:"nspi_server"`
 	OAuthCode                          types.String `tfsdk:"o_auth_code"`
 	Partition                          types.String `tfsdk:"partition"`
+	Port                               types.Int64  `tfsdk:"port"`
 	PublicFolder                       types.Bool   `tfsdk:"public_folder"`
 	PublicFolderDatabaseServerLegacyDN types.String `tfsdk:"public_folder_database_server_legacy_dn"`
 	PublicFolderToUnifiedGroup         types.Bool   `tfsdk:"public_folder_to_unified_group"`
@@ -100,6 +102,7 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"nspi_server":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NspiServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"o_auth_code":                      schema.StringAttribute{Required: true, Description: "Maps to the -OAuthCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"partition":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"port":                             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_folder":                    schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"public_folder_database_server_legacy_dn": schema.StringAttribute{Required: true, Description: "Maps to the -PublicFolderDatabaseServerLegacyDN parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"public_folder_to_unified_group":          schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolderToUnifiedGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -143,6 +146,7 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		IMAP:                               plan.IMAP.ValueBool(),
 		Name:                               plan.Name.ValueString(),
 		NspiServer:                         plan.NspiServer.ValueString(),
+		Port:                               int(plan.Port.ValueInt64()),
 		PublicFolder:                       plan.PublicFolder.ValueBool(),
 		PublicFolderDatabaseServerLegacyDN: plan.PublicFolderDatabaseServerLegacyDN.ValueString(),
 		PublicFolderToUnifiedGroup:         plan.PublicFolderToUnifiedGroup.ValueBool(),
@@ -258,6 +262,7 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	if v := plan.Partition.ValueString(); v != "" {
 		sp.Partition = v
 	}
+	sp.Port = int(plan.Port.ValueInt64())
 	if v := plan.Security.ValueString(); v != "" {
 		sp.Security = v
 	}
@@ -366,6 +371,7 @@ func readMigrationEndpoint(ctx context.Context, obj map[string]any, m *migration
 	m.NspiServer = types.StringValue(getString(obj, "NspiServer"))
 	m.OAuthCode = types.StringValue(getString(obj, "OAuthCode"))
 	m.Partition = types.StringValue(getString(obj, "Partition"))
+	m.Port = types.Int64Value(getInt(obj, "Port"))
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
 	m.PublicFolderDatabaseServerLegacyDN = types.StringValue(getString(obj, "PublicFolderDatabaseServerLegacyDN"))
 	m.PublicFolderToUnifiedGroup = types.BoolValue(getBool(obj, "PublicFolderToUnifiedGroup"))
@@ -402,6 +408,7 @@ func (r *migrationEndpointResource) reconcileState(cfg, read *migrationEndpointM
 	read.NspiServer = reconcile.KeepStr(cfg.NspiServer, read.NspiServer)
 	read.OAuthCode = reconcile.KeepStr(cfg.OAuthCode, read.OAuthCode)
 	read.Partition = reconcile.KeepStr(cfg.Partition, read.Partition)
+	read.Port = reconcile.KeepInt64(cfg.Port, read.Port)
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)
 	read.PublicFolderDatabaseServerLegacyDN = reconcile.KeepStr(cfg.PublicFolderDatabaseServerLegacyDN, read.PublicFolderDatabaseServerLegacyDN)
 	read.PublicFolderToUnifiedGroup = reconcile.KeepBool(cfg.PublicFolderToUnifiedGroup, read.PublicFolderToUnifiedGroup)

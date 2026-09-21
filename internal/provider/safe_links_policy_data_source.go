@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -37,16 +38,16 @@ func (d *safeLinksPolicyDataSource) Schema(_ context.Context, _ datasource.Schem
 			"admin_display_name":               schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
 			"allow_click_through":              schema.BoolAttribute{Computed: true, Description: "Maps to the -AllowClickThrough parameter."},
 			"custom_notification_text":         schema.StringAttribute{Computed: true, Description: "Maps to the -CustomNotificationText parameter."},
-			"custom_url_list":                  schema.StringAttribute{Computed: true, Description: "Maps to the -CustomUrlList parameter."},
+			"custom_url_list":                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -CustomUrlList parameter."},
 			"deliver_message_after_scan":       schema.BoolAttribute{Computed: true, Description: "Maps to the -DeliverMessageAfterScan parameter."},
 			"disable_url_rewrite":              schema.BoolAttribute{Computed: true, Description: "Maps to the -DisableUrlRewrite parameter."},
-			"do_not_rewrite_urls":              schema.StringAttribute{Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter."},
+			"do_not_rewrite_urls":              schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter."},
 			"enable_for_internal_senders":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableForInternalSenders parameter."},
 			"enable_organization_branding":     schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableOrganizationBranding parameter."},
 			"enable_safe_links_for_email":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableSafeLinksForEmail parameter."},
 			"enable_safe_links_for_office":     schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableSafeLinksForOffice parameter."},
 			"enable_safe_links_for_teams":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableSafeLinksForTeams parameter."},
-			"localized_notification_text_list": schema.StringAttribute{Computed: true, Description: "Maps to the -LocalizedNotificationTextList parameter."},
+			"localized_notification_text_list": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -LocalizedNotificationTextList parameter."},
 			"make_built_in_protection":         schema.BoolAttribute{Computed: true, Description: "Maps to the -MakeBuiltInProtection parameter."},
 			"name":                             schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"recommended_policy_type":          schema.StringAttribute{Computed: true, Description: "Maps to the -RecommendedPolicyType parameter."},

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,8 +36,8 @@ func NewCASMailboxResource() resource.Resource { return &cASMailboxResource{} }
 type cASMailboxModel struct {
 	ID                                      types.String `tfsdk:"id"`
 	Identity                                types.String `tfsdk:"identity"`
-	ActiveSyncAllowedDeviceIDs              types.String `tfsdk:"active_sync_allowed_device_i_ds"`
-	ActiveSyncBlockedDeviceIDs              types.String `tfsdk:"active_sync_blocked_device_i_ds"`
+	ActiveSyncAllowedDeviceIDs              types.Set    `tfsdk:"active_sync_allowed_device_i_ds"`
+	ActiveSyncBlockedDeviceIDs              types.Set    `tfsdk:"active_sync_blocked_device_i_ds"`
 	ActiveSyncDebugLogging                  types.Bool   `tfsdk:"active_sync_debug_logging"`
 	ActiveSyncEnabled                       types.Bool   `tfsdk:"active_sync_enabled"`
 	ActiveSyncMailboxPolicy                 types.String `tfsdk:"active_sync_mailbox_policy"`
@@ -47,7 +48,7 @@ type cASMailboxModel struct {
 	EwsAllowOutlook                         types.String `tfsdk:"ews_allow_outlook"`
 	EwsApplicationAccessPolicy              types.String `tfsdk:"ews_application_access_policy"`
 	EwsBlockList                            types.String `tfsdk:"ews_block_list"`
-	EwsEnabled                              types.String `tfsdk:"ews_enabled"`
+	EwsEnabled                              types.Bool   `tfsdk:"ews_enabled"`
 	ImapEnabled                             types.Bool   `tfsdk:"imap_enabled"`
 	ImapForceICalForCalendarRetrievalOption types.Bool   `tfsdk:"imap_force_i_cal_for_calendar_retrieval_option"`
 	ImapMessagesRetrievalMimeFormat         types.String `tfsdk:"imap_messages_retrieval_mime_format"`
@@ -55,11 +56,11 @@ type cASMailboxModel struct {
 	ImapUseProtocolDefaults                 types.Bool   `tfsdk:"imap_use_protocol_defaults"`
 	IsOptimizedForAccessibility             types.Bool   `tfsdk:"is_optimized_for_accessibility"`
 	MAPIEnabled                             types.Bool   `tfsdk:"mapi_enabled"`
-	MacOutlookEnabled                       types.String `tfsdk:"mac_outlook_enabled"`
+	MacOutlookEnabled                       types.Bool   `tfsdk:"mac_outlook_enabled"`
 	OWAEnabled                              types.Bool   `tfsdk:"owa_enabled"`
 	OWAforDevicesEnabled                    types.Bool   `tfsdk:"ow_afor_devices_enabled"`
 	OneWinNativeOutlookEnabled              types.String `tfsdk:"one_win_native_outlook_enabled"`
-	OutlookMobileEnabled                    types.String `tfsdk:"outlook_mobile_enabled"`
+	OutlookMobileEnabled                    types.Bool   `tfsdk:"outlook_mobile_enabled"`
 	OwaMailboxPolicy                        types.String `tfsdk:"owa_mailbox_policy"`
 	PopEnabled                              types.Bool   `tfsdk:"pop_enabled"`
 	PopForceICalForCalendarRetrievalOption  types.Bool   `tfsdk:"pop_force_i_cal_for_calendar_retrieval_option"`
@@ -69,7 +70,7 @@ type cASMailboxModel struct {
 	PublicFolderClientAccess                types.Bool   `tfsdk:"public_folder_client_access"`
 	ShowGalAsDefaultView                    types.Bool   `tfsdk:"show_gal_as_default_view"`
 	SmtpClientAuthenticationDisabled        types.String `tfsdk:"smtp_client_authentication_disabled"`
-	UniversalOutlookEnabled                 types.String `tfsdk:"universal_outlook_enabled"`
+	UniversalOutlookEnabled                 types.Bool   `tfsdk:"universal_outlook_enabled"`
 }
 
 func (r *cASMailboxResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -82,8 +83,8 @@ func (r *cASMailboxResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                          schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"active_sync_allowed_device_i_ds":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncAllowedDeviceIDs parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"active_sync_blocked_device_i_ds":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncBlockedDeviceIDs parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"active_sync_allowed_device_i_ds":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ActiveSyncAllowedDeviceIDs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"active_sync_blocked_device_i_ds":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ActiveSyncBlockedDeviceIDs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"active_sync_debug_logging":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncDebugLogging parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"active_sync_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"active_sync_mailbox_policy":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncMailboxPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -94,7 +95,7 @@ func (r *cASMailboxResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"ews_allow_outlook":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowOutlook parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ews_application_access_policy":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsApplicationAccessPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ews_block_list":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_enabled":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ews_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"imap_enabled":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ImapEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"imap_force_i_cal_for_calendar_retrieval_option": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ImapForceICalForCalendarRetrievalOption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"imap_messages_retrieval_mime_format":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ImapMessagesRetrievalMimeFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -102,11 +103,11 @@ func (r *cASMailboxResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"imap_use_protocol_defaults":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ImapUseProtocolDefaults parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_optimized_for_accessibility":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsOptimizedForAccessibility parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mapi_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MAPIEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"mac_outlook_enabled":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MacOutlookEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mac_outlook_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MacOutlookEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"ow_afor_devices_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAforDevicesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"one_win_native_outlook_enabled":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OneWinNativeOutlookEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"outlook_mobile_enabled":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookMobileEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"outlook_mobile_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookMobileEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_mailbox_policy":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OwaMailboxPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"pop_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PopEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"pop_force_i_cal_for_calendar_retrieval_option":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PopForceICalForCalendarRetrievalOption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -116,7 +117,7 @@ func (r *cASMailboxResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"public_folder_client_access":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolderClientAccess parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"show_gal_as_default_view":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ShowGalAsDefaultView parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"smtp_client_authentication_disabled":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SmtpClientAuthenticationDisabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"universal_outlook_enabled":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UniversalOutlookEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"universal_outlook_enabled":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UniversalOutlookEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -136,12 +137,8 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.ActiveSyncAllowedDeviceIDs.ValueString(); v != "" {
-		sp.ActiveSyncAllowedDeviceIDs = v
-	}
-	if v := plan.ActiveSyncBlockedDeviceIDs.ValueString(); v != "" {
-		sp.ActiveSyncBlockedDeviceIDs = v
-	}
+	sp.ActiveSyncAllowedDeviceIDs = toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics)
+	sp.ActiveSyncBlockedDeviceIDs = toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics)
 	sp.ActiveSyncDebugLogging = plan.ActiveSyncDebugLogging.ValueBool()
 	sp.ActiveSyncEnabled = plan.ActiveSyncEnabled.ValueBool()
 	if v := plan.ActiveSyncMailboxPolicy.ValueString(); v != "" {
@@ -166,9 +163,7 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	if v := plan.EwsBlockList.ValueString(); v != "" {
 		sp.EwsBlockList = v
 	}
-	if v := plan.EwsEnabled.ValueString(); v != "" {
-		sp.EwsEnabled = v
-	}
+	sp.EwsEnabled = plan.EwsEnabled.ValueBool()
 	sp.ImapEnabled = plan.ImapEnabled.ValueBool()
 	sp.ImapForceICalForCalendarRetrievalOption = plan.ImapForceICalForCalendarRetrievalOption.ValueBool()
 	if v := plan.ImapMessagesRetrievalMimeFormat.ValueString(); v != "" {
@@ -178,17 +173,13 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	sp.ImapUseProtocolDefaults = plan.ImapUseProtocolDefaults.ValueBool()
 	sp.IsOptimizedForAccessibility = plan.IsOptimizedForAccessibility.ValueBool()
 	sp.MAPIEnabled = plan.MAPIEnabled.ValueBool()
-	if v := plan.MacOutlookEnabled.ValueString(); v != "" {
-		sp.MacOutlookEnabled = v
-	}
+	sp.MacOutlookEnabled = plan.MacOutlookEnabled.ValueBool()
 	sp.OWAEnabled = plan.OWAEnabled.ValueBool()
 	sp.OWAforDevicesEnabled = plan.OWAforDevicesEnabled.ValueBool()
 	if v := plan.OneWinNativeOutlookEnabled.ValueString(); v != "" {
 		sp.OneWinNativeOutlookEnabled = v
 	}
-	if v := plan.OutlookMobileEnabled.ValueString(); v != "" {
-		sp.OutlookMobileEnabled = v
-	}
+	sp.OutlookMobileEnabled = plan.OutlookMobileEnabled.ValueBool()
 	if v := plan.OwaMailboxPolicy.ValueString(); v != "" {
 		sp.OwaMailboxPolicy = v
 	}
@@ -204,9 +195,7 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	if v := plan.SmtpClientAuthenticationDisabled.ValueString(); v != "" {
 		sp.SmtpClientAuthenticationDisabled = v
 	}
-	if v := plan.UniversalOutlookEnabled.ValueString(); v != "" {
-		sp.UniversalOutlookEnabled = v
-	}
+	sp.UniversalOutlookEnabled = plan.UniversalOutlookEnabled.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -246,12 +235,8 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	id := r.identityOf(state)
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = id
-	if v := plan.ActiveSyncAllowedDeviceIDs.ValueString(); v != "" {
-		sp.ActiveSyncAllowedDeviceIDs = v
-	}
-	if v := plan.ActiveSyncBlockedDeviceIDs.ValueString(); v != "" {
-		sp.ActiveSyncBlockedDeviceIDs = v
-	}
+	sp.ActiveSyncAllowedDeviceIDs = toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics)
+	sp.ActiveSyncBlockedDeviceIDs = toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics)
 	sp.ActiveSyncDebugLogging = plan.ActiveSyncDebugLogging.ValueBool()
 	sp.ActiveSyncEnabled = plan.ActiveSyncEnabled.ValueBool()
 	if v := plan.ActiveSyncMailboxPolicy.ValueString(); v != "" {
@@ -276,9 +261,7 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	if v := plan.EwsBlockList.ValueString(); v != "" {
 		sp.EwsBlockList = v
 	}
-	if v := plan.EwsEnabled.ValueString(); v != "" {
-		sp.EwsEnabled = v
-	}
+	sp.EwsEnabled = plan.EwsEnabled.ValueBool()
 	sp.ImapEnabled = plan.ImapEnabled.ValueBool()
 	sp.ImapForceICalForCalendarRetrievalOption = plan.ImapForceICalForCalendarRetrievalOption.ValueBool()
 	if v := plan.ImapMessagesRetrievalMimeFormat.ValueString(); v != "" {
@@ -288,17 +271,13 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	sp.ImapUseProtocolDefaults = plan.ImapUseProtocolDefaults.ValueBool()
 	sp.IsOptimizedForAccessibility = plan.IsOptimizedForAccessibility.ValueBool()
 	sp.MAPIEnabled = plan.MAPIEnabled.ValueBool()
-	if v := plan.MacOutlookEnabled.ValueString(); v != "" {
-		sp.MacOutlookEnabled = v
-	}
+	sp.MacOutlookEnabled = plan.MacOutlookEnabled.ValueBool()
 	sp.OWAEnabled = plan.OWAEnabled.ValueBool()
 	sp.OWAforDevicesEnabled = plan.OWAforDevicesEnabled.ValueBool()
 	if v := plan.OneWinNativeOutlookEnabled.ValueString(); v != "" {
 		sp.OneWinNativeOutlookEnabled = v
 	}
-	if v := plan.OutlookMobileEnabled.ValueString(); v != "" {
-		sp.OutlookMobileEnabled = v
-	}
+	sp.OutlookMobileEnabled = plan.OutlookMobileEnabled.ValueBool()
 	if v := plan.OwaMailboxPolicy.ValueString(); v != "" {
 		sp.OwaMailboxPolicy = v
 	}
@@ -314,9 +293,7 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	if v := plan.SmtpClientAuthenticationDisabled.ValueString(); v != "" {
 		sp.SmtpClientAuthenticationDisabled = v
 	}
-	if v := plan.UniversalOutlookEnabled.ValueString(); v != "" {
-		sp.UniversalOutlookEnabled = v
-	}
+	sp.UniversalOutlookEnabled = plan.UniversalOutlookEnabled.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -326,8 +303,6 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ActiveSyncAllowedDeviceIDs":       cfg.ActiveSyncAllowedDeviceIDs,
-		"ActiveSyncBlockedDeviceIDs":       cfg.ActiveSyncBlockedDeviceIDs,
 		"ActiveSyncMailboxPolicy":          cfg.ActiveSyncMailboxPolicy,
 		"EwsAllowEntourage":                cfg.EwsAllowEntourage,
 		"EwsAllowList":                     cfg.EwsAllowList,
@@ -335,15 +310,11 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 		"EwsAllowOutlook":                  cfg.EwsAllowOutlook,
 		"EwsApplicationAccessPolicy":       cfg.EwsApplicationAccessPolicy,
 		"EwsBlockList":                     cfg.EwsBlockList,
-		"EwsEnabled":                       cfg.EwsEnabled,
 		"ImapMessagesRetrievalMimeFormat":  cfg.ImapMessagesRetrievalMimeFormat,
-		"MacOutlookEnabled":                cfg.MacOutlookEnabled,
 		"OneWinNativeOutlookEnabled":       cfg.OneWinNativeOutlookEnabled,
-		"OutlookMobileEnabled":             cfg.OutlookMobileEnabled,
 		"OwaMailboxPolicy":                 cfg.OwaMailboxPolicy,
 		"PopMessagesRetrievalMimeFormat":   cfg.PopMessagesRetrievalMimeFormat,
 		"SmtpClientAuthenticationDisabled": cfg.SmtpClientAuthenticationDisabled,
-		"UniversalOutlookEnabled":          cfg.UniversalOutlookEnabled,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -395,8 +366,8 @@ func (r *cASMailboxResource) refresh(ctx context.Context, identity string, m *cA
 
 func readCASMailbox(ctx context.Context, obj map[string]any, m *cASMailboxModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.ActiveSyncAllowedDeviceIDs = types.StringValue(getString(obj, "ActiveSyncAllowedDeviceIDs"))
-	m.ActiveSyncBlockedDeviceIDs = types.StringValue(getString(obj, "ActiveSyncBlockedDeviceIDs"))
+	m.ActiveSyncAllowedDeviceIDs = stringSetValue(ctx, getStringSlice(obj, "ActiveSyncAllowedDeviceIDs"))
+	m.ActiveSyncBlockedDeviceIDs = stringSetValue(ctx, getStringSlice(obj, "ActiveSyncBlockedDeviceIDs"))
 	m.ActiveSyncDebugLogging = types.BoolValue(getBool(obj, "ActiveSyncDebugLogging"))
 	m.ActiveSyncEnabled = types.BoolValue(getBool(obj, "ActiveSyncEnabled"))
 	m.ActiveSyncMailboxPolicy = types.StringValue(getString(obj, "ActiveSyncMailboxPolicy"))
@@ -407,7 +378,7 @@ func readCASMailbox(ctx context.Context, obj map[string]any, m *cASMailboxModel)
 	m.EwsAllowOutlook = types.StringValue(getString(obj, "EwsAllowOutlook"))
 	m.EwsApplicationAccessPolicy = types.StringValue(getString(obj, "EwsApplicationAccessPolicy"))
 	m.EwsBlockList = types.StringValue(getString(obj, "EwsBlockList"))
-	m.EwsEnabled = types.StringValue(getString(obj, "EwsEnabled"))
+	m.EwsEnabled = types.BoolValue(getBool(obj, "EwsEnabled"))
 	m.ImapEnabled = types.BoolValue(getBool(obj, "ImapEnabled"))
 	m.ImapForceICalForCalendarRetrievalOption = types.BoolValue(getBool(obj, "ImapForceICalForCalendarRetrievalOption"))
 	m.ImapMessagesRetrievalMimeFormat = types.StringValue(getString(obj, "ImapMessagesRetrievalMimeFormat"))
@@ -415,11 +386,11 @@ func readCASMailbox(ctx context.Context, obj map[string]any, m *cASMailboxModel)
 	m.ImapUseProtocolDefaults = types.BoolValue(getBool(obj, "ImapUseProtocolDefaults"))
 	m.IsOptimizedForAccessibility = types.BoolValue(getBool(obj, "IsOptimizedForAccessibility"))
 	m.MAPIEnabled = types.BoolValue(getBool(obj, "MAPIEnabled"))
-	m.MacOutlookEnabled = types.StringValue(getString(obj, "MacOutlookEnabled"))
+	m.MacOutlookEnabled = types.BoolValue(getBool(obj, "MacOutlookEnabled"))
 	m.OWAEnabled = types.BoolValue(getBool(obj, "OWAEnabled"))
 	m.OWAforDevicesEnabled = types.BoolValue(getBool(obj, "OWAforDevicesEnabled"))
 	m.OneWinNativeOutlookEnabled = types.StringValue(getString(obj, "OneWinNativeOutlookEnabled"))
-	m.OutlookMobileEnabled = types.StringValue(getString(obj, "OutlookMobileEnabled"))
+	m.OutlookMobileEnabled = types.BoolValue(getBool(obj, "OutlookMobileEnabled"))
 	m.OwaMailboxPolicy = types.StringValue(getString(obj, "OwaMailboxPolicy"))
 	m.PopEnabled = types.BoolValue(getBool(obj, "PopEnabled"))
 	m.PopForceICalForCalendarRetrievalOption = types.BoolValue(getBool(obj, "PopForceICalForCalendarRetrievalOption"))
@@ -429,13 +400,13 @@ func readCASMailbox(ctx context.Context, obj map[string]any, m *cASMailboxModel)
 	m.PublicFolderClientAccess = types.BoolValue(getBool(obj, "PublicFolderClientAccess"))
 	m.ShowGalAsDefaultView = types.BoolValue(getBool(obj, "ShowGalAsDefaultView"))
 	m.SmtpClientAuthenticationDisabled = types.StringValue(getString(obj, "SmtpClientAuthenticationDisabled"))
-	m.UniversalOutlookEnabled = types.StringValue(getString(obj, "UniversalOutlookEnabled"))
+	m.UniversalOutlookEnabled = types.BoolValue(getBool(obj, "UniversalOutlookEnabled"))
 	_ = ctx
 }
 
 func (r *cASMailboxResource) reconcileState(cfg, read *cASMailboxModel) {
-	read.ActiveSyncAllowedDeviceIDs = reconcile.KeepStr(cfg.ActiveSyncAllowedDeviceIDs, read.ActiveSyncAllowedDeviceIDs)
-	read.ActiveSyncBlockedDeviceIDs = reconcile.KeepStr(cfg.ActiveSyncBlockedDeviceIDs, read.ActiveSyncBlockedDeviceIDs)
+	read.ActiveSyncAllowedDeviceIDs = reconcile.KeepSet(cfg.ActiveSyncAllowedDeviceIDs, read.ActiveSyncAllowedDeviceIDs)
+	read.ActiveSyncBlockedDeviceIDs = reconcile.KeepSet(cfg.ActiveSyncBlockedDeviceIDs, read.ActiveSyncBlockedDeviceIDs)
 	read.ActiveSyncDebugLogging = reconcile.KeepBool(cfg.ActiveSyncDebugLogging, read.ActiveSyncDebugLogging)
 	read.ActiveSyncEnabled = reconcile.KeepBool(cfg.ActiveSyncEnabled, read.ActiveSyncEnabled)
 	read.ActiveSyncMailboxPolicy = reconcile.KeepStr(cfg.ActiveSyncMailboxPolicy, read.ActiveSyncMailboxPolicy)
@@ -446,7 +417,7 @@ func (r *cASMailboxResource) reconcileState(cfg, read *cASMailboxModel) {
 	read.EwsAllowOutlook = reconcile.KeepStr(cfg.EwsAllowOutlook, read.EwsAllowOutlook)
 	read.EwsApplicationAccessPolicy = reconcile.KeepStr(cfg.EwsApplicationAccessPolicy, read.EwsApplicationAccessPolicy)
 	read.EwsBlockList = reconcile.KeepStr(cfg.EwsBlockList, read.EwsBlockList)
-	read.EwsEnabled = reconcile.KeepStr(cfg.EwsEnabled, read.EwsEnabled)
+	read.EwsEnabled = reconcile.KeepBool(cfg.EwsEnabled, read.EwsEnabled)
 	read.ImapEnabled = reconcile.KeepBool(cfg.ImapEnabled, read.ImapEnabled)
 	read.ImapForceICalForCalendarRetrievalOption = reconcile.KeepBool(cfg.ImapForceICalForCalendarRetrievalOption, read.ImapForceICalForCalendarRetrievalOption)
 	read.ImapMessagesRetrievalMimeFormat = reconcile.KeepStr(cfg.ImapMessagesRetrievalMimeFormat, read.ImapMessagesRetrievalMimeFormat)
@@ -454,11 +425,11 @@ func (r *cASMailboxResource) reconcileState(cfg, read *cASMailboxModel) {
 	read.ImapUseProtocolDefaults = reconcile.KeepBool(cfg.ImapUseProtocolDefaults, read.ImapUseProtocolDefaults)
 	read.IsOptimizedForAccessibility = reconcile.KeepBool(cfg.IsOptimizedForAccessibility, read.IsOptimizedForAccessibility)
 	read.MAPIEnabled = reconcile.KeepBool(cfg.MAPIEnabled, read.MAPIEnabled)
-	read.MacOutlookEnabled = reconcile.KeepStr(cfg.MacOutlookEnabled, read.MacOutlookEnabled)
+	read.MacOutlookEnabled = reconcile.KeepBool(cfg.MacOutlookEnabled, read.MacOutlookEnabled)
 	read.OWAEnabled = reconcile.KeepBool(cfg.OWAEnabled, read.OWAEnabled)
 	read.OWAforDevicesEnabled = reconcile.KeepBool(cfg.OWAforDevicesEnabled, read.OWAforDevicesEnabled)
 	read.OneWinNativeOutlookEnabled = reconcile.KeepStr(cfg.OneWinNativeOutlookEnabled, read.OneWinNativeOutlookEnabled)
-	read.OutlookMobileEnabled = reconcile.KeepStr(cfg.OutlookMobileEnabled, read.OutlookMobileEnabled)
+	read.OutlookMobileEnabled = reconcile.KeepBool(cfg.OutlookMobileEnabled, read.OutlookMobileEnabled)
 	read.OwaMailboxPolicy = reconcile.KeepStr(cfg.OwaMailboxPolicy, read.OwaMailboxPolicy)
 	read.PopEnabled = reconcile.KeepBool(cfg.PopEnabled, read.PopEnabled)
 	read.PopForceICalForCalendarRetrievalOption = reconcile.KeepBool(cfg.PopForceICalForCalendarRetrievalOption, read.PopForceICalForCalendarRetrievalOption)
@@ -468,5 +439,5 @@ func (r *cASMailboxResource) reconcileState(cfg, read *cASMailboxModel) {
 	read.PublicFolderClientAccess = reconcile.KeepBool(cfg.PublicFolderClientAccess, read.PublicFolderClientAccess)
 	read.ShowGalAsDefaultView = reconcile.KeepBool(cfg.ShowGalAsDefaultView, read.ShowGalAsDefaultView)
 	read.SmtpClientAuthenticationDisabled = reconcile.KeepStr(cfg.SmtpClientAuthenticationDisabled, read.SmtpClientAuthenticationDisabled)
-	read.UniversalOutlookEnabled = reconcile.KeepStr(cfg.UniversalOutlookEnabled, read.UniversalOutlookEnabled)
+	read.UniversalOutlookEnabled = reconcile.KeepBool(cfg.UniversalOutlookEnabled, read.UniversalOutlookEnabled)
 }

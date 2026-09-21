@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -39,14 +40,14 @@ func (d *hostedOutboundSpamFilterPolicyDataSource) Schema(_ context.Context, _ d
 			"action_when_threshold_reached": schema.StringAttribute{Computed: true, Description: "Maps to the -ActionWhenThresholdReached parameter."},
 			"admin_display_name":            schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
 			"auto_forwarding_mode":          schema.StringAttribute{Computed: true, Description: "Maps to the -AutoForwardingMode parameter."},
-			"bcc_suspicious_outbound_additional_recipients": schema.StringAttribute{Computed: true, Description: "Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter."},
+			"bcc_suspicious_outbound_additional_recipients": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter."},
 			"bcc_suspicious_outbound_mail":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -BccSuspiciousOutboundMail parameter."},
 			"name":                                          schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"notify_outbound_spam":                          schema.BoolAttribute{Computed: true, Description: "Maps to the -NotifyOutboundSpam parameter."},
-			"notify_outbound_spam_recipients":               schema.StringAttribute{Computed: true, Description: "Maps to the -NotifyOutboundSpamRecipients parameter."},
-			"recipient_limit_external_per_hour":             schema.StringAttribute{Computed: true, Description: "Maps to the -RecipientLimitExternalPerHour parameter."},
-			"recipient_limit_internal_per_hour":             schema.StringAttribute{Computed: true, Description: "Maps to the -RecipientLimitInternalPerHour parameter."},
-			"recipient_limit_per_day":                       schema.StringAttribute{Computed: true, Description: "Maps to the -RecipientLimitPerDay parameter."},
+			"notify_outbound_spam_recipients":               schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -NotifyOutboundSpamRecipients parameter."},
+			"recipient_limit_external_per_hour":             schema.Int64Attribute{Computed: true, Description: "Maps to the -RecipientLimitExternalPerHour parameter."},
+			"recipient_limit_internal_per_hour":             schema.Int64Attribute{Computed: true, Description: "Maps to the -RecipientLimitInternalPerHour parameter."},
+			"recipient_limit_per_day":                       schema.Int64Attribute{Computed: true, Description: "Maps to the -RecipientLimitPerDay parameter."},
 			"recommended_policy_type":                       schema.StringAttribute{Computed: true, Description: "Maps to the -RecommendedPolicyType parameter."},
 		},
 	}

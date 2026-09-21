@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,33 +34,37 @@ type transportConfigResource struct{ client *clients.Client }
 func NewTransportConfigResource() resource.Resource { return &transportConfigResource{} }
 
 type transportConfigModel struct {
-	ID                                  types.String `tfsdk:"id"`
-	Identity                            types.String `tfsdk:"identity"`
-	AddressBookPolicyRoutingEnabled     types.Bool   `tfsdk:"address_book_policy_routing_enabled"`
-	AllowLegacyTLSClients               types.String `tfsdk:"allow_legacy_tls_clients"`
-	ClearCategories                     types.Bool   `tfsdk:"clear_categories"`
-	ConvertDisclaimerWrapperToEml       types.Bool   `tfsdk:"convert_disclaimer_wrapper_to_eml"`
-	DSNConversionMode                   types.String `tfsdk:"dsn_conversion_mode"`
-	ExternalDelayDsnEnabled             types.Bool   `tfsdk:"external_delay_dsn_enabled"`
-	ExternalDsnDefaultLanguage          types.String `tfsdk:"external_dsn_default_language"`
-	ExternalDsnLanguageDetectionEnabled types.Bool   `tfsdk:"external_dsn_language_detection_enabled"`
-	ExternalDsnReportingAuthority       types.String `tfsdk:"external_dsn_reporting_authority"`
-	ExternalDsnSendHtml                 types.Bool   `tfsdk:"external_dsn_send_html"`
-	ExternalPostmasterAddress           types.String `tfsdk:"external_postmaster_address"`
-	HeaderPromotionModeSetting          types.String `tfsdk:"header_promotion_mode_setting"`
-	InternalDelayDsnEnabled             types.Bool   `tfsdk:"internal_delay_dsn_enabled"`
-	InternalDsnDefaultLanguage          types.String `tfsdk:"internal_dsn_default_language"`
-	InternalDsnLanguageDetectionEnabled types.Bool   `tfsdk:"internal_dsn_language_detection_enabled"`
-	InternalDsnReportingAuthority       types.String `tfsdk:"internal_dsn_reporting_authority"`
-	InternalDsnSendHtml                 types.Bool   `tfsdk:"internal_dsn_send_html"`
-	JournalingReportNdrTo               types.String `tfsdk:"journaling_report_ndr_to"`
-	MaxRecipientEnvelopeLimit           types.String `tfsdk:"max_recipient_envelope_limit"`
-	MessageExpiration                   types.String `tfsdk:"message_expiration"`
-	PreventDuplicateJournalingEnabled   types.Bool   `tfsdk:"prevent_duplicate_journaling_enabled"`
-	ReplyAllStormProtectionEnabled      types.Bool   `tfsdk:"reply_all_storm_protection_enabled"`
-	Rfc2231EncodingEnabled              types.Bool   `tfsdk:"rfc2231_encoding_enabled"`
-	SmtpClientAuthenticationDisabled    types.Bool   `tfsdk:"smtp_client_authentication_disabled"`
-	VoicemailJournalingEnabled          types.Bool   `tfsdk:"voicemail_journaling_enabled"`
+	ID                                      types.String `tfsdk:"id"`
+	Identity                                types.String `tfsdk:"identity"`
+	AddressBookPolicyRoutingEnabled         types.Bool   `tfsdk:"address_book_policy_routing_enabled"`
+	AllowLegacyTLSClients                   types.Bool   `tfsdk:"allow_legacy_tls_clients"`
+	ClearCategories                         types.Bool   `tfsdk:"clear_categories"`
+	ConvertDisclaimerWrapperToEml           types.Bool   `tfsdk:"convert_disclaimer_wrapper_to_eml"`
+	DSNConversionMode                       types.String `tfsdk:"dsn_conversion_mode"`
+	ExternalDelayDsnEnabled                 types.Bool   `tfsdk:"external_delay_dsn_enabled"`
+	ExternalDsnDefaultLanguage              types.String `tfsdk:"external_dsn_default_language"`
+	ExternalDsnLanguageDetectionEnabled     types.Bool   `tfsdk:"external_dsn_language_detection_enabled"`
+	ExternalDsnReportingAuthority           types.String `tfsdk:"external_dsn_reporting_authority"`
+	ExternalDsnSendHtml                     types.Bool   `tfsdk:"external_dsn_send_html"`
+	ExternalPostmasterAddress               types.String `tfsdk:"external_postmaster_address"`
+	HeaderPromotionModeSetting              types.String `tfsdk:"header_promotion_mode_setting"`
+	InternalDelayDsnEnabled                 types.Bool   `tfsdk:"internal_delay_dsn_enabled"`
+	InternalDsnDefaultLanguage              types.String `tfsdk:"internal_dsn_default_language"`
+	InternalDsnLanguageDetectionEnabled     types.Bool   `tfsdk:"internal_dsn_language_detection_enabled"`
+	InternalDsnReportingAuthority           types.String `tfsdk:"internal_dsn_reporting_authority"`
+	InternalDsnSendHtml                     types.Bool   `tfsdk:"internal_dsn_send_html"`
+	JournalMessageExpirationDays            types.Int64  `tfsdk:"journal_message_expiration_days"`
+	JournalingReportNdrTo                   types.String `tfsdk:"journaling_report_ndr_to"`
+	MaxRecipientEnvelopeLimit               types.String `tfsdk:"max_recipient_envelope_limit"`
+	MessageExpiration                       types.String `tfsdk:"message_expiration"`
+	PreventDuplicateJournalingEnabled       types.Bool   `tfsdk:"prevent_duplicate_journaling_enabled"`
+	ReplyAllStormBlockDurationHours         types.Int64  `tfsdk:"reply_all_storm_block_duration_hours"`
+	ReplyAllStormDetectionMinimumRecipients types.Int64  `tfsdk:"reply_all_storm_detection_minimum_recipients"`
+	ReplyAllStormDetectionMinimumReplies    types.Int64  `tfsdk:"reply_all_storm_detection_minimum_replies"`
+	ReplyAllStormProtectionEnabled          types.Bool   `tfsdk:"reply_all_storm_protection_enabled"`
+	Rfc2231EncodingEnabled                  types.Bool   `tfsdk:"rfc2231_encoding_enabled"`
+	SmtpClientAuthenticationDisabled        types.Bool   `tfsdk:"smtp_client_authentication_disabled"`
+	VoicemailJournalingEnabled              types.Bool   `tfsdk:"voicemail_journaling_enabled"`
 }
 
 func (r *transportConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -70,33 +75,37 @@ func (r *transportConfigResource) Schema(_ context.Context, _ resource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Manages the TransportConfig configuration via Set-TransportConfig.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                      schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"address_book_policy_routing_enabled":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddressBookPolicyRoutingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"allow_legacy_tls_clients":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowLegacyTLSClients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"clear_categories":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClearCategories parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"convert_disclaimer_wrapper_to_eml":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConvertDisclaimerWrapperToEml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"dsn_conversion_mode":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DSNConversionMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"external_delay_dsn_enabled":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDelayDsnEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"external_dsn_default_language":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnDefaultLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"external_dsn_language_detection_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnLanguageDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"external_dsn_reporting_authority":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnReportingAuthority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"external_dsn_send_html":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnSendHtml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"external_postmaster_address":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalPostmasterAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"header_promotion_mode_setting":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HeaderPromotionModeSetting parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"internal_delay_dsn_enabled":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDelayDsnEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"internal_dsn_default_language":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnDefaultLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"internal_dsn_language_detection_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnLanguageDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"internal_dsn_reporting_authority":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnReportingAuthority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"internal_dsn_send_html":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnSendHtml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"journaling_report_ndr_to":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalingReportNdrTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"max_recipient_envelope_limit":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxRecipientEnvelopeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"message_expiration":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageExpiration parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"prevent_duplicate_journaling_enabled":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreventDuplicateJournalingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"reply_all_storm_protection_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReplyAllStormProtectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"rfc2231_encoding_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Rfc2231EncodingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"smtp_client_authentication_disabled":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SmtpClientAuthenticationDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"voicemail_journaling_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -VoicemailJournalingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"id":                                           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"address_book_policy_routing_enabled":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddressBookPolicyRoutingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"allow_legacy_tls_clients":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowLegacyTLSClients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"clear_categories":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClearCategories parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"convert_disclaimer_wrapper_to_eml":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConvertDisclaimerWrapperToEml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"dsn_conversion_mode":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DSNConversionMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"external_delay_dsn_enabled":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDelayDsnEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"external_dsn_default_language":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnDefaultLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"external_dsn_language_detection_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnLanguageDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"external_dsn_reporting_authority":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnReportingAuthority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"external_dsn_send_html":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalDsnSendHtml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"external_postmaster_address":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalPostmasterAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"header_promotion_mode_setting":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HeaderPromotionModeSetting parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"internal_delay_dsn_enabled":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDelayDsnEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"internal_dsn_default_language":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnDefaultLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"internal_dsn_language_detection_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnLanguageDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"internal_dsn_reporting_authority":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnReportingAuthority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"internal_dsn_send_html":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalDsnSendHtml parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"journal_message_expiration_days":              schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -JournalMessageExpirationDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"journaling_report_ndr_to":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalingReportNdrTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"max_recipient_envelope_limit":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxRecipientEnvelopeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"message_expiration":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageExpiration parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"prevent_duplicate_journaling_enabled":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreventDuplicateJournalingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"reply_all_storm_block_duration_hours":         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ReplyAllStormBlockDurationHours parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"reply_all_storm_detection_minimum_recipients": schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ReplyAllStormDetectionMinimumRecipients parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"reply_all_storm_detection_minimum_replies":    schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ReplyAllStormDetectionMinimumReplies parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"reply_all_storm_protection_enabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReplyAllStormProtectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"rfc2231_encoding_enabled":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Rfc2231EncodingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"smtp_client_authentication_disabled":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SmtpClientAuthenticationDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"voicemail_journaling_enabled":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -VoicemailJournalingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -116,9 +125,7 @@ func (r *transportConfigResource) Create(ctx context.Context, req resource.Creat
 	}
 	sp := exo.SetTransportConfigParams{}
 	sp.AddressBookPolicyRoutingEnabled = plan.AddressBookPolicyRoutingEnabled.ValueBool()
-	if v := plan.AllowLegacyTLSClients.ValueString(); v != "" {
-		sp.AllowLegacyTLSClients = v
-	}
+	sp.AllowLegacyTLSClients = plan.AllowLegacyTLSClients.ValueBool()
 	sp.ClearCategories = plan.ClearCategories.ValueBool()
 	sp.ConvertDisclaimerWrapperToEml = plan.ConvertDisclaimerWrapperToEml.ValueBool()
 	if v := plan.DSNConversionMode.ValueString(); v != "" {
@@ -148,6 +155,7 @@ func (r *transportConfigResource) Create(ctx context.Context, req resource.Creat
 		sp.InternalDsnReportingAuthority = v
 	}
 	sp.InternalDsnSendHtml = plan.InternalDsnSendHtml.ValueBool()
+	sp.JournalMessageExpirationDays = int(plan.JournalMessageExpirationDays.ValueInt64())
 	if v := plan.JournalingReportNdrTo.ValueString(); v != "" {
 		sp.JournalingReportNdrTo = v
 	}
@@ -158,6 +166,9 @@ func (r *transportConfigResource) Create(ctx context.Context, req resource.Creat
 		sp.MessageExpiration = v
 	}
 	sp.PreventDuplicateJournalingEnabled = plan.PreventDuplicateJournalingEnabled.ValueBool()
+	sp.ReplyAllStormBlockDurationHours = int(plan.ReplyAllStormBlockDurationHours.ValueInt64())
+	sp.ReplyAllStormDetectionMinimumRecipients = int(plan.ReplyAllStormDetectionMinimumRecipients.ValueInt64())
+	sp.ReplyAllStormDetectionMinimumReplies = int(plan.ReplyAllStormDetectionMinimumReplies.ValueInt64())
 	sp.ReplyAllStormProtectionEnabled = plan.ReplyAllStormProtectionEnabled.ValueBool()
 	sp.Rfc2231EncodingEnabled = plan.Rfc2231EncodingEnabled.ValueBool()
 	sp.SmtpClientAuthenticationDisabled = plan.SmtpClientAuthenticationDisabled.ValueBool()
@@ -201,9 +212,7 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetTransportConfigParams{}
 	sp.AddressBookPolicyRoutingEnabled = plan.AddressBookPolicyRoutingEnabled.ValueBool()
-	if v := plan.AllowLegacyTLSClients.ValueString(); v != "" {
-		sp.AllowLegacyTLSClients = v
-	}
+	sp.AllowLegacyTLSClients = plan.AllowLegacyTLSClients.ValueBool()
 	sp.ClearCategories = plan.ClearCategories.ValueBool()
 	sp.ConvertDisclaimerWrapperToEml = plan.ConvertDisclaimerWrapperToEml.ValueBool()
 	if v := plan.DSNConversionMode.ValueString(); v != "" {
@@ -233,6 +242,7 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 		sp.InternalDsnReportingAuthority = v
 	}
 	sp.InternalDsnSendHtml = plan.InternalDsnSendHtml.ValueBool()
+	sp.JournalMessageExpirationDays = int(plan.JournalMessageExpirationDays.ValueInt64())
 	if v := plan.JournalingReportNdrTo.ValueString(); v != "" {
 		sp.JournalingReportNdrTo = v
 	}
@@ -243,6 +253,9 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 		sp.MessageExpiration = v
 	}
 	sp.PreventDuplicateJournalingEnabled = plan.PreventDuplicateJournalingEnabled.ValueBool()
+	sp.ReplyAllStormBlockDurationHours = int(plan.ReplyAllStormBlockDurationHours.ValueInt64())
+	sp.ReplyAllStormDetectionMinimumRecipients = int(plan.ReplyAllStormDetectionMinimumRecipients.ValueInt64())
+	sp.ReplyAllStormDetectionMinimumReplies = int(plan.ReplyAllStormDetectionMinimumReplies.ValueInt64())
 	sp.ReplyAllStormProtectionEnabled = plan.ReplyAllStormProtectionEnabled.ValueBool()
 	sp.Rfc2231EncodingEnabled = plan.Rfc2231EncodingEnabled.ValueBool()
 	sp.SmtpClientAuthenticationDisabled = plan.SmtpClientAuthenticationDisabled.ValueBool()
@@ -256,7 +269,6 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AllowLegacyTLSClients":         cfg.AllowLegacyTLSClients,
 		"DSNConversionMode":             cfg.DSNConversionMode,
 		"ExternalDsnDefaultLanguage":    cfg.ExternalDsnDefaultLanguage,
 		"ExternalDsnReportingAuthority": cfg.ExternalDsnReportingAuthority,
@@ -321,7 +333,7 @@ func readTransportConfig(ctx context.Context, obj map[string]any, m *transportCo
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AddressBookPolicyRoutingEnabled = types.BoolValue(getBool(obj, "AddressBookPolicyRoutingEnabled"))
-	m.AllowLegacyTLSClients = types.StringValue(getString(obj, "AllowLegacyTLSClients"))
+	m.AllowLegacyTLSClients = types.BoolValue(getBool(obj, "AllowLegacyTLSClients"))
 	m.ClearCategories = types.BoolValue(getBool(obj, "ClearCategories"))
 	m.ConvertDisclaimerWrapperToEml = types.BoolValue(getBool(obj, "ConvertDisclaimerWrapperToEml"))
 	m.DSNConversionMode = types.StringValue(getString(obj, "DSNConversionMode"))
@@ -337,10 +349,14 @@ func readTransportConfig(ctx context.Context, obj map[string]any, m *transportCo
 	m.InternalDsnLanguageDetectionEnabled = types.BoolValue(getBool(obj, "InternalDsnLanguageDetectionEnabled"))
 	m.InternalDsnReportingAuthority = types.StringValue(getString(obj, "InternalDsnReportingAuthority"))
 	m.InternalDsnSendHtml = types.BoolValue(getBool(obj, "InternalDsnSendHtml"))
+	m.JournalMessageExpirationDays = types.Int64Value(getInt(obj, "JournalMessageExpirationDays"))
 	m.JournalingReportNdrTo = types.StringValue(getString(obj, "JournalingReportNdrTo"))
 	m.MaxRecipientEnvelopeLimit = types.StringValue(getString(obj, "MaxRecipientEnvelopeLimit"))
 	m.MessageExpiration = types.StringValue(getString(obj, "MessageExpiration"))
 	m.PreventDuplicateJournalingEnabled = types.BoolValue(getBool(obj, "PreventDuplicateJournalingEnabled"))
+	m.ReplyAllStormBlockDurationHours = types.Int64Value(getInt(obj, "ReplyAllStormBlockDurationHours"))
+	m.ReplyAllStormDetectionMinimumRecipients = types.Int64Value(getInt(obj, "ReplyAllStormDetectionMinimumRecipients"))
+	m.ReplyAllStormDetectionMinimumReplies = types.Int64Value(getInt(obj, "ReplyAllStormDetectionMinimumReplies"))
 	m.ReplyAllStormProtectionEnabled = types.BoolValue(getBool(obj, "ReplyAllStormProtectionEnabled"))
 	m.Rfc2231EncodingEnabled = types.BoolValue(getBool(obj, "Rfc2231EncodingEnabled"))
 	m.SmtpClientAuthenticationDisabled = types.BoolValue(getBool(obj, "SmtpClientAuthenticationDisabled"))
@@ -350,7 +366,7 @@ func readTransportConfig(ctx context.Context, obj map[string]any, m *transportCo
 
 func (r *transportConfigResource) reconcileState(cfg, read *transportConfigModel) {
 	read.AddressBookPolicyRoutingEnabled = reconcile.KeepBool(cfg.AddressBookPolicyRoutingEnabled, read.AddressBookPolicyRoutingEnabled)
-	read.AllowLegacyTLSClients = reconcile.KeepStr(cfg.AllowLegacyTLSClients, read.AllowLegacyTLSClients)
+	read.AllowLegacyTLSClients = reconcile.KeepBool(cfg.AllowLegacyTLSClients, read.AllowLegacyTLSClients)
 	read.ClearCategories = reconcile.KeepBool(cfg.ClearCategories, read.ClearCategories)
 	read.ConvertDisclaimerWrapperToEml = reconcile.KeepBool(cfg.ConvertDisclaimerWrapperToEml, read.ConvertDisclaimerWrapperToEml)
 	read.DSNConversionMode = reconcile.KeepStr(cfg.DSNConversionMode, read.DSNConversionMode)
@@ -366,10 +382,14 @@ func (r *transportConfigResource) reconcileState(cfg, read *transportConfigModel
 	read.InternalDsnLanguageDetectionEnabled = reconcile.KeepBool(cfg.InternalDsnLanguageDetectionEnabled, read.InternalDsnLanguageDetectionEnabled)
 	read.InternalDsnReportingAuthority = reconcile.KeepStr(cfg.InternalDsnReportingAuthority, read.InternalDsnReportingAuthority)
 	read.InternalDsnSendHtml = reconcile.KeepBool(cfg.InternalDsnSendHtml, read.InternalDsnSendHtml)
+	read.JournalMessageExpirationDays = reconcile.KeepInt64(cfg.JournalMessageExpirationDays, read.JournalMessageExpirationDays)
 	read.JournalingReportNdrTo = reconcile.KeepStr(cfg.JournalingReportNdrTo, read.JournalingReportNdrTo)
 	read.MaxRecipientEnvelopeLimit = reconcile.KeepStr(cfg.MaxRecipientEnvelopeLimit, read.MaxRecipientEnvelopeLimit)
 	read.MessageExpiration = reconcile.KeepStr(cfg.MessageExpiration, read.MessageExpiration)
 	read.PreventDuplicateJournalingEnabled = reconcile.KeepBool(cfg.PreventDuplicateJournalingEnabled, read.PreventDuplicateJournalingEnabled)
+	read.ReplyAllStormBlockDurationHours = reconcile.KeepInt64(cfg.ReplyAllStormBlockDurationHours, read.ReplyAllStormBlockDurationHours)
+	read.ReplyAllStormDetectionMinimumRecipients = reconcile.KeepInt64(cfg.ReplyAllStormDetectionMinimumRecipients, read.ReplyAllStormDetectionMinimumRecipients)
+	read.ReplyAllStormDetectionMinimumReplies = reconcile.KeepInt64(cfg.ReplyAllStormDetectionMinimumReplies, read.ReplyAllStormDetectionMinimumReplies)
 	read.ReplyAllStormProtectionEnabled = reconcile.KeepBool(cfg.ReplyAllStormProtectionEnabled, read.ReplyAllStormProtectionEnabled)
 	read.Rfc2231EncodingEnabled = reconcile.KeepBool(cfg.Rfc2231EncodingEnabled, read.Rfc2231EncodingEnabled)
 	read.SmtpClientAuthenticationDisabled = reconcile.KeepBool(cfg.SmtpClientAuthenticationDisabled, read.SmtpClientAuthenticationDisabled)

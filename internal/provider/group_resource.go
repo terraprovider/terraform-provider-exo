@@ -36,7 +36,7 @@ func NewGroupResource() resource.Resource { return &groupResource{} }
 type groupModel struct {
 	ID                  types.String `tfsdk:"id"`
 	Identity            types.String `tfsdk:"identity"`
-	Description         types.String `tfsdk:"description"`
+	Description         types.Set    `tfsdk:"description"`
 	DisplayName         types.String `tfsdk:"display_name"`
 	IsHierarchicalGroup types.Bool   `tfsdk:"is_hierarchical_group"`
 	ManagedBy           types.Set    `tfsdk:"managed_by"`
@@ -59,7 +59,7 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":              schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"description":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"description":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"display_name":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_hierarchical_group": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsHierarchicalGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"managed_by":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -89,9 +89,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	sp := exo.SetGroupParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.Description.ValueString(); v != "" {
-		sp.Description = v
-	}
+	sp.Description = toStringSlice(ctx, plan.Description, &resp.Diagnostics)
 	sp.DisplayName = plan.DisplayName.ValueString()
 	sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBool()
 	sp.ManagedBy = toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)
@@ -145,9 +143,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	id := r.identityOf(state)
 	sp := exo.SetGroupParams{}
 	sp.Identity = id
-	if v := plan.Description.ValueString(); v != "" {
-		sp.Description = v
-	}
+	sp.Description = toStringSlice(ctx, plan.Description, &resp.Diagnostics)
 	sp.DisplayName = plan.DisplayName.ValueString()
 	sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBool()
 	sp.ManagedBy = toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)
@@ -171,7 +167,6 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Description":         cfg.Description,
 		"DisplayName":         cfg.DisplayName,
 		"Name":                cfg.Name,
 		"Notes":               cfg.Notes,
@@ -230,7 +225,7 @@ func (r *groupResource) refresh(ctx context.Context, identity string, m *groupMo
 
 func readGroup(ctx context.Context, obj map[string]any, m *groupModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.Description = types.StringValue(getString(obj, "Description"))
+	m.Description = stringSetValue(ctx, getStringSlice(obj, "Description"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.IsHierarchicalGroup = types.BoolValue(getBool(obj, "IsHierarchicalGroup"))
 	m.ManagedBy = stringSetValue(ctx, getStringSlice(obj, "ManagedBy"))
@@ -245,7 +240,7 @@ func readGroup(ctx context.Context, obj map[string]any, m *groupModel) {
 }
 
 func (r *groupResource) reconcileState(cfg, read *groupModel) {
-	read.Description = reconcile.KeepStr(cfg.Description, read.Description)
+	read.Description = reconcile.KeepSet(cfg.Description, read.Description)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
 	read.IsHierarchicalGroup = reconcile.KeepBool(cfg.IsHierarchicalGroup, read.IsHierarchicalGroup)
 	read.ManagedBy = reconcile.KeepSet(cfg.ManagedBy, read.ManagedBy)

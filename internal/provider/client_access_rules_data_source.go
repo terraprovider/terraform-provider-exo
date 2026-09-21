@@ -50,6 +50,7 @@ func (d *clientAccessRuleListDataSource) Schema(_ context.Context, _ datasource.
 				"except_any_of_protocols":                     schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter."},
 				"except_username_matches_any_of_patterns":     schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter."},
 				"name":                             schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
+				"priority":                         schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 				"scope":                            schema.StringAttribute{Computed: true, Description: "Maps to the -Scope parameter."},
 				"user_recipient_filter":            schema.StringAttribute{Computed: true, Description: "Maps to the -UserRecipientFilter parameter."},
 				"username_matches_any_of_patterns": schema.StringAttribute{Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter."},

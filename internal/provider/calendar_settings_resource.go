@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,7 +35,7 @@ func NewCalendarSettingsResource() resource.Resource { return &calendarSettingsR
 type calendarSettingsModel struct {
 	ID                             types.String `tfsdk:"id"`
 	Identity                       types.String `tfsdk:"identity"`
-	EnablePreserveDeclinedMeetings types.String `tfsdk:"enable_preserve_declined_meetings"`
+	EnablePreserveDeclinedMeetings types.Bool   `tfsdk:"enable_preserve_declined_meetings"`
 }
 
 func (r *calendarSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,7 +48,7 @@ func (r *calendarSettingsResource) Schema(_ context.Context, _ resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                          schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"enable_preserve_declined_meetings": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"enable_preserve_declined_meetings": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -67,9 +68,7 @@ func (r *calendarSettingsResource) Create(ctx context.Context, req resource.Crea
 	}
 	sp := exo.SetCalendarSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
-		sp.EnablePreserveDeclinedMeetings = v
-	}
+	sp.EnablePreserveDeclinedMeetings = plan.EnablePreserveDeclinedMeetings.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -109,9 +108,7 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetCalendarSettingsParams{}
 	sp.Identity = id
-	if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
-		sp.EnablePreserveDeclinedMeetings = v
-	}
+	sp.EnablePreserveDeclinedMeetings = plan.EnablePreserveDeclinedMeetings.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -120,9 +117,7 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"EnablePreserveDeclinedMeetings": cfg.EnablePreserveDeclinedMeetings,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -173,10 +168,10 @@ func (r *calendarSettingsResource) refresh(ctx context.Context, identity string,
 
 func readCalendarSettings(ctx context.Context, obj map[string]any, m *calendarSettingsModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.EnablePreserveDeclinedMeetings = types.StringValue(getString(obj, "EnablePreserveDeclinedMeetings"))
+	m.EnablePreserveDeclinedMeetings = types.BoolValue(getBool(obj, "EnablePreserveDeclinedMeetings"))
 	_ = ctx
 }
 
 func (r *calendarSettingsResource) reconcileState(cfg, read *calendarSettingsModel) {
-	read.EnablePreserveDeclinedMeetings = reconcile.KeepStr(cfg.EnablePreserveDeclinedMeetings, read.EnablePreserveDeclinedMeetings)
+	read.EnablePreserveDeclinedMeetings = reconcile.KeepBool(cfg.EnablePreserveDeclinedMeetings, read.EnablePreserveDeclinedMeetings)
 }

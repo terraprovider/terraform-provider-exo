@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -36,7 +37,7 @@ type sharingPolicyModel struct {
 	ID       types.String `tfsdk:"id"`
 	Identity types.String `tfsdk:"identity"`
 	Default  types.Bool   `tfsdk:"default"`
-	Domains  types.String `tfsdk:"domains"`
+	Domains  types.Set    `tfsdk:"domains"`
 	Enabled  types.Bool   `tfsdk:"enabled"`
 	Name     types.String `tfsdk:"name"`
 }
@@ -52,7 +53,7 @@ func (r *sharingPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
 			"default":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Default parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"domains":  schema.StringAttribute{Required: true, Description: "Maps to the -Domains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"domains":  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Domains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"enabled":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -75,11 +76,9 @@ func (r *sharingPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	p := exo.NewSharingPolicyParams{
 		Default: plan.Default.ValueBool(),
+		Domains: toStringSlice(ctx, plan.Domains, &resp.Diagnostics),
 		Enabled: plan.Enabled.ValueBool(),
 		Name:    plan.Name.ValueString(),
-	}
-	if v := plan.Domains.ValueString(); v != "" {
-		p.Domains = v
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -203,7 +202,7 @@ func readSharingPolicy(ctx context.Context, obj map[string]any, m *sharingPolicy
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Default = types.BoolValue(getBool(obj, "Default"))
-	m.Domains = types.StringValue(getString(obj, "Domains"))
+	m.Domains = stringSetValue(ctx, getStringSlice(obj, "Domains"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	_ = ctx
@@ -211,7 +210,7 @@ func readSharingPolicy(ctx context.Context, obj map[string]any, m *sharingPolicy
 
 func (r *sharingPolicyResource) reconcileState(cfg, read *sharingPolicyModel) {
 	read.Default = reconcile.KeepBool(cfg.Default, read.Default)
-	read.Domains = reconcile.KeepStr(cfg.Domains, read.Domains)
+	read.Domains = reconcile.KeepSet(cfg.Domains, read.Domains)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 }

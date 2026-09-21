@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,6 +48,9 @@ type mailboxCalendarConfigurationModel struct {
 	ConversationalSchedulingEnabled          types.Bool   `tfsdk:"conversational_scheduling_enabled"`
 	CreateEventsFromEmailAsPrivate           types.Bool   `tfsdk:"create_events_from_email_as_private"`
 	DailyAgendaMailSchedule                  types.String `tfsdk:"daily_agenda_mail_schedule"`
+	DefaultMeetingDuration                   types.Int64  `tfsdk:"default_meeting_duration"`
+	DefaultMinutesToReduceLongEventsBy       types.Int64  `tfsdk:"default_minutes_to_reduce_long_events_by"`
+	DefaultMinutesToReduceShortEventsBy      types.Int64  `tfsdk:"default_minutes_to_reduce_short_events_by"`
 	DefaultOnlineMeetingProvider             types.String `tfsdk:"default_online_meeting_provider"`
 	DefaultReminderTime                      types.String `tfsdk:"default_reminder_time"`
 	DeleteMeetingRequestOnRespond            types.Bool   `tfsdk:"delete_meeting_request_on_respond"`
@@ -72,6 +76,7 @@ type mailboxCalendarConfigurationModel struct {
 	TimeIncrement                            types.String `tfsdk:"time_increment"`
 	UseBrightCalendarColorThemeInOwa         types.Bool   `tfsdk:"use_bright_calendar_color_theme_in_owa"`
 	WeatherEnabled                           types.String `tfsdk:"weather_enabled"`
+	WeatherLocationBookmark                  types.Int64  `tfsdk:"weather_location_bookmark"`
 	WeatherLocations                         types.String `tfsdk:"weather_locations"`
 	WeatherUnit                              types.String `tfsdk:"weather_unit"`
 	WeekStartDay                             types.String `tfsdk:"week_start_day"`
@@ -102,6 +107,9 @@ func (r *mailboxCalendarConfigurationResource) Schema(_ context.Context, _ resou
 			"conversational_scheduling_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConversationalSchedulingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"create_events_from_email_as_private":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CreateEventsFromEmailAsPrivate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"daily_agenda_mail_schedule":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DailyAgendaMailSchedule parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_meeting_duration":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMeetingDuration parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_long_events_by":      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceLongEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_short_events_by":     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceShortEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_online_meeting_provider":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultOnlineMeetingProvider parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_reminder_time":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultReminderTime parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"delete_meeting_request_on_respond":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteMeetingRequestOnRespond parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -127,6 +135,7 @@ func (r *mailboxCalendarConfigurationResource) Schema(_ context.Context, _ resou
 			"time_increment":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TimeIncrement parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"use_bright_calendar_color_theme_in_owa":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseBrightCalendarColorThemeInOwa parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"weather_enabled":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"weather_location_bookmark":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -WeatherLocationBookmark parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"weather_locations":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherLocations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"weather_unit":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"week_start_day":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeekStartDay parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -166,6 +175,9 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
 		sp.DailyAgendaMailSchedule = v
 	}
+	sp.DefaultMeetingDuration = int(plan.DefaultMeetingDuration.ValueInt64())
+	sp.DefaultMinutesToReduceLongEventsBy = int(plan.DefaultMinutesToReduceLongEventsBy.ValueInt64())
+	sp.DefaultMinutesToReduceShortEventsBy = int(plan.DefaultMinutesToReduceShortEventsBy.ValueInt64())
 	if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
 		sp.DefaultOnlineMeetingProvider = v
 	}
@@ -209,6 +221,7 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	if v := plan.WeatherEnabled.ValueString(); v != "" {
 		sp.WeatherEnabled = v
 	}
+	sp.WeatherLocationBookmark = int(plan.WeatherLocationBookmark.ValueInt64())
 	if v := plan.WeatherLocations.ValueString(); v != "" {
 		sp.WeatherLocations = v
 	}
@@ -284,6 +297,9 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
 		sp.DailyAgendaMailSchedule = v
 	}
+	sp.DefaultMeetingDuration = int(plan.DefaultMeetingDuration.ValueInt64())
+	sp.DefaultMinutesToReduceLongEventsBy = int(plan.DefaultMinutesToReduceLongEventsBy.ValueInt64())
+	sp.DefaultMinutesToReduceShortEventsBy = int(plan.DefaultMinutesToReduceShortEventsBy.ValueInt64())
 	if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
 		sp.DefaultOnlineMeetingProvider = v
 	}
@@ -327,6 +343,7 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	if v := plan.WeatherEnabled.ValueString(); v != "" {
 		sp.WeatherEnabled = v
 	}
+	sp.WeatherLocationBookmark = int(plan.WeatherLocationBookmark.ValueInt64())
 	if v := plan.WeatherLocations.ValueString(); v != "" {
 		sp.WeatherLocations = v
 	}
@@ -442,6 +459,9 @@ func readMailboxCalendarConfiguration(ctx context.Context, obj map[string]any, m
 	m.ConversationalSchedulingEnabled = types.BoolValue(getBool(obj, "ConversationalSchedulingEnabled"))
 	m.CreateEventsFromEmailAsPrivate = types.BoolValue(getBool(obj, "CreateEventsFromEmailAsPrivate"))
 	m.DailyAgendaMailSchedule = types.StringValue(getString(obj, "DailyAgendaMailSchedule"))
+	m.DefaultMeetingDuration = types.Int64Value(getInt(obj, "DefaultMeetingDuration"))
+	m.DefaultMinutesToReduceLongEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceLongEventsBy"))
+	m.DefaultMinutesToReduceShortEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceShortEventsBy"))
 	m.DefaultOnlineMeetingProvider = types.StringValue(getString(obj, "DefaultOnlineMeetingProvider"))
 	m.DefaultReminderTime = types.StringValue(getString(obj, "DefaultReminderTime"))
 	m.DeleteMeetingRequestOnRespond = types.BoolValue(getBool(obj, "DeleteMeetingRequestOnRespond"))
@@ -467,6 +487,7 @@ func readMailboxCalendarConfiguration(ctx context.Context, obj map[string]any, m
 	m.TimeIncrement = types.StringValue(getString(obj, "TimeIncrement"))
 	m.UseBrightCalendarColorThemeInOwa = types.BoolValue(getBool(obj, "UseBrightCalendarColorThemeInOwa"))
 	m.WeatherEnabled = types.StringValue(getString(obj, "WeatherEnabled"))
+	m.WeatherLocationBookmark = types.Int64Value(getInt(obj, "WeatherLocationBookmark"))
 	m.WeatherLocations = types.StringValue(getString(obj, "WeatherLocations"))
 	m.WeatherUnit = types.StringValue(getString(obj, "WeatherUnit"))
 	m.WeekStartDay = types.StringValue(getString(obj, "WeekStartDay"))
@@ -489,6 +510,9 @@ func (r *mailboxCalendarConfigurationResource) reconcileState(cfg, read *mailbox
 	read.ConversationalSchedulingEnabled = reconcile.KeepBool(cfg.ConversationalSchedulingEnabled, read.ConversationalSchedulingEnabled)
 	read.CreateEventsFromEmailAsPrivate = reconcile.KeepBool(cfg.CreateEventsFromEmailAsPrivate, read.CreateEventsFromEmailAsPrivate)
 	read.DailyAgendaMailSchedule = reconcile.KeepStr(cfg.DailyAgendaMailSchedule, read.DailyAgendaMailSchedule)
+	read.DefaultMeetingDuration = reconcile.KeepInt64(cfg.DefaultMeetingDuration, read.DefaultMeetingDuration)
+	read.DefaultMinutesToReduceLongEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceLongEventsBy, read.DefaultMinutesToReduceLongEventsBy)
+	read.DefaultMinutesToReduceShortEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceShortEventsBy, read.DefaultMinutesToReduceShortEventsBy)
 	read.DefaultOnlineMeetingProvider = reconcile.KeepStr(cfg.DefaultOnlineMeetingProvider, read.DefaultOnlineMeetingProvider)
 	read.DefaultReminderTime = reconcile.KeepStr(cfg.DefaultReminderTime, read.DefaultReminderTime)
 	read.DeleteMeetingRequestOnRespond = reconcile.KeepBool(cfg.DeleteMeetingRequestOnRespond, read.DeleteMeetingRequestOnRespond)
@@ -514,6 +538,7 @@ func (r *mailboxCalendarConfigurationResource) reconcileState(cfg, read *mailbox
 	read.TimeIncrement = reconcile.KeepStr(cfg.TimeIncrement, read.TimeIncrement)
 	read.UseBrightCalendarColorThemeInOwa = reconcile.KeepBool(cfg.UseBrightCalendarColorThemeInOwa, read.UseBrightCalendarColorThemeInOwa)
 	read.WeatherEnabled = reconcile.KeepStr(cfg.WeatherEnabled, read.WeatherEnabled)
+	read.WeatherLocationBookmark = reconcile.KeepInt64(cfg.WeatherLocationBookmark, read.WeatherLocationBookmark)
 	read.WeatherLocations = reconcile.KeepStr(cfg.WeatherLocations, read.WeatherLocations)
 	read.WeatherUnit = reconcile.KeepStr(cfg.WeatherUnit, read.WeatherUnit)
 	read.WeekStartDay = reconcile.KeepStr(cfg.WeekStartDay, read.WeekStartDay)

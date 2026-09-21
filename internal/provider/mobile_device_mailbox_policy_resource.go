@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -62,7 +64,7 @@ type mobileDeviceMailboxPolicyModel struct {
 	AllowUnsignedInstallationPackages        types.Bool   `tfsdk:"allow_unsigned_installation_packages"`
 	AllowWiFi                                types.Bool   `tfsdk:"allow_wi_fi"`
 	AlphanumericPasswordRequired             types.Bool   `tfsdk:"alphanumeric_password_required"`
-	ApprovedApplicationList                  types.String `tfsdk:"approved_application_list"`
+	ApprovedApplicationList                  types.Set    `tfsdk:"approved_application_list"`
 	AttachmentsEnabled                       types.Bool   `tfsdk:"attachments_enabled"`
 	DeviceEncryptionEnabled                  types.Bool   `tfsdk:"device_encryption_enabled"`
 	DevicePolicyRefreshInterval              types.String `tfsdk:"device_policy_refresh_interval"`
@@ -75,10 +77,12 @@ type mobileDeviceMailboxPolicyModel struct {
 	MaxEmailHTMLBodyTruncationSize           types.String `tfsdk:"max_email_html_body_truncation_size"`
 	MaxInactivityTimeLock                    types.String `tfsdk:"max_inactivity_time_lock"`
 	MaxPasswordFailedAttempts                types.String `tfsdk:"max_password_failed_attempts"`
+	MinPasswordComplexCharacters             types.Int64  `tfsdk:"min_password_complex_characters"`
 	MinPasswordLength                        types.String `tfsdk:"min_password_length"`
 	Name                                     types.String `tfsdk:"name"`
 	PasswordEnabled                          types.Bool   `tfsdk:"password_enabled"`
 	PasswordExpiration                       types.String `tfsdk:"password_expiration"`
+	PasswordHistory                          types.Int64  `tfsdk:"password_history"`
 	PasswordRecoveryEnabled                  types.Bool   `tfsdk:"password_recovery_enabled"`
 	RequireDeviceEncryption                  types.Bool   `tfsdk:"require_device_encryption"`
 	RequireEncryptedSMIMEMessages            types.Bool   `tfsdk:"require_encrypted_smime_messages"`
@@ -88,7 +92,7 @@ type mobileDeviceMailboxPolicyModel struct {
 	RequireSignedSMIMEMessages               types.Bool   `tfsdk:"require_signed_smime_messages"`
 	RequireStorageCardEncryption             types.Bool   `tfsdk:"require_storage_card_encryption"`
 	UNCAccessEnabled                         types.Bool   `tfsdk:"unc_access_enabled"`
-	UnapprovedInROMApplicationList           types.String `tfsdk:"unapproved_in_rom_application_list"`
+	UnapprovedInROMApplicationList           types.Set    `tfsdk:"unapproved_in_rom_application_list"`
 	WSSAccessEnabled                         types.Bool   `tfsdk:"wss_access_enabled"`
 }
 
@@ -127,7 +131,7 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"allow_unsigned_installation_packages":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowUnsignedInstallationPackages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_wi_fi":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowWiFi parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"alphanumeric_password_required":               schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -AlphanumericPasswordRequired parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"approved_application_list":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApprovedApplicationList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"approved_application_list":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ApprovedApplicationList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"attachments_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AttachmentsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"device_encryption_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeviceEncryptionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"device_policy_refresh_interval":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DevicePolicyRefreshInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -140,10 +144,12 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"max_email_html_body_truncation_size":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxEmailHTMLBodyTruncationSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_inactivity_time_lock":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxInactivityTimeLock parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_password_failed_attempts":                 schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MaxPasswordFailedAttempts parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"min_password_complex_characters":              schema.Int64Attribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordComplexCharacters parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"min_password_length":                          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordLength parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"password_enabled":                             schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"password_expiration":                          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordExpiration parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"password_history":                             schema.Int64Attribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordHistory parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"password_recovery_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordRecoveryEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_device_encryption":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireDeviceEncryption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_encrypted_smime_messages":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireEncryptedSMIMEMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -153,7 +159,7 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"require_signed_smime_messages":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSignedSMIMEMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_storage_card_encryption":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireStorageCardEncryption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"unc_access_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UNCAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"unapproved_in_rom_application_list":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"unapproved_in_rom_application_list":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"wss_access_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -WSSAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -197,12 +203,15 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 		AllowUnsignedInstallationPackages: plan.AllowUnsignedInstallationPackages.ValueBool(),
 		AllowWiFi:                         plan.AllowWiFi.ValueBool(),
 		AlphanumericPasswordRequired:      plan.AlphanumericPasswordRequired.ValueBool(),
+		ApprovedApplicationList:           toStringSlice(ctx, plan.ApprovedApplicationList, &resp.Diagnostics),
 		AttachmentsEnabled:                plan.AttachmentsEnabled.ValueBool(),
 		DeviceEncryptionEnabled:           plan.DeviceEncryptionEnabled.ValueBool(),
 		IrmEnabled:                        plan.IrmEnabled.ValueBool(),
 		IsDefault:                         plan.IsDefault.ValueBool(),
+		MinPasswordComplexCharacters:      int(plan.MinPasswordComplexCharacters.ValueInt64()),
 		Name:                              plan.Name.ValueString(),
 		PasswordEnabled:                   plan.PasswordEnabled.ValueBool(),
+		PasswordHistory:                   int(plan.PasswordHistory.ValueInt64()),
 		PasswordRecoveryEnabled:           plan.PasswordRecoveryEnabled.ValueBool(),
 		RequireDeviceEncryption:           plan.RequireDeviceEncryption.ValueBool(),
 		RequireEncryptedSMIMEMessages:     plan.RequireEncryptedSMIMEMessages.ValueBool(),
@@ -210,6 +219,7 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 		RequireSignedSMIMEMessages:        plan.RequireSignedSMIMEMessages.ValueBool(),
 		RequireStorageCardEncryption:      plan.RequireStorageCardEncryption.ValueBool(),
 		UNCAccessEnabled:                  plan.UNCAccessEnabled.ValueBool(),
+		UnapprovedInROMApplicationList:    toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics),
 		WSSAccessEnabled:                  plan.WSSAccessEnabled.ValueBool(),
 	}
 	if v := plan.AllowBluetooth.ValueString(); v != "" {
@@ -217,9 +227,6 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 	}
 	if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
 		p.AllowSMIMEEncryptionAlgorithmNegotiation = v
-	}
-	if v := plan.ApprovedApplicationList.ValueString(); v != "" {
-		p.ApprovedApplicationList = v
 	}
 	if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
 		p.DevicePolicyRefreshInterval = v
@@ -256,9 +263,6 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 	}
 	if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
 		p.RequireSignedSMIMEAlgorithm = v
-	}
-	if v := plan.UnapprovedInROMApplicationList.ValueString(); v != "" {
-		p.UnapprovedInROMApplicationList = v
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -339,9 +343,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	sp.AllowUnsignedInstallationPackages = plan.AllowUnsignedInstallationPackages.ValueBool()
 	sp.AllowWiFi = plan.AllowWiFi.ValueBool()
 	sp.AlphanumericPasswordRequired = plan.AlphanumericPasswordRequired.ValueBool()
-	if v := plan.ApprovedApplicationList.ValueString(); v != "" {
-		sp.ApprovedApplicationList = v
-	}
+	sp.ApprovedApplicationList = toStringSlice(ctx, plan.ApprovedApplicationList, &resp.Diagnostics)
 	sp.AttachmentsEnabled = plan.AttachmentsEnabled.ValueBool()
 	sp.DeviceEncryptionEnabled = plan.DeviceEncryptionEnabled.ValueBool()
 	if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
@@ -370,6 +372,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	if v := plan.MaxPasswordFailedAttempts.ValueString(); v != "" {
 		sp.MaxPasswordFailedAttempts = v
 	}
+	sp.MinPasswordComplexCharacters = int(plan.MinPasswordComplexCharacters.ValueInt64())
 	if v := plan.MinPasswordLength.ValueString(); v != "" {
 		sp.MinPasswordLength = v
 	}
@@ -377,6 +380,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	if v := plan.PasswordExpiration.ValueString(); v != "" {
 		sp.PasswordExpiration = v
 	}
+	sp.PasswordHistory = int(plan.PasswordHistory.ValueInt64())
 	sp.PasswordRecoveryEnabled = plan.PasswordRecoveryEnabled.ValueBool()
 	sp.RequireDeviceEncryption = plan.RequireDeviceEncryption.ValueBool()
 	sp.RequireEncryptedSMIMEMessages = plan.RequireEncryptedSMIMEMessages.ValueBool()
@@ -390,9 +394,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	sp.RequireSignedSMIMEMessages = plan.RequireSignedSMIMEMessages.ValueBool()
 	sp.RequireStorageCardEncryption = plan.RequireStorageCardEncryption.ValueBool()
 	sp.UNCAccessEnabled = plan.UNCAccessEnabled.ValueBool()
-	if v := plan.UnapprovedInROMApplicationList.ValueString(); v != "" {
-		sp.UnapprovedInROMApplicationList = v
-	}
+	sp.UnapprovedInROMApplicationList = toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics)
 	sp.WSSAccessEnabled = plan.WSSAccessEnabled.ValueBool()
 	if resp.Diagnostics.HasError() {
 		return
@@ -405,7 +407,6 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AllowBluetooth": cfg.AllowBluetooth,
 		"AllowSMIMEEncryptionAlgorithmNegotiation": cfg.AllowSMIMEEncryptionAlgorithmNegotiation,
-		"ApprovedApplicationList":                  cfg.ApprovedApplicationList,
 		"DevicePolicyRefreshInterval":              cfg.DevicePolicyRefreshInterval,
 		"MaxAttachmentSize":                        cfg.MaxAttachmentSize,
 		"MaxCalendarAgeFilter":                     cfg.MaxCalendarAgeFilter,
@@ -418,7 +419,6 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 		"PasswordExpiration":                       cfg.PasswordExpiration,
 		"RequireEncryptionSMIMEAlgorithm":          cfg.RequireEncryptionSMIMEAlgorithm,
 		"RequireSignedSMIMEAlgorithm":              cfg.RequireSignedSMIMEAlgorithm,
-		"UnapprovedInROMApplicationList":           cfg.UnapprovedInROMApplicationList,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -505,7 +505,7 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.AllowUnsignedInstallationPackages = types.BoolValue(getBool(obj, "AllowUnsignedInstallationPackages"))
 	m.AllowWiFi = types.BoolValue(getBool(obj, "AllowWiFi"))
 	m.AlphanumericPasswordRequired = types.BoolValue(getBool(obj, "AlphanumericPasswordRequired"))
-	m.ApprovedApplicationList = types.StringValue(getString(obj, "ApprovedApplicationList"))
+	m.ApprovedApplicationList = stringSetValue(ctx, getStringSlice(obj, "ApprovedApplicationList"))
 	m.AttachmentsEnabled = types.BoolValue(getBool(obj, "AttachmentsEnabled"))
 	m.DeviceEncryptionEnabled = types.BoolValue(getBool(obj, "DeviceEncryptionEnabled"))
 	m.DevicePolicyRefreshInterval = types.StringValue(getString(obj, "DevicePolicyRefreshInterval"))
@@ -518,10 +518,12 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.MaxEmailHTMLBodyTruncationSize = types.StringValue(getString(obj, "MaxEmailHTMLBodyTruncationSize"))
 	m.MaxInactivityTimeLock = types.StringValue(getString(obj, "MaxInactivityTimeLock"))
 	m.MaxPasswordFailedAttempts = types.StringValue(getString(obj, "MaxPasswordFailedAttempts"))
+	m.MinPasswordComplexCharacters = types.Int64Value(getInt(obj, "MinPasswordComplexCharacters"))
 	m.MinPasswordLength = types.StringValue(getString(obj, "MinPasswordLength"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.PasswordEnabled = types.BoolValue(getBool(obj, "PasswordEnabled"))
 	m.PasswordExpiration = types.StringValue(getString(obj, "PasswordExpiration"))
+	m.PasswordHistory = types.Int64Value(getInt(obj, "PasswordHistory"))
 	m.PasswordRecoveryEnabled = types.BoolValue(getBool(obj, "PasswordRecoveryEnabled"))
 	m.RequireDeviceEncryption = types.BoolValue(getBool(obj, "RequireDeviceEncryption"))
 	m.RequireEncryptedSMIMEMessages = types.BoolValue(getBool(obj, "RequireEncryptedSMIMEMessages"))
@@ -531,7 +533,7 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.RequireSignedSMIMEMessages = types.BoolValue(getBool(obj, "RequireSignedSMIMEMessages"))
 	m.RequireStorageCardEncryption = types.BoolValue(getBool(obj, "RequireStorageCardEncryption"))
 	m.UNCAccessEnabled = types.BoolValue(getBool(obj, "UNCAccessEnabled"))
-	m.UnapprovedInROMApplicationList = types.StringValue(getString(obj, "UnapprovedInROMApplicationList"))
+	m.UnapprovedInROMApplicationList = stringSetValue(ctx, getStringSlice(obj, "UnapprovedInROMApplicationList"))
 	m.WSSAccessEnabled = types.BoolValue(getBool(obj, "WSSAccessEnabled"))
 	_ = ctx
 }
@@ -562,7 +564,7 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.AllowUnsignedInstallationPackages = reconcile.KeepBool(cfg.AllowUnsignedInstallationPackages, read.AllowUnsignedInstallationPackages)
 	read.AllowWiFi = reconcile.KeepBool(cfg.AllowWiFi, read.AllowWiFi)
 	read.AlphanumericPasswordRequired = reconcile.KeepBool(cfg.AlphanumericPasswordRequired, read.AlphanumericPasswordRequired)
-	read.ApprovedApplicationList = reconcile.KeepStr(cfg.ApprovedApplicationList, read.ApprovedApplicationList)
+	read.ApprovedApplicationList = reconcile.KeepSet(cfg.ApprovedApplicationList, read.ApprovedApplicationList)
 	read.AttachmentsEnabled = reconcile.KeepBool(cfg.AttachmentsEnabled, read.AttachmentsEnabled)
 	read.DeviceEncryptionEnabled = reconcile.KeepBool(cfg.DeviceEncryptionEnabled, read.DeviceEncryptionEnabled)
 	read.DevicePolicyRefreshInterval = reconcile.KeepStr(cfg.DevicePolicyRefreshInterval, read.DevicePolicyRefreshInterval)
@@ -575,10 +577,12 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.MaxEmailHTMLBodyTruncationSize = reconcile.KeepStr(cfg.MaxEmailHTMLBodyTruncationSize, read.MaxEmailHTMLBodyTruncationSize)
 	read.MaxInactivityTimeLock = reconcile.KeepStr(cfg.MaxInactivityTimeLock, read.MaxInactivityTimeLock)
 	read.MaxPasswordFailedAttempts = reconcile.KeepStr(cfg.MaxPasswordFailedAttempts, read.MaxPasswordFailedAttempts)
+	read.MinPasswordComplexCharacters = reconcile.KeepInt64(cfg.MinPasswordComplexCharacters, read.MinPasswordComplexCharacters)
 	read.MinPasswordLength = reconcile.KeepStr(cfg.MinPasswordLength, read.MinPasswordLength)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.PasswordEnabled = reconcile.KeepBool(cfg.PasswordEnabled, read.PasswordEnabled)
 	read.PasswordExpiration = reconcile.KeepStr(cfg.PasswordExpiration, read.PasswordExpiration)
+	read.PasswordHistory = reconcile.KeepInt64(cfg.PasswordHistory, read.PasswordHistory)
 	read.PasswordRecoveryEnabled = reconcile.KeepBool(cfg.PasswordRecoveryEnabled, read.PasswordRecoveryEnabled)
 	read.RequireDeviceEncryption = reconcile.KeepBool(cfg.RequireDeviceEncryption, read.RequireDeviceEncryption)
 	read.RequireEncryptedSMIMEMessages = reconcile.KeepBool(cfg.RequireEncryptedSMIMEMessages, read.RequireEncryptedSMIMEMessages)
@@ -588,6 +592,6 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.RequireSignedSMIMEMessages = reconcile.KeepBool(cfg.RequireSignedSMIMEMessages, read.RequireSignedSMIMEMessages)
 	read.RequireStorageCardEncryption = reconcile.KeepBool(cfg.RequireStorageCardEncryption, read.RequireStorageCardEncryption)
 	read.UNCAccessEnabled = reconcile.KeepBool(cfg.UNCAccessEnabled, read.UNCAccessEnabled)
-	read.UnapprovedInROMApplicationList = reconcile.KeepStr(cfg.UnapprovedInROMApplicationList, read.UnapprovedInROMApplicationList)
+	read.UnapprovedInROMApplicationList = reconcile.KeepSet(cfg.UnapprovedInROMApplicationList, read.UnapprovedInROMApplicationList)
 	read.WSSAccessEnabled = reconcile.KeepBool(cfg.WSSAccessEnabled, read.WSSAccessEnabled)
 }

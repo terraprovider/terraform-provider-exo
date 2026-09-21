@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -51,27 +52,28 @@ func (d *antiPhishPolicyDataSource) Schema(_ context.Context, _ datasource.Schem
 			"enable_unusual_characters_safety_tips":             schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableUnusualCharactersSafetyTips parameter."},
 			"enable_via_tag":                                    schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableViaTag parameter."},
 			"enabled":                                           schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
-			"excluded_domains":                                  schema.StringAttribute{Computed: true, Description: "Maps to the -ExcludedDomains parameter."},
-			"excluded_senders":                                  schema.StringAttribute{Computed: true, Description: "Maps to the -ExcludedSenders parameter."},
+			"excluded_domains":                                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExcludedDomains parameter."},
+			"excluded_senders":                                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExcludedSenders parameter."},
 			"honor_dmarc_policy":                                schema.BoolAttribute{Computed: true, Description: "Maps to the -HonorDmarcPolicy parameter."},
 			"impersonation_protection_state":                    schema.StringAttribute{Computed: true, Description: "Maps to the -ImpersonationProtectionState parameter."},
 			"mailbox_intelligence_protection_action":            schema.StringAttribute{Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionAction parameter."},
-			"mailbox_intelligence_protection_action_recipients": schema.StringAttribute{Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionActionRecipients parameter."},
+			"mailbox_intelligence_protection_action_recipients": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionActionRecipients parameter."},
 			"mailbox_intelligence_quarantine_tag":               schema.StringAttribute{Computed: true, Description: "Maps to the -MailboxIntelligenceQuarantineTag parameter."},
 			"make_default":                                      schema.BoolAttribute{Computed: true, Description: "Maps to the -MakeDefault parameter."},
 			"name":                                              schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
+			"phish_threshold_level":                             schema.Int64Attribute{Computed: true, Description: "Maps to the -PhishThresholdLevel parameter."},
 			"policy_tag":                                        schema.StringAttribute{Computed: true, Description: "Maps to the -PolicyTag parameter."},
 			"recommended_policy_type":                           schema.StringAttribute{Computed: true, Description: "Maps to the -RecommendedPolicyType parameter."},
 			"similar_users_safety_tips_custom_text":             schema.StringAttribute{Computed: true, Description: "Maps to the -SimilarUsersSafetyTipsCustomText parameter."},
 			"spoof_quarantine_tag":                              schema.StringAttribute{Computed: true, Description: "Maps to the -SpoofQuarantineTag parameter."},
-			"targeted_domain_action_recipients":                 schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedDomainActionRecipients parameter."},
+			"targeted_domain_action_recipients":                 schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TargetedDomainActionRecipients parameter."},
 			"targeted_domain_protection_action":                 schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedDomainProtectionAction parameter."},
 			"targeted_domain_quarantine_tag":                    schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedDomainQuarantineTag parameter."},
-			"targeted_domains_to_protect":                       schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedDomainsToProtect parameter."},
-			"targeted_user_action_recipients":                   schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedUserActionRecipients parameter."},
+			"targeted_domains_to_protect":                       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TargetedDomainsToProtect parameter."},
+			"targeted_user_action_recipients":                   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TargetedUserActionRecipients parameter."},
 			"targeted_user_protection_action":                   schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedUserProtectionAction parameter."},
 			"targeted_user_quarantine_tag":                      schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedUserQuarantineTag parameter."},
-			"targeted_users_to_protect":                         schema.StringAttribute{Computed: true, Description: "Maps to the -TargetedUsersToProtect parameter."},
+			"targeted_users_to_protect":                         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TargetedUsersToProtect parameter."},
 			"unusual_characters_safety_tips_custom_text":        schema.StringAttribute{Computed: true, Description: "Maps to the -UnusualCharactersSafetyTipsCustomText parameter."},
 		},
 	}

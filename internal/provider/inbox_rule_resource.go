@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -103,6 +104,7 @@ type inboxRuleModel struct {
 	PermanentDelete                       types.Bool   `tfsdk:"permanent_delete"`
 	PinMessage                            types.Bool   `tfsdk:"pin_message"`
 	PlaySound                             types.String `tfsdk:"play_sound"`
+	Priority                              types.Int64  `tfsdk:"priority"`
 	ReceivedAfterDate                     types.String `tfsdk:"received_after_date"`
 	ReceivedBeforeDate                    types.String `tfsdk:"received_before_date"`
 	RecipientAddressContainsWords         types.String `tfsdk:"recipient_address_contains_words"`
@@ -197,6 +199,7 @@ func (r *inboxRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"permanent_delete":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PermanentDelete parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"pin_message":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PinMessage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"play_sound":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PlaySound parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                                   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"received_after_date":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReceivedAfterDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"received_before_date":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReceivedBeforeDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recipient_address_contains_words":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientAddressContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -271,6 +274,7 @@ func (r *inboxRuleResource) Create(ctx context.Context, req resource.CreateReque
 		PermanentDelete:              plan.PermanentDelete.ValueBool(),
 		PinMessage:                   plan.PinMessage.ValueBool(),
 		PlaySound:                    plan.PlaySound.ValueString(),
+		Priority:                     int(plan.Priority.ValueInt64()),
 		RedirectTo:                   toStringSlice(ctx, plan.RedirectTo, &resp.Diagnostics),
 		SentOnlyToMe:                 plan.SentOnlyToMe.ValueBool(),
 		SentTo:                       toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
@@ -553,6 +557,7 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	sp.PermanentDelete = plan.PermanentDelete.ValueBool()
 	sp.PinMessage = plan.PinMessage.ValueBool()
 	sp.PlaySound = plan.PlaySound.ValueString()
+	sp.Priority = int(plan.Priority.ValueInt64())
 	if v := plan.ReceivedAfterDate.ValueString(); v != "" {
 		sp.ReceivedAfterDate = v
 	}
@@ -764,6 +769,7 @@ func readInboxRule(ctx context.Context, obj map[string]any, m *inboxRuleModel) {
 	m.PermanentDelete = types.BoolValue(getBool(obj, "PermanentDelete"))
 	m.PinMessage = types.BoolValue(getBool(obj, "PinMessage"))
 	m.PlaySound = types.StringValue(getString(obj, "PlaySound"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.ReceivedAfterDate = types.StringValue(getString(obj, "ReceivedAfterDate"))
 	m.ReceivedBeforeDate = types.StringValue(getString(obj, "ReceivedBeforeDate"))
 	m.RecipientAddressContainsWords = types.StringValue(getString(obj, "RecipientAddressContainsWords"))
@@ -850,6 +856,7 @@ func (r *inboxRuleResource) reconcileState(cfg, read *inboxRuleModel) {
 	read.PermanentDelete = reconcile.KeepBool(cfg.PermanentDelete, read.PermanentDelete)
 	read.PinMessage = reconcile.KeepBool(cfg.PinMessage, read.PinMessage)
 	read.PlaySound = reconcile.KeepStr(cfg.PlaySound, read.PlaySound)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.ReceivedAfterDate = reconcile.KeepStr(cfg.ReceivedAfterDate, read.ReceivedAfterDate)
 	read.ReceivedBeforeDate = reconcile.KeepStr(cfg.ReceivedBeforeDate, read.ReceivedBeforeDate)
 	read.RecipientAddressContainsWords = reconcile.KeepStr(cfg.RecipientAddressContainsWords, read.RecipientAddressContainsWords)

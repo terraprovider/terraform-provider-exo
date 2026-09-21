@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -62,14 +63,14 @@ type userModel struct {
 	Name                                types.String `tfsdk:"name"`
 	Notes                               types.String `tfsdk:"notes"`
 	Office                              types.String `tfsdk:"office"`
-	OtherFax                            types.String `tfsdk:"other_fax"`
-	OtherHomePhone                      types.String `tfsdk:"other_home_phone"`
-	OtherTelephone                      types.String `tfsdk:"other_telephone"`
+	OtherFax                            types.Set    `tfsdk:"other_fax"`
+	OtherHomePhone                      types.Set    `tfsdk:"other_home_phone"`
+	OtherTelephone                      types.Set    `tfsdk:"other_telephone"`
 	Pager                               types.String `tfsdk:"pager"`
 	PermanentlyClearPreviousMailboxInfo types.Bool   `tfsdk:"permanently_clear_previous_mailbox_info"`
 	Phone                               types.String `tfsdk:"phone"`
 	PhoneticDisplayName                 types.String `tfsdk:"phonetic_display_name"`
-	PostOfficeBox                       types.String `tfsdk:"post_office_box"`
+	PostOfficeBox                       types.Set    `tfsdk:"post_office_box"`
 	PostalCode                          types.String `tfsdk:"postal_code"`
 	PublicFolder                        types.Bool   `tfsdk:"public_folder"`
 	RemotePowerShellEnabled             types.Bool   `tfsdk:"remote_power_shell_enabled"`
@@ -123,14 +124,14 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"name":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"notes":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Notes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"office":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_fax":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_home_phone":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_telephone":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"other_fax":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_home_phone":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_telephone":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"pager":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Pager parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"permanently_clear_previous_mailbox_info": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PermanentlyClearPreviousMailboxInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"phone":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Phone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phonetic_display_name":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"post_office_box":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"post_office_box":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"postal_code":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostalCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"public_folder":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remote_power_shell_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePowerShellEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -205,22 +206,14 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	sp.Name = plan.Name.ValueString()
 	sp.Notes = plan.Notes.ValueString()
 	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
-	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
-	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
-	}
+	sp.OtherFax = toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics)
+	sp.OtherHomePhone = toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics)
+	sp.OtherTelephone = toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics)
 	sp.Pager = plan.Pager.ValueString()
 	sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
 	sp.Phone = plan.Phone.ValueString()
 	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
-	}
+	sp.PostOfficeBox = toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics)
 	sp.PostalCode = plan.PostalCode.ValueString()
 	sp.PublicFolder = plan.PublicFolder.ValueBool()
 	sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBool()
@@ -321,22 +314,14 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	sp.Name = plan.Name.ValueString()
 	sp.Notes = plan.Notes.ValueString()
 	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
-	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
-	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
-	}
+	sp.OtherFax = toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics)
+	sp.OtherHomePhone = toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics)
+	sp.OtherTelephone = toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics)
 	sp.Pager = plan.Pager.ValueString()
 	sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
 	sp.Phone = plan.Phone.ValueString()
 	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
-	}
+	sp.PostOfficeBox = toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics)
 	sp.PostalCode = plan.PostalCode.ValueString()
 	sp.PublicFolder = plan.PublicFolder.ValueBool()
 	sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBool()
@@ -388,13 +373,9 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		"Name":                      cfg.Name,
 		"Notes":                     cfg.Notes,
 		"Office":                    cfg.Office,
-		"OtherFax":                  cfg.OtherFax,
-		"OtherHomePhone":            cfg.OtherHomePhone,
-		"OtherTelephone":            cfg.OtherTelephone,
 		"Pager":                     cfg.Pager,
 		"Phone":                     cfg.Phone,
 		"PhoneticDisplayName":       cfg.PhoneticDisplayName,
-		"PostOfficeBox":             cfg.PostOfficeBox,
 		"PostalCode":                cfg.PostalCode,
 		"SeniorityIndex":            cfg.SeniorityIndex,
 		"SimpleDisplayName":         cfg.SimpleDisplayName,
@@ -482,14 +463,14 @@ func readUser(ctx context.Context, obj map[string]any, m *userModel) {
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Notes = types.StringValue(getString(obj, "Notes"))
 	m.Office = types.StringValue(getString(obj, "Office"))
-	m.OtherFax = types.StringValue(getString(obj, "OtherFax"))
-	m.OtherHomePhone = types.StringValue(getString(obj, "OtherHomePhone"))
-	m.OtherTelephone = types.StringValue(getString(obj, "OtherTelephone"))
+	m.OtherFax = stringSetValue(ctx, getStringSlice(obj, "OtherFax"))
+	m.OtherHomePhone = stringSetValue(ctx, getStringSlice(obj, "OtherHomePhone"))
+	m.OtherTelephone = stringSetValue(ctx, getStringSlice(obj, "OtherTelephone"))
 	m.Pager = types.StringValue(getString(obj, "Pager"))
 	m.PermanentlyClearPreviousMailboxInfo = types.BoolValue(getBool(obj, "PermanentlyClearPreviousMailboxInfo"))
 	m.Phone = types.StringValue(getString(obj, "Phone"))
 	m.PhoneticDisplayName = types.StringValue(getString(obj, "PhoneticDisplayName"))
-	m.PostOfficeBox = types.StringValue(getString(obj, "PostOfficeBox"))
+	m.PostOfficeBox = stringSetValue(ctx, getStringSlice(obj, "PostOfficeBox"))
 	m.PostalCode = types.StringValue(getString(obj, "PostalCode"))
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
 	m.RemotePowerShellEnabled = types.BoolValue(getBool(obj, "RemotePowerShellEnabled"))
@@ -535,14 +516,14 @@ func (r *userResource) reconcileState(cfg, read *userModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Notes = reconcile.KeepStr(cfg.Notes, read.Notes)
 	read.Office = reconcile.KeepStr(cfg.Office, read.Office)
-	read.OtherFax = reconcile.KeepStr(cfg.OtherFax, read.OtherFax)
-	read.OtherHomePhone = reconcile.KeepStr(cfg.OtherHomePhone, read.OtherHomePhone)
-	read.OtherTelephone = reconcile.KeepStr(cfg.OtherTelephone, read.OtherTelephone)
+	read.OtherFax = reconcile.KeepSet(cfg.OtherFax, read.OtherFax)
+	read.OtherHomePhone = reconcile.KeepSet(cfg.OtherHomePhone, read.OtherHomePhone)
+	read.OtherTelephone = reconcile.KeepSet(cfg.OtherTelephone, read.OtherTelephone)
 	read.Pager = reconcile.KeepStr(cfg.Pager, read.Pager)
 	read.PermanentlyClearPreviousMailboxInfo = reconcile.KeepBool(cfg.PermanentlyClearPreviousMailboxInfo, read.PermanentlyClearPreviousMailboxInfo)
 	read.Phone = reconcile.KeepStr(cfg.Phone, read.Phone)
 	read.PhoneticDisplayName = reconcile.KeepStr(cfg.PhoneticDisplayName, read.PhoneticDisplayName)
-	read.PostOfficeBox = reconcile.KeepStr(cfg.PostOfficeBox, read.PostOfficeBox)
+	read.PostOfficeBox = reconcile.KeepSet(cfg.PostOfficeBox, read.PostOfficeBox)
 	read.PostalCode = reconcile.KeepStr(cfg.PostalCode, read.PostalCode)
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)
 	read.RemotePowerShellEnabled = reconcile.KeepBool(cfg.RemotePowerShellEnabled, read.RemotePowerShellEnabled)

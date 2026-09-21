@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -44,13 +45,13 @@ type owaMailboxPolicyModel struct {
 	AllAddressListsEnabled                               types.Bool   `tfsdk:"all_address_lists_enabled"`
 	AllowCopyContactsToDeviceAddressBook                 types.Bool   `tfsdk:"allow_copy_contacts_to_device_address_book"`
 	AllowOfflineOn                                       types.String `tfsdk:"allow_offline_on"`
-	AllowedFileTypes                                     types.String `tfsdk:"allowed_file_types"`
-	AllowedMimeTypes                                     types.String `tfsdk:"allowed_mime_types"`
+	AllowedFileTypes                                     types.Set    `tfsdk:"allowed_file_types"`
+	AllowedMimeTypes                                     types.Set    `tfsdk:"allowed_mime_types"`
 	AllowedOrganizationAccountDomains                    types.Set    `tfsdk:"allowed_organization_account_domains"`
 	AttachmentsOfflineEnabledWin                         types.Bool   `tfsdk:"attachments_offline_enabled_win"`
 	BizBarEnabled                                        types.Bool   `tfsdk:"biz_bar_enabled"`
-	BlockedFileTypes                                     types.String `tfsdk:"blocked_file_types"`
-	BlockedMimeTypes                                     types.String `tfsdk:"blocked_mime_types"`
+	BlockedFileTypes                                     types.Set    `tfsdk:"blocked_file_types"`
+	BlockedMimeTypes                                     types.Set    `tfsdk:"blocked_mime_types"`
 	BookingsMailboxCreationEnabled                       types.Bool   `tfsdk:"bookings_mailbox_creation_enabled"`
 	BookingsMailboxDomain                                types.String `tfsdk:"bookings_mailbox_domain"`
 	BulkImportEMLEnabled                                 types.String `tfsdk:"bulk_import_eml_enabled"`
@@ -60,6 +61,7 @@ type owaMailboxPolicyModel struct {
 	ClassicAttachmentsEnabled                            types.Bool   `tfsdk:"classic_attachments_enabled"`
 	ConditionalAccessPolicy                              types.String `tfsdk:"conditional_access_policy"`
 	ContactsEnabled                                      types.Bool   `tfsdk:"contacts_enabled"`
+	DefaultClientLanguage                                types.Int64  `tfsdk:"default_client_language"`
 	DefaultTheme                                         types.String `tfsdk:"default_theme"`
 	DelegateAccessEnabled                                types.Bool   `tfsdk:"delegate_access_enabled"`
 	DirectFileAccessOnPrivateComputersEnabled            types.Bool   `tfsdk:"direct_file_access_on_private_computers_enabled"`
@@ -73,8 +75,8 @@ type owaMailboxPolicyModel struct {
 	ExternalSPMySiteHostURL                              types.String `tfsdk:"external_sp_my_site_host_url"`
 	FeedbackEnabled                                      types.Bool   `tfsdk:"feedback_enabled"`
 	ForceSaveAttachmentFilteringEnabled                  types.Bool   `tfsdk:"force_save_attachment_filtering_enabled"`
-	ForceSaveFileTypes                                   types.String `tfsdk:"force_save_file_types"`
-	ForceSaveMimeTypes                                   types.String `tfsdk:"force_save_mime_types"`
+	ForceSaveFileTypes                                   types.Set    `tfsdk:"force_save_file_types"`
+	ForceSaveMimeTypes                                   types.Set    `tfsdk:"force_save_mime_types"`
 	ForceWacViewingFirstOnPrivateComputers               types.Bool   `tfsdk:"force_wac_viewing_first_on_private_computers"`
 	ForceWacViewingFirstOnPublicComputers                types.Bool   `tfsdk:"force_wac_viewing_first_on_public_computers"`
 	FreCardsEnabled                                      types.Bool   `tfsdk:"fre_cards_enabled"`
@@ -91,12 +93,14 @@ type owaMailboxPolicyModel struct {
 	JournalEnabled                                       types.Bool   `tfsdk:"journal_enabled"`
 	LinkedInEnabled                                      types.Bool   `tfsdk:"linked_in_enabled"`
 	LocalEventsEnabled                                   types.Bool   `tfsdk:"local_events_enabled"`
+	LogonAndErrorLanguage                                types.Int64  `tfsdk:"logon_and_error_language"`
 	MessagePreviewsDisabled                              types.Bool   `tfsdk:"message_previews_disabled"`
 	MonthlyUpdatesEnabled                                types.Bool   `tfsdk:"monthly_updates_enabled"`
 	Name                                                 types.String `tfsdk:"name"`
 	NotesEnabled                                         types.Bool   `tfsdk:"notes_enabled"`
 	NpsSurveysEnabled                                    types.Bool   `tfsdk:"nps_surveys_enabled"`
 	OWALightEnabled                                      types.Bool   `tfsdk:"owa_light_enabled"`
+	OfflineDaysOfEmailToSave                             types.Int64  `tfsdk:"offline_days_of_email_to_save"`
 	OfflineDaysOfEmailToSaveSelectionEnabled             types.Bool   `tfsdk:"offline_days_of_email_to_save_selection_enabled"`
 	OfflineEnabledWeb                                    types.Bool   `tfsdk:"offline_enabled_web"`
 	OfflineEnabledWin                                    types.Bool   `tfsdk:"offline_enabled_win"`
@@ -172,13 +176,13 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"all_address_lists_enabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_copy_contacts_to_device_address_book":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowCopyContactsToDeviceAddressBook parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_offline_on":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowOfflineOn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_file_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_mime_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"allowed_file_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"allowed_mime_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"allowed_organization_account_domains":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedOrganizationAccountDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"attachments_offline_enabled_win":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AttachmentsOfflineEnabledWin parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"biz_bar_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BizBarEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"blocked_file_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"blocked_mime_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"blocked_file_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"blocked_mime_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"bookings_mailbox_creation_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsMailboxCreationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_mailbox_domain":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsMailboxDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"bulk_import_eml_enabled":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkImportEMLEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -188,6 +192,7 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"classic_attachments_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassicAttachmentsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"conditional_access_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConditionalAccessPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"contacts_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ContactsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"default_client_language":                                    schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultClientLanguage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_theme":                                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultTheme parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"delegate_access_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DelegateAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"direct_file_access_on_private_computers_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DirectFileAccessOnPrivateComputersEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -201,8 +206,8 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"external_sp_my_site_host_url":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalSPMySiteHostURL parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"feedback_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FeedbackEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"force_save_attachment_filtering_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveAttachmentFilteringEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"force_save_file_types":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"force_save_mime_types":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"force_save_file_types":                                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForceSaveFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"force_save_mime_types":                                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForceSaveMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"force_wac_viewing_first_on_private_computers":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceWacViewingFirstOnPrivateComputers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"force_wac_viewing_first_on_public_computers":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceWacViewingFirstOnPublicComputers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"fre_cards_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FreCardsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -219,12 +224,14 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"journal_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"linked_in_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkedInEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"local_events_enabled":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalEventsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"logon_and_error_language":                                   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -LogonAndErrorLanguage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"message_previews_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessagePreviewsDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"monthly_updates_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MonthlyUpdatesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                                       schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"notes_enabled":                                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"nps_surveys_enabled":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NpsSurveysEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_light_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWALightEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"offline_days_of_email_to_save":                              schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OfflineDaysOfEmailToSave parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"offline_days_of_email_to_save_selection_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineDaysOfEmailToSaveSelectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"offline_enabled_web":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineEnabledWeb parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"offline_enabled_win":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineEnabledWin parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -366,21 +373,13 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	if v := plan.AllowOfflineOn.ValueString(); v != "" {
 		sp.AllowOfflineOn = v
 	}
-	if v := plan.AllowedFileTypes.ValueString(); v != "" {
-		sp.AllowedFileTypes = v
-	}
-	if v := plan.AllowedMimeTypes.ValueString(); v != "" {
-		sp.AllowedMimeTypes = v
-	}
+	sp.AllowedFileTypes = toStringSlice(ctx, plan.AllowedFileTypes, &resp.Diagnostics)
+	sp.AllowedMimeTypes = toStringSlice(ctx, plan.AllowedMimeTypes, &resp.Diagnostics)
 	sp.AllowedOrganizationAccountDomains = toStringSlice(ctx, plan.AllowedOrganizationAccountDomains, &resp.Diagnostics)
 	sp.AttachmentsOfflineEnabledWin = plan.AttachmentsOfflineEnabledWin.ValueBool()
 	sp.BizBarEnabled = plan.BizBarEnabled.ValueBool()
-	if v := plan.BlockedFileTypes.ValueString(); v != "" {
-		sp.BlockedFileTypes = v
-	}
-	if v := plan.BlockedMimeTypes.ValueString(); v != "" {
-		sp.BlockedMimeTypes = v
-	}
+	sp.BlockedFileTypes = toStringSlice(ctx, plan.BlockedFileTypes, &resp.Diagnostics)
+	sp.BlockedMimeTypes = toStringSlice(ctx, plan.BlockedMimeTypes, &resp.Diagnostics)
 	sp.BookingsMailboxCreationEnabled = plan.BookingsMailboxCreationEnabled.ValueBool()
 	sp.BookingsMailboxDomain = plan.BookingsMailboxDomain.ValueString()
 	if v := plan.BulkImportEMLEnabled.ValueString(); v != "" {
@@ -396,6 +395,7 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 		sp.ConditionalAccessPolicy = v
 	}
 	sp.ContactsEnabled = plan.ContactsEnabled.ValueBool()
+	sp.DefaultClientLanguage = int(plan.DefaultClientLanguage.ValueInt64())
 	sp.DefaultTheme = plan.DefaultTheme.ValueString()
 	sp.DelegateAccessEnabled = plan.DelegateAccessEnabled.ValueBool()
 	sp.DirectFileAccessOnPrivateComputersEnabled = plan.DirectFileAccessOnPrivateComputersEnabled.ValueBool()
@@ -409,12 +409,8 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	sp.ExternalSPMySiteHostURL = plan.ExternalSPMySiteHostURL.ValueString()
 	sp.FeedbackEnabled = plan.FeedbackEnabled.ValueBool()
 	sp.ForceSaveAttachmentFilteringEnabled = plan.ForceSaveAttachmentFilteringEnabled.ValueBool()
-	if v := plan.ForceSaveFileTypes.ValueString(); v != "" {
-		sp.ForceSaveFileTypes = v
-	}
-	if v := plan.ForceSaveMimeTypes.ValueString(); v != "" {
-		sp.ForceSaveMimeTypes = v
-	}
+	sp.ForceSaveFileTypes = toStringSlice(ctx, plan.ForceSaveFileTypes, &resp.Diagnostics)
+	sp.ForceSaveMimeTypes = toStringSlice(ctx, plan.ForceSaveMimeTypes, &resp.Diagnostics)
 	sp.ForceWacViewingFirstOnPrivateComputers = plan.ForceWacViewingFirstOnPrivateComputers.ValueBool()
 	sp.ForceWacViewingFirstOnPublicComputers = plan.ForceWacViewingFirstOnPublicComputers.ValueBool()
 	sp.FreCardsEnabled = plan.FreCardsEnabled.ValueBool()
@@ -437,11 +433,13 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	sp.JournalEnabled = plan.JournalEnabled.ValueBool()
 	sp.LinkedInEnabled = plan.LinkedInEnabled.ValueBool()
 	sp.LocalEventsEnabled = plan.LocalEventsEnabled.ValueBool()
+	sp.LogonAndErrorLanguage = int(plan.LogonAndErrorLanguage.ValueInt64())
 	sp.MessagePreviewsDisabled = plan.MessagePreviewsDisabled.ValueBool()
 	sp.MonthlyUpdatesEnabled = plan.MonthlyUpdatesEnabled.ValueBool()
 	sp.NotesEnabled = plan.NotesEnabled.ValueBool()
 	sp.NpsSurveysEnabled = plan.NpsSurveysEnabled.ValueBool()
 	sp.OWALightEnabled = plan.OWALightEnabled.ValueBool()
+	sp.OfflineDaysOfEmailToSave = int(plan.OfflineDaysOfEmailToSave.ValueInt64())
 	sp.OfflineDaysOfEmailToSaveSelectionEnabled = plan.OfflineDaysOfEmailToSaveSelectionEnabled.ValueBool()
 	sp.OfflineEnabledWeb = plan.OfflineEnabledWeb.ValueBool()
 	sp.OfflineEnabledWin = plan.OfflineEnabledWin.ValueBool()
@@ -525,18 +523,12 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 		"ActionForUnknownFileAndMIMETypes": cfg.ActionForUnknownFileAndMIMETypes,
 		"AdditionalAccountsEnabled":        cfg.AdditionalAccountsEnabled,
 		"AllowOfflineOn":                   cfg.AllowOfflineOn,
-		"AllowedFileTypes":                 cfg.AllowedFileTypes,
-		"AllowedMimeTypes":                 cfg.AllowedMimeTypes,
-		"BlockedFileTypes":                 cfg.BlockedFileTypes,
-		"BlockedMimeTypes":                 cfg.BlockedMimeTypes,
 		"BookingsMailboxDomain":            cfg.BookingsMailboxDomain,
 		"BulkImportEMLEnabled":             cfg.BulkImportEMLEnabled,
 		"ChangeSettingsAccountEnabled":     cfg.ChangeSettingsAccountEnabled,
 		"ConditionalAccessPolicy":          cfg.ConditionalAccessPolicy,
 		"DefaultTheme":                     cfg.DefaultTheme,
 		"ExternalSPMySiteHostURL":          cfg.ExternalSPMySiteHostURL,
-		"ForceSaveFileTypes":               cfg.ForceSaveFileTypes,
-		"ForceSaveMimeTypes":               cfg.ForceSaveMimeTypes,
 		"HideClassicOutlookToggleOut":      cfg.HideClassicOutlookToggleOut,
 		"InstantMessagingType":             cfg.InstantMessagingType,
 		"InternalSPMySiteHostURL":          cfg.InternalSPMySiteHostURL,
@@ -619,13 +611,13 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.AllAddressListsEnabled = types.BoolValue(getBool(obj, "AllAddressListsEnabled"))
 	m.AllowCopyContactsToDeviceAddressBook = types.BoolValue(getBool(obj, "AllowCopyContactsToDeviceAddressBook"))
 	m.AllowOfflineOn = types.StringValue(getString(obj, "AllowOfflineOn"))
-	m.AllowedFileTypes = types.StringValue(getString(obj, "AllowedFileTypes"))
-	m.AllowedMimeTypes = types.StringValue(getString(obj, "AllowedMimeTypes"))
+	m.AllowedFileTypes = stringSetValue(ctx, getStringSlice(obj, "AllowedFileTypes"))
+	m.AllowedMimeTypes = stringSetValue(ctx, getStringSlice(obj, "AllowedMimeTypes"))
 	m.AllowedOrganizationAccountDomains = stringSetValue(ctx, getStringSlice(obj, "AllowedOrganizationAccountDomains"))
 	m.AttachmentsOfflineEnabledWin = types.BoolValue(getBool(obj, "AttachmentsOfflineEnabledWin"))
 	m.BizBarEnabled = types.BoolValue(getBool(obj, "BizBarEnabled"))
-	m.BlockedFileTypes = types.StringValue(getString(obj, "BlockedFileTypes"))
-	m.BlockedMimeTypes = types.StringValue(getString(obj, "BlockedMimeTypes"))
+	m.BlockedFileTypes = stringSetValue(ctx, getStringSlice(obj, "BlockedFileTypes"))
+	m.BlockedMimeTypes = stringSetValue(ctx, getStringSlice(obj, "BlockedMimeTypes"))
 	m.BookingsMailboxCreationEnabled = types.BoolValue(getBool(obj, "BookingsMailboxCreationEnabled"))
 	m.BookingsMailboxDomain = types.StringValue(getString(obj, "BookingsMailboxDomain"))
 	m.BulkImportEMLEnabled = types.StringValue(getString(obj, "BulkImportEMLEnabled"))
@@ -635,6 +627,7 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.ClassicAttachmentsEnabled = types.BoolValue(getBool(obj, "ClassicAttachmentsEnabled"))
 	m.ConditionalAccessPolicy = types.StringValue(getString(obj, "ConditionalAccessPolicy"))
 	m.ContactsEnabled = types.BoolValue(getBool(obj, "ContactsEnabled"))
+	m.DefaultClientLanguage = types.Int64Value(getInt(obj, "DefaultClientLanguage"))
 	m.DefaultTheme = types.StringValue(getString(obj, "DefaultTheme"))
 	m.DelegateAccessEnabled = types.BoolValue(getBool(obj, "DelegateAccessEnabled"))
 	m.DirectFileAccessOnPrivateComputersEnabled = types.BoolValue(getBool(obj, "DirectFileAccessOnPrivateComputersEnabled"))
@@ -648,8 +641,8 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.ExternalSPMySiteHostURL = types.StringValue(getString(obj, "ExternalSPMySiteHostURL"))
 	m.FeedbackEnabled = types.BoolValue(getBool(obj, "FeedbackEnabled"))
 	m.ForceSaveAttachmentFilteringEnabled = types.BoolValue(getBool(obj, "ForceSaveAttachmentFilteringEnabled"))
-	m.ForceSaveFileTypes = types.StringValue(getString(obj, "ForceSaveFileTypes"))
-	m.ForceSaveMimeTypes = types.StringValue(getString(obj, "ForceSaveMimeTypes"))
+	m.ForceSaveFileTypes = stringSetValue(ctx, getStringSlice(obj, "ForceSaveFileTypes"))
+	m.ForceSaveMimeTypes = stringSetValue(ctx, getStringSlice(obj, "ForceSaveMimeTypes"))
 	m.ForceWacViewingFirstOnPrivateComputers = types.BoolValue(getBool(obj, "ForceWacViewingFirstOnPrivateComputers"))
 	m.ForceWacViewingFirstOnPublicComputers = types.BoolValue(getBool(obj, "ForceWacViewingFirstOnPublicComputers"))
 	m.FreCardsEnabled = types.BoolValue(getBool(obj, "FreCardsEnabled"))
@@ -666,12 +659,14 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.JournalEnabled = types.BoolValue(getBool(obj, "JournalEnabled"))
 	m.LinkedInEnabled = types.BoolValue(getBool(obj, "LinkedInEnabled"))
 	m.LocalEventsEnabled = types.BoolValue(getBool(obj, "LocalEventsEnabled"))
+	m.LogonAndErrorLanguage = types.Int64Value(getInt(obj, "LogonAndErrorLanguage"))
 	m.MessagePreviewsDisabled = types.BoolValue(getBool(obj, "MessagePreviewsDisabled"))
 	m.MonthlyUpdatesEnabled = types.BoolValue(getBool(obj, "MonthlyUpdatesEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NotesEnabled = types.BoolValue(getBool(obj, "NotesEnabled"))
 	m.NpsSurveysEnabled = types.BoolValue(getBool(obj, "NpsSurveysEnabled"))
 	m.OWALightEnabled = types.BoolValue(getBool(obj, "OWALightEnabled"))
+	m.OfflineDaysOfEmailToSave = types.Int64Value(getInt(obj, "OfflineDaysOfEmailToSave"))
 	m.OfflineDaysOfEmailToSaveSelectionEnabled = types.BoolValue(getBool(obj, "OfflineDaysOfEmailToSaveSelectionEnabled"))
 	m.OfflineEnabledWeb = types.BoolValue(getBool(obj, "OfflineEnabledWeb"))
 	m.OfflineEnabledWin = types.BoolValue(getBool(obj, "OfflineEnabledWin"))
@@ -739,13 +734,13 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.AllAddressListsEnabled = reconcile.KeepBool(cfg.AllAddressListsEnabled, read.AllAddressListsEnabled)
 	read.AllowCopyContactsToDeviceAddressBook = reconcile.KeepBool(cfg.AllowCopyContactsToDeviceAddressBook, read.AllowCopyContactsToDeviceAddressBook)
 	read.AllowOfflineOn = reconcile.KeepStr(cfg.AllowOfflineOn, read.AllowOfflineOn)
-	read.AllowedFileTypes = reconcile.KeepStr(cfg.AllowedFileTypes, read.AllowedFileTypes)
-	read.AllowedMimeTypes = reconcile.KeepStr(cfg.AllowedMimeTypes, read.AllowedMimeTypes)
+	read.AllowedFileTypes = reconcile.KeepSet(cfg.AllowedFileTypes, read.AllowedFileTypes)
+	read.AllowedMimeTypes = reconcile.KeepSet(cfg.AllowedMimeTypes, read.AllowedMimeTypes)
 	read.AllowedOrganizationAccountDomains = reconcile.KeepSet(cfg.AllowedOrganizationAccountDomains, read.AllowedOrganizationAccountDomains)
 	read.AttachmentsOfflineEnabledWin = reconcile.KeepBool(cfg.AttachmentsOfflineEnabledWin, read.AttachmentsOfflineEnabledWin)
 	read.BizBarEnabled = reconcile.KeepBool(cfg.BizBarEnabled, read.BizBarEnabled)
-	read.BlockedFileTypes = reconcile.KeepStr(cfg.BlockedFileTypes, read.BlockedFileTypes)
-	read.BlockedMimeTypes = reconcile.KeepStr(cfg.BlockedMimeTypes, read.BlockedMimeTypes)
+	read.BlockedFileTypes = reconcile.KeepSet(cfg.BlockedFileTypes, read.BlockedFileTypes)
+	read.BlockedMimeTypes = reconcile.KeepSet(cfg.BlockedMimeTypes, read.BlockedMimeTypes)
 	read.BookingsMailboxCreationEnabled = reconcile.KeepBool(cfg.BookingsMailboxCreationEnabled, read.BookingsMailboxCreationEnabled)
 	read.BookingsMailboxDomain = reconcile.KeepStr(cfg.BookingsMailboxDomain, read.BookingsMailboxDomain)
 	read.BulkImportEMLEnabled = reconcile.KeepStr(cfg.BulkImportEMLEnabled, read.BulkImportEMLEnabled)
@@ -755,6 +750,7 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.ClassicAttachmentsEnabled = reconcile.KeepBool(cfg.ClassicAttachmentsEnabled, read.ClassicAttachmentsEnabled)
 	read.ConditionalAccessPolicy = reconcile.KeepStr(cfg.ConditionalAccessPolicy, read.ConditionalAccessPolicy)
 	read.ContactsEnabled = reconcile.KeepBool(cfg.ContactsEnabled, read.ContactsEnabled)
+	read.DefaultClientLanguage = reconcile.KeepInt64(cfg.DefaultClientLanguage, read.DefaultClientLanguage)
 	read.DefaultTheme = reconcile.KeepStr(cfg.DefaultTheme, read.DefaultTheme)
 	read.DelegateAccessEnabled = reconcile.KeepBool(cfg.DelegateAccessEnabled, read.DelegateAccessEnabled)
 	read.DirectFileAccessOnPrivateComputersEnabled = reconcile.KeepBool(cfg.DirectFileAccessOnPrivateComputersEnabled, read.DirectFileAccessOnPrivateComputersEnabled)
@@ -768,8 +764,8 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.ExternalSPMySiteHostURL = reconcile.KeepStr(cfg.ExternalSPMySiteHostURL, read.ExternalSPMySiteHostURL)
 	read.FeedbackEnabled = reconcile.KeepBool(cfg.FeedbackEnabled, read.FeedbackEnabled)
 	read.ForceSaveAttachmentFilteringEnabled = reconcile.KeepBool(cfg.ForceSaveAttachmentFilteringEnabled, read.ForceSaveAttachmentFilteringEnabled)
-	read.ForceSaveFileTypes = reconcile.KeepStr(cfg.ForceSaveFileTypes, read.ForceSaveFileTypes)
-	read.ForceSaveMimeTypes = reconcile.KeepStr(cfg.ForceSaveMimeTypes, read.ForceSaveMimeTypes)
+	read.ForceSaveFileTypes = reconcile.KeepSet(cfg.ForceSaveFileTypes, read.ForceSaveFileTypes)
+	read.ForceSaveMimeTypes = reconcile.KeepSet(cfg.ForceSaveMimeTypes, read.ForceSaveMimeTypes)
 	read.ForceWacViewingFirstOnPrivateComputers = reconcile.KeepBool(cfg.ForceWacViewingFirstOnPrivateComputers, read.ForceWacViewingFirstOnPrivateComputers)
 	read.ForceWacViewingFirstOnPublicComputers = reconcile.KeepBool(cfg.ForceWacViewingFirstOnPublicComputers, read.ForceWacViewingFirstOnPublicComputers)
 	read.FreCardsEnabled = reconcile.KeepBool(cfg.FreCardsEnabled, read.FreCardsEnabled)
@@ -786,12 +782,14 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.JournalEnabled = reconcile.KeepBool(cfg.JournalEnabled, read.JournalEnabled)
 	read.LinkedInEnabled = reconcile.KeepBool(cfg.LinkedInEnabled, read.LinkedInEnabled)
 	read.LocalEventsEnabled = reconcile.KeepBool(cfg.LocalEventsEnabled, read.LocalEventsEnabled)
+	read.LogonAndErrorLanguage = reconcile.KeepInt64(cfg.LogonAndErrorLanguage, read.LogonAndErrorLanguage)
 	read.MessagePreviewsDisabled = reconcile.KeepBool(cfg.MessagePreviewsDisabled, read.MessagePreviewsDisabled)
 	read.MonthlyUpdatesEnabled = reconcile.KeepBool(cfg.MonthlyUpdatesEnabled, read.MonthlyUpdatesEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NotesEnabled = reconcile.KeepBool(cfg.NotesEnabled, read.NotesEnabled)
 	read.NpsSurveysEnabled = reconcile.KeepBool(cfg.NpsSurveysEnabled, read.NpsSurveysEnabled)
 	read.OWALightEnabled = reconcile.KeepBool(cfg.OWALightEnabled, read.OWALightEnabled)
+	read.OfflineDaysOfEmailToSave = reconcile.KeepInt64(cfg.OfflineDaysOfEmailToSave, read.OfflineDaysOfEmailToSave)
 	read.OfflineDaysOfEmailToSaveSelectionEnabled = reconcile.KeepBool(cfg.OfflineDaysOfEmailToSaveSelectionEnabled, read.OfflineDaysOfEmailToSaveSelectionEnabled)
 	read.OfflineEnabledWeb = reconcile.KeepBool(cfg.OfflineEnabledWeb, read.OfflineEnabledWeb)
 	read.OfflineEnabledWin = reconcile.KeepBool(cfg.OfflineEnabledWin, read.OfflineEnabledWin)

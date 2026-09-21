@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -34,40 +35,46 @@ type calendarProcessingResource struct{ client *clients.Client }
 func NewCalendarProcessingResource() resource.Resource { return &calendarProcessingResource{} }
 
 type calendarProcessingModel struct {
-	ID                                  types.String `tfsdk:"id"`
-	Identity                            types.String `tfsdk:"identity"`
-	AddAdditionalResponse               types.Bool   `tfsdk:"add_additional_response"`
-	AddNewRequestsTentatively           types.Bool   `tfsdk:"add_new_requests_tentatively"`
-	AddOrganizerToSubject               types.Bool   `tfsdk:"add_organizer_to_subject"`
-	AdditionalResponse                  types.String `tfsdk:"additional_response"`
-	AllBookInPolicy                     types.Bool   `tfsdk:"all_book_in_policy"`
-	AllRequestInPolicy                  types.Bool   `tfsdk:"all_request_in_policy"`
-	AllRequestOutOfPolicy               types.Bool   `tfsdk:"all_request_out_of_policy"`
-	AllowConflicts                      types.Bool   `tfsdk:"allow_conflicts"`
-	AllowRecurringMeetings              types.Bool   `tfsdk:"allow_recurring_meetings"`
-	AutomateProcessing                  types.String `tfsdk:"automate_processing"`
-	BookInPolicy                        types.Set    `tfsdk:"book_in_policy"`
-	BookingType                         types.String `tfsdk:"booking_type"`
-	DeleteAttachments                   types.Bool   `tfsdk:"delete_attachments"`
-	DeleteComments                      types.Bool   `tfsdk:"delete_comments"`
-	DeleteNonCalendarItems              types.Bool   `tfsdk:"delete_non_calendar_items"`
-	DeleteSubject                       types.Bool   `tfsdk:"delete_subject"`
-	EnableAutoRelease                   types.Bool   `tfsdk:"enable_auto_release"`
-	EnableResponseDetails               types.Bool   `tfsdk:"enable_response_details"`
-	EnforceCapacity                     types.Bool   `tfsdk:"enforce_capacity"`
-	EnforceSchedulingHorizon            types.Bool   `tfsdk:"enforce_scheduling_horizon"`
-	ForwardRequestsToDelegates          types.Bool   `tfsdk:"forward_requests_to_delegates"`
-	OrganizerInfo                       types.Bool   `tfsdk:"organizer_info"`
-	ProcessExternalMeetingMessages      types.Bool   `tfsdk:"process_external_meeting_messages"`
-	RemoveCanceledMeetings              types.Bool   `tfsdk:"remove_canceled_meetings"`
-	RemoveForwardedMeetingNotifications types.Bool   `tfsdk:"remove_forwarded_meeting_notifications"`
-	RemoveOldMeetingMessages            types.Bool   `tfsdk:"remove_old_meeting_messages"`
-	RemovePrivateProperty               types.Bool   `tfsdk:"remove_private_property"`
-	RequestInPolicy                     types.Set    `tfsdk:"request_in_policy"`
-	RequestOutOfPolicy                  types.Set    `tfsdk:"request_out_of_policy"`
-	ResourceDelegates                   types.Set    `tfsdk:"resource_delegates"`
-	ScheduleOnlyDuringWorkHours         types.Bool   `tfsdk:"schedule_only_during_work_hours"`
-	TentativePendingApproval            types.Bool   `tfsdk:"tentative_pending_approval"`
+	ID                                   types.String `tfsdk:"id"`
+	Identity                             types.String `tfsdk:"identity"`
+	AddAdditionalResponse                types.Bool   `tfsdk:"add_additional_response"`
+	AddNewRequestsTentatively            types.Bool   `tfsdk:"add_new_requests_tentatively"`
+	AddOrganizerToSubject                types.Bool   `tfsdk:"add_organizer_to_subject"`
+	AdditionalResponse                   types.String `tfsdk:"additional_response"`
+	AllBookInPolicy                      types.Bool   `tfsdk:"all_book_in_policy"`
+	AllRequestInPolicy                   types.Bool   `tfsdk:"all_request_in_policy"`
+	AllRequestOutOfPolicy                types.Bool   `tfsdk:"all_request_out_of_policy"`
+	AllowConflicts                       types.Bool   `tfsdk:"allow_conflicts"`
+	AllowRecurringMeetings               types.Bool   `tfsdk:"allow_recurring_meetings"`
+	AutomateProcessing                   types.String `tfsdk:"automate_processing"`
+	BookInPolicy                         types.Set    `tfsdk:"book_in_policy"`
+	BookingType                          types.String `tfsdk:"booking_type"`
+	BookingWindowInDays                  types.Int64  `tfsdk:"booking_window_in_days"`
+	ConflictPercentageAllowed            types.Int64  `tfsdk:"conflict_percentage_allowed"`
+	DeleteAttachments                    types.Bool   `tfsdk:"delete_attachments"`
+	DeleteComments                       types.Bool   `tfsdk:"delete_comments"`
+	DeleteNonCalendarItems               types.Bool   `tfsdk:"delete_non_calendar_items"`
+	DeleteSubject                        types.Bool   `tfsdk:"delete_subject"`
+	EnableAutoRelease                    types.Bool   `tfsdk:"enable_auto_release"`
+	EnableResponseDetails                types.Bool   `tfsdk:"enable_response_details"`
+	EnforceCapacity                      types.Bool   `tfsdk:"enforce_capacity"`
+	EnforceSchedulingHorizon             types.Bool   `tfsdk:"enforce_scheduling_horizon"`
+	ForwardRequestsToDelegates           types.Bool   `tfsdk:"forward_requests_to_delegates"`
+	MaximumConflictInstances             types.Int64  `tfsdk:"maximum_conflict_instances"`
+	MaximumDurationInMinutes             types.Int64  `tfsdk:"maximum_duration_in_minutes"`
+	MinimumDurationInMinutes             types.Int64  `tfsdk:"minimum_duration_in_minutes"`
+	OrganizerInfo                        types.Bool   `tfsdk:"organizer_info"`
+	PostReservationMaxClaimTimeInMinutes types.Int64  `tfsdk:"post_reservation_max_claim_time_in_minutes"`
+	ProcessExternalMeetingMessages       types.Bool   `tfsdk:"process_external_meeting_messages"`
+	RemoveCanceledMeetings               types.Bool   `tfsdk:"remove_canceled_meetings"`
+	RemoveForwardedMeetingNotifications  types.Bool   `tfsdk:"remove_forwarded_meeting_notifications"`
+	RemoveOldMeetingMessages             types.Bool   `tfsdk:"remove_old_meeting_messages"`
+	RemovePrivateProperty                types.Bool   `tfsdk:"remove_private_property"`
+	RequestInPolicy                      types.Set    `tfsdk:"request_in_policy"`
+	RequestOutOfPolicy                   types.Set    `tfsdk:"request_out_of_policy"`
+	ResourceDelegates                    types.Set    `tfsdk:"resource_delegates"`
+	ScheduleOnlyDuringWorkHours          types.Bool   `tfsdk:"schedule_only_during_work_hours"`
+	TentativePendingApproval             types.Bool   `tfsdk:"tentative_pending_approval"`
 }
 
 func (r *calendarProcessingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -78,40 +85,46 @@ func (r *calendarProcessingResource) Schema(_ context.Context, _ resource.Schema
 	resp.Schema = schema.Schema{
 		Description: "Manages the CalendarProcessing configuration via Set-CalendarProcessing.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                               schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"add_additional_response":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddAdditionalResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"add_new_requests_tentatively":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddNewRequestsTentatively parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"add_organizer_to_subject":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddOrganizerToSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"additional_response":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"all_book_in_policy":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllBookInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"all_request_in_policy":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"all_request_out_of_policy":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"allow_conflicts":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowConflicts parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"allow_recurring_meetings":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRecurringMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"automate_processing":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutomateProcessing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"book_in_policy":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BookInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"booking_type":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"delete_attachments":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteAttachments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_comments":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteComments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_non_calendar_items":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteNonCalendarItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_subject":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enable_auto_release":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableAutoRelease parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enable_response_details":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableResponseDetails parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enforce_capacity":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceCapacity parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enforce_scheduling_horizon":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceSchedulingHorizon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"forward_requests_to_delegates":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardRequestsToDelegates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"organizer_info":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizerInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"process_external_meeting_messages":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProcessExternalMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_canceled_meetings":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveCanceledMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_forwarded_meeting_notifications": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveForwardedMeetingNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_old_meeting_messages":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveOldMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_private_property":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemovePrivateProperty parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"request_in_policy":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"request_out_of_policy":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"resource_delegates":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourceDelegates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"schedule_only_during_work_hours":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ScheduleOnlyDuringWorkHours parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"tentative_pending_approval":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TentativePendingApproval parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"id":                                         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                                   schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"add_additional_response":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddAdditionalResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"add_new_requests_tentatively":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddNewRequestsTentatively parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"add_organizer_to_subject":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddOrganizerToSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"additional_response":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"all_book_in_policy":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllBookInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"all_request_in_policy":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"all_request_out_of_policy":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"allow_conflicts":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowConflicts parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"allow_recurring_meetings":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRecurringMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"automate_processing":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutomateProcessing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"book_in_policy":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BookInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"booking_type":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"booking_window_in_days":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -BookingWindowInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"conflict_percentage_allowed":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ConflictPercentageAllowed parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"delete_attachments":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteAttachments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_comments":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteComments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_non_calendar_items":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteNonCalendarItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_subject":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enable_auto_release":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableAutoRelease parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enable_response_details":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableResponseDetails parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enforce_capacity":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceCapacity parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enforce_scheduling_horizon":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceSchedulingHorizon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"forward_requests_to_delegates":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardRequestsToDelegates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"maximum_conflict_instances":                 schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MaximumConflictInstances parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"maximum_duration_in_minutes":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MaximumDurationInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"minimum_duration_in_minutes":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MinimumDurationInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"organizer_info":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizerInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"post_reservation_max_claim_time_in_minutes": schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PostReservationMaxClaimTimeInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"process_external_meeting_messages":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProcessExternalMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_canceled_meetings":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveCanceledMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_forwarded_meeting_notifications":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveForwardedMeetingNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_old_meeting_messages":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveOldMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_private_property":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemovePrivateProperty parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"request_in_policy":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"request_out_of_policy":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"resource_delegates":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourceDelegates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"schedule_only_during_work_hours":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ScheduleOnlyDuringWorkHours parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"tentative_pending_approval":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TentativePendingApproval parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -147,6 +160,8 @@ func (r *calendarProcessingResource) Create(ctx context.Context, req resource.Cr
 	if v := plan.BookingType.ValueString(); v != "" {
 		sp.BookingType = v
 	}
+	sp.BookingWindowInDays = int(plan.BookingWindowInDays.ValueInt64())
+	sp.ConflictPercentageAllowed = int(plan.ConflictPercentageAllowed.ValueInt64())
 	sp.DeleteAttachments = plan.DeleteAttachments.ValueBool()
 	sp.DeleteComments = plan.DeleteComments.ValueBool()
 	sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBool()
@@ -156,7 +171,11 @@ func (r *calendarProcessingResource) Create(ctx context.Context, req resource.Cr
 	sp.EnforceCapacity = plan.EnforceCapacity.ValueBool()
 	sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBool()
 	sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBool()
+	sp.MaximumConflictInstances = int(plan.MaximumConflictInstances.ValueInt64())
+	sp.MaximumDurationInMinutes = int(plan.MaximumDurationInMinutes.ValueInt64())
+	sp.MinimumDurationInMinutes = int(plan.MinimumDurationInMinutes.ValueInt64())
 	sp.OrganizerInfo = plan.OrganizerInfo.ValueBool()
+	sp.PostReservationMaxClaimTimeInMinutes = int(plan.PostReservationMaxClaimTimeInMinutes.ValueInt64())
 	sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBool()
 	sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBool()
 	sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBool()
@@ -222,6 +241,8 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	if v := plan.BookingType.ValueString(); v != "" {
 		sp.BookingType = v
 	}
+	sp.BookingWindowInDays = int(plan.BookingWindowInDays.ValueInt64())
+	sp.ConflictPercentageAllowed = int(plan.ConflictPercentageAllowed.ValueInt64())
 	sp.DeleteAttachments = plan.DeleteAttachments.ValueBool()
 	sp.DeleteComments = plan.DeleteComments.ValueBool()
 	sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBool()
@@ -231,7 +252,11 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	sp.EnforceCapacity = plan.EnforceCapacity.ValueBool()
 	sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBool()
 	sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBool()
+	sp.MaximumConflictInstances = int(plan.MaximumConflictInstances.ValueInt64())
+	sp.MaximumDurationInMinutes = int(plan.MaximumDurationInMinutes.ValueInt64())
+	sp.MinimumDurationInMinutes = int(plan.MinimumDurationInMinutes.ValueInt64())
 	sp.OrganizerInfo = plan.OrganizerInfo.ValueBool()
+	sp.PostReservationMaxClaimTimeInMinutes = int(plan.PostReservationMaxClaimTimeInMinutes.ValueInt64())
 	sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBool()
 	sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBool()
 	sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBool()
@@ -317,6 +342,8 @@ func readCalendarProcessing(ctx context.Context, obj map[string]any, m *calendar
 	m.AutomateProcessing = types.StringValue(getString(obj, "AutomateProcessing"))
 	m.BookInPolicy = stringSetValue(ctx, getStringSlice(obj, "BookInPolicy"))
 	m.BookingType = types.StringValue(getString(obj, "BookingType"))
+	m.BookingWindowInDays = types.Int64Value(getInt(obj, "BookingWindowInDays"))
+	m.ConflictPercentageAllowed = types.Int64Value(getInt(obj, "ConflictPercentageAllowed"))
 	m.DeleteAttachments = types.BoolValue(getBool(obj, "DeleteAttachments"))
 	m.DeleteComments = types.BoolValue(getBool(obj, "DeleteComments"))
 	m.DeleteNonCalendarItems = types.BoolValue(getBool(obj, "DeleteNonCalendarItems"))
@@ -326,7 +353,11 @@ func readCalendarProcessing(ctx context.Context, obj map[string]any, m *calendar
 	m.EnforceCapacity = types.BoolValue(getBool(obj, "EnforceCapacity"))
 	m.EnforceSchedulingHorizon = types.BoolValue(getBool(obj, "EnforceSchedulingHorizon"))
 	m.ForwardRequestsToDelegates = types.BoolValue(getBool(obj, "ForwardRequestsToDelegates"))
+	m.MaximumConflictInstances = types.Int64Value(getInt(obj, "MaximumConflictInstances"))
+	m.MaximumDurationInMinutes = types.Int64Value(getInt(obj, "MaximumDurationInMinutes"))
+	m.MinimumDurationInMinutes = types.Int64Value(getInt(obj, "MinimumDurationInMinutes"))
 	m.OrganizerInfo = types.BoolValue(getBool(obj, "OrganizerInfo"))
+	m.PostReservationMaxClaimTimeInMinutes = types.Int64Value(getInt(obj, "PostReservationMaxClaimTimeInMinutes"))
 	m.ProcessExternalMeetingMessages = types.BoolValue(getBool(obj, "ProcessExternalMeetingMessages"))
 	m.RemoveCanceledMeetings = types.BoolValue(getBool(obj, "RemoveCanceledMeetings"))
 	m.RemoveForwardedMeetingNotifications = types.BoolValue(getBool(obj, "RemoveForwardedMeetingNotifications"))
@@ -353,6 +384,8 @@ func (r *calendarProcessingResource) reconcileState(cfg, read *calendarProcessin
 	read.AutomateProcessing = reconcile.KeepStr(cfg.AutomateProcessing, read.AutomateProcessing)
 	read.BookInPolicy = reconcile.KeepSet(cfg.BookInPolicy, read.BookInPolicy)
 	read.BookingType = reconcile.KeepStr(cfg.BookingType, read.BookingType)
+	read.BookingWindowInDays = reconcile.KeepInt64(cfg.BookingWindowInDays, read.BookingWindowInDays)
+	read.ConflictPercentageAllowed = reconcile.KeepInt64(cfg.ConflictPercentageAllowed, read.ConflictPercentageAllowed)
 	read.DeleteAttachments = reconcile.KeepBool(cfg.DeleteAttachments, read.DeleteAttachments)
 	read.DeleteComments = reconcile.KeepBool(cfg.DeleteComments, read.DeleteComments)
 	read.DeleteNonCalendarItems = reconcile.KeepBool(cfg.DeleteNonCalendarItems, read.DeleteNonCalendarItems)
@@ -362,7 +395,11 @@ func (r *calendarProcessingResource) reconcileState(cfg, read *calendarProcessin
 	read.EnforceCapacity = reconcile.KeepBool(cfg.EnforceCapacity, read.EnforceCapacity)
 	read.EnforceSchedulingHorizon = reconcile.KeepBool(cfg.EnforceSchedulingHorizon, read.EnforceSchedulingHorizon)
 	read.ForwardRequestsToDelegates = reconcile.KeepBool(cfg.ForwardRequestsToDelegates, read.ForwardRequestsToDelegates)
+	read.MaximumConflictInstances = reconcile.KeepInt64(cfg.MaximumConflictInstances, read.MaximumConflictInstances)
+	read.MaximumDurationInMinutes = reconcile.KeepInt64(cfg.MaximumDurationInMinutes, read.MaximumDurationInMinutes)
+	read.MinimumDurationInMinutes = reconcile.KeepInt64(cfg.MinimumDurationInMinutes, read.MinimumDurationInMinutes)
 	read.OrganizerInfo = reconcile.KeepBool(cfg.OrganizerInfo, read.OrganizerInfo)
+	read.PostReservationMaxClaimTimeInMinutes = reconcile.KeepInt64(cfg.PostReservationMaxClaimTimeInMinutes, read.PostReservationMaxClaimTimeInMinutes)
 	read.ProcessExternalMeetingMessages = reconcile.KeepBool(cfg.ProcessExternalMeetingMessages, read.ProcessExternalMeetingMessages)
 	read.RemoveCanceledMeetings = reconcile.KeepBool(cfg.RemoveCanceledMeetings, read.RemoveCanceledMeetings)
 	read.RemoveForwardedMeetingNotifications = reconcile.KeepBool(cfg.RemoveForwardedMeetingNotifications, read.RemoveForwardedMeetingNotifications)

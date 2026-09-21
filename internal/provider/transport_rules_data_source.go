@@ -167,6 +167,7 @@ func (d *transportRuleListDataSource) Schema(_ context.Context, _ datasource.Sch
 				"name":                                                schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
 				"notify_sender":                                       schema.StringAttribute{Computed: true, Description: "Maps to the -NotifySender parameter."},
 				"prepend_subject":                                     schema.StringAttribute{Computed: true, Description: "Maps to the -PrependSubject parameter."},
+				"priority":                                            schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 				"quarantine":                                          schema.BoolAttribute{Computed: true, Description: "Maps to the -Quarantine parameter."},
 				"recipient_ad_attribute_contains_words":               schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RecipientADAttributeContainsWords parameter."},
 				"recipient_ad_attribute_matches_patterns":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RecipientADAttributeMatchesPatterns parameter."},

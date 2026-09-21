@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,7 +44,7 @@ type organizationConfigModel struct {
 	AppsForOfficeEnabled                                      types.Bool   `tfsdk:"apps_for_office_enabled"`
 	AsyncSendEnabled                                          types.Bool   `tfsdk:"async_send_enabled"`
 	AuditDisabled                                             types.Bool   `tfsdk:"audit_disabled"`
-	AutoArchivingThresholdPercentage                          types.String `tfsdk:"auto_archiving_threshold_percentage"`
+	AutoArchivingThresholdPercentage                          types.Int64  `tfsdk:"auto_archiving_threshold_percentage"`
 	AutoEnableArchiveMailbox                                  types.Bool   `tfsdk:"auto_enable_archive_mailbox"`
 	AutoExpandingArchive                                      types.Bool   `tfsdk:"auto_expanding_archive"`
 	AutodiscoverPartialDirSync                                types.Bool   `tfsdk:"autodiscover_partial_dir_sync"`
@@ -66,6 +68,7 @@ type organizationConfigModel struct {
 	BookingsSearchEngineIndexDisabled                         types.Bool   `tfsdk:"bookings_search_engine_index_disabled"`
 	BookingsSmsMicrosoftEnabled                               types.Bool   `tfsdk:"bookings_sms_microsoft_enabled"`
 	BookingsSocialSharingRestricted                           types.Bool   `tfsdk:"bookings_social_sharing_restricted"`
+	ByteEncoderTypeFor7BitCharsets                            types.Int64  `tfsdk:"byte_encoder_type_for7_bit_charsets"`
 	CalendarVersionStoreEnabled                               types.Bool   `tfsdk:"calendar_version_store_enabled"`
 	ComplianceMLBgdCrawlEnabled                               types.Bool   `tfsdk:"compliance_ml_bgd_crawl_enabled"`
 	ConnectorsActionableMessagesEnabled                       types.Bool   `tfsdk:"connectors_actionable_messages_enabled"`
@@ -77,10 +80,12 @@ type organizationConfigModel struct {
 	CustomerLockboxEnabled                                    types.Bool   `tfsdk:"customer_lockbox_enabled"`
 	DLPViaDcsEnabled                                          types.Bool   `tfsdk:"dlp_via_dcs_enabled"`
 	DLPWaitOnSendEnabled                                      types.Bool   `tfsdk:"dlp_wait_on_send_enabled"`
-	DLPWaitOnSendTimeout                                      types.String `tfsdk:"dlp_wait_on_send_timeout"`
+	DLPWaitOnSendTimeout                                      types.Int64  `tfsdk:"dlp_wait_on_send_timeout"`
 	DefaultAuthenticationPolicy                               types.String `tfsdk:"default_authentication_policy"`
 	DefaultFolderPermissionRestricted                         types.Bool   `tfsdk:"default_folder_permission_restricted"`
 	DefaultGroupAccessType                                    types.String `tfsdk:"default_group_access_type"`
+	DefaultMinutesToReduceLongEventsBy                        types.Int64  `tfsdk:"default_minutes_to_reduce_long_events_by"`
+	DefaultMinutesToReduceShortEventsBy                       types.Int64  `tfsdk:"default_minutes_to_reduce_short_events_by"`
 	DefaultPublicFolderAgeLimit                               types.String `tfsdk:"default_public_folder_age_limit"`
 	DefaultPublicFolderDeletedItemRetention                   types.String `tfsdk:"default_public_folder_deleted_item_retention"`
 	DefaultPublicFolderIssueWarningQuota                      types.String `tfsdk:"default_public_folder_issue_warning_quota"`
@@ -91,7 +96,7 @@ type organizationConfigModel struct {
 	DirectReportsGroupAutoCreationEnabled                     types.Bool   `tfsdk:"direct_reports_group_auto_creation_enabled"`
 	DisablePlusAddressInRecipients                            types.Bool   `tfsdk:"disable_plus_address_in_recipients"`
 	DistributionGroupDefaultOU                                types.String `tfsdk:"distribution_group_default_ou"`
-	DistributionGroupNameBlockedWordsList                     types.String `tfsdk:"distribution_group_name_blocked_words_list"`
+	DistributionGroupNameBlockedWordsList                     types.Set    `tfsdk:"distribution_group_name_blocked_words_list"`
 	DistributionGroupNamingPolicy                             types.String `tfsdk:"distribution_group_naming_policy"`
 	ElcProcessingDisabled                                     types.Bool   `tfsdk:"elc_processing_disabled"`
 	EnableForwardingAddressSyncForMailboxes                   types.Bool   `tfsdk:"enable_forwarding_address_sync_for_mailboxes"`
@@ -111,7 +116,7 @@ type organizationConfigModel struct {
 	ExchangeAttributesCloudManagedByDefault                   types.Bool   `tfsdk:"exchange_attributes_cloud_managed_by_default"`
 	ExchangeAttributesServerManagedByDefault                  types.Bool   `tfsdk:"exchange_attributes_server_managed_by_default"`
 	ExchangeNotificationEnabled                               types.Bool   `tfsdk:"exchange_notification_enabled"`
-	ExchangeNotificationRecipients                            types.String `tfsdk:"exchange_notification_recipients"`
+	ExchangeNotificationRecipients                            types.Set    `tfsdk:"exchange_notification_recipients"`
 	FindTimeAttendeeAuthenticationEnabled                     types.Bool   `tfsdk:"find_time_attendee_authentication_enabled"`
 	FindTimeAutoScheduleDisabled                              types.Bool   `tfsdk:"find_time_auto_schedule_disabled"`
 	FindTimeLockPollForAttendeesEnabled                       types.Bool   `tfsdk:"find_time_lock_poll_for_attendees_enabled"`
@@ -119,7 +124,7 @@ type organizationConfigModel struct {
 	FocusedInboxOn                                            types.String `tfsdk:"focused_inbox_on"`
 	HierarchicalAddressBookRoot                               types.String `tfsdk:"hierarchical_address_book_root"`
 	HybridRSVPEnabled                                         types.Bool   `tfsdk:"hybrid_rsvp_enabled"`
-	IPListBlocked                                             types.String `tfsdk:"ip_list_blocked"`
+	IPListBlocked                                             types.Set    `tfsdk:"ip_list_blocked"`
 	InRegionRoutingEnabled                                    types.Bool   `tfsdk:"in_region_routing_enabled"`
 	IsAgendaMailEnabled                                       types.Bool   `tfsdk:"is_agenda_mail_enabled"`
 	IsGroupFoldersAndRulesEnabled                             types.Bool   `tfsdk:"is_group_folders_and_rules_enabled"`
@@ -129,7 +134,7 @@ type organizationConfigModel struct {
 	MailTipsAllTipsEnabled                                    types.Bool   `tfsdk:"mail_tips_all_tips_enabled"`
 	MailTipsExternalRecipientsTipsEnabled                     types.Bool   `tfsdk:"mail_tips_external_recipients_tips_enabled"`
 	MailTipsGroupMetricsEnabled                               types.Bool   `tfsdk:"mail_tips_group_metrics_enabled"`
-	MailTipsLargeAudienceThreshold                            types.String `tfsdk:"mail_tips_large_audience_threshold"`
+	MailTipsLargeAudienceThreshold                            types.Int64  `tfsdk:"mail_tips_large_audience_threshold"`
 	MailTipsMailboxSourcedTipsEnabled                         types.Bool   `tfsdk:"mail_tips_mailbox_sourced_tips_enabled"`
 	MaskClientIpInReceivedHeadersEnabled                      types.Bool   `tfsdk:"mask_client_ip_in_received_headers_enabled"`
 	MatchSenderOrganizerProperties                            types.Bool   `tfsdk:"match_sender_organizer_properties"`
@@ -150,6 +155,7 @@ type organizationConfigModel struct {
 	OutlookTextPredictionDisabled                             types.Bool   `tfsdk:"outlook_text_prediction_disabled"`
 	PerTenantSwitchToESTSEnabled                              types.Bool   `tfsdk:"per_tenant_switch_to_ests_enabled"`
 	PostponeRoamingSignaturesUntilLater                       types.Bool   `tfsdk:"postpone_roaming_signatures_until_later"`
+	PreferredInternetCodePageForShiftJis                      types.Int64  `tfsdk:"preferred_internet_code_page_for_shift_jis"`
 	PublicComputersDetectionEnabled                           types.Bool   `tfsdk:"public_computers_detection_enabled"`
 	PublicFolderShowClientControl                             types.Bool   `tfsdk:"public_folder_show_client_control"`
 	PublicFoldersEnabled                                      types.String `tfsdk:"public_folders_enabled"`
@@ -158,7 +164,8 @@ type organizationConfigModel struct {
 	RecipientDelimiters                                       types.Bool   `tfsdk:"recipient_delimiters"`
 	RefreshSessionEnabled                                     types.Bool   `tfsdk:"refresh_session_enabled"`
 	RejectDirectSend                                          types.Bool   `tfsdk:"reject_direct_send"`
-	RemotePublicFolderMailboxes                               types.String `tfsdk:"remote_public_folder_mailboxes"`
+	RemotePublicFolderMailboxes                               types.Set    `tfsdk:"remote_public_folder_mailboxes"`
+	RequiredCharsetCoverage                                   types.Int64  `tfsdk:"required_charset_coverage"`
 	SendFromAliasEnabled                                      types.Bool   `tfsdk:"send_from_alias_enabled"`
 	SharedDomainEmailAddressFlowEnabled                       types.Bool   `tfsdk:"shared_domain_email_address_flow_enabled"`
 	ShortenEventScopeDefault                                  types.String `tfsdk:"shorten_event_scope_default"`
@@ -190,7 +197,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"apps_for_office_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AppsForOfficeEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"async_send_enabled":                                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AsyncSendEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"audit_disabled":                                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"auto_archiving_threshold_percentage":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoArchivingThresholdPercentage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"auto_archiving_threshold_percentage":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -AutoArchivingThresholdPercentage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"auto_enable_archive_mailbox":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoEnableArchiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"auto_expanding_archive":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoExpandingArchive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"autodiscover_partial_dir_sync":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutodiscoverPartialDirSync parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -214,6 +221,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"bookings_search_engine_index_disabled":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSearchEngineIndexDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_sms_microsoft_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSmsMicrosoftEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_social_sharing_restricted":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSocialSharingRestricted parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"byte_encoder_type_for7_bit_charsets":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ByteEncoderTypeFor7BitCharsets parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"calendar_version_store_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CalendarVersionStoreEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"compliance_ml_bgd_crawl_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ComplianceMLBgdCrawlEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"connectors_actionable_messages_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConnectorsActionableMessagesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -225,10 +233,12 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"customer_lockbox_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomerLockboxEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"dlp_via_dcs_enabled":                                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPViaDcsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"dlp_wait_on_send_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"dlp_wait_on_send_timeout":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"dlp_wait_on_send_timeout":                                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_authentication_policy":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultAuthenticationPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_folder_permission_restricted":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFolderPermissionRestricted parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"default_group_access_type":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultGroupAccessType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_long_events_by":                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceLongEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_short_events_by":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceShortEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_public_folder_age_limit":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderAgeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_deleted_item_retention":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderDeletedItemRetention parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_issue_warning_quota":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderIssueWarningQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -239,7 +249,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"direct_reports_group_auto_creation_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DirectReportsGroupAutoCreationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disable_plus_address_in_recipients":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisablePlusAddressInRecipients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"distribution_group_default_ou":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupDefaultOU parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"distribution_group_name_blocked_words_list":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNameBlockedWordsList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"distribution_group_name_blocked_words_list":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNameBlockedWordsList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"distribution_group_naming_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNamingPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"elc_processing_disabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ElcProcessingDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_forwarding_address_sync_for_mailboxes":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableForwardingAddressSyncForMailboxes parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -259,7 +269,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"exchange_attributes_cloud_managed_by_default":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeAttributesCloudManagedByDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_attributes_server_managed_by_default":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeAttributesServerManagedByDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_notification_enabled":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"exchange_notification_recipients":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"exchange_notification_recipients":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"find_time_attendee_authentication_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeAttendeeAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"find_time_auto_schedule_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeAutoScheduleDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"find_time_lock_poll_for_attendees_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeLockPollForAttendeesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -267,7 +277,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"focused_inbox_on":                                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FocusedInboxOn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hierarchical_address_book_root":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HierarchicalAddressBookRoot parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hybrid_rsvp_enabled":                                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HybridRSVPEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ip_list_blocked":                                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPListBlocked parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ip_list_blocked":                                                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPListBlocked parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"in_region_routing_enabled":                                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InRegionRoutingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_agenda_mail_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsAgendaMailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_group_folders_and_rules_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsGroupFoldersAndRulesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -277,7 +287,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"mail_tips_all_tips_enabled":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsAllTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_tips_external_recipients_tips_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsExternalRecipientsTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_tips_group_metrics_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsGroupMetricsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"mail_tips_large_audience_threshold":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsLargeAudienceThreshold parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tips_large_audience_threshold":                                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsLargeAudienceThreshold parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"mail_tips_mailbox_sourced_tips_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsMailboxSourcedTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mask_client_ip_in_received_headers_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MaskClientIpInReceivedHeadersEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"match_sender_organizer_properties":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MatchSenderOrganizerProperties parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -298,6 +308,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"outlook_text_prediction_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookTextPredictionDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"per_tenant_switch_to_ests_enabled":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PerTenantSwitchToESTSEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"postpone_roaming_signatures_until_later":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PostponeRoamingSignaturesUntilLater parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"preferred_internet_code_page_for_shift_jis":                        schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PreferredInternetCodePageForShiftJis parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_computers_detection_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicComputersDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"public_folder_show_client_control":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolderShowClientControl parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"public_folders_enabled":                                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFoldersEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -306,7 +317,8 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"recipient_delimiters":                                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientDelimiters parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"refresh_session_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RefreshSessionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reject_direct_send":                                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectDirectSend parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remote_public_folder_mailboxes":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePublicFolderMailboxes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"remote_public_folder_mailboxes":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemotePublicFolderMailboxes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"required_charset_coverage":                                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RequiredCharsetCoverage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"send_from_alias_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SendFromAliasEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"shared_domain_email_address_flow_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SharedDomainEmailAddressFlowEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"shorten_event_scope_default":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ShortenEventScopeDefault parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -346,9 +358,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBool()
 	sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBool()
 	sp.AuditDisabled = plan.AuditDisabled.ValueBool()
-	if v := plan.AutoArchivingThresholdPercentage.ValueString(); v != "" {
-		sp.AutoArchivingThresholdPercentage = v
-	}
+	sp.AutoArchivingThresholdPercentage = int(plan.AutoArchivingThresholdPercentage.ValueInt64())
 	sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBool()
 	sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
 	sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBool()
@@ -372,6 +382,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBool()
 	sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBool()
 	sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBool()
+	sp.ByteEncoderTypeFor7BitCharsets = int(plan.ByteEncoderTypeFor7BitCharsets.ValueInt64())
 	sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBool()
 	sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBool()
 	sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBool()
@@ -383,9 +394,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBool()
 	sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBool()
 	sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBool()
-	if v := plan.DLPWaitOnSendTimeout.ValueString(); v != "" {
-		sp.DLPWaitOnSendTimeout = v
-	}
+	sp.DLPWaitOnSendTimeout = int(plan.DLPWaitOnSendTimeout.ValueInt64())
 	if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
 		sp.DefaultAuthenticationPolicy = v
 	}
@@ -393,6 +402,8 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
 		sp.DefaultGroupAccessType = v
 	}
+	sp.DefaultMinutesToReduceLongEventsBy = int(plan.DefaultMinutesToReduceLongEventsBy.ValueInt64())
+	sp.DefaultMinutesToReduceShortEventsBy = int(plan.DefaultMinutesToReduceShortEventsBy.ValueInt64())
 	if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
 		sp.DefaultPublicFolderAgeLimit = v
 	}
@@ -417,9 +428,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
 		sp.DistributionGroupDefaultOU = v
 	}
-	if v := plan.DistributionGroupNameBlockedWordsList.ValueString(); v != "" {
-		sp.DistributionGroupNameBlockedWordsList = v
-	}
+	sp.DistributionGroupNameBlockedWordsList = toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics)
 	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
 		sp.DistributionGroupNamingPolicy = v
 	}
@@ -455,9 +464,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
 	sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
 	sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBool()
-	if v := plan.ExchangeNotificationRecipients.ValueString(); v != "" {
-		sp.ExchangeNotificationRecipients = v
-	}
+	sp.ExchangeNotificationRecipients = toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics)
 	sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBool()
 	sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBool()
 	sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBool()
@@ -469,9 +476,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 		sp.HierarchicalAddressBookRoot = v
 	}
 	sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBool()
-	if v := plan.IPListBlocked.ValueString(); v != "" {
-		sp.IPListBlocked = v
-	}
+	sp.IPListBlocked = toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics)
 	sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBool()
 	sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBool()
 	sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBool()
@@ -481,9 +486,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBool()
 	sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBool()
 	sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBool()
-	if v := plan.MailTipsLargeAudienceThreshold.ValueString(); v != "" {
-		sp.MailTipsLargeAudienceThreshold = v
-	}
+	sp.MailTipsLargeAudienceThreshold = int(plan.MailTipsLargeAudienceThreshold.ValueInt64())
 	sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBool()
 	sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBool()
 	sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBool()
@@ -510,6 +513,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBool()
 	sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBool()
 	sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBool()
+	sp.PreferredInternetCodePageForShiftJis = int(plan.PreferredInternetCodePageForShiftJis.ValueInt64())
 	sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBool()
 	sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBool()
 	if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
@@ -522,9 +526,8 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBool()
 	sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBool()
 	sp.RejectDirectSend = plan.RejectDirectSend.ValueBool()
-	if v := plan.RemotePublicFolderMailboxes.ValueString(); v != "" {
-		sp.RemotePublicFolderMailboxes = v
-	}
+	sp.RemotePublicFolderMailboxes = toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics)
+	sp.RequiredCharsetCoverage = int(plan.RequiredCharsetCoverage.ValueInt64())
 	sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBool()
 	sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBool()
 	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
@@ -588,9 +591,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBool()
 	sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBool()
 	sp.AuditDisabled = plan.AuditDisabled.ValueBool()
-	if v := plan.AutoArchivingThresholdPercentage.ValueString(); v != "" {
-		sp.AutoArchivingThresholdPercentage = v
-	}
+	sp.AutoArchivingThresholdPercentage = int(plan.AutoArchivingThresholdPercentage.ValueInt64())
 	sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBool()
 	sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
 	sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBool()
@@ -614,6 +615,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBool()
 	sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBool()
 	sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBool()
+	sp.ByteEncoderTypeFor7BitCharsets = int(plan.ByteEncoderTypeFor7BitCharsets.ValueInt64())
 	sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBool()
 	sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBool()
 	sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBool()
@@ -625,9 +627,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBool()
 	sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBool()
 	sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBool()
-	if v := plan.DLPWaitOnSendTimeout.ValueString(); v != "" {
-		sp.DLPWaitOnSendTimeout = v
-	}
+	sp.DLPWaitOnSendTimeout = int(plan.DLPWaitOnSendTimeout.ValueInt64())
 	if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
 		sp.DefaultAuthenticationPolicy = v
 	}
@@ -635,6 +635,8 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
 		sp.DefaultGroupAccessType = v
 	}
+	sp.DefaultMinutesToReduceLongEventsBy = int(plan.DefaultMinutesToReduceLongEventsBy.ValueInt64())
+	sp.DefaultMinutesToReduceShortEventsBy = int(plan.DefaultMinutesToReduceShortEventsBy.ValueInt64())
 	if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
 		sp.DefaultPublicFolderAgeLimit = v
 	}
@@ -659,9 +661,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
 		sp.DistributionGroupDefaultOU = v
 	}
-	if v := plan.DistributionGroupNameBlockedWordsList.ValueString(); v != "" {
-		sp.DistributionGroupNameBlockedWordsList = v
-	}
+	sp.DistributionGroupNameBlockedWordsList = toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics)
 	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
 		sp.DistributionGroupNamingPolicy = v
 	}
@@ -697,9 +697,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
 	sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
 	sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBool()
-	if v := plan.ExchangeNotificationRecipients.ValueString(); v != "" {
-		sp.ExchangeNotificationRecipients = v
-	}
+	sp.ExchangeNotificationRecipients = toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics)
 	sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBool()
 	sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBool()
 	sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBool()
@@ -711,9 +709,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		sp.HierarchicalAddressBookRoot = v
 	}
 	sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBool()
-	if v := plan.IPListBlocked.ValueString(); v != "" {
-		sp.IPListBlocked = v
-	}
+	sp.IPListBlocked = toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics)
 	sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBool()
 	sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBool()
 	sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBool()
@@ -723,9 +719,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBool()
 	sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBool()
 	sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBool()
-	if v := plan.MailTipsLargeAudienceThreshold.ValueString(); v != "" {
-		sp.MailTipsLargeAudienceThreshold = v
-	}
+	sp.MailTipsLargeAudienceThreshold = int(plan.MailTipsLargeAudienceThreshold.ValueInt64())
 	sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBool()
 	sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBool()
 	sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBool()
@@ -752,6 +746,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBool()
 	sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBool()
 	sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBool()
+	sp.PreferredInternetCodePageForShiftJis = int(plan.PreferredInternetCodePageForShiftJis.ValueInt64())
 	sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBool()
 	sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBool()
 	if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
@@ -764,9 +759,8 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBool()
 	sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBool()
 	sp.RejectDirectSend = plan.RejectDirectSend.ValueBool()
-	if v := plan.RemotePublicFolderMailboxes.ValueString(); v != "" {
-		sp.RemotePublicFolderMailboxes = v
-	}
+	sp.RemotePublicFolderMailboxes = toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics)
+	sp.RequiredCharsetCoverage = int(plan.RequiredCharsetCoverage.ValueInt64())
 	sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBool()
 	sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBool()
 	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
@@ -793,10 +787,8 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"ActivityBasedAuthenticationTimeoutInterval": cfg.ActivityBasedAuthenticationTimeoutInterval,
-		"AutoArchivingThresholdPercentage":           cfg.AutoArchivingThresholdPercentage,
 		"BookingsNamingPolicyPrefix":                 cfg.BookingsNamingPolicyPrefix,
 		"BookingsNamingPolicySuffix":                 cfg.BookingsNamingPolicySuffix,
-		"DLPWaitOnSendTimeout":                       cfg.DLPWaitOnSendTimeout,
 		"DefaultAuthenticationPolicy":                cfg.DefaultAuthenticationPolicy,
 		"DefaultGroupAccessType":                     cfg.DefaultGroupAccessType,
 		"DefaultPublicFolderAgeLimit":                cfg.DefaultPublicFolderAgeLimit,
@@ -806,7 +798,6 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		"DefaultPublicFolderMovedItemRetention":      cfg.DefaultPublicFolderMovedItemRetention,
 		"DefaultPublicFolderProhibitPostQuota":       cfg.DefaultPublicFolderProhibitPostQuota,
 		"DistributionGroupDefaultOU":                 cfg.DistributionGroupDefaultOU,
-		"DistributionGroupNameBlockedWordsList":      cfg.DistributionGroupNameBlockedWordsList,
 		"DistributionGroupNamingPolicy":              cfg.DistributionGroupNamingPolicy,
 		"EwsAllowEntourage":                          cfg.EwsAllowEntourage,
 		"EwsAllowList":                               cfg.EwsAllowList,
@@ -816,17 +807,13 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		"EwsApplicationAccessPolicy":                 cfg.EwsApplicationAccessPolicy,
 		"EwsBlockList":                               cfg.EwsBlockList,
 		"EwsEnabled":                                 cfg.EwsEnabled,
-		"ExchangeNotificationRecipients":             cfg.ExchangeNotificationRecipients,
 		"FocusedInboxOn":                             cfg.FocusedInboxOn,
 		"HierarchicalAddressBookRoot":                cfg.HierarchicalAddressBookRoot,
-		"IPListBlocked":                              cfg.IPListBlocked,
-		"MailTipsLargeAudienceThreshold":             cfg.MailTipsLargeAudienceThreshold,
 		"MessageRecallEnabled":                       cfg.MessageRecallEnabled,
 		"MessageRecallMaxRecallableAge":              cfg.MessageRecallMaxRecallableAge,
 		"OnlineMeetingsByDefaultEnabled":             cfg.OnlineMeetingsByDefaultEnabled,
 		"PublicFoldersEnabled":                       cfg.PublicFoldersEnabled,
 		"RecallReadMessagesEnabled":                  cfg.RecallReadMessagesEnabled,
-		"RemotePublicFolderMailboxes":                cfg.RemotePublicFolderMailboxes,
 		"ShortenEventScopeDefault":                   cfg.ShortenEventScopeDefault,
 		"SiteMailboxCreationURL":                     cfg.SiteMailboxCreationURL,
 		"VisibleMeetingUpdateProperties":             cfg.VisibleMeetingUpdateProperties,
@@ -890,7 +877,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.AppsForOfficeEnabled = types.BoolValue(getBool(obj, "AppsForOfficeEnabled"))
 	m.AsyncSendEnabled = types.BoolValue(getBool(obj, "AsyncSendEnabled"))
 	m.AuditDisabled = types.BoolValue(getBool(obj, "AuditDisabled"))
-	m.AutoArchivingThresholdPercentage = types.StringValue(getString(obj, "AutoArchivingThresholdPercentage"))
+	m.AutoArchivingThresholdPercentage = types.Int64Value(getInt(obj, "AutoArchivingThresholdPercentage"))
 	m.AutoEnableArchiveMailbox = types.BoolValue(getBool(obj, "AutoEnableArchiveMailbox"))
 	m.AutoExpandingArchive = types.BoolValue(getBool(obj, "AutoExpandingArchive"))
 	m.AutodiscoverPartialDirSync = types.BoolValue(getBool(obj, "AutodiscoverPartialDirSync"))
@@ -914,6 +901,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.BookingsSearchEngineIndexDisabled = types.BoolValue(getBool(obj, "BookingsSearchEngineIndexDisabled"))
 	m.BookingsSmsMicrosoftEnabled = types.BoolValue(getBool(obj, "BookingsSmsMicrosoftEnabled"))
 	m.BookingsSocialSharingRestricted = types.BoolValue(getBool(obj, "BookingsSocialSharingRestricted"))
+	m.ByteEncoderTypeFor7BitCharsets = types.Int64Value(getInt(obj, "ByteEncoderTypeFor7BitCharsets"))
 	m.CalendarVersionStoreEnabled = types.BoolValue(getBool(obj, "CalendarVersionStoreEnabled"))
 	m.ComplianceMLBgdCrawlEnabled = types.BoolValue(getBool(obj, "ComplianceMLBgdCrawlEnabled"))
 	m.ConnectorsActionableMessagesEnabled = types.BoolValue(getBool(obj, "ConnectorsActionableMessagesEnabled"))
@@ -925,10 +913,12 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.CustomerLockboxEnabled = types.BoolValue(getBool(obj, "CustomerLockboxEnabled"))
 	m.DLPViaDcsEnabled = types.BoolValue(getBool(obj, "DLPViaDcsEnabled"))
 	m.DLPWaitOnSendEnabled = types.BoolValue(getBool(obj, "DLPWaitOnSendEnabled"))
-	m.DLPWaitOnSendTimeout = types.StringValue(getString(obj, "DLPWaitOnSendTimeout"))
+	m.DLPWaitOnSendTimeout = types.Int64Value(getInt(obj, "DLPWaitOnSendTimeout"))
 	m.DefaultAuthenticationPolicy = types.StringValue(getString(obj, "DefaultAuthenticationPolicy"))
 	m.DefaultFolderPermissionRestricted = types.BoolValue(getBool(obj, "DefaultFolderPermissionRestricted"))
 	m.DefaultGroupAccessType = types.StringValue(getString(obj, "DefaultGroupAccessType"))
+	m.DefaultMinutesToReduceLongEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceLongEventsBy"))
+	m.DefaultMinutesToReduceShortEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceShortEventsBy"))
 	m.DefaultPublicFolderAgeLimit = types.StringValue(getString(obj, "DefaultPublicFolderAgeLimit"))
 	m.DefaultPublicFolderDeletedItemRetention = types.StringValue(getString(obj, "DefaultPublicFolderDeletedItemRetention"))
 	m.DefaultPublicFolderIssueWarningQuota = types.StringValue(getString(obj, "DefaultPublicFolderIssueWarningQuota"))
@@ -939,7 +929,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.DirectReportsGroupAutoCreationEnabled = types.BoolValue(getBool(obj, "DirectReportsGroupAutoCreationEnabled"))
 	m.DisablePlusAddressInRecipients = types.BoolValue(getBool(obj, "DisablePlusAddressInRecipients"))
 	m.DistributionGroupDefaultOU = types.StringValue(getString(obj, "DistributionGroupDefaultOU"))
-	m.DistributionGroupNameBlockedWordsList = types.StringValue(getString(obj, "DistributionGroupNameBlockedWordsList"))
+	m.DistributionGroupNameBlockedWordsList = stringSetValue(ctx, getStringSlice(obj, "DistributionGroupNameBlockedWordsList"))
 	m.DistributionGroupNamingPolicy = types.StringValue(getString(obj, "DistributionGroupNamingPolicy"))
 	m.ElcProcessingDisabled = types.BoolValue(getBool(obj, "ElcProcessingDisabled"))
 	m.EnableForwardingAddressSyncForMailboxes = types.BoolValue(getBool(obj, "EnableForwardingAddressSyncForMailboxes"))
@@ -959,7 +949,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.ExchangeAttributesCloudManagedByDefault = types.BoolValue(getBool(obj, "ExchangeAttributesCloudManagedByDefault"))
 	m.ExchangeAttributesServerManagedByDefault = types.BoolValue(getBool(obj, "ExchangeAttributesServerManagedByDefault"))
 	m.ExchangeNotificationEnabled = types.BoolValue(getBool(obj, "ExchangeNotificationEnabled"))
-	m.ExchangeNotificationRecipients = types.StringValue(getString(obj, "ExchangeNotificationRecipients"))
+	m.ExchangeNotificationRecipients = stringSetValue(ctx, getStringSlice(obj, "ExchangeNotificationRecipients"))
 	m.FindTimeAttendeeAuthenticationEnabled = types.BoolValue(getBool(obj, "FindTimeAttendeeAuthenticationEnabled"))
 	m.FindTimeAutoScheduleDisabled = types.BoolValue(getBool(obj, "FindTimeAutoScheduleDisabled"))
 	m.FindTimeLockPollForAttendeesEnabled = types.BoolValue(getBool(obj, "FindTimeLockPollForAttendeesEnabled"))
@@ -967,7 +957,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.FocusedInboxOn = types.StringValue(getString(obj, "FocusedInboxOn"))
 	m.HierarchicalAddressBookRoot = types.StringValue(getString(obj, "HierarchicalAddressBookRoot"))
 	m.HybridRSVPEnabled = types.BoolValue(getBool(obj, "HybridRSVPEnabled"))
-	m.IPListBlocked = types.StringValue(getString(obj, "IPListBlocked"))
+	m.IPListBlocked = stringSetValue(ctx, getStringSlice(obj, "IPListBlocked"))
 	m.InRegionRoutingEnabled = types.BoolValue(getBool(obj, "InRegionRoutingEnabled"))
 	m.IsAgendaMailEnabled = types.BoolValue(getBool(obj, "IsAgendaMailEnabled"))
 	m.IsGroupFoldersAndRulesEnabled = types.BoolValue(getBool(obj, "IsGroupFoldersAndRulesEnabled"))
@@ -977,7 +967,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.MailTipsAllTipsEnabled = types.BoolValue(getBool(obj, "MailTipsAllTipsEnabled"))
 	m.MailTipsExternalRecipientsTipsEnabled = types.BoolValue(getBool(obj, "MailTipsExternalRecipientsTipsEnabled"))
 	m.MailTipsGroupMetricsEnabled = types.BoolValue(getBool(obj, "MailTipsGroupMetricsEnabled"))
-	m.MailTipsLargeAudienceThreshold = types.StringValue(getString(obj, "MailTipsLargeAudienceThreshold"))
+	m.MailTipsLargeAudienceThreshold = types.Int64Value(getInt(obj, "MailTipsLargeAudienceThreshold"))
 	m.MailTipsMailboxSourcedTipsEnabled = types.BoolValue(getBool(obj, "MailTipsMailboxSourcedTipsEnabled"))
 	m.MaskClientIpInReceivedHeadersEnabled = types.BoolValue(getBool(obj, "MaskClientIpInReceivedHeadersEnabled"))
 	m.MatchSenderOrganizerProperties = types.BoolValue(getBool(obj, "MatchSenderOrganizerProperties"))
@@ -998,6 +988,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.OutlookTextPredictionDisabled = types.BoolValue(getBool(obj, "OutlookTextPredictionDisabled"))
 	m.PerTenantSwitchToESTSEnabled = types.BoolValue(getBool(obj, "PerTenantSwitchToESTSEnabled"))
 	m.PostponeRoamingSignaturesUntilLater = types.BoolValue(getBool(obj, "PostponeRoamingSignaturesUntilLater"))
+	m.PreferredInternetCodePageForShiftJis = types.Int64Value(getInt(obj, "PreferredInternetCodePageForShiftJis"))
 	m.PublicComputersDetectionEnabled = types.BoolValue(getBool(obj, "PublicComputersDetectionEnabled"))
 	m.PublicFolderShowClientControl = types.BoolValue(getBool(obj, "PublicFolderShowClientControl"))
 	m.PublicFoldersEnabled = types.StringValue(getString(obj, "PublicFoldersEnabled"))
@@ -1006,7 +997,8 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.RecipientDelimiters = types.BoolValue(getBool(obj, "RecipientDelimiters"))
 	m.RefreshSessionEnabled = types.BoolValue(getBool(obj, "RefreshSessionEnabled"))
 	m.RejectDirectSend = types.BoolValue(getBool(obj, "RejectDirectSend"))
-	m.RemotePublicFolderMailboxes = types.StringValue(getString(obj, "RemotePublicFolderMailboxes"))
+	m.RemotePublicFolderMailboxes = stringSetValue(ctx, getStringSlice(obj, "RemotePublicFolderMailboxes"))
+	m.RequiredCharsetCoverage = types.Int64Value(getInt(obj, "RequiredCharsetCoverage"))
 	m.SendFromAliasEnabled = types.BoolValue(getBool(obj, "SendFromAliasEnabled"))
 	m.SharedDomainEmailAddressFlowEnabled = types.BoolValue(getBool(obj, "SharedDomainEmailAddressFlowEnabled"))
 	m.ShortenEventScopeDefault = types.StringValue(getString(obj, "ShortenEventScopeDefault"))
@@ -1030,7 +1022,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.AppsForOfficeEnabled = reconcile.KeepBool(cfg.AppsForOfficeEnabled, read.AppsForOfficeEnabled)
 	read.AsyncSendEnabled = reconcile.KeepBool(cfg.AsyncSendEnabled, read.AsyncSendEnabled)
 	read.AuditDisabled = reconcile.KeepBool(cfg.AuditDisabled, read.AuditDisabled)
-	read.AutoArchivingThresholdPercentage = reconcile.KeepStr(cfg.AutoArchivingThresholdPercentage, read.AutoArchivingThresholdPercentage)
+	read.AutoArchivingThresholdPercentage = reconcile.KeepInt64(cfg.AutoArchivingThresholdPercentage, read.AutoArchivingThresholdPercentage)
 	read.AutoEnableArchiveMailbox = reconcile.KeepBool(cfg.AutoEnableArchiveMailbox, read.AutoEnableArchiveMailbox)
 	read.AutoExpandingArchive = reconcile.KeepBool(cfg.AutoExpandingArchive, read.AutoExpandingArchive)
 	read.AutodiscoverPartialDirSync = reconcile.KeepBool(cfg.AutodiscoverPartialDirSync, read.AutodiscoverPartialDirSync)
@@ -1054,6 +1046,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.BookingsSearchEngineIndexDisabled = reconcile.KeepBool(cfg.BookingsSearchEngineIndexDisabled, read.BookingsSearchEngineIndexDisabled)
 	read.BookingsSmsMicrosoftEnabled = reconcile.KeepBool(cfg.BookingsSmsMicrosoftEnabled, read.BookingsSmsMicrosoftEnabled)
 	read.BookingsSocialSharingRestricted = reconcile.KeepBool(cfg.BookingsSocialSharingRestricted, read.BookingsSocialSharingRestricted)
+	read.ByteEncoderTypeFor7BitCharsets = reconcile.KeepInt64(cfg.ByteEncoderTypeFor7BitCharsets, read.ByteEncoderTypeFor7BitCharsets)
 	read.CalendarVersionStoreEnabled = reconcile.KeepBool(cfg.CalendarVersionStoreEnabled, read.CalendarVersionStoreEnabled)
 	read.ComplianceMLBgdCrawlEnabled = reconcile.KeepBool(cfg.ComplianceMLBgdCrawlEnabled, read.ComplianceMLBgdCrawlEnabled)
 	read.ConnectorsActionableMessagesEnabled = reconcile.KeepBool(cfg.ConnectorsActionableMessagesEnabled, read.ConnectorsActionableMessagesEnabled)
@@ -1065,10 +1058,12 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.CustomerLockboxEnabled = reconcile.KeepBool(cfg.CustomerLockboxEnabled, read.CustomerLockboxEnabled)
 	read.DLPViaDcsEnabled = reconcile.KeepBool(cfg.DLPViaDcsEnabled, read.DLPViaDcsEnabled)
 	read.DLPWaitOnSendEnabled = reconcile.KeepBool(cfg.DLPWaitOnSendEnabled, read.DLPWaitOnSendEnabled)
-	read.DLPWaitOnSendTimeout = reconcile.KeepStr(cfg.DLPWaitOnSendTimeout, read.DLPWaitOnSendTimeout)
+	read.DLPWaitOnSendTimeout = reconcile.KeepInt64(cfg.DLPWaitOnSendTimeout, read.DLPWaitOnSendTimeout)
 	read.DefaultAuthenticationPolicy = reconcile.KeepStr(cfg.DefaultAuthenticationPolicy, read.DefaultAuthenticationPolicy)
 	read.DefaultFolderPermissionRestricted = reconcile.KeepBool(cfg.DefaultFolderPermissionRestricted, read.DefaultFolderPermissionRestricted)
 	read.DefaultGroupAccessType = reconcile.KeepStr(cfg.DefaultGroupAccessType, read.DefaultGroupAccessType)
+	read.DefaultMinutesToReduceLongEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceLongEventsBy, read.DefaultMinutesToReduceLongEventsBy)
+	read.DefaultMinutesToReduceShortEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceShortEventsBy, read.DefaultMinutesToReduceShortEventsBy)
 	read.DefaultPublicFolderAgeLimit = reconcile.KeepStr(cfg.DefaultPublicFolderAgeLimit, read.DefaultPublicFolderAgeLimit)
 	read.DefaultPublicFolderDeletedItemRetention = reconcile.KeepStr(cfg.DefaultPublicFolderDeletedItemRetention, read.DefaultPublicFolderDeletedItemRetention)
 	read.DefaultPublicFolderIssueWarningQuota = reconcile.KeepStr(cfg.DefaultPublicFolderIssueWarningQuota, read.DefaultPublicFolderIssueWarningQuota)
@@ -1079,7 +1074,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.DirectReportsGroupAutoCreationEnabled = reconcile.KeepBool(cfg.DirectReportsGroupAutoCreationEnabled, read.DirectReportsGroupAutoCreationEnabled)
 	read.DisablePlusAddressInRecipients = reconcile.KeepBool(cfg.DisablePlusAddressInRecipients, read.DisablePlusAddressInRecipients)
 	read.DistributionGroupDefaultOU = reconcile.KeepStr(cfg.DistributionGroupDefaultOU, read.DistributionGroupDefaultOU)
-	read.DistributionGroupNameBlockedWordsList = reconcile.KeepStr(cfg.DistributionGroupNameBlockedWordsList, read.DistributionGroupNameBlockedWordsList)
+	read.DistributionGroupNameBlockedWordsList = reconcile.KeepSet(cfg.DistributionGroupNameBlockedWordsList, read.DistributionGroupNameBlockedWordsList)
 	read.DistributionGroupNamingPolicy = reconcile.KeepStr(cfg.DistributionGroupNamingPolicy, read.DistributionGroupNamingPolicy)
 	read.ElcProcessingDisabled = reconcile.KeepBool(cfg.ElcProcessingDisabled, read.ElcProcessingDisabled)
 	read.EnableForwardingAddressSyncForMailboxes = reconcile.KeepBool(cfg.EnableForwardingAddressSyncForMailboxes, read.EnableForwardingAddressSyncForMailboxes)
@@ -1099,7 +1094,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.ExchangeAttributesCloudManagedByDefault = reconcile.KeepBool(cfg.ExchangeAttributesCloudManagedByDefault, read.ExchangeAttributesCloudManagedByDefault)
 	read.ExchangeAttributesServerManagedByDefault = reconcile.KeepBool(cfg.ExchangeAttributesServerManagedByDefault, read.ExchangeAttributesServerManagedByDefault)
 	read.ExchangeNotificationEnabled = reconcile.KeepBool(cfg.ExchangeNotificationEnabled, read.ExchangeNotificationEnabled)
-	read.ExchangeNotificationRecipients = reconcile.KeepStr(cfg.ExchangeNotificationRecipients, read.ExchangeNotificationRecipients)
+	read.ExchangeNotificationRecipients = reconcile.KeepSet(cfg.ExchangeNotificationRecipients, read.ExchangeNotificationRecipients)
 	read.FindTimeAttendeeAuthenticationEnabled = reconcile.KeepBool(cfg.FindTimeAttendeeAuthenticationEnabled, read.FindTimeAttendeeAuthenticationEnabled)
 	read.FindTimeAutoScheduleDisabled = reconcile.KeepBool(cfg.FindTimeAutoScheduleDisabled, read.FindTimeAutoScheduleDisabled)
 	read.FindTimeLockPollForAttendeesEnabled = reconcile.KeepBool(cfg.FindTimeLockPollForAttendeesEnabled, read.FindTimeLockPollForAttendeesEnabled)
@@ -1107,7 +1102,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.FocusedInboxOn = reconcile.KeepStr(cfg.FocusedInboxOn, read.FocusedInboxOn)
 	read.HierarchicalAddressBookRoot = reconcile.KeepStr(cfg.HierarchicalAddressBookRoot, read.HierarchicalAddressBookRoot)
 	read.HybridRSVPEnabled = reconcile.KeepBool(cfg.HybridRSVPEnabled, read.HybridRSVPEnabled)
-	read.IPListBlocked = reconcile.KeepStr(cfg.IPListBlocked, read.IPListBlocked)
+	read.IPListBlocked = reconcile.KeepSet(cfg.IPListBlocked, read.IPListBlocked)
 	read.InRegionRoutingEnabled = reconcile.KeepBool(cfg.InRegionRoutingEnabled, read.InRegionRoutingEnabled)
 	read.IsAgendaMailEnabled = reconcile.KeepBool(cfg.IsAgendaMailEnabled, read.IsAgendaMailEnabled)
 	read.IsGroupFoldersAndRulesEnabled = reconcile.KeepBool(cfg.IsGroupFoldersAndRulesEnabled, read.IsGroupFoldersAndRulesEnabled)
@@ -1117,7 +1112,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.MailTipsAllTipsEnabled = reconcile.KeepBool(cfg.MailTipsAllTipsEnabled, read.MailTipsAllTipsEnabled)
 	read.MailTipsExternalRecipientsTipsEnabled = reconcile.KeepBool(cfg.MailTipsExternalRecipientsTipsEnabled, read.MailTipsExternalRecipientsTipsEnabled)
 	read.MailTipsGroupMetricsEnabled = reconcile.KeepBool(cfg.MailTipsGroupMetricsEnabled, read.MailTipsGroupMetricsEnabled)
-	read.MailTipsLargeAudienceThreshold = reconcile.KeepStr(cfg.MailTipsLargeAudienceThreshold, read.MailTipsLargeAudienceThreshold)
+	read.MailTipsLargeAudienceThreshold = reconcile.KeepInt64(cfg.MailTipsLargeAudienceThreshold, read.MailTipsLargeAudienceThreshold)
 	read.MailTipsMailboxSourcedTipsEnabled = reconcile.KeepBool(cfg.MailTipsMailboxSourcedTipsEnabled, read.MailTipsMailboxSourcedTipsEnabled)
 	read.MaskClientIpInReceivedHeadersEnabled = reconcile.KeepBool(cfg.MaskClientIpInReceivedHeadersEnabled, read.MaskClientIpInReceivedHeadersEnabled)
 	read.MatchSenderOrganizerProperties = reconcile.KeepBool(cfg.MatchSenderOrganizerProperties, read.MatchSenderOrganizerProperties)
@@ -1138,6 +1133,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.OutlookTextPredictionDisabled = reconcile.KeepBool(cfg.OutlookTextPredictionDisabled, read.OutlookTextPredictionDisabled)
 	read.PerTenantSwitchToESTSEnabled = reconcile.KeepBool(cfg.PerTenantSwitchToESTSEnabled, read.PerTenantSwitchToESTSEnabled)
 	read.PostponeRoamingSignaturesUntilLater = reconcile.KeepBool(cfg.PostponeRoamingSignaturesUntilLater, read.PostponeRoamingSignaturesUntilLater)
+	read.PreferredInternetCodePageForShiftJis = reconcile.KeepInt64(cfg.PreferredInternetCodePageForShiftJis, read.PreferredInternetCodePageForShiftJis)
 	read.PublicComputersDetectionEnabled = reconcile.KeepBool(cfg.PublicComputersDetectionEnabled, read.PublicComputersDetectionEnabled)
 	read.PublicFolderShowClientControl = reconcile.KeepBool(cfg.PublicFolderShowClientControl, read.PublicFolderShowClientControl)
 	read.PublicFoldersEnabled = reconcile.KeepStr(cfg.PublicFoldersEnabled, read.PublicFoldersEnabled)
@@ -1146,7 +1142,8 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.RecipientDelimiters = reconcile.KeepBool(cfg.RecipientDelimiters, read.RecipientDelimiters)
 	read.RefreshSessionEnabled = reconcile.KeepBool(cfg.RefreshSessionEnabled, read.RefreshSessionEnabled)
 	read.RejectDirectSend = reconcile.KeepBool(cfg.RejectDirectSend, read.RejectDirectSend)
-	read.RemotePublicFolderMailboxes = reconcile.KeepStr(cfg.RemotePublicFolderMailboxes, read.RemotePublicFolderMailboxes)
+	read.RemotePublicFolderMailboxes = reconcile.KeepSet(cfg.RemotePublicFolderMailboxes, read.RemotePublicFolderMailboxes)
+	read.RequiredCharsetCoverage = reconcile.KeepInt64(cfg.RequiredCharsetCoverage, read.RequiredCharsetCoverage)
 	read.SendFromAliasEnabled = reconcile.KeepBool(cfg.SendFromAliasEnabled, read.SendFromAliasEnabled)
 	read.SharedDomainEmailAddressFlowEnabled = reconcile.KeepBool(cfg.SharedDomainEmailAddressFlowEnabled, read.SharedDomainEmailAddressFlowEnabled)
 	read.ShortenEventScopeDefault = reconcile.KeepStr(cfg.ShortenEventScopeDefault, read.ShortenEventScopeDefault)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -38,13 +39,14 @@ func (d *hostedContentFilterPolicyDataSource) Schema(_ context.Context, _ dataso
 			"identity":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
 			"add_x_header_value":                 schema.StringAttribute{Computed: true, Description: "Maps to the -AddXHeaderValue parameter."},
 			"admin_display_name":                 schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
-			"allowed_sender_domains":             schema.StringAttribute{Computed: true, Description: "Maps to the -AllowedSenderDomains parameter."},
-			"allowed_senders":                    schema.StringAttribute{Computed: true, Description: "Maps to the -AllowedSenders parameter."},
-			"blocked_sender_domains":             schema.StringAttribute{Computed: true, Description: "Maps to the -BlockedSenderDomains parameter."},
-			"blocked_senders":                    schema.StringAttribute{Computed: true, Description: "Maps to the -BlockedSenders parameter."},
+			"allowed_sender_domains":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AllowedSenderDomains parameter."},
+			"allowed_senders":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AllowedSenders parameter."},
+			"blocked_sender_domains":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -BlockedSenderDomains parameter."},
+			"blocked_senders":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -BlockedSenders parameter."},
 			"bulk_moves_enabled":                 schema.StringAttribute{Computed: true, Description: "Maps to the -BulkMovesEnabled parameter."},
 			"bulk_quarantine_tag":                schema.StringAttribute{Computed: true, Description: "Maps to the -BulkQuarantineTag parameter."},
 			"bulk_spam_action":                   schema.StringAttribute{Computed: true, Description: "Maps to the -BulkSpamAction parameter."},
+			"bulk_threshold":                     schema.Int64Attribute{Computed: true, Description: "Maps to the -BulkThreshold parameter."},
 			"download_link":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -DownloadLink parameter."},
 			"enable_end_user_spam_notifications": schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableEndUserSpamNotifications parameter."},
 			"enable_language_block_list":         schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableLanguageBlockList parameter."},
@@ -52,7 +54,9 @@ func (d *hostedContentFilterPolicyDataSource) Schema(_ context.Context, _ dataso
 			"end_user_spam_notification_custom_from_address": schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromAddress parameter."},
 			"end_user_spam_notification_custom_from_name":    schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromName parameter."},
 			"end_user_spam_notification_custom_subject":      schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomSubject parameter."},
+			"end_user_spam_notification_frequency":           schema.Int64Attribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequency parameter."},
 			"end_user_spam_notification_language":            schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationLanguage parameter."},
+			"end_user_spam_notification_limit":               schema.Int64Attribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationLimit parameter."},
 			"high_confidence_phish_action":                   schema.StringAttribute{Computed: true, Description: "Maps to the -HighConfidencePhishAction parameter."},
 			"high_confidence_phish_quarantine_tag":           schema.StringAttribute{Computed: true, Description: "Maps to the -HighConfidencePhishQuarantineTag parameter."},
 			"high_confidence_spam_action":                    schema.StringAttribute{Computed: true, Description: "Maps to the -HighConfidenceSpamAction parameter."},
@@ -63,7 +67,7 @@ func (d *hostedContentFilterPolicyDataSource) Schema(_ context.Context, _ dataso
 			"increase_score_with_redirect_to_other_port":     schema.StringAttribute{Computed: true, Description: "Maps to the -IncreaseScoreWithRedirectToOtherPort parameter."},
 			"inline_safety_tips_enabled":                     schema.BoolAttribute{Computed: true, Description: "Maps to the -InlineSafetyTipsEnabled parameter."},
 			"intra_org_filter_state":                         schema.StringAttribute{Computed: true, Description: "Maps to the -IntraOrgFilterState parameter."},
-			"language_block_list":                            schema.StringAttribute{Computed: true, Description: "Maps to the -LanguageBlockList parameter."},
+			"language_block_list":                            schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -LanguageBlockList parameter."},
 			"make_default":                                   schema.BoolAttribute{Computed: true, Description: "Maps to the -MakeDefault parameter."},
 			"mark_as_spam_bulk_mail":                         schema.StringAttribute{Computed: true, Description: "Maps to the -MarkAsSpamBulkMail parameter."},
 			"mark_as_spam_embed_tags_in_html":                schema.StringAttribute{Computed: true, Description: "Maps to the -MarkAsSpamEmbedTagsInHtml parameter."},
@@ -82,14 +86,15 @@ func (d *hostedContentFilterPolicyDataSource) Schema(_ context.Context, _ dataso
 			"phish_quarantine_tag":                           schema.StringAttribute{Computed: true, Description: "Maps to the -PhishQuarantineTag parameter."},
 			"phish_spam_action":                              schema.StringAttribute{Computed: true, Description: "Maps to the -PhishSpamAction parameter."},
 			"phish_zap_enabled":                              schema.BoolAttribute{Computed: true, Description: "Maps to the -PhishZapEnabled parameter."},
+			"quarantine_retention_period":                    schema.Int64Attribute{Computed: true, Description: "Maps to the -QuarantineRetentionPeriod parameter."},
 			"recommended_policy_type":                        schema.StringAttribute{Computed: true, Description: "Maps to the -RecommendedPolicyType parameter."},
-			"redirect_to_recipients":                         schema.StringAttribute{Computed: true, Description: "Maps to the -RedirectToRecipients parameter."},
-			"region_block_list":                              schema.StringAttribute{Computed: true, Description: "Maps to the -RegionBlockList parameter."},
+			"redirect_to_recipients":                         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RedirectToRecipients parameter."},
+			"region_block_list":                              schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RegionBlockList parameter."},
 			"spam_action":                                    schema.StringAttribute{Computed: true, Description: "Maps to the -SpamAction parameter."},
 			"spam_quarantine_tag":                            schema.StringAttribute{Computed: true, Description: "Maps to the -SpamQuarantineTag parameter."},
 			"spam_zap_enabled":                               schema.BoolAttribute{Computed: true, Description: "Maps to the -SpamZapEnabled parameter."},
 			"test_mode_action":                               schema.StringAttribute{Computed: true, Description: "Maps to the -TestModeAction parameter."},
-			"test_mode_bcc_to_recipients":                    schema.StringAttribute{Computed: true, Description: "Maps to the -TestModeBccToRecipients parameter."},
+			"test_mode_bcc_to_recipients":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TestModeBccToRecipients parameter."},
 		},
 	}
 }

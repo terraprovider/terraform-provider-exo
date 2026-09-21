@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -42,7 +43,7 @@ func (d *iRMConfigurationDataSource) Schema(_ context.Context, _ datasource.Sche
 			"enable_portal_tracking_logs":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnablePortalTrackingLogs parameter."},
 			"internal_licensing_enabled":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -InternalLicensingEnabled parameter."},
 			"journal_report_decryption_enabled":                schema.BoolAttribute{Computed: true, Description: "Maps to the -JournalReportDecryptionEnabled parameter."},
-			"licensing_location":                               schema.StringAttribute{Computed: true, Description: "Maps to the -LicensingLocation parameter."},
+			"licensing_location":                               schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -LicensingLocation parameter."},
 			"rms_online_key_sharing_location":                  schema.StringAttribute{Computed: true, Description: "Maps to the -RMSOnlineKeySharingLocation parameter."},
 			"reject_if_recipient_has_no_rights":                schema.BoolAttribute{Computed: true, Description: "Maps to the -RejectIfRecipientHasNoRights parameter."},
 			"search_enabled":                                   schema.BoolAttribute{Computed: true, Description: "Maps to the -SearchEnabled parameter."},

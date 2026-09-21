@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -34,7 +35,7 @@ func NewPerimeterConfigResource() resource.Resource { return &perimeterConfigRes
 type perimeterConfigModel struct {
 	ID                 types.String `tfsdk:"id"`
 	Identity           types.String `tfsdk:"identity"`
-	GatewayIPAddresses types.String `tfsdk:"gateway_ip_addresses"`
+	GatewayIPAddresses types.Set    `tfsdk:"gateway_ip_addresses"`
 }
 
 func (r *perimeterConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,7 +48,7 @@ func (r *perimeterConfigResource) Schema(_ context.Context, _ resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"id":                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":             schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"gateway_ip_addresses": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GatewayIPAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"gateway_ip_addresses": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GatewayIPAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -67,9 +68,7 @@ func (r *perimeterConfigResource) Create(ctx context.Context, req resource.Creat
 	}
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.GatewayIPAddresses.ValueString(); v != "" {
-		sp.GatewayIPAddresses = v
-	}
+	sp.GatewayIPAddresses = toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -109,9 +108,7 @@ func (r *perimeterConfigResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = id
-	if v := plan.GatewayIPAddresses.ValueString(); v != "" {
-		sp.GatewayIPAddresses = v
-	}
+	sp.GatewayIPAddresses = toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -120,9 +117,7 @@ func (r *perimeterConfigResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"GatewayIPAddresses": cfg.GatewayIPAddresses,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -173,10 +168,10 @@ func (r *perimeterConfigResource) refresh(ctx context.Context, identity string, 
 
 func readPerimeterConfig(ctx context.Context, obj map[string]any, m *perimeterConfigModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.GatewayIPAddresses = types.StringValue(getString(obj, "GatewayIPAddresses"))
+	m.GatewayIPAddresses = stringSetValue(ctx, getStringSlice(obj, "GatewayIPAddresses"))
 	_ = ctx
 }
 
 func (r *perimeterConfigResource) reconcileState(cfg, read *perimeterConfigModel) {
-	read.GatewayIPAddresses = reconcile.KeepStr(cfg.GatewayIPAddresses, read.GatewayIPAddresses)
+	read.GatewayIPAddresses = reconcile.KeepSet(cfg.GatewayIPAddresses, read.GatewayIPAddresses)
 }

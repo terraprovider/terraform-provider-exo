@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -39,8 +40,8 @@ func (d *hostedConnectionFilterPolicyDataSource) Schema(_ context.Context, _ dat
 			"admin_display_name":    schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
 			"configuration_xml_raw": schema.StringAttribute{Computed: true, Description: "Maps to the -ConfigurationXmlRaw parameter."},
 			"enable_safe_list":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableSafeList parameter."},
-			"ip_allow_list":         schema.StringAttribute{Computed: true, Description: "Maps to the -IPAllowList parameter."},
-			"ip_block_list":         schema.StringAttribute{Computed: true, Description: "Maps to the -IPBlockList parameter."},
+			"ip_allow_list":         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -IPAllowList parameter."},
+			"ip_block_list":         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -IPBlockList parameter."},
 			"make_default":          schema.BoolAttribute{Computed: true, Description: "Maps to the -MakeDefault parameter."},
 			"name":                  schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 		},

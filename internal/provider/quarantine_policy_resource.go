@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,14 +37,17 @@ type quarantinePolicyModel struct {
 	ID                                       types.String `tfsdk:"id"`
 	Identity                                 types.String `tfsdk:"identity"`
 	AdminDisplayName                         types.String `tfsdk:"admin_display_name"`
+	AdminNotificationFrequencyInDays         types.Int64  `tfsdk:"admin_notification_frequency_in_days"`
 	AdminNotificationLanguage                types.String `tfsdk:"admin_notification_language"`
 	AdminNotificationsEnabled                types.Bool   `tfsdk:"admin_notifications_enabled"`
 	AdminQuarantinePermissionsList           types.String `tfsdk:"admin_quarantine_permissions_list"`
 	CustomDisclaimer                         types.String `tfsdk:"custom_disclaimer"`
 	ESNEnabled                               types.Bool   `tfsdk:"esn_enabled"`
 	EndUserQuarantinePermissions             types.String `tfsdk:"end_user_quarantine_permissions"`
+	EndUserQuarantinePermissionsValue        types.Int64  `tfsdk:"end_user_quarantine_permissions_value"`
 	EndUserSpamNotificationCustomFromAddress types.String `tfsdk:"end_user_spam_notification_custom_from_address"`
 	EndUserSpamNotificationFrequency         types.String `tfsdk:"end_user_spam_notification_frequency"`
+	EndUserSpamNotificationFrequencyInDays   types.Int64  `tfsdk:"end_user_spam_notification_frequency_in_days"`
 	EndUserSpamNotificationLanguage          types.String `tfsdk:"end_user_spam_notification_language"`
 	EsnCustomSubject                         types.String `tfsdk:"esn_custom_subject"`
 	IgnoreDehydratedFlag                     types.Bool   `tfsdk:"ignore_dehydrated_flag"`
@@ -54,6 +58,7 @@ type quarantinePolicyModel struct {
 	Name                                     types.String `tfsdk:"name"`
 	OrganizationBrandingEnabled              types.Bool   `tfsdk:"organization_branding_enabled"`
 	QuarantinePolicyType                     types.String `tfsdk:"quarantine_policy_type"`
+	QuarantineRetentionDays                  types.Int64  `tfsdk:"quarantine_retention_days"`
 }
 
 func (r *quarantinePolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -64,17 +69,20 @@ func (r *quarantinePolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Manages the QuarantinePolicy object via New-QuarantinePolicy / Get-QuarantinePolicy / Set-QuarantinePolicy / Remove-QuarantinePolicy.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"admin_display_name":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"admin_notification_language":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"admin_notifications_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"admin_quarantine_permissions_list": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"custom_disclaimer":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomDisclaimer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"esn_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ESNEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"end_user_quarantine_permissions":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"id":                                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"admin_display_name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"admin_notification_frequency_in_days":           schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationFrequencyInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"admin_notification_language":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"admin_notifications_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"admin_quarantine_permissions_list":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"custom_disclaimer":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomDisclaimer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"esn_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ESNEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"end_user_quarantine_permissions":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_quarantine_permissions_value":          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissionsValue parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_custom_from_address": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_frequency":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequency parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_spam_notification_frequency_in_days":   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequencyInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_language":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"esn_custom_subject":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EsnCustomSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ignore_dehydrated_flag":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IgnoreDehydratedFlag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -85,6 +93,7 @@ func (r *quarantinePolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"name":                                           schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organization_branding_enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationBrandingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"quarantine_policy_type":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -QuarantinePolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"quarantine_retention_days":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -QuarantineRetentionDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -105,13 +114,17 @@ func (r *quarantinePolicyResource) Create(ctx context.Context, req resource.Crea
 
 	p := exo.NewQuarantinePolicyParams{
 		AdminDisplayName:                         plan.AdminDisplayName.ValueString(),
+		AdminNotificationFrequencyInDays:         int(plan.AdminNotificationFrequencyInDays.ValueInt64()),
 		AdminNotificationsEnabled:                plan.AdminNotificationsEnabled.ValueBool(),
 		CustomDisclaimer:                         plan.CustomDisclaimer.ValueString(),
 		ESNEnabled:                               plan.ESNEnabled.ValueBool(),
+		EndUserQuarantinePermissionsValue:        int(plan.EndUserQuarantinePermissionsValue.ValueInt64()),
 		EndUserSpamNotificationCustomFromAddress: plan.EndUserSpamNotificationCustomFromAddress.ValueString(),
+		EndUserSpamNotificationFrequencyInDays:   int(plan.EndUserSpamNotificationFrequencyInDays.ValueInt64()),
 		IncludeMessagesFromBlockedSenderAddress:  plan.IncludeMessagesFromBlockedSenderAddress.ValueBool(),
 		Name:                                     plan.Name.ValueString(),
 		OrganizationBrandingEnabled:              plan.OrganizationBrandingEnabled.ValueBool(),
+		QuarantineRetentionDays:                  int(plan.QuarantineRetentionDays.ValueInt64()),
 	}
 	if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
 		p.AdminNotificationLanguage = v
@@ -193,6 +206,7 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetQuarantinePolicyParams{}
 	sp.Identity = id
+	sp.AdminNotificationFrequencyInDays = int(plan.AdminNotificationFrequencyInDays.ValueInt64())
 	if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
 		sp.AdminNotificationLanguage = v
 	}
@@ -205,10 +219,12 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
 		sp.EndUserQuarantinePermissions = v
 	}
+	sp.EndUserQuarantinePermissionsValue = int(plan.EndUserQuarantinePermissionsValue.ValueInt64())
 	sp.EndUserSpamNotificationCustomFromAddress = plan.EndUserSpamNotificationCustomFromAddress.ValueString()
 	if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
 		sp.EndUserSpamNotificationFrequency = v
 	}
+	sp.EndUserSpamNotificationFrequencyInDays = int(plan.EndUserSpamNotificationFrequencyInDays.ValueInt64())
 	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
 		sp.EndUserSpamNotificationLanguage = v
 	}
@@ -227,6 +243,7 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 		sp.MultiLanguageSetting = v
 	}
 	sp.OrganizationBrandingEnabled = plan.OrganizationBrandingEnabled.ValueBool()
+	sp.QuarantineRetentionDays = int(plan.QuarantineRetentionDays.ValueInt64())
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -309,14 +326,17 @@ func readQuarantinePolicy(ctx context.Context, obj map[string]any, m *quarantine
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
+	m.AdminNotificationFrequencyInDays = types.Int64Value(getInt(obj, "AdminNotificationFrequencyInDays"))
 	m.AdminNotificationLanguage = types.StringValue(getString(obj, "AdminNotificationLanguage"))
 	m.AdminNotificationsEnabled = types.BoolValue(getBool(obj, "AdminNotificationsEnabled"))
 	m.AdminQuarantinePermissionsList = types.StringValue(getString(obj, "AdminQuarantinePermissionsList"))
 	m.CustomDisclaimer = types.StringValue(getString(obj, "CustomDisclaimer"))
 	m.ESNEnabled = types.BoolValue(getBool(obj, "ESNEnabled"))
 	m.EndUserQuarantinePermissions = types.StringValue(getString(obj, "EndUserQuarantinePermissions"))
+	m.EndUserQuarantinePermissionsValue = types.Int64Value(getInt(obj, "EndUserQuarantinePermissionsValue"))
 	m.EndUserSpamNotificationCustomFromAddress = types.StringValue(getString(obj, "EndUserSpamNotificationCustomFromAddress"))
 	m.EndUserSpamNotificationFrequency = types.StringValue(getString(obj, "EndUserSpamNotificationFrequency"))
+	m.EndUserSpamNotificationFrequencyInDays = types.Int64Value(getInt(obj, "EndUserSpamNotificationFrequencyInDays"))
 	m.EndUserSpamNotificationLanguage = types.StringValue(getString(obj, "EndUserSpamNotificationLanguage"))
 	m.EsnCustomSubject = types.StringValue(getString(obj, "EsnCustomSubject"))
 	m.IgnoreDehydratedFlag = types.BoolValue(getBool(obj, "IgnoreDehydratedFlag"))
@@ -327,19 +347,23 @@ func readQuarantinePolicy(ctx context.Context, obj map[string]any, m *quarantine
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OrganizationBrandingEnabled = types.BoolValue(getBool(obj, "OrganizationBrandingEnabled"))
 	m.QuarantinePolicyType = types.StringValue(getString(obj, "QuarantinePolicyType"))
+	m.QuarantineRetentionDays = types.Int64Value(getInt(obj, "QuarantineRetentionDays"))
 	_ = ctx
 }
 
 func (r *quarantinePolicyResource) reconcileState(cfg, read *quarantinePolicyModel) {
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
+	read.AdminNotificationFrequencyInDays = reconcile.KeepInt64(cfg.AdminNotificationFrequencyInDays, read.AdminNotificationFrequencyInDays)
 	read.AdminNotificationLanguage = reconcile.KeepStr(cfg.AdminNotificationLanguage, read.AdminNotificationLanguage)
 	read.AdminNotificationsEnabled = reconcile.KeepBool(cfg.AdminNotificationsEnabled, read.AdminNotificationsEnabled)
 	read.AdminQuarantinePermissionsList = reconcile.KeepStr(cfg.AdminQuarantinePermissionsList, read.AdminQuarantinePermissionsList)
 	read.CustomDisclaimer = reconcile.KeepStr(cfg.CustomDisclaimer, read.CustomDisclaimer)
 	read.ESNEnabled = reconcile.KeepBool(cfg.ESNEnabled, read.ESNEnabled)
 	read.EndUserQuarantinePermissions = reconcile.KeepStr(cfg.EndUserQuarantinePermissions, read.EndUserQuarantinePermissions)
+	read.EndUserQuarantinePermissionsValue = reconcile.KeepInt64(cfg.EndUserQuarantinePermissionsValue, read.EndUserQuarantinePermissionsValue)
 	read.EndUserSpamNotificationCustomFromAddress = reconcile.KeepStr(cfg.EndUserSpamNotificationCustomFromAddress, read.EndUserSpamNotificationCustomFromAddress)
 	read.EndUserSpamNotificationFrequency = reconcile.KeepStr(cfg.EndUserSpamNotificationFrequency, read.EndUserSpamNotificationFrequency)
+	read.EndUserSpamNotificationFrequencyInDays = reconcile.KeepInt64(cfg.EndUserSpamNotificationFrequencyInDays, read.EndUserSpamNotificationFrequencyInDays)
 	read.EndUserSpamNotificationLanguage = reconcile.KeepStr(cfg.EndUserSpamNotificationLanguage, read.EndUserSpamNotificationLanguage)
 	read.EsnCustomSubject = reconcile.KeepStr(cfg.EsnCustomSubject, read.EsnCustomSubject)
 	read.IgnoreDehydratedFlag = reconcile.KeepBool(cfg.IgnoreDehydratedFlag, read.IgnoreDehydratedFlag)
@@ -350,4 +374,5 @@ func (r *quarantinePolicyResource) reconcileState(cfg, read *quarantinePolicyMod
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationBrandingEnabled = reconcile.KeepBool(cfg.OrganizationBrandingEnabled, read.OrganizationBrandingEnabled)
 	read.QuarantinePolicyType = reconcile.KeepStr(cfg.QuarantinePolicyType, read.QuarantinePolicyType)
+	read.QuarantineRetentionDays = reconcile.KeepInt64(cfg.QuarantineRetentionDays, read.QuarantineRetentionDays)
 }

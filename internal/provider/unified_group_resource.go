@@ -36,7 +36,7 @@ func NewUnifiedGroupResource() resource.Resource { return &unifiedGroupResource{
 type unifiedGroupModel struct {
 	ID                                     types.String `tfsdk:"id"`
 	Identity                               types.String `tfsdk:"identity"`
-	AcceptMessagesOnlyFromSendersOrMembers types.String `tfsdk:"accept_messages_only_from_senders_or_members"`
+	AcceptMessagesOnlyFromSendersOrMembers types.Set    `tfsdk:"accept_messages_only_from_senders_or_members"`
 	AccessType                             types.String `tfsdk:"access_type"`
 	Alias                                  types.String `tfsdk:"alias_"`
 	AlwaysSubscribeMembersToCalendarEvents types.Bool   `tfsdk:"always_subscribe_members_to_calendar_events"`
@@ -65,16 +65,16 @@ type unifiedGroupModel struct {
 	DeleteDlAfterMigration                 types.Bool   `tfsdk:"delete_dl_after_migration"`
 	DisplayName                            types.String `tfsdk:"display_name"`
 	DlIdentity                             types.String `tfsdk:"dl_identity"`
-	EmailAddresses                         types.String `tfsdk:"email_addresses"`
+	EmailAddresses                         types.Set    `tfsdk:"email_addresses"`
 	ExecutingUser                          types.String `tfsdk:"executing_user"`
 	ExoErrorAsWarning                      types.Bool   `tfsdk:"exo_error_as_warning"`
-	ExtensionCustomAttribute1              types.String `tfsdk:"extension_custom_attribute1"`
-	ExtensionCustomAttribute2              types.String `tfsdk:"extension_custom_attribute2"`
-	ExtensionCustomAttribute3              types.String `tfsdk:"extension_custom_attribute3"`
-	ExtensionCustomAttribute4              types.String `tfsdk:"extension_custom_attribute4"`
-	ExtensionCustomAttribute5              types.String `tfsdk:"extension_custom_attribute5"`
+	ExtensionCustomAttribute1              types.Set    `tfsdk:"extension_custom_attribute1"`
+	ExtensionCustomAttribute2              types.Set    `tfsdk:"extension_custom_attribute2"`
+	ExtensionCustomAttribute3              types.Set    `tfsdk:"extension_custom_attribute3"`
+	ExtensionCustomAttribute4              types.Set    `tfsdk:"extension_custom_attribute4"`
+	ExtensionCustomAttribute5              types.Set    `tfsdk:"extension_custom_attribute5"`
 	ForceUpgrade                           types.Bool   `tfsdk:"force_upgrade"`
-	GrantSendOnBehalfTo                    types.String `tfsdk:"grant_send_on_behalf_to"`
+	GrantSendOnBehalfTo                    types.Set    `tfsdk:"grant_send_on_behalf_to"`
 	HiddenFromAddressListsEnabled          types.Bool   `tfsdk:"hidden_from_address_lists_enabled"`
 	HiddenFromExchangeClientsEnabled       types.Bool   `tfsdk:"hidden_from_exchange_clients_enabled"`
 	HiddenGroupMembershipEnabled           types.Bool   `tfsdk:"hidden_group_membership_enabled"`
@@ -82,19 +82,19 @@ type unifiedGroupModel struct {
 	IsMemberAllowedToEditContent           types.String `tfsdk:"is_member_allowed_to_edit_content"`
 	Language                               types.String `tfsdk:"language"`
 	MailTip                                types.String `tfsdk:"mail_tip"`
-	MailTipTranslations                    types.String `tfsdk:"mail_tip_translations"`
+	MailTipTranslations                    types.Set    `tfsdk:"mail_tip_translations"`
 	MailboxRegion                          types.String `tfsdk:"mailbox_region"`
 	ManagedBy                              types.Set    `tfsdk:"managed_by"`
 	MaxReceiveSize                         types.String `tfsdk:"max_receive_size"`
 	MaxSendSize                            types.String `tfsdk:"max_send_size"`
 	Members                                types.Set    `tfsdk:"members"`
-	ModeratedBy                            types.String `tfsdk:"moderated_by"`
+	ModeratedBy                            types.Set    `tfsdk:"moderated_by"`
 	ModerationEnabled                      types.Bool   `tfsdk:"moderation_enabled"`
 	Name                                   types.String `tfsdk:"name"`
 	Notes                                  types.String `tfsdk:"notes"`
 	Owner                                  types.String `tfsdk:"owner"`
 	PrimarySmtpAddress                     types.String `tfsdk:"primary_smtp_address"`
-	RejectMessagesFromSendersOrMembers     types.String `tfsdk:"reject_messages_from_senders_or_members"`
+	RejectMessagesFromSendersOrMembers     types.Set    `tfsdk:"reject_messages_from_senders_or_members"`
 	RequireSenderAuthenticationEnabled     types.Bool   `tfsdk:"require_sender_authentication_enabled"`
 	SensitivityLabelId                     types.String `tfsdk:"sensitivity_label_id"`
 	SubscriptionEnabled                    types.Bool   `tfsdk:"subscription_enabled"`
@@ -112,7 +112,7 @@ func (r *unifiedGroupResource) Schema(_ context.Context, _ resource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"accept_messages_only_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"access_type": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AccessType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"alias_":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"always_subscribe_members_to_calendar_events": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AlwaysSubscribeMembersToCalendarEvents parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -141,16 +141,16 @@ func (r *unifiedGroupResource) Schema(_ context.Context, _ resource.SchemaReques
 			"delete_dl_after_migration":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteDlAfterMigration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"display_name":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"dl_identity":                                 schema.StringAttribute{Required: true, Description: "Maps to the -DlIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"email_addresses":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"email_addresses":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"executing_user":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExecutingUser parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"exo_error_as_warning":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExoErrorAsWarning parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute1":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute2":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute3":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute4":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute5":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute1":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute2":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute3":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute4":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute5":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"grant_send_on_behalf_to":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"grant_send_on_behalf_to":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hidden_from_exchange_clients_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromExchangeClientsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hidden_group_membership_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenGroupMembershipEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -158,19 +158,19 @@ func (r *unifiedGroupResource) Schema(_ context.Context, _ resource.SchemaReques
 			"is_member_allowed_to_edit_content":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IsMemberAllowedToEditContent parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"language":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Language parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mail_tip":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_tip_translations":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tip_translations":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox_region":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxRegion parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"managed_by":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"max_receive_size":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxReceiveSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_send_size":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxSendSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"members":                                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Members parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
-			"moderated_by":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"moderated_by":                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"notes":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Notes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"owner":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Owner parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_senders_or_members":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_senders_or_members":     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"require_sender_authentication_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSenderAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"sensitivity_label_id":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SensitivityLabelId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"subscription_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SubscriptionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -202,6 +202,7 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 		ConvertClosedDlToPrivateGroup:          plan.ConvertClosedDlToPrivateGroup.ValueBool(),
 		DeleteDlAfterMigration:                 plan.DeleteDlAfterMigration.ValueBool(),
 		DisplayName:                            plan.DisplayName.ValueString(),
+		EmailAddresses:                         toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics),
 		ExoErrorAsWarning:                      plan.ExoErrorAsWarning.ValueBool(),
 		HiddenGroupMembershipEnabled:           plan.HiddenGroupMembershipEnabled.ValueBool(),
 		MailboxRegion:                          plan.MailboxRegion.ValueString(),
@@ -221,9 +222,6 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	if v := plan.DlIdentity.ValueString(); v != "" {
 		p.DlIdentity = v
-	}
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		p.EmailAddresses = v
 	}
 	if v := plan.ExecutingUser.ValueString(); v != "" {
 		p.ExecutingUser = v
@@ -293,9 +291,7 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetUnifiedGroupParams{}
 	sp.Identity = id
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
-	}
+	sp.AcceptMessagesOnlyFromSendersOrMembers = toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)
 	if v := plan.AccessType.ValueString(); v != "" {
 		sp.AccessType = v
 	}
@@ -327,28 +323,14 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		sp.DataEncryptionPolicy = v
 	}
 	sp.DisplayName = plan.DisplayName.ValueString()
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
-	}
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
-	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
-	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
-	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
-	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
-	}
+	sp.EmailAddresses = toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute1 = toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute2 = toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute3 = toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute4 = toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute5 = toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)
 	sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
-	}
+	sp.GrantSendOnBehalfTo = toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)
 	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
 	sp.HiddenFromExchangeClientsEnabled = plan.HiddenFromExchangeClientsEnabled.ValueBool()
 	if v := plan.InformationBarrierMode.ValueString(); v != "" {
@@ -361,9 +343,7 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		sp.Language = v
 	}
 	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
-	}
+	sp.MailTipTranslations = toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)
 	sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	if v := plan.MaxReceiveSize.ValueString(); v != "" {
 		sp.MaxReceiveSize = v
@@ -371,17 +351,13 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if v := plan.MaxSendSize.ValueString(); v != "" {
 		sp.MaxSendSize = v
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
-	}
+	sp.ModeratedBy = toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)
 	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
 	sp.Notes = plan.Notes.ValueString()
 	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
 		sp.PrimarySmtpAddress = v
 	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
-	}
+	sp.RejectMessagesFromSendersOrMembers = toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)
 	sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBool()
 	if v := plan.SensitivityLabelId.ValueString(); v != "" {
 		sp.SensitivityLabelId = v
@@ -397,48 +373,37 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AcceptMessagesOnlyFromSendersOrMembers": cfg.AcceptMessagesOnlyFromSendersOrMembers,
-		"AccessType":                             cfg.AccessType,
-		"Alias":                                  cfg.Alias,
-		"AuditLogAgeLimit":                       cfg.AuditLogAgeLimit,
-		"Classification":                         cfg.Classification,
-		"CustomAttribute1":                       cfg.CustomAttribute1,
-		"CustomAttribute10":                      cfg.CustomAttribute10,
-		"CustomAttribute11":                      cfg.CustomAttribute11,
-		"CustomAttribute12":                      cfg.CustomAttribute12,
-		"CustomAttribute13":                      cfg.CustomAttribute13,
-		"CustomAttribute14":                      cfg.CustomAttribute14,
-		"CustomAttribute15":                      cfg.CustomAttribute15,
-		"CustomAttribute2":                       cfg.CustomAttribute2,
-		"CustomAttribute3":                       cfg.CustomAttribute3,
-		"CustomAttribute4":                       cfg.CustomAttribute4,
-		"CustomAttribute5":                       cfg.CustomAttribute5,
-		"CustomAttribute6":                       cfg.CustomAttribute6,
-		"CustomAttribute7":                       cfg.CustomAttribute7,
-		"CustomAttribute8":                       cfg.CustomAttribute8,
-		"CustomAttribute9":                       cfg.CustomAttribute9,
-		"DataEncryptionPolicy":                   cfg.DataEncryptionPolicy,
-		"DisplayName":                            cfg.DisplayName,
-		"EmailAddresses":                         cfg.EmailAddresses,
-		"ExtensionCustomAttribute1":              cfg.ExtensionCustomAttribute1,
-		"ExtensionCustomAttribute2":              cfg.ExtensionCustomAttribute2,
-		"ExtensionCustomAttribute3":              cfg.ExtensionCustomAttribute3,
-		"ExtensionCustomAttribute4":              cfg.ExtensionCustomAttribute4,
-		"ExtensionCustomAttribute5":              cfg.ExtensionCustomAttribute5,
-		"GrantSendOnBehalfTo":                    cfg.GrantSendOnBehalfTo,
-		"InformationBarrierMode":                 cfg.InformationBarrierMode,
-		"IsMemberAllowedToEditContent":           cfg.IsMemberAllowedToEditContent,
-		"Language":                               cfg.Language,
-		"MailTip":                                cfg.MailTip,
-		"MailTipTranslations":                    cfg.MailTipTranslations,
-		"MailboxRegion":                          cfg.MailboxRegion,
-		"MaxReceiveSize":                         cfg.MaxReceiveSize,
-		"MaxSendSize":                            cfg.MaxSendSize,
-		"ModeratedBy":                            cfg.ModeratedBy,
-		"Notes":                                  cfg.Notes,
-		"PrimarySmtpAddress":                     cfg.PrimarySmtpAddress,
-		"RejectMessagesFromSendersOrMembers":     cfg.RejectMessagesFromSendersOrMembers,
-		"SensitivityLabelId":                     cfg.SensitivityLabelId,
+		"AccessType":                   cfg.AccessType,
+		"Alias":                        cfg.Alias,
+		"AuditLogAgeLimit":             cfg.AuditLogAgeLimit,
+		"Classification":               cfg.Classification,
+		"CustomAttribute1":             cfg.CustomAttribute1,
+		"CustomAttribute10":            cfg.CustomAttribute10,
+		"CustomAttribute11":            cfg.CustomAttribute11,
+		"CustomAttribute12":            cfg.CustomAttribute12,
+		"CustomAttribute13":            cfg.CustomAttribute13,
+		"CustomAttribute14":            cfg.CustomAttribute14,
+		"CustomAttribute15":            cfg.CustomAttribute15,
+		"CustomAttribute2":             cfg.CustomAttribute2,
+		"CustomAttribute3":             cfg.CustomAttribute3,
+		"CustomAttribute4":             cfg.CustomAttribute4,
+		"CustomAttribute5":             cfg.CustomAttribute5,
+		"CustomAttribute6":             cfg.CustomAttribute6,
+		"CustomAttribute7":             cfg.CustomAttribute7,
+		"CustomAttribute8":             cfg.CustomAttribute8,
+		"CustomAttribute9":             cfg.CustomAttribute9,
+		"DataEncryptionPolicy":         cfg.DataEncryptionPolicy,
+		"DisplayName":                  cfg.DisplayName,
+		"InformationBarrierMode":       cfg.InformationBarrierMode,
+		"IsMemberAllowedToEditContent": cfg.IsMemberAllowedToEditContent,
+		"Language":                     cfg.Language,
+		"MailTip":                      cfg.MailTip,
+		"MailboxRegion":                cfg.MailboxRegion,
+		"MaxReceiveSize":               cfg.MaxReceiveSize,
+		"MaxSendSize":                  cfg.MaxSendSize,
+		"Notes":                        cfg.Notes,
+		"PrimarySmtpAddress":           cfg.PrimarySmtpAddress,
+		"SensitivityLabelId":           cfg.SensitivityLabelId,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -500,7 +465,7 @@ func (r *unifiedGroupResource) refresh(ctx context.Context, identity string, m *
 func readUnifiedGroup(ctx context.Context, obj map[string]any, m *unifiedGroupModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AcceptMessagesOnlyFromSendersOrMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
+	m.AcceptMessagesOnlyFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
 	m.AccessType = types.StringValue(getString(obj, "AccessType"))
 	m.Alias = types.StringValue(getString(obj, "Alias"))
 	m.AlwaysSubscribeMembersToCalendarEvents = types.BoolValue(getBool(obj, "AlwaysSubscribeMembersToCalendarEvents"))
@@ -529,16 +494,16 @@ func readUnifiedGroup(ctx context.Context, obj map[string]any, m *unifiedGroupMo
 	m.DeleteDlAfterMigration = types.BoolValue(getBool(obj, "DeleteDlAfterMigration"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.DlIdentity = types.StringValue(getString(obj, "DlIdentity"))
-	m.EmailAddresses = types.StringValue(getString(obj, "EmailAddresses"))
+	m.EmailAddresses = stringSetValue(ctx, getStringSlice(obj, "EmailAddresses"))
 	m.ExecutingUser = types.StringValue(getString(obj, "ExecutingUser"))
 	m.ExoErrorAsWarning = types.BoolValue(getBool(obj, "ExoErrorAsWarning"))
-	m.ExtensionCustomAttribute1 = types.StringValue(getString(obj, "ExtensionCustomAttribute1"))
-	m.ExtensionCustomAttribute2 = types.StringValue(getString(obj, "ExtensionCustomAttribute2"))
-	m.ExtensionCustomAttribute3 = types.StringValue(getString(obj, "ExtensionCustomAttribute3"))
-	m.ExtensionCustomAttribute4 = types.StringValue(getString(obj, "ExtensionCustomAttribute4"))
-	m.ExtensionCustomAttribute5 = types.StringValue(getString(obj, "ExtensionCustomAttribute5"))
+	m.ExtensionCustomAttribute1 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute1"))
+	m.ExtensionCustomAttribute2 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute2"))
+	m.ExtensionCustomAttribute3 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute3"))
+	m.ExtensionCustomAttribute4 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute4"))
+	m.ExtensionCustomAttribute5 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute5"))
 	m.ForceUpgrade = types.BoolValue(getBool(obj, "ForceUpgrade"))
-	m.GrantSendOnBehalfTo = types.StringValue(getString(obj, "GrantSendOnBehalfTo"))
+	m.GrantSendOnBehalfTo = stringSetValue(ctx, getStringSlice(obj, "GrantSendOnBehalfTo"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
 	m.HiddenFromExchangeClientsEnabled = types.BoolValue(getBool(obj, "HiddenFromExchangeClientsEnabled"))
 	m.HiddenGroupMembershipEnabled = types.BoolValue(getBool(obj, "HiddenGroupMembershipEnabled"))
@@ -546,19 +511,19 @@ func readUnifiedGroup(ctx context.Context, obj map[string]any, m *unifiedGroupMo
 	m.IsMemberAllowedToEditContent = types.StringValue(getString(obj, "IsMemberAllowedToEditContent"))
 	m.Language = types.StringValue(getString(obj, "Language"))
 	m.MailTip = types.StringValue(getString(obj, "MailTip"))
-	m.MailTipTranslations = types.StringValue(getString(obj, "MailTipTranslations"))
+	m.MailTipTranslations = stringSetValue(ctx, getStringSlice(obj, "MailTipTranslations"))
 	m.MailboxRegion = types.StringValue(getString(obj, "MailboxRegion"))
 	m.ManagedBy = stringSetValue(ctx, getStringSlice(obj, "ManagedBy"))
 	m.MaxReceiveSize = types.StringValue(getString(obj, "MaxReceiveSize"))
 	m.MaxSendSize = types.StringValue(getString(obj, "MaxSendSize"))
 	m.Members = stringSetValue(ctx, getStringSlice(obj, "Members"))
-	m.ModeratedBy = types.StringValue(getString(obj, "ModeratedBy"))
+	m.ModeratedBy = stringSetValue(ctx, getStringSlice(obj, "ModeratedBy"))
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Notes = types.StringValue(getString(obj, "Notes"))
 	m.Owner = types.StringValue(getString(obj, "Owner"))
 	m.PrimarySmtpAddress = types.StringValue(getString(obj, "PrimarySmtpAddress"))
-	m.RejectMessagesFromSendersOrMembers = types.StringValue(getString(obj, "RejectMessagesFromSendersOrMembers"))
+	m.RejectMessagesFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromSendersOrMembers"))
 	m.RequireSenderAuthenticationEnabled = types.BoolValue(getBool(obj, "RequireSenderAuthenticationEnabled"))
 	m.SensitivityLabelId = types.StringValue(getString(obj, "SensitivityLabelId"))
 	m.SubscriptionEnabled = types.BoolValue(getBool(obj, "SubscriptionEnabled"))
@@ -568,7 +533,7 @@ func readUnifiedGroup(ctx context.Context, obj map[string]any, m *unifiedGroupMo
 }
 
 func (r *unifiedGroupResource) reconcileState(cfg, read *unifiedGroupModel) {
-	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
+	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
 	read.AccessType = reconcile.KeepStr(cfg.AccessType, read.AccessType)
 	read.Alias = reconcile.KeepStr(cfg.Alias, read.Alias)
 	read.AlwaysSubscribeMembersToCalendarEvents = reconcile.KeepBool(cfg.AlwaysSubscribeMembersToCalendarEvents, read.AlwaysSubscribeMembersToCalendarEvents)
@@ -597,16 +562,16 @@ func (r *unifiedGroupResource) reconcileState(cfg, read *unifiedGroupModel) {
 	read.DeleteDlAfterMigration = reconcile.KeepBool(cfg.DeleteDlAfterMigration, read.DeleteDlAfterMigration)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
 	read.DlIdentity = reconcile.KeepStr(cfg.DlIdentity, read.DlIdentity)
-	read.EmailAddresses = reconcile.KeepStr(cfg.EmailAddresses, read.EmailAddresses)
+	read.EmailAddresses = reconcile.KeepSet(cfg.EmailAddresses, read.EmailAddresses)
 	read.ExecutingUser = reconcile.KeepStr(cfg.ExecutingUser, read.ExecutingUser)
 	read.ExoErrorAsWarning = reconcile.KeepBool(cfg.ExoErrorAsWarning, read.ExoErrorAsWarning)
-	read.ExtensionCustomAttribute1 = reconcile.KeepStr(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
-	read.ExtensionCustomAttribute2 = reconcile.KeepStr(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
-	read.ExtensionCustomAttribute3 = reconcile.KeepStr(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
-	read.ExtensionCustomAttribute4 = reconcile.KeepStr(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
-	read.ExtensionCustomAttribute5 = reconcile.KeepStr(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
+	read.ExtensionCustomAttribute1 = reconcile.KeepSet(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
+	read.ExtensionCustomAttribute2 = reconcile.KeepSet(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
+	read.ExtensionCustomAttribute3 = reconcile.KeepSet(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
+	read.ExtensionCustomAttribute4 = reconcile.KeepSet(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
+	read.ExtensionCustomAttribute5 = reconcile.KeepSet(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
 	read.ForceUpgrade = reconcile.KeepBool(cfg.ForceUpgrade, read.ForceUpgrade)
-	read.GrantSendOnBehalfTo = reconcile.KeepStr(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
+	read.GrantSendOnBehalfTo = reconcile.KeepSet(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
 	read.HiddenFromAddressListsEnabled = reconcile.KeepBool(cfg.HiddenFromAddressListsEnabled, read.HiddenFromAddressListsEnabled)
 	read.HiddenFromExchangeClientsEnabled = reconcile.KeepBool(cfg.HiddenFromExchangeClientsEnabled, read.HiddenFromExchangeClientsEnabled)
 	read.HiddenGroupMembershipEnabled = reconcile.KeepBool(cfg.HiddenGroupMembershipEnabled, read.HiddenGroupMembershipEnabled)
@@ -614,19 +579,19 @@ func (r *unifiedGroupResource) reconcileState(cfg, read *unifiedGroupModel) {
 	read.IsMemberAllowedToEditContent = reconcile.KeepStr(cfg.IsMemberAllowedToEditContent, read.IsMemberAllowedToEditContent)
 	read.Language = reconcile.KeepStr(cfg.Language, read.Language)
 	read.MailTip = reconcile.KeepStr(cfg.MailTip, read.MailTip)
-	read.MailTipTranslations = reconcile.KeepStr(cfg.MailTipTranslations, read.MailTipTranslations)
+	read.MailTipTranslations = reconcile.KeepSet(cfg.MailTipTranslations, read.MailTipTranslations)
 	read.MailboxRegion = reconcile.KeepStr(cfg.MailboxRegion, read.MailboxRegion)
 	read.ManagedBy = reconcile.KeepSet(cfg.ManagedBy, read.ManagedBy)
 	read.MaxReceiveSize = reconcile.KeepStr(cfg.MaxReceiveSize, read.MaxReceiveSize)
 	read.MaxSendSize = reconcile.KeepStr(cfg.MaxSendSize, read.MaxSendSize)
 	read.Members = reconcile.KeepSet(cfg.Members, read.Members)
-	read.ModeratedBy = reconcile.KeepStr(cfg.ModeratedBy, read.ModeratedBy)
+	read.ModeratedBy = reconcile.KeepSet(cfg.ModeratedBy, read.ModeratedBy)
 	read.ModerationEnabled = reconcile.KeepBool(cfg.ModerationEnabled, read.ModerationEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Notes = reconcile.KeepStr(cfg.Notes, read.Notes)
 	read.Owner = reconcile.KeepStr(cfg.Owner, read.Owner)
 	read.PrimarySmtpAddress = reconcile.KeepStr(cfg.PrimarySmtpAddress, read.PrimarySmtpAddress)
-	read.RejectMessagesFromSendersOrMembers = reconcile.KeepStr(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
+	read.RejectMessagesFromSendersOrMembers = reconcile.KeepSet(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
 	read.RequireSenderAuthenticationEnabled = reconcile.KeepBool(cfg.RequireSenderAuthenticationEnabled, read.RequireSenderAuthenticationEnabled)
 	read.SensitivityLabelId = reconcile.KeepStr(cfg.SensitivityLabelId, read.SensitivityLabelId)
 	read.SubscriptionEnabled = reconcile.KeepBool(cfg.SubscriptionEnabled, read.SubscriptionEnabled)

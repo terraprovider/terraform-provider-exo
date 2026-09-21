@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -45,6 +46,7 @@ type hostedContentFilterRuleModel struct {
 	ExceptIfSentToMemberOf    types.Set    `tfsdk:"except_if_sent_to_member_of"`
 	HostedContentFilterPolicy types.String `tfsdk:"hosted_content_filter_policy"`
 	Name                      types.String `tfsdk:"name"`
+	Priority                  types.Int64  `tfsdk:"priority"`
 	RecipientDomainIs         types.Set    `tfsdk:"recipient_domain_is"`
 	SentTo                    types.Set    `tfsdk:"sent_to"`
 	SentToMemberOf            types.Set    `tfsdk:"sent_to_member_of"`
@@ -67,6 +69,7 @@ func (r *hostedContentFilterRuleResource) Schema(_ context.Context, _ resource.S
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hosted_content_filter_policy":  schema.StringAttribute{Required: true, Description: "Maps to the -HostedContentFilterPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_member_of":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -95,6 +98,7 @@ func (r *hostedContentFilterRuleResource) Create(ctx context.Context, req resour
 		ExceptIfSentTo:            toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
 		ExceptIfSentToMemberOf:    toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics),
 		Name:                      plan.Name.ValueString(),
+		Priority:                  int(plan.Priority.ValueInt64()),
 		RecipientDomainIs:         toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics),
 		SentTo:                    toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
 		SentToMemberOf:            toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics),
@@ -156,6 +160,7 @@ func (r *hostedContentFilterRuleResource) Update(ctx context.Context, req resour
 	sp.ExceptIfRecipientDomainIs = toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)
 	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
 	sp.ExceptIfSentToMemberOf = toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)
+	sp.Priority = int(plan.Priority.ValueInt64())
 	sp.RecipientDomainIs = toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)
 	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
 	sp.SentToMemberOf = toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)
@@ -237,6 +242,7 @@ func readHostedContentFilterRule(ctx context.Context, obj map[string]any, m *hos
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))
 	m.HostedContentFilterPolicy = types.StringValue(getString(obj, "HostedContentFilterPolicy"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.RecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "RecipientDomainIs"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "SentToMemberOf"))
@@ -251,6 +257,7 @@ func (r *hostedContentFilterRuleResource) reconcileState(cfg, read *hostedConten
 	read.ExceptIfSentToMemberOf = reconcile.KeepSet(cfg.ExceptIfSentToMemberOf, read.ExceptIfSentToMemberOf)
 	read.HostedContentFilterPolicy = reconcile.KeepStr(cfg.HostedContentFilterPolicy, read.HostedContentFilterPolicy)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.RecipientDomainIs = reconcile.KeepSet(cfg.RecipientDomainIs, read.RecipientDomainIs)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 	read.SentToMemberOf = reconcile.KeepSet(cfg.SentToMemberOf, read.SentToMemberOf)
