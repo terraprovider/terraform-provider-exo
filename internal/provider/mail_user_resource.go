@@ -36,12 +36,12 @@ func NewMailUserResource() resource.Resource { return &mailUserResource{} }
 type mailUserModel struct {
 	ID                                         types.String `tfsdk:"id"`
 	Identity                                   types.String `tfsdk:"identity"`
-	AcceptMessagesOnlyFrom                     types.String `tfsdk:"accept_messages_only_from"`
-	AcceptMessagesOnlyFromDLMembers            types.String `tfsdk:"accept_messages_only_from_dl_members"`
-	AcceptMessagesOnlyFromSendersOrMembers     types.String `tfsdk:"accept_messages_only_from_senders_or_members"`
+	AcceptMessagesOnlyFrom                     types.Set    `tfsdk:"accept_messages_only_from"`
+	AcceptMessagesOnlyFromDLMembers            types.Set    `tfsdk:"accept_messages_only_from_dl_members"`
+	AcceptMessagesOnlyFromSendersOrMembers     types.Set    `tfsdk:"accept_messages_only_from_senders_or_members"`
 	Alias                                      types.String `tfsdk:"alias_"`
 	ArchiveGuid                                types.String `tfsdk:"archive_guid"`
-	BypassModerationFromSendersOrMembers       types.String `tfsdk:"bypass_moderation_from_senders_or_members"`
+	BypassModerationFromSendersOrMembers       types.Set    `tfsdk:"bypass_moderation_from_senders_or_members"`
 	CustomAttribute1                           types.String `tfsdk:"custom_attribute1"`
 	CustomAttribute10                          types.String `tfsdk:"custom_attribute10"`
 	CustomAttribute11                          types.String `tfsdk:"custom_attribute11"`
@@ -59,22 +59,22 @@ type mailUserModel struct {
 	CustomAttribute9                           types.String `tfsdk:"custom_attribute9"`
 	DataEncryptionPolicy                       types.String `tfsdk:"data_encryption_policy"`
 	DisplayName                                types.String `tfsdk:"display_name"`
-	EmailAddresses                             types.String `tfsdk:"email_addresses"`
+	EmailAddresses                             types.Set    `tfsdk:"email_addresses"`
 	EnableLitigationHoldForMigration           types.Bool   `tfsdk:"enable_litigation_hold_for_migration"`
 	ExchangeGuid                               types.String `tfsdk:"exchange_guid"`
 	ExcludeFromAllHolds                        types.Bool   `tfsdk:"exclude_from_all_holds"`
 	ExcludeFromAllOrgHolds                     types.Bool   `tfsdk:"exclude_from_all_org_holds"`
 	ExcludeFromOrgHolds                        types.Set    `tfsdk:"exclude_from_org_holds"`
-	ExtensionCustomAttribute1                  types.String `tfsdk:"extension_custom_attribute1"`
-	ExtensionCustomAttribute2                  types.String `tfsdk:"extension_custom_attribute2"`
-	ExtensionCustomAttribute3                  types.String `tfsdk:"extension_custom_attribute3"`
-	ExtensionCustomAttribute4                  types.String `tfsdk:"extension_custom_attribute4"`
-	ExtensionCustomAttribute5                  types.String `tfsdk:"extension_custom_attribute5"`
+	ExtensionCustomAttribute1                  types.Set    `tfsdk:"extension_custom_attribute1"`
+	ExtensionCustomAttribute2                  types.Set    `tfsdk:"extension_custom_attribute2"`
+	ExtensionCustomAttribute3                  types.Set    `tfsdk:"extension_custom_attribute3"`
+	ExtensionCustomAttribute4                  types.Set    `tfsdk:"extension_custom_attribute4"`
+	ExtensionCustomAttribute5                  types.Set    `tfsdk:"extension_custom_attribute5"`
 	ExternalEmailAddress                       types.String `tfsdk:"external_email_address"`
 	FederatedIdentity                          types.String `tfsdk:"federated_identity"`
 	FirstName                                  types.String `tfsdk:"first_name"`
 	ForceUpgrade                               types.Bool   `tfsdk:"force_upgrade"`
-	GrantSendOnBehalfTo                        types.String `tfsdk:"grant_send_on_behalf_to"`
+	GrantSendOnBehalfTo                        types.Set    `tfsdk:"grant_send_on_behalf_to"`
 	HVEAccount                                 types.Bool   `tfsdk:"hve_account"`
 	HiddenFromAddressListsEnabled              types.Bool   `tfsdk:"hidden_from_address_lists_enabled"`
 	ImmutableId                                types.String `tfsdk:"immutable_id"`
@@ -83,14 +83,14 @@ type mailUserModel struct {
 	LastName                                   types.String `tfsdk:"last_name"`
 	MacAttachmentFormat                        types.String `tfsdk:"mac_attachment_format"`
 	MailTip                                    types.String `tfsdk:"mail_tip"`
-	MailTipTranslations                        types.String `tfsdk:"mail_tip_translations"`
+	MailTipTranslations                        types.Set    `tfsdk:"mail_tip_translations"`
 	MailboxRegion                              types.String `tfsdk:"mailbox_region"`
 	MaxReceiveSize                             types.String `tfsdk:"max_receive_size"`
 	MaxSendSize                                types.String `tfsdk:"max_send_size"`
 	MessageBodyFormat                          types.String `tfsdk:"message_body_format"`
 	MessageFormat                              types.String `tfsdk:"message_format"`
 	MicrosoftOnlineServicesID                  types.String `tfsdk:"microsoft_online_services_id"`
-	ModeratedBy                                types.String `tfsdk:"moderated_by"`
+	ModeratedBy                                types.Set    `tfsdk:"moderated_by"`
 	ModerationEnabled                          types.Bool   `tfsdk:"moderation_enabled"`
 	Name                                       types.String `tfsdk:"name"`
 	OrganizationalUnit                         types.String `tfsdk:"organizational_unit"`
@@ -98,9 +98,9 @@ type mailUserModel struct {
 	PrimarySmtpAddress                         types.String `tfsdk:"primary_smtp_address"`
 	RecalculateInactiveMailUser                types.Bool   `tfsdk:"recalculate_inactive_mail_user"`
 	RecipientLimits                            types.String `tfsdk:"recipient_limits"`
-	RejectMessagesFrom                         types.String `tfsdk:"reject_messages_from"`
-	RejectMessagesFromDLMembers                types.String `tfsdk:"reject_messages_from_dl_members"`
-	RejectMessagesFromSendersOrMembers         types.String `tfsdk:"reject_messages_from_senders_or_members"`
+	RejectMessagesFrom                         types.Set    `tfsdk:"reject_messages_from"`
+	RejectMessagesFromDLMembers                types.Set    `tfsdk:"reject_messages_from_dl_members"`
+	RejectMessagesFromSendersOrMembers         types.Set    `tfsdk:"reject_messages_from_senders_or_members"`
 	RemotePowerShellEnabled                    types.Bool   `tfsdk:"remote_power_shell_enabled"`
 	RemoveComplianceTagHoldApplied             types.Bool   `tfsdk:"remove_compliance_tag_hold_applied"`
 	RemoveDelayHoldApplied                     types.Bool   `tfsdk:"remove_delay_hold_applied"`
@@ -115,8 +115,8 @@ type mailUserModel struct {
 	UnblockForwardSyncPostCrossTenantMigration types.Bool   `tfsdk:"unblock_forward_sync_post_cross_tenant_migration"`
 	UseMapiRichTextFormat                      types.String `tfsdk:"use_mapi_rich_text_format"`
 	UsePreferMessageFormat                     types.Bool   `tfsdk:"use_prefer_message_format"`
-	UserCertificate                            types.String `tfsdk:"user_certificate"`
-	UserSMimeCertificate                       types.String `tfsdk:"user_s_mime_certificate"`
+	UserCertificate                            types.Set    `tfsdk:"user_certificate"`
+	UserSMimeCertificate                       types.Set    `tfsdk:"user_s_mime_certificate"`
 	WindowsEmailAddress                        types.String `tfsdk:"windows_email_address"`
 }
 
@@ -130,12 +130,12 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"accept_messages_only_from":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_dl_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_dl_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"alias_":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"archive_guid": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"bypass_moderation_from_senders_or_members":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bypass_moderation_from_senders_or_members":        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"custom_attribute1":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute10":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute10 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute11":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute11 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -153,22 +153,22 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"custom_attribute9":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute9 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"data_encryption_policy":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DataEncryptionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"display_name":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"email_addresses":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"email_addresses":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enable_litigation_hold_for_migration":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableLitigationHoldForMigration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_guid":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_holds":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_org_holds":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllOrgHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_org_holds":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludeFromOrgHolds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute1":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute2":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute3":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute4":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute5":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute1":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute2":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute3":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute4":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute5":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"external_email_address":                           schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"federated_identity":                               schema.StringAttribute{Required: true, Description: "Maps to the -FederatedIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"first_name":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"grant_send_on_behalf_to":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"grant_send_on_behalf_to":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hve_account":                                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HVEAccount parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"immutable_id":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ImmutableId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -177,14 +177,14 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"last_name":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LastName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"mac_attachment_format":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MacAttachmentFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mail_tip":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_tip_translations":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tip_translations":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox_region":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxRegion parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_receive_size":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxReceiveSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_send_size":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxSendSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_body_format":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageBodyFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_format":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"microsoft_online_services_id":                     schema.StringAttribute{Required: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"moderated_by":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"moderated_by":                                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organizational_unit":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -192,9 +192,9 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"primary_smtp_address":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recalculate_inactive_mail_user":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailUser parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_dl_members":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_senders_or_members":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_dl_members":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_senders_or_members":          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"remote_power_shell_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePowerShellEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"remove_compliance_tag_hold_applied":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveComplianceTagHoldApplied parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remove_delay_hold_applied":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveDelayHoldApplied parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -209,8 +209,8 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"unblock_forward_sync_post_cross_tenant_migration": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UnblockForwardSyncPostCrossTenantMigration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"use_mapi_rich_text_format":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UseMapiRichTextFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"use_prefer_message_format":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UsePreferMessageFormat parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"user_certificate":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"user_s_mime_certificate":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"user_certificate":                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"user_s_mime_certificate":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"windows_email_address":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WindowsEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -240,6 +240,7 @@ func (r *mailUserResource) Create(ctx context.Context, req resource.CreateReques
 		Initials:                plan.Initials.ValueString(),
 		LastName:                plan.LastName.ValueString(),
 		MailboxRegion:           plan.MailboxRegion.ValueString(),
+		ModeratedBy:             toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics),
 		ModerationEnabled:       plan.ModerationEnabled.ValueBool(),
 		Name:                    plan.Name.ValueString(),
 		RemotePowerShellEnabled: plan.RemotePowerShellEnabled.ValueBool(),
@@ -259,9 +260,6 @@ func (r *mailUserResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	if v := plan.MicrosoftOnlineServicesID.ValueString(); v != "" {
 		p.MicrosoftOnlineServicesID = v
-	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		p.ModeratedBy = v
 	}
 	if v := plan.OrganizationalUnit.ValueString(); v != "" {
 		p.OrganizationalUnit = v
@@ -325,22 +323,14 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	id := r.identityOf(state)
 	sp := exo.SetMailUserParams{}
 	sp.Identity = id
-	if v := plan.AcceptMessagesOnlyFrom.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFrom = v
-	}
-	if v := plan.AcceptMessagesOnlyFromDLMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromDLMembers = v
-	}
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
-	}
+	sp.AcceptMessagesOnlyFrom = toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)
+	sp.AcceptMessagesOnlyFromDLMembers = toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)
+	sp.AcceptMessagesOnlyFromSendersOrMembers = toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)
 	sp.Alias = plan.Alias.ValueString()
 	if v := plan.ArchiveGuid.ValueString(); v != "" {
 		sp.ArchiveGuid = v
 	}
-	if v := plan.BypassModerationFromSendersOrMembers.ValueString(); v != "" {
-		sp.BypassModerationFromSendersOrMembers = v
-	}
+	sp.BypassModerationFromSendersOrMembers = toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)
 	sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
 	sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
 	sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
@@ -360,9 +350,7 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 		sp.DataEncryptionPolicy = v
 	}
 	sp.DisplayName = plan.DisplayName.ValueString()
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
-	}
+	sp.EmailAddresses = toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)
 	sp.EnableLitigationHoldForMigration = plan.EnableLitigationHoldForMigration.ValueBool()
 	if v := plan.ExchangeGuid.ValueString(); v != "" {
 		sp.ExchangeGuid = v
@@ -370,25 +358,13 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	sp.ExcludeFromAllHolds = plan.ExcludeFromAllHolds.ValueBool()
 	sp.ExcludeFromAllOrgHolds = plan.ExcludeFromAllOrgHolds.ValueBool()
 	sp.ExcludeFromOrgHolds = toStringSlice(ctx, plan.ExcludeFromOrgHolds, &resp.Diagnostics)
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
-	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
-	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
-	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
-	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
-	}
+	sp.ExtensionCustomAttribute1 = toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute2 = toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute3 = toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute4 = toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute5 = toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)
 	sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
-	}
+	sp.GrantSendOnBehalfTo = toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)
 	sp.HVEAccount = plan.HVEAccount.ValueBool()
 	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
 	sp.ImmutableId = plan.ImmutableId.ValueString()
@@ -399,9 +375,7 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 		sp.MacAttachmentFormat = v
 	}
 	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
-	}
+	sp.MailTipTranslations = toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)
 	sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	if v := plan.MaxReceiveSize.ValueString(); v != "" {
 		sp.MaxReceiveSize = v
@@ -415,9 +389,7 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if v := plan.MessageFormat.ValueString(); v != "" {
 		sp.MessageFormat = v
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
-	}
+	sp.ModeratedBy = toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)
 	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
 	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
 		sp.PrimarySmtpAddress = v
@@ -426,15 +398,9 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if v := plan.RecipientLimits.ValueString(); v != "" {
 		sp.RecipientLimits = v
 	}
-	if v := plan.RejectMessagesFrom.ValueString(); v != "" {
-		sp.RejectMessagesFrom = v
-	}
-	if v := plan.RejectMessagesFromDLMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromDLMembers = v
-	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
-	}
+	sp.RejectMessagesFrom = toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)
+	sp.RejectMessagesFromDLMembers = toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)
+	sp.RejectMessagesFromSendersOrMembers = toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)
 	sp.RemoveComplianceTagHoldApplied = plan.RemoveComplianceTagHoldApplied.ValueBool()
 	sp.RemoveDelayHoldApplied = plan.RemoveDelayHoldApplied.ValueBool()
 	sp.RemoveDelayReleaseHoldApplied = plan.RemoveDelayReleaseHoldApplied.ValueBool()
@@ -452,12 +418,8 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 		sp.UseMapiRichTextFormat = v
 	}
 	sp.UsePreferMessageFormat = plan.UsePreferMessageFormat.ValueBool()
-	if v := plan.UserCertificate.ValueString(); v != "" {
-		sp.UserCertificate = v
-	}
-	if v := plan.UserSMimeCertificate.ValueString(); v != "" {
-		sp.UserSMimeCertificate = v
-	}
+	sp.UserCertificate = toStringSlice(ctx, plan.UserCertificate, &resp.Diagnostics)
+	sp.UserSMimeCertificate = toStringSlice(ctx, plan.UserSMimeCertificate, &resp.Diagnostics)
 	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
 		sp.WindowsEmailAddress = v
 	}
@@ -470,59 +432,41 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AcceptMessagesOnlyFrom":                 cfg.AcceptMessagesOnlyFrom,
-		"AcceptMessagesOnlyFromDLMembers":        cfg.AcceptMessagesOnlyFromDLMembers,
-		"AcceptMessagesOnlyFromSendersOrMembers": cfg.AcceptMessagesOnlyFromSendersOrMembers,
-		"Alias":                                  cfg.Alias,
-		"ArchiveGuid":                            cfg.ArchiveGuid,
-		"BypassModerationFromSendersOrMembers":   cfg.BypassModerationFromSendersOrMembers,
-		"CustomAttribute1":                       cfg.CustomAttribute1,
-		"CustomAttribute10":                      cfg.CustomAttribute10,
-		"CustomAttribute11":                      cfg.CustomAttribute11,
-		"CustomAttribute12":                      cfg.CustomAttribute12,
-		"CustomAttribute13":                      cfg.CustomAttribute13,
-		"CustomAttribute14":                      cfg.CustomAttribute14,
-		"CustomAttribute15":                      cfg.CustomAttribute15,
-		"CustomAttribute2":                       cfg.CustomAttribute2,
-		"CustomAttribute3":                       cfg.CustomAttribute3,
-		"CustomAttribute4":                       cfg.CustomAttribute4,
-		"CustomAttribute5":                       cfg.CustomAttribute5,
-		"CustomAttribute6":                       cfg.CustomAttribute6,
-		"CustomAttribute7":                       cfg.CustomAttribute7,
-		"CustomAttribute8":                       cfg.CustomAttribute8,
-		"CustomAttribute9":                       cfg.CustomAttribute9,
-		"DataEncryptionPolicy":                   cfg.DataEncryptionPolicy,
-		"DisplayName":                            cfg.DisplayName,
-		"EmailAddresses":                         cfg.EmailAddresses,
-		"ExchangeGuid":                           cfg.ExchangeGuid,
-		"ExtensionCustomAttribute1":              cfg.ExtensionCustomAttribute1,
-		"ExtensionCustomAttribute2":              cfg.ExtensionCustomAttribute2,
-		"ExtensionCustomAttribute3":              cfg.ExtensionCustomAttribute3,
-		"ExtensionCustomAttribute4":              cfg.ExtensionCustomAttribute4,
-		"ExtensionCustomAttribute5":              cfg.ExtensionCustomAttribute5,
-		"GrantSendOnBehalfTo":                    cfg.GrantSendOnBehalfTo,
-		"ImmutableId":                            cfg.ImmutableId,
-		"JournalArchiveAddress":                  cfg.JournalArchiveAddress,
-		"MacAttachmentFormat":                    cfg.MacAttachmentFormat,
-		"MailTip":                                cfg.MailTip,
-		"MailTipTranslations":                    cfg.MailTipTranslations,
-		"MailboxRegion":                          cfg.MailboxRegion,
-		"MaxReceiveSize":                         cfg.MaxReceiveSize,
-		"MaxSendSize":                            cfg.MaxSendSize,
-		"MessageBodyFormat":                      cfg.MessageBodyFormat,
-		"MessageFormat":                          cfg.MessageFormat,
-		"ModeratedBy":                            cfg.ModeratedBy,
-		"PrimarySmtpAddress":                     cfg.PrimarySmtpAddress,
-		"RecipientLimits":                        cfg.RecipientLimits,
-		"RejectMessagesFrom":                     cfg.RejectMessagesFrom,
-		"RejectMessagesFromDLMembers":            cfg.RejectMessagesFromDLMembers,
-		"RejectMessagesFromSendersOrMembers":     cfg.RejectMessagesFromSendersOrMembers,
-		"SendModerationNotifications":            cfg.SendModerationNotifications,
-		"SimpleDisplayName":                      cfg.SimpleDisplayName,
-		"UseMapiRichTextFormat":                  cfg.UseMapiRichTextFormat,
-		"UserCertificate":                        cfg.UserCertificate,
-		"UserSMimeCertificate":                   cfg.UserSMimeCertificate,
-		"WindowsEmailAddress":                    cfg.WindowsEmailAddress,
+		"Alias":                       cfg.Alias,
+		"ArchiveGuid":                 cfg.ArchiveGuid,
+		"CustomAttribute1":            cfg.CustomAttribute1,
+		"CustomAttribute10":           cfg.CustomAttribute10,
+		"CustomAttribute11":           cfg.CustomAttribute11,
+		"CustomAttribute12":           cfg.CustomAttribute12,
+		"CustomAttribute13":           cfg.CustomAttribute13,
+		"CustomAttribute14":           cfg.CustomAttribute14,
+		"CustomAttribute15":           cfg.CustomAttribute15,
+		"CustomAttribute2":            cfg.CustomAttribute2,
+		"CustomAttribute3":            cfg.CustomAttribute3,
+		"CustomAttribute4":            cfg.CustomAttribute4,
+		"CustomAttribute5":            cfg.CustomAttribute5,
+		"CustomAttribute6":            cfg.CustomAttribute6,
+		"CustomAttribute7":            cfg.CustomAttribute7,
+		"CustomAttribute8":            cfg.CustomAttribute8,
+		"CustomAttribute9":            cfg.CustomAttribute9,
+		"DataEncryptionPolicy":        cfg.DataEncryptionPolicy,
+		"DisplayName":                 cfg.DisplayName,
+		"ExchangeGuid":                cfg.ExchangeGuid,
+		"ImmutableId":                 cfg.ImmutableId,
+		"JournalArchiveAddress":       cfg.JournalArchiveAddress,
+		"MacAttachmentFormat":         cfg.MacAttachmentFormat,
+		"MailTip":                     cfg.MailTip,
+		"MailboxRegion":               cfg.MailboxRegion,
+		"MaxReceiveSize":              cfg.MaxReceiveSize,
+		"MaxSendSize":                 cfg.MaxSendSize,
+		"MessageBodyFormat":           cfg.MessageBodyFormat,
+		"MessageFormat":               cfg.MessageFormat,
+		"PrimarySmtpAddress":          cfg.PrimarySmtpAddress,
+		"RecipientLimits":             cfg.RecipientLimits,
+		"SendModerationNotifications": cfg.SendModerationNotifications,
+		"SimpleDisplayName":           cfg.SimpleDisplayName,
+		"UseMapiRichTextFormat":       cfg.UseMapiRichTextFormat,
+		"WindowsEmailAddress":         cfg.WindowsEmailAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -584,12 +528,12 @@ func (r *mailUserResource) refresh(ctx context.Context, identity string, m *mail
 func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AcceptMessagesOnlyFrom = types.StringValue(getString(obj, "AcceptMessagesOnlyFrom"))
-	m.AcceptMessagesOnlyFromDLMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromDLMembers"))
-	m.AcceptMessagesOnlyFromSendersOrMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
+	m.AcceptMessagesOnlyFrom = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFrom"))
+	m.AcceptMessagesOnlyFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromDLMembers"))
+	m.AcceptMessagesOnlyFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
 	m.Alias = types.StringValue(getString(obj, "Alias"))
 	m.ArchiveGuid = types.StringValue(getString(obj, "ArchiveGuid"))
-	m.BypassModerationFromSendersOrMembers = types.StringValue(getString(obj, "BypassModerationFromSendersOrMembers"))
+	m.BypassModerationFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "BypassModerationFromSendersOrMembers"))
 	m.CustomAttribute1 = types.StringValue(getString(obj, "CustomAttribute1"))
 	m.CustomAttribute10 = types.StringValue(getString(obj, "CustomAttribute10"))
 	m.CustomAttribute11 = types.StringValue(getString(obj, "CustomAttribute11"))
@@ -607,22 +551,22 @@ func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.CustomAttribute9 = types.StringValue(getString(obj, "CustomAttribute9"))
 	m.DataEncryptionPolicy = types.StringValue(getString(obj, "DataEncryptionPolicy"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
-	m.EmailAddresses = types.StringValue(getString(obj, "EmailAddresses"))
+	m.EmailAddresses = stringSetValue(ctx, getStringSlice(obj, "EmailAddresses"))
 	m.EnableLitigationHoldForMigration = types.BoolValue(getBool(obj, "EnableLitigationHoldForMigration"))
 	m.ExchangeGuid = types.StringValue(getString(obj, "ExchangeGuid"))
 	m.ExcludeFromAllHolds = types.BoolValue(getBool(obj, "ExcludeFromAllHolds"))
 	m.ExcludeFromAllOrgHolds = types.BoolValue(getBool(obj, "ExcludeFromAllOrgHolds"))
 	m.ExcludeFromOrgHolds = stringSetValue(ctx, getStringSlice(obj, "ExcludeFromOrgHolds"))
-	m.ExtensionCustomAttribute1 = types.StringValue(getString(obj, "ExtensionCustomAttribute1"))
-	m.ExtensionCustomAttribute2 = types.StringValue(getString(obj, "ExtensionCustomAttribute2"))
-	m.ExtensionCustomAttribute3 = types.StringValue(getString(obj, "ExtensionCustomAttribute3"))
-	m.ExtensionCustomAttribute4 = types.StringValue(getString(obj, "ExtensionCustomAttribute4"))
-	m.ExtensionCustomAttribute5 = types.StringValue(getString(obj, "ExtensionCustomAttribute5"))
+	m.ExtensionCustomAttribute1 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute1"))
+	m.ExtensionCustomAttribute2 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute2"))
+	m.ExtensionCustomAttribute3 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute3"))
+	m.ExtensionCustomAttribute4 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute4"))
+	m.ExtensionCustomAttribute5 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute5"))
 	m.ExternalEmailAddress = types.StringValue(getString(obj, "ExternalEmailAddress"))
 	m.FederatedIdentity = types.StringValue(getString(obj, "FederatedIdentity"))
 	m.FirstName = types.StringValue(getString(obj, "FirstName"))
 	m.ForceUpgrade = types.BoolValue(getBool(obj, "ForceUpgrade"))
-	m.GrantSendOnBehalfTo = types.StringValue(getString(obj, "GrantSendOnBehalfTo"))
+	m.GrantSendOnBehalfTo = stringSetValue(ctx, getStringSlice(obj, "GrantSendOnBehalfTo"))
 	m.HVEAccount = types.BoolValue(getBool(obj, "HVEAccount"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
 	m.ImmutableId = types.StringValue(getString(obj, "ImmutableId"))
@@ -631,14 +575,14 @@ func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.LastName = types.StringValue(getString(obj, "LastName"))
 	m.MacAttachmentFormat = types.StringValue(getString(obj, "MacAttachmentFormat"))
 	m.MailTip = types.StringValue(getString(obj, "MailTip"))
-	m.MailTipTranslations = types.StringValue(getString(obj, "MailTipTranslations"))
+	m.MailTipTranslations = stringSetValue(ctx, getStringSlice(obj, "MailTipTranslations"))
 	m.MailboxRegion = types.StringValue(getString(obj, "MailboxRegion"))
 	m.MaxReceiveSize = types.StringValue(getString(obj, "MaxReceiveSize"))
 	m.MaxSendSize = types.StringValue(getString(obj, "MaxSendSize"))
 	m.MessageBodyFormat = types.StringValue(getString(obj, "MessageBodyFormat"))
 	m.MessageFormat = types.StringValue(getString(obj, "MessageFormat"))
 	m.MicrosoftOnlineServicesID = types.StringValue(getString(obj, "MicrosoftOnlineServicesID"))
-	m.ModeratedBy = types.StringValue(getString(obj, "ModeratedBy"))
+	m.ModeratedBy = stringSetValue(ctx, getStringSlice(obj, "ModeratedBy"))
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OrganizationalUnit = types.StringValue(getString(obj, "OrganizationalUnit"))
@@ -646,9 +590,9 @@ func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.PrimarySmtpAddress = types.StringValue(getString(obj, "PrimarySmtpAddress"))
 	m.RecalculateInactiveMailUser = types.BoolValue(getBool(obj, "RecalculateInactiveMailUser"))
 	m.RecipientLimits = types.StringValue(getString(obj, "RecipientLimits"))
-	m.RejectMessagesFrom = types.StringValue(getString(obj, "RejectMessagesFrom"))
-	m.RejectMessagesFromDLMembers = types.StringValue(getString(obj, "RejectMessagesFromDLMembers"))
-	m.RejectMessagesFromSendersOrMembers = types.StringValue(getString(obj, "RejectMessagesFromSendersOrMembers"))
+	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
+	m.RejectMessagesFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromDLMembers"))
+	m.RejectMessagesFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromSendersOrMembers"))
 	m.RemotePowerShellEnabled = types.BoolValue(getBool(obj, "RemotePowerShellEnabled"))
 	m.RemoveComplianceTagHoldApplied = types.BoolValue(getBool(obj, "RemoveComplianceTagHoldApplied"))
 	m.RemoveDelayHoldApplied = types.BoolValue(getBool(obj, "RemoveDelayHoldApplied"))
@@ -663,19 +607,19 @@ func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.UnblockForwardSyncPostCrossTenantMigration = types.BoolValue(getBool(obj, "UnblockForwardSyncPostCrossTenantMigration"))
 	m.UseMapiRichTextFormat = types.StringValue(getString(obj, "UseMapiRichTextFormat"))
 	m.UsePreferMessageFormat = types.BoolValue(getBool(obj, "UsePreferMessageFormat"))
-	m.UserCertificate = types.StringValue(getString(obj, "UserCertificate"))
-	m.UserSMimeCertificate = types.StringValue(getString(obj, "UserSMimeCertificate"))
+	m.UserCertificate = stringSetValue(ctx, getStringSlice(obj, "UserCertificate"))
+	m.UserSMimeCertificate = stringSetValue(ctx, getStringSlice(obj, "UserSMimeCertificate"))
 	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
 func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
-	read.AcceptMessagesOnlyFrom = reconcile.KeepStr(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
-	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
-	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
+	read.AcceptMessagesOnlyFrom = reconcile.KeepSet(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
+	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
+	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
 	read.Alias = reconcile.KeepStr(cfg.Alias, read.Alias)
 	read.ArchiveGuid = reconcile.KeepStr(cfg.ArchiveGuid, read.ArchiveGuid)
-	read.BypassModerationFromSendersOrMembers = reconcile.KeepStr(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
+	read.BypassModerationFromSendersOrMembers = reconcile.KeepSet(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
 	read.CustomAttribute1 = reconcile.KeepStr(cfg.CustomAttribute1, read.CustomAttribute1)
 	read.CustomAttribute10 = reconcile.KeepStr(cfg.CustomAttribute10, read.CustomAttribute10)
 	read.CustomAttribute11 = reconcile.KeepStr(cfg.CustomAttribute11, read.CustomAttribute11)
@@ -693,22 +637,22 @@ func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
 	read.CustomAttribute9 = reconcile.KeepStr(cfg.CustomAttribute9, read.CustomAttribute9)
 	read.DataEncryptionPolicy = reconcile.KeepStr(cfg.DataEncryptionPolicy, read.DataEncryptionPolicy)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
-	read.EmailAddresses = reconcile.KeepStr(cfg.EmailAddresses, read.EmailAddresses)
+	read.EmailAddresses = reconcile.KeepSet(cfg.EmailAddresses, read.EmailAddresses)
 	read.EnableLitigationHoldForMigration = reconcile.KeepBool(cfg.EnableLitigationHoldForMigration, read.EnableLitigationHoldForMigration)
 	read.ExchangeGuid = reconcile.KeepStr(cfg.ExchangeGuid, read.ExchangeGuid)
 	read.ExcludeFromAllHolds = reconcile.KeepBool(cfg.ExcludeFromAllHolds, read.ExcludeFromAllHolds)
 	read.ExcludeFromAllOrgHolds = reconcile.KeepBool(cfg.ExcludeFromAllOrgHolds, read.ExcludeFromAllOrgHolds)
 	read.ExcludeFromOrgHolds = reconcile.KeepSet(cfg.ExcludeFromOrgHolds, read.ExcludeFromOrgHolds)
-	read.ExtensionCustomAttribute1 = reconcile.KeepStr(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
-	read.ExtensionCustomAttribute2 = reconcile.KeepStr(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
-	read.ExtensionCustomAttribute3 = reconcile.KeepStr(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
-	read.ExtensionCustomAttribute4 = reconcile.KeepStr(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
-	read.ExtensionCustomAttribute5 = reconcile.KeepStr(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
+	read.ExtensionCustomAttribute1 = reconcile.KeepSet(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
+	read.ExtensionCustomAttribute2 = reconcile.KeepSet(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
+	read.ExtensionCustomAttribute3 = reconcile.KeepSet(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
+	read.ExtensionCustomAttribute4 = reconcile.KeepSet(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
+	read.ExtensionCustomAttribute5 = reconcile.KeepSet(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
 	read.ExternalEmailAddress = reconcile.KeepStr(cfg.ExternalEmailAddress, read.ExternalEmailAddress)
 	read.FederatedIdentity = reconcile.KeepStr(cfg.FederatedIdentity, read.FederatedIdentity)
 	read.FirstName = reconcile.KeepStr(cfg.FirstName, read.FirstName)
 	read.ForceUpgrade = reconcile.KeepBool(cfg.ForceUpgrade, read.ForceUpgrade)
-	read.GrantSendOnBehalfTo = reconcile.KeepStr(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
+	read.GrantSendOnBehalfTo = reconcile.KeepSet(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
 	read.HVEAccount = reconcile.KeepBool(cfg.HVEAccount, read.HVEAccount)
 	read.HiddenFromAddressListsEnabled = reconcile.KeepBool(cfg.HiddenFromAddressListsEnabled, read.HiddenFromAddressListsEnabled)
 	read.ImmutableId = reconcile.KeepStr(cfg.ImmutableId, read.ImmutableId)
@@ -717,14 +661,14 @@ func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
 	read.LastName = reconcile.KeepStr(cfg.LastName, read.LastName)
 	read.MacAttachmentFormat = reconcile.KeepStr(cfg.MacAttachmentFormat, read.MacAttachmentFormat)
 	read.MailTip = reconcile.KeepStr(cfg.MailTip, read.MailTip)
-	read.MailTipTranslations = reconcile.KeepStr(cfg.MailTipTranslations, read.MailTipTranslations)
+	read.MailTipTranslations = reconcile.KeepSet(cfg.MailTipTranslations, read.MailTipTranslations)
 	read.MailboxRegion = reconcile.KeepStr(cfg.MailboxRegion, read.MailboxRegion)
 	read.MaxReceiveSize = reconcile.KeepStr(cfg.MaxReceiveSize, read.MaxReceiveSize)
 	read.MaxSendSize = reconcile.KeepStr(cfg.MaxSendSize, read.MaxSendSize)
 	read.MessageBodyFormat = reconcile.KeepStr(cfg.MessageBodyFormat, read.MessageBodyFormat)
 	read.MessageFormat = reconcile.KeepStr(cfg.MessageFormat, read.MessageFormat)
 	read.MicrosoftOnlineServicesID = reconcile.KeepStr(cfg.MicrosoftOnlineServicesID, read.MicrosoftOnlineServicesID)
-	read.ModeratedBy = reconcile.KeepStr(cfg.ModeratedBy, read.ModeratedBy)
+	read.ModeratedBy = reconcile.KeepSet(cfg.ModeratedBy, read.ModeratedBy)
 	read.ModerationEnabled = reconcile.KeepBool(cfg.ModerationEnabled, read.ModerationEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationalUnit = reconcile.KeepStr(cfg.OrganizationalUnit, read.OrganizationalUnit)
@@ -732,9 +676,9 @@ func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
 	read.PrimarySmtpAddress = reconcile.KeepStr(cfg.PrimarySmtpAddress, read.PrimarySmtpAddress)
 	read.RecalculateInactiveMailUser = reconcile.KeepBool(cfg.RecalculateInactiveMailUser, read.RecalculateInactiveMailUser)
 	read.RecipientLimits = reconcile.KeepStr(cfg.RecipientLimits, read.RecipientLimits)
-	read.RejectMessagesFrom = reconcile.KeepStr(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
-	read.RejectMessagesFromDLMembers = reconcile.KeepStr(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
-	read.RejectMessagesFromSendersOrMembers = reconcile.KeepStr(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
+	read.RejectMessagesFrom = reconcile.KeepSet(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
+	read.RejectMessagesFromDLMembers = reconcile.KeepSet(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
+	read.RejectMessagesFromSendersOrMembers = reconcile.KeepSet(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
 	read.RemotePowerShellEnabled = reconcile.KeepBool(cfg.RemotePowerShellEnabled, read.RemotePowerShellEnabled)
 	read.RemoveComplianceTagHoldApplied = reconcile.KeepBool(cfg.RemoveComplianceTagHoldApplied, read.RemoveComplianceTagHoldApplied)
 	read.RemoveDelayHoldApplied = reconcile.KeepBool(cfg.RemoveDelayHoldApplied, read.RemoveDelayHoldApplied)
@@ -749,7 +693,7 @@ func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
 	read.UnblockForwardSyncPostCrossTenantMigration = reconcile.KeepBool(cfg.UnblockForwardSyncPostCrossTenantMigration, read.UnblockForwardSyncPostCrossTenantMigration)
 	read.UseMapiRichTextFormat = reconcile.KeepStr(cfg.UseMapiRichTextFormat, read.UseMapiRichTextFormat)
 	read.UsePreferMessageFormat = reconcile.KeepBool(cfg.UsePreferMessageFormat, read.UsePreferMessageFormat)
-	read.UserCertificate = reconcile.KeepStr(cfg.UserCertificate, read.UserCertificate)
-	read.UserSMimeCertificate = reconcile.KeepStr(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
+	read.UserCertificate = reconcile.KeepSet(cfg.UserCertificate, read.UserCertificate)
+	read.UserSMimeCertificate = reconcile.KeepSet(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
 	read.WindowsEmailAddress = reconcile.KeepStr(cfg.WindowsEmailAddress, read.WindowsEmailAddress)
 }

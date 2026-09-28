@@ -43,6 +43,7 @@ func (d *aTPProtectionPolicyRuleDataSource) Schema(_ context.Context, _ datasour
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter."},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter."},
 			"name":                          schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
+			"priority":                      schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RecipientDomainIs parameter."},
 			"safe_attachment_policy":        schema.StringAttribute{Computed: true, Description: "Maps to the -SafeAttachmentPolicy parameter."},
 			"safe_links_policy":             schema.StringAttribute{Computed: true, Description: "Maps to the -SafeLinksPolicy parameter."},

@@ -40,8 +40,8 @@ func (d *externalInOutlookListDataSource) Schema(_ context.Context, _ datasource
 			"external_in_outlooks": schema.ListNestedAttribute{Computed: true, Description: "All ExternalInOutlook objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":   schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"allow_list": schema.StringAttribute{Computed: true, Description: "Maps to the -AllowList parameter."},
-				"enabled":    schema.StringAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
+				"allow_list": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AllowList parameter."},
+				"enabled":    schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			}}},
 		},
 	}

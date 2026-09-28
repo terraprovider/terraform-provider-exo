@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -51,13 +52,40 @@ func firstObject(v []map[string]any) map[string]any {
 	return v[0]
 }
 
+// getString returns the value under key as the string a string-typed
+// attribute stores. The Admin API returns PowerShell booleans as JSON
+// booleans, numbers as JSON numbers and multivalued parameters as arrays;
+// treating any of those as "" makes Read never match the configured value
+// and yields a perpetual diff (e.g. ExternalInOutlook.Enabled).
 func getString(m map[string]any, key string) string {
-	if v, ok := m[key]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			return s
-		}
+	v, ok := m[key]
+	if !ok || v == nil {
+		return ""
 	}
-	return ""
+	return coerceString(v)
+}
+
+func coerceString(v any) string {
+	switch t := v.(type) {
+	case string:
+		return t
+	case bool:
+		return strconv.FormatBool(t)
+	case float64:
+		return strconv.FormatFloat(t, 'f', -1, 64)
+	case json.Number:
+		return t.String()
+	case []any:
+		parts := make([]string, 0, len(t))
+		for _, e := range t {
+			if s := coerceString(e); s != "" {
+				parts = append(parts, s)
+			}
+		}
+		return strings.Join(parts, ",")
+	default:
+		return ""
+	}
 }
 
 func getBool(m map[string]any, key string) bool {
@@ -111,4 +139,35 @@ func isNotFound(err error) bool {
 			strings.Contains(msg, "wasn't found")
 	}
 	return false
+}
+
+// getInt returns the value under key as the int64 an int-typed attribute
+// stores. The Admin API decodes numbers as float64 (or json.Number) and
+// occasionally renders them as strings; anything else reads as 0.
+func getInt(m map[string]any, key string) int64 {
+	v, ok := m[key]
+	if !ok || v == nil {
+		return 0
+	}
+	switch t := v.(type) {
+	case float64:
+		return int64(t)
+	case json.Number:
+		n, err := t.Int64()
+		if err != nil {
+			return 0
+		}
+		return n
+	case string:
+		n, err := strconv.ParseInt(strings.TrimSpace(t), 10, 64)
+		if err != nil {
+			return 0
+		}
+		return n
+	case bool:
+		if t {
+			return 1
+		}
+	}
+	return 0
 }

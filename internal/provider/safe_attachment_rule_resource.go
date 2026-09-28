@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -42,6 +43,7 @@ type safeAttachmentRuleModel struct {
 	ExceptIfSentTo            types.Set    `tfsdk:"except_if_sent_to"`
 	ExceptIfSentToMemberOf    types.Set    `tfsdk:"except_if_sent_to_member_of"`
 	Name                      types.String `tfsdk:"name"`
+	Priority                  types.Int64  `tfsdk:"priority"`
 	RecipientDomainIs         types.Set    `tfsdk:"recipient_domain_is"`
 	SafeAttachmentPolicy      types.String `tfsdk:"safe_attachment_policy"`
 	SentTo                    types.Set    `tfsdk:"sent_to"`
@@ -64,6 +66,7 @@ func (r *safeAttachmentRuleResource) Schema(_ context.Context, _ resource.Schema
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"safe_attachment_policy":        schema.StringAttribute{Required: true, Description: "Maps to the -SafeAttachmentPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"sent_to":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -93,6 +96,7 @@ func (r *safeAttachmentRuleResource) Create(ctx context.Context, req resource.Cr
 		ExceptIfSentTo:            toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
 		ExceptIfSentToMemberOf:    toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics),
 		Name:                      plan.Name.ValueString(),
+		Priority:                  int(plan.Priority.ValueInt64()),
 		RecipientDomainIs:         toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics),
 		SentTo:                    toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
 		SentToMemberOf:            toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics),
@@ -154,6 +158,7 @@ func (r *safeAttachmentRuleResource) Update(ctx context.Context, req resource.Up
 	sp.ExceptIfRecipientDomainIs = toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)
 	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
 	sp.ExceptIfSentToMemberOf = toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)
+	sp.Priority = int(plan.Priority.ValueInt64())
 	sp.RecipientDomainIs = toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)
 	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
 	sp.SentToMemberOf = toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)
@@ -234,6 +239,7 @@ func readSafeAttachmentRule(ctx context.Context, obj map[string]any, m *safeAtta
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.RecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "RecipientDomainIs"))
 	m.SafeAttachmentPolicy = types.StringValue(getString(obj, "SafeAttachmentPolicy"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
@@ -248,6 +254,7 @@ func (r *safeAttachmentRuleResource) reconcileState(cfg, read *safeAttachmentRul
 	read.ExceptIfSentTo = reconcile.KeepSet(cfg.ExceptIfSentTo, read.ExceptIfSentTo)
 	read.ExceptIfSentToMemberOf = reconcile.KeepSet(cfg.ExceptIfSentToMemberOf, read.ExceptIfSentToMemberOf)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.RecipientDomainIs = reconcile.KeepSet(cfg.RecipientDomainIs, read.RecipientDomainIs)
 	read.SafeAttachmentPolicy = reconcile.KeepStr(cfg.SafeAttachmentPolicy, read.SafeAttachmentPolicy)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)

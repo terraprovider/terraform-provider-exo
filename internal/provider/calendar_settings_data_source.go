@@ -34,7 +34,7 @@ func (d *calendarSettingsDataSource) Schema(_ context.Context, _ datasource.Sche
 		Attributes: map[string]schema.Attribute{
 			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"enable_preserve_declined_meetings": schema.StringAttribute{Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter."},
+			"enable_preserve_declined_meetings": schema.BoolAttribute{Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter."},
 		},
 	}
 }

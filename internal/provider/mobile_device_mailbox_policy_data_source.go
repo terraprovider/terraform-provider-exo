@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -61,7 +62,7 @@ func (d *mobileDeviceMailboxPolicyDataSource) Schema(_ context.Context, _ dataso
 			"allow_unsigned_installation_packages":         schema.BoolAttribute{Computed: true, Description: "Maps to the -AllowUnsignedInstallationPackages parameter."},
 			"allow_wi_fi":                                  schema.BoolAttribute{Computed: true, Description: "Maps to the -AllowWiFi parameter."},
 			"alphanumeric_password_required":               schema.BoolAttribute{Computed: true, Sensitive: true, Description: "Maps to the -AlphanumericPasswordRequired parameter."},
-			"approved_application_list":                    schema.StringAttribute{Computed: true, Description: "Maps to the -ApprovedApplicationList parameter."},
+			"approved_application_list":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ApprovedApplicationList parameter."},
 			"attachments_enabled":                          schema.BoolAttribute{Computed: true, Description: "Maps to the -AttachmentsEnabled parameter."},
 			"device_encryption_enabled":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -DeviceEncryptionEnabled parameter."},
 			"device_policy_refresh_interval":               schema.StringAttribute{Computed: true, Description: "Maps to the -DevicePolicyRefreshInterval parameter."},
@@ -74,10 +75,12 @@ func (d *mobileDeviceMailboxPolicyDataSource) Schema(_ context.Context, _ dataso
 			"max_email_html_body_truncation_size":          schema.StringAttribute{Computed: true, Description: "Maps to the -MaxEmailHTMLBodyTruncationSize parameter."},
 			"max_inactivity_time_lock":                     schema.StringAttribute{Computed: true, Description: "Maps to the -MaxInactivityTimeLock parameter."},
 			"max_password_failed_attempts":                 schema.StringAttribute{Computed: true, Sensitive: true, Description: "Maps to the -MaxPasswordFailedAttempts parameter."},
+			"min_password_complex_characters":              schema.Int64Attribute{Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordComplexCharacters parameter."},
 			"min_password_length":                          schema.StringAttribute{Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordLength parameter."},
 			"name":                                         schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"password_enabled":                             schema.BoolAttribute{Computed: true, Sensitive: true, Description: "Maps to the -PasswordEnabled parameter."},
 			"password_expiration":                          schema.StringAttribute{Computed: true, Sensitive: true, Description: "Maps to the -PasswordExpiration parameter."},
+			"password_history":                             schema.Int64Attribute{Computed: true, Sensitive: true, Description: "Maps to the -PasswordHistory parameter."},
 			"password_recovery_enabled":                    schema.BoolAttribute{Computed: true, Sensitive: true, Description: "Maps to the -PasswordRecoveryEnabled parameter."},
 			"require_device_encryption":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -RequireDeviceEncryption parameter."},
 			"require_encrypted_smime_messages":             schema.BoolAttribute{Computed: true, Description: "Maps to the -RequireEncryptedSMIMEMessages parameter."},
@@ -87,7 +90,7 @@ func (d *mobileDeviceMailboxPolicyDataSource) Schema(_ context.Context, _ dataso
 			"require_signed_smime_messages":                schema.BoolAttribute{Computed: true, Description: "Maps to the -RequireSignedSMIMEMessages parameter."},
 			"require_storage_card_encryption":              schema.BoolAttribute{Computed: true, Description: "Maps to the -RequireStorageCardEncryption parameter."},
 			"unc_access_enabled":                           schema.BoolAttribute{Computed: true, Description: "Maps to the -UNCAccessEnabled parameter."},
-			"unapproved_in_rom_application_list":           schema.StringAttribute{Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter."},
+			"unapproved_in_rom_application_list":           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter."},
 			"wss_access_enabled":                           schema.BoolAttribute{Computed: true, Description: "Maps to the -WSSAccessEnabled parameter."},
 		},
 	}

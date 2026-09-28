@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -45,6 +46,7 @@ type clientAccessRuleModel struct {
 	ExceptAnyOfProtocols                 types.String `tfsdk:"except_any_of_protocols"`
 	ExceptUsernameMatchesAnyOfPatterns   types.String `tfsdk:"except_username_matches_any_of_patterns"`
 	Name                                 types.String `tfsdk:"name"`
+	Priority                             types.Int64  `tfsdk:"priority"`
 	Scope                                types.String `tfsdk:"scope"`
 	UserRecipientFilter                  types.String `tfsdk:"user_recipient_filter"`
 	UsernameMatchesAnyOfPatterns         types.String `tfsdk:"username_matches_any_of_patterns"`
@@ -70,6 +72,7 @@ func (r *clientAccessRuleResource) Schema(_ context.Context, _ resource.SchemaRe
 			"except_any_of_protocols":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_username_matches_any_of_patterns":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"scope":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Scope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"user_recipient_filter":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserRecipientFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"username_matches_any_of_patterns": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -118,6 +121,7 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 		sp.ExceptUsernameMatchesAnyOfPatterns = v
 	}
 	sp.Name = plan.Name.ValueString()
+	sp.Priority = int(plan.Priority.ValueInt64())
 	if v := plan.Scope.ValueString(); v != "" {
 		sp.Scope = v
 	}
@@ -190,6 +194,7 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 		sp.ExceptUsernameMatchesAnyOfPatterns = v
 	}
 	sp.Name = plan.Name.ValueString()
+	sp.Priority = int(plan.Priority.ValueInt64())
 	if v := plan.Scope.ValueString(); v != "" {
 		sp.Scope = v
 	}
@@ -279,6 +284,7 @@ func readClientAccessRule(ctx context.Context, obj map[string]any, m *clientAcce
 	m.ExceptAnyOfProtocols = types.StringValue(getString(obj, "ExceptAnyOfProtocols"))
 	m.ExceptUsernameMatchesAnyOfPatterns = types.StringValue(getString(obj, "ExceptUsernameMatchesAnyOfPatterns"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.Scope = types.StringValue(getString(obj, "Scope"))
 	m.UserRecipientFilter = types.StringValue(getString(obj, "UserRecipientFilter"))
 	m.UsernameMatchesAnyOfPatterns = types.StringValue(getString(obj, "UsernameMatchesAnyOfPatterns"))
@@ -296,6 +302,7 @@ func (r *clientAccessRuleResource) reconcileState(cfg, read *clientAccessRuleMod
 	read.ExceptAnyOfProtocols = reconcile.KeepStr(cfg.ExceptAnyOfProtocols, read.ExceptAnyOfProtocols)
 	read.ExceptUsernameMatchesAnyOfPatterns = reconcile.KeepStr(cfg.ExceptUsernameMatchesAnyOfPatterns, read.ExceptUsernameMatchesAnyOfPatterns)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.Scope = reconcile.KeepStr(cfg.Scope, read.Scope)
 	read.UserRecipientFilter = reconcile.KeepStr(cfg.UserRecipientFilter, read.UserRecipientFilter)
 	read.UsernameMatchesAnyOfPatterns = reconcile.KeepStr(cfg.UsernameMatchesAnyOfPatterns, read.UsernameMatchesAnyOfPatterns)

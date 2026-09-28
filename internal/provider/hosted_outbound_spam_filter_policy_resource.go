@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,14 +42,14 @@ type hostedOutboundSpamFilterPolicyModel struct {
 	ActionWhenThresholdReached                types.String `tfsdk:"action_when_threshold_reached"`
 	AdminDisplayName                          types.String `tfsdk:"admin_display_name"`
 	AutoForwardingMode                        types.String `tfsdk:"auto_forwarding_mode"`
-	BccSuspiciousOutboundAdditionalRecipients types.String `tfsdk:"bcc_suspicious_outbound_additional_recipients"`
+	BccSuspiciousOutboundAdditionalRecipients types.Set    `tfsdk:"bcc_suspicious_outbound_additional_recipients"`
 	BccSuspiciousOutboundMail                 types.Bool   `tfsdk:"bcc_suspicious_outbound_mail"`
 	Name                                      types.String `tfsdk:"name"`
 	NotifyOutboundSpam                        types.Bool   `tfsdk:"notify_outbound_spam"`
-	NotifyOutboundSpamRecipients              types.String `tfsdk:"notify_outbound_spam_recipients"`
-	RecipientLimitExternalPerHour             types.String `tfsdk:"recipient_limit_external_per_hour"`
-	RecipientLimitInternalPerHour             types.String `tfsdk:"recipient_limit_internal_per_hour"`
-	RecipientLimitPerDay                      types.String `tfsdk:"recipient_limit_per_day"`
+	NotifyOutboundSpamRecipients              types.Set    `tfsdk:"notify_outbound_spam_recipients"`
+	RecipientLimitExternalPerHour             types.Int64  `tfsdk:"recipient_limit_external_per_hour"`
+	RecipientLimitInternalPerHour             types.Int64  `tfsdk:"recipient_limit_internal_per_hour"`
+	RecipientLimitPerDay                      types.Int64  `tfsdk:"recipient_limit_per_day"`
 	RecommendedPolicyType                     types.String `tfsdk:"recommended_policy_type"`
 }
 
@@ -64,14 +66,14 @@ func (r *hostedOutboundSpamFilterPolicyResource) Schema(_ context.Context, _ res
 			"action_when_threshold_reached": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActionWhenThresholdReached parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"auto_forwarding_mode":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoForwardingMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"bcc_suspicious_outbound_additional_recipients": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bcc_suspicious_outbound_additional_recipients": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"bcc_suspicious_outbound_mail":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BccSuspiciousOutboundMail parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"notify_outbound_spam":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotifyOutboundSpam parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"notify_outbound_spam_recipients":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotifyOutboundSpamRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"recipient_limit_external_per_hour":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitExternalPerHour parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"recipient_limit_internal_per_hour":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitInternalPerHour parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"recipient_limit_per_day":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitPerDay parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"notify_outbound_spam_recipients":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NotifyOutboundSpamRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"recipient_limit_external_per_hour":             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitExternalPerHour parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"recipient_limit_internal_per_hour":             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitInternalPerHour parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"recipient_limit_per_day":                       schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimitPerDay parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recommended_policy_type":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecommendedPolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -92,31 +94,21 @@ func (r *hostedOutboundSpamFilterPolicyResource) Create(ctx context.Context, req
 	}
 
 	p := exo.NewHostedOutboundSpamFilterPolicyParams{
-		AdminDisplayName:          plan.AdminDisplayName.ValueString(),
-		BccSuspiciousOutboundMail: plan.BccSuspiciousOutboundMail.ValueBool(),
-		Name:                      plan.Name.ValueString(),
-		NotifyOutboundSpam:        plan.NotifyOutboundSpam.ValueBool(),
+		AdminDisplayName: plan.AdminDisplayName.ValueString(),
+		BccSuspiciousOutboundAdditionalRecipients: toStringSlice(ctx, plan.BccSuspiciousOutboundAdditionalRecipients, &resp.Diagnostics),
+		BccSuspiciousOutboundMail:                 plan.BccSuspiciousOutboundMail.ValueBool(),
+		Name:                                      plan.Name.ValueString(),
+		NotifyOutboundSpam:                        plan.NotifyOutboundSpam.ValueBool(),
+		NotifyOutboundSpamRecipients:              toStringSlice(ctx, plan.NotifyOutboundSpamRecipients, &resp.Diagnostics),
+		RecipientLimitExternalPerHour:             int(plan.RecipientLimitExternalPerHour.ValueInt64()),
+		RecipientLimitInternalPerHour:             int(plan.RecipientLimitInternalPerHour.ValueInt64()),
+		RecipientLimitPerDay:                      int(plan.RecipientLimitPerDay.ValueInt64()),
 	}
 	if v := plan.ActionWhenThresholdReached.ValueString(); v != "" {
 		p.ActionWhenThresholdReached = v
 	}
 	if v := plan.AutoForwardingMode.ValueString(); v != "" {
 		p.AutoForwardingMode = v
-	}
-	if v := plan.BccSuspiciousOutboundAdditionalRecipients.ValueString(); v != "" {
-		p.BccSuspiciousOutboundAdditionalRecipients = v
-	}
-	if v := plan.NotifyOutboundSpamRecipients.ValueString(); v != "" {
-		p.NotifyOutboundSpamRecipients = v
-	}
-	if v := plan.RecipientLimitExternalPerHour.ValueString(); v != "" {
-		p.RecipientLimitExternalPerHour = v
-	}
-	if v := plan.RecipientLimitInternalPerHour.ValueString(); v != "" {
-		p.RecipientLimitInternalPerHour = v
-	}
-	if v := plan.RecipientLimitPerDay.ValueString(); v != "" {
-		p.RecipientLimitPerDay = v
 	}
 	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
 		p.RecommendedPolicyType = v
@@ -178,23 +170,13 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	if v := plan.AutoForwardingMode.ValueString(); v != "" {
 		sp.AutoForwardingMode = v
 	}
-	if v := plan.BccSuspiciousOutboundAdditionalRecipients.ValueString(); v != "" {
-		sp.BccSuspiciousOutboundAdditionalRecipients = v
-	}
+	sp.BccSuspiciousOutboundAdditionalRecipients = toStringSlice(ctx, plan.BccSuspiciousOutboundAdditionalRecipients, &resp.Diagnostics)
 	sp.BccSuspiciousOutboundMail = plan.BccSuspiciousOutboundMail.ValueBool()
 	sp.NotifyOutboundSpam = plan.NotifyOutboundSpam.ValueBool()
-	if v := plan.NotifyOutboundSpamRecipients.ValueString(); v != "" {
-		sp.NotifyOutboundSpamRecipients = v
-	}
-	if v := plan.RecipientLimitExternalPerHour.ValueString(); v != "" {
-		sp.RecipientLimitExternalPerHour = v
-	}
-	if v := plan.RecipientLimitInternalPerHour.ValueString(); v != "" {
-		sp.RecipientLimitInternalPerHour = v
-	}
-	if v := plan.RecipientLimitPerDay.ValueString(); v != "" {
-		sp.RecipientLimitPerDay = v
-	}
+	sp.NotifyOutboundSpamRecipients = toStringSlice(ctx, plan.NotifyOutboundSpamRecipients, &resp.Diagnostics)
+	sp.RecipientLimitExternalPerHour = int(plan.RecipientLimitExternalPerHour.ValueInt64())
+	sp.RecipientLimitInternalPerHour = int(plan.RecipientLimitInternalPerHour.ValueInt64())
+	sp.RecipientLimitPerDay = int(plan.RecipientLimitPerDay.ValueInt64())
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -204,14 +186,9 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ActionWhenThresholdReached":                cfg.ActionWhenThresholdReached,
-		"AdminDisplayName":                          cfg.AdminDisplayName,
-		"AutoForwardingMode":                        cfg.AutoForwardingMode,
-		"BccSuspiciousOutboundAdditionalRecipients": cfg.BccSuspiciousOutboundAdditionalRecipients,
-		"NotifyOutboundSpamRecipients":              cfg.NotifyOutboundSpamRecipients,
-		"RecipientLimitExternalPerHour":             cfg.RecipientLimitExternalPerHour,
-		"RecipientLimitInternalPerHour":             cfg.RecipientLimitInternalPerHour,
-		"RecipientLimitPerDay":                      cfg.RecipientLimitPerDay,
+		"ActionWhenThresholdReached": cfg.ActionWhenThresholdReached,
+		"AdminDisplayName":           cfg.AdminDisplayName,
+		"AutoForwardingMode":         cfg.AutoForwardingMode,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -276,14 +253,14 @@ func readHostedOutboundSpamFilterPolicy(ctx context.Context, obj map[string]any,
 	m.ActionWhenThresholdReached = types.StringValue(getString(obj, "ActionWhenThresholdReached"))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.AutoForwardingMode = types.StringValue(getString(obj, "AutoForwardingMode"))
-	m.BccSuspiciousOutboundAdditionalRecipients = types.StringValue(getString(obj, "BccSuspiciousOutboundAdditionalRecipients"))
+	m.BccSuspiciousOutboundAdditionalRecipients = stringSetValue(ctx, getStringSlice(obj, "BccSuspiciousOutboundAdditionalRecipients"))
 	m.BccSuspiciousOutboundMail = types.BoolValue(getBool(obj, "BccSuspiciousOutboundMail"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NotifyOutboundSpam = types.BoolValue(getBool(obj, "NotifyOutboundSpam"))
-	m.NotifyOutboundSpamRecipients = types.StringValue(getString(obj, "NotifyOutboundSpamRecipients"))
-	m.RecipientLimitExternalPerHour = types.StringValue(getString(obj, "RecipientLimitExternalPerHour"))
-	m.RecipientLimitInternalPerHour = types.StringValue(getString(obj, "RecipientLimitInternalPerHour"))
-	m.RecipientLimitPerDay = types.StringValue(getString(obj, "RecipientLimitPerDay"))
+	m.NotifyOutboundSpamRecipients = stringSetValue(ctx, getStringSlice(obj, "NotifyOutboundSpamRecipients"))
+	m.RecipientLimitExternalPerHour = types.Int64Value(getInt(obj, "RecipientLimitExternalPerHour"))
+	m.RecipientLimitInternalPerHour = types.Int64Value(getInt(obj, "RecipientLimitInternalPerHour"))
+	m.RecipientLimitPerDay = types.Int64Value(getInt(obj, "RecipientLimitPerDay"))
 	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
 	_ = ctx
 }
@@ -292,13 +269,13 @@ func (r *hostedOutboundSpamFilterPolicyResource) reconcileState(cfg, read *hoste
 	read.ActionWhenThresholdReached = reconcile.KeepStr(cfg.ActionWhenThresholdReached, read.ActionWhenThresholdReached)
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
 	read.AutoForwardingMode = reconcile.KeepStr(cfg.AutoForwardingMode, read.AutoForwardingMode)
-	read.BccSuspiciousOutboundAdditionalRecipients = reconcile.KeepStr(cfg.BccSuspiciousOutboundAdditionalRecipients, read.BccSuspiciousOutboundAdditionalRecipients)
+	read.BccSuspiciousOutboundAdditionalRecipients = reconcile.KeepSet(cfg.BccSuspiciousOutboundAdditionalRecipients, read.BccSuspiciousOutboundAdditionalRecipients)
 	read.BccSuspiciousOutboundMail = reconcile.KeepBool(cfg.BccSuspiciousOutboundMail, read.BccSuspiciousOutboundMail)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NotifyOutboundSpam = reconcile.KeepBool(cfg.NotifyOutboundSpam, read.NotifyOutboundSpam)
-	read.NotifyOutboundSpamRecipients = reconcile.KeepStr(cfg.NotifyOutboundSpamRecipients, read.NotifyOutboundSpamRecipients)
-	read.RecipientLimitExternalPerHour = reconcile.KeepStr(cfg.RecipientLimitExternalPerHour, read.RecipientLimitExternalPerHour)
-	read.RecipientLimitInternalPerHour = reconcile.KeepStr(cfg.RecipientLimitInternalPerHour, read.RecipientLimitInternalPerHour)
-	read.RecipientLimitPerDay = reconcile.KeepStr(cfg.RecipientLimitPerDay, read.RecipientLimitPerDay)
+	read.NotifyOutboundSpamRecipients = reconcile.KeepSet(cfg.NotifyOutboundSpamRecipients, read.NotifyOutboundSpamRecipients)
+	read.RecipientLimitExternalPerHour = reconcile.KeepInt64(cfg.RecipientLimitExternalPerHour, read.RecipientLimitExternalPerHour)
+	read.RecipientLimitInternalPerHour = reconcile.KeepInt64(cfg.RecipientLimitInternalPerHour, read.RecipientLimitInternalPerHour)
+	read.RecipientLimitPerDay = reconcile.KeepInt64(cfg.RecipientLimitPerDay, read.RecipientLimitPerDay)
 	read.RecommendedPolicyType = reconcile.KeepStr(cfg.RecommendedPolicyType, read.RecommendedPolicyType)
 }

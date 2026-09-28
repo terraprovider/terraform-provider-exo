@@ -44,6 +44,7 @@ func (d *outlookProtectionRuleListDataSource) Schema(_ context.Context, _ dataso
 				"enabled":                          schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 				"from_department":                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -FromDepartment parameter."},
 				"name":                             schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
+				"priority":                         schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 				"sent_to":                          schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SentTo parameter."},
 				"sent_to_scope":                    schema.StringAttribute{Computed: true, Description: "Maps to the -SentToScope parameter."},
 				"user_can_override":                schema.BoolAttribute{Computed: true, Description: "Maps to the -UserCanOverride parameter."},

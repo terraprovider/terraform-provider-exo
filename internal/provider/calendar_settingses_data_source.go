@@ -40,7 +40,7 @@ func (d *calendarSettingsListDataSource) Schema(_ context.Context, _ datasource.
 			"calendar_settingses": schema.ListNestedAttribute{Computed: true, Description: "All CalendarSettings objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"enable_preserve_declined_meetings": schema.StringAttribute{Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter."},
+				"enable_preserve_declined_meetings": schema.BoolAttribute{Computed: true, Description: "Maps to the -EnablePreserveDeclinedMeetings parameter."},
 			}}},
 		},
 	}

@@ -36,23 +36,23 @@ func NewMailboxResource() resource.Resource { return &mailboxResource{} }
 type mailboxModel struct {
 	ID                                        types.String `tfsdk:"id"`
 	Identity                                  types.String `tfsdk:"identity"`
-	AcceptMessagesOnlyFrom                    types.String `tfsdk:"accept_messages_only_from"`
-	AcceptMessagesOnlyFromDLMembers           types.String `tfsdk:"accept_messages_only_from_dl_members"`
-	AcceptMessagesOnlyFromSendersOrMembers    types.String `tfsdk:"accept_messages_only_from_senders_or_members"`
+	AcceptMessagesOnlyFrom                    types.Set    `tfsdk:"accept_messages_only_from"`
+	AcceptMessagesOnlyFromDLMembers           types.Set    `tfsdk:"accept_messages_only_from_dl_members"`
+	AcceptMessagesOnlyFromSendersOrMembers    types.Set    `tfsdk:"accept_messages_only_from_senders_or_members"`
 	AccountDisabled                           types.Bool   `tfsdk:"account_disabled"`
 	ActiveSyncMailboxPolicy                   types.String `tfsdk:"active_sync_mailbox_policy"`
 	AddressBookPolicy                         types.String `tfsdk:"address_book_policy"`
 	Alias                                     types.String `tfsdk:"alias_"`
 	ApplyMandatoryProperties                  types.Bool   `tfsdk:"apply_mandatory_properties"`
 	Archive                                   types.Bool   `tfsdk:"archive"`
-	ArchiveName                               types.String `tfsdk:"archive_name"`
-	AuditAdmin                                types.String `tfsdk:"audit_admin"`
-	AuditDelegate                             types.String `tfsdk:"audit_delegate"`
+	ArchiveName                               types.Set    `tfsdk:"archive_name"`
+	AuditAdmin                                types.Set    `tfsdk:"audit_admin"`
+	AuditDelegate                             types.Set    `tfsdk:"audit_delegate"`
 	AuditEnabled                              types.Bool   `tfsdk:"audit_enabled"`
 	AuditLogAgeLimit                          types.String `tfsdk:"audit_log_age_limit"`
-	AuditOwner                                types.String `tfsdk:"audit_owner"`
+	AuditOwner                                types.Set    `tfsdk:"audit_owner"`
 	AutoArchivingEnabled                      types.Bool   `tfsdk:"auto_archiving_enabled"`
-	BypassModerationFromSendersOrMembers      types.String `tfsdk:"bypass_moderation_from_senders_or_members"`
+	BypassModerationFromSendersOrMembers      types.Set    `tfsdk:"bypass_moderation_from_senders_or_members"`
 	CalendarRepairDisabled                    types.Bool   `tfsdk:"calendar_repair_disabled"`
 	CalendarVersionStoreDisabled              types.Bool   `tfsdk:"calendar_version_store_disabled"`
 	ClearThrottlingPolicyAssignment           types.Bool   `tfsdk:"clear_throttling_policy_assignment"`
@@ -72,14 +72,14 @@ type mailboxModel struct {
 	CustomAttribute8                          types.String `tfsdk:"custom_attribute8"`
 	CustomAttribute9                          types.String `tfsdk:"custom_attribute9"`
 	DataEncryptionPolicy                      types.String `tfsdk:"data_encryption_policy"`
-	DefaultAuditSet                           types.String `tfsdk:"default_audit_set"`
+	DefaultAuditSet                           types.Set    `tfsdk:"default_audit_set"`
 	DefaultPublicFolderMailbox                types.String `tfsdk:"default_public_folder_mailbox"`
 	DeliverToMailboxAndForward                types.Bool   `tfsdk:"deliver_to_mailbox_and_forward"`
 	Discovery                                 types.Bool   `tfsdk:"discovery"`
 	DisplayName                               types.String `tfsdk:"display_name"`
 	ElcProcessingDisabled                     types.Bool   `tfsdk:"elc_processing_disabled"`
-	EmailAddressDisplayNames                  types.String `tfsdk:"email_address_display_names"`
-	EmailAddresses                            types.String `tfsdk:"email_addresses"`
+	EmailAddressDisplayNames                  types.Set    `tfsdk:"email_address_display_names"`
+	EmailAddresses                            types.Set    `tfsdk:"email_addresses"`
 	EnableRoomMailboxAccount                  types.Bool   `tfsdk:"enable_room_mailbox_account"`
 	EndDateForRetentionHold                   types.String `tfsdk:"end_date_for_retention_hold"`
 	EnforcedTimestamps                        types.String `tfsdk:"enforced_timestamps"`
@@ -87,17 +87,17 @@ type mailboxModel struct {
 	ExcludeFromAllHolds                       types.Bool   `tfsdk:"exclude_from_all_holds"`
 	ExcludeFromAllOrgHolds                    types.Bool   `tfsdk:"exclude_from_all_org_holds"`
 	ExcludeFromOrgHolds                       types.Set    `tfsdk:"exclude_from_org_holds"`
-	ExtensionCustomAttribute1                 types.String `tfsdk:"extension_custom_attribute1"`
-	ExtensionCustomAttribute2                 types.String `tfsdk:"extension_custom_attribute2"`
-	ExtensionCustomAttribute3                 types.String `tfsdk:"extension_custom_attribute3"`
-	ExtensionCustomAttribute4                 types.String `tfsdk:"extension_custom_attribute4"`
-	ExtensionCustomAttribute5                 types.String `tfsdk:"extension_custom_attribute5"`
+	ExtensionCustomAttribute1                 types.Set    `tfsdk:"extension_custom_attribute1"`
+	ExtensionCustomAttribute2                 types.Set    `tfsdk:"extension_custom_attribute2"`
+	ExtensionCustomAttribute3                 types.Set    `tfsdk:"extension_custom_attribute3"`
+	ExtensionCustomAttribute4                 types.Set    `tfsdk:"extension_custom_attribute4"`
+	ExtensionCustomAttribute5                 types.Set    `tfsdk:"extension_custom_attribute5"`
 	ExternalOofOptions                        types.String `tfsdk:"external_oof_options"`
 	FederatedIdentity                         types.String `tfsdk:"federated_identity"`
 	FirstName                                 types.String `tfsdk:"first_name"`
 	ForwardingAddress                         types.String `tfsdk:"forwarding_address"`
 	ForwardingSmtpAddress                     types.String `tfsdk:"forwarding_smtp_address"`
-	GrantSendOnBehalfTo                       types.String `tfsdk:"grant_send_on_behalf_to"`
+	GrantSendOnBehalfTo                       types.Set    `tfsdk:"grant_send_on_behalf_to"`
 	GroupMailbox                              types.Bool   `tfsdk:"group_mailbox"`
 	HiddenFromAddressListsEnabled             types.Bool   `tfsdk:"hidden_from_address_lists_enabled"`
 	HoldForMigration                          types.Bool   `tfsdk:"hold_for_migration"`
@@ -108,14 +108,14 @@ type mailboxModel struct {
 	IsExcludedFromServingHierarchy            types.Bool   `tfsdk:"is_excluded_from_serving_hierarchy"`
 	IssueWarningQuota                         types.String `tfsdk:"issue_warning_quota"`
 	JournalArchiveAddress                     types.String `tfsdk:"journal_archive_address"`
-	Languages                                 types.String `tfsdk:"languages"`
+	Languages                                 types.Set    `tfsdk:"languages"`
 	LastName                                  types.String `tfsdk:"last_name"`
 	LitigationHoldDate                        types.String `tfsdk:"litigation_hold_date"`
 	LitigationHoldDuration                    types.String `tfsdk:"litigation_hold_duration"`
 	LitigationHoldEnabled                     types.Bool   `tfsdk:"litigation_hold_enabled"`
 	LitigationHoldOwner                       types.String `tfsdk:"litigation_hold_owner"`
 	MailTip                                   types.String `tfsdk:"mail_tip"`
-	MailTipTranslations                       types.String `tfsdk:"mail_tip_translations"`
+	MailTipTranslations                       types.Set    `tfsdk:"mail_tip_translations"`
 	MailboxPlan                               types.String `tfsdk:"mailbox_plan"`
 	MailboxRegion                             types.String `tfsdk:"mailbox_region"`
 	MaxReceiveSize                            types.String `tfsdk:"max_receive_size"`
@@ -126,10 +126,10 @@ type mailboxModel struct {
 	MessageTrackingReadStatusEnabled          types.Bool   `tfsdk:"message_tracking_read_status_enabled"`
 	MicrosoftOnlineServicesID                 types.String `tfsdk:"microsoft_online_services_id"`
 	Migration                                 types.Bool   `tfsdk:"migration"`
-	ModeratedBy                               types.String `tfsdk:"moderated_by"`
+	ModeratedBy                               types.Set    `tfsdk:"moderated_by"`
 	ModerationEnabled                         types.Bool   `tfsdk:"moderation_enabled"`
 	Name                                      types.String `tfsdk:"name"`
-	NonCompliantDevices                       types.String `tfsdk:"non_compliant_devices"`
+	NonCompliantDevices                       types.Set    `tfsdk:"non_compliant_devices"`
 	Office                                    types.String `tfsdk:"office"`
 	OrganizationalUnit                        types.String `tfsdk:"organizational_unit"`
 	Password                                  types.String `tfsdk:"password"`
@@ -143,9 +143,9 @@ type mailboxModel struct {
 	PublicFolder                              types.Bool   `tfsdk:"public_folder"`
 	RecalculateInactiveMailbox                types.Bool   `tfsdk:"recalculate_inactive_mailbox"`
 	RecipientLimits                           types.String `tfsdk:"recipient_limits"`
-	RejectMessagesFrom                        types.String `tfsdk:"reject_messages_from"`
-	RejectMessagesFromDLMembers               types.String `tfsdk:"reject_messages_from_dl_members"`
-	RejectMessagesFromSendersOrMembers        types.String `tfsdk:"reject_messages_from_senders_or_members"`
+	RejectMessagesFrom                        types.Set    `tfsdk:"reject_messages_from"`
+	RejectMessagesFromDLMembers               types.Set    `tfsdk:"reject_messages_from_dl_members"`
+	RejectMessagesFromSendersOrMembers        types.Set    `tfsdk:"reject_messages_from_senders_or_members"`
 	RemotePowerShellEnabled                   types.Bool   `tfsdk:"remote_power_shell_enabled"`
 	RemoveComplianceTagHoldApplied            types.Bool   `tfsdk:"remove_compliance_tag_hold_applied"`
 	RemoveDelayHoldApplied                    types.Bool   `tfsdk:"remove_delay_hold_applied"`
@@ -157,7 +157,7 @@ type mailboxModel struct {
 	RequireSenderAuthenticationEnabled        types.Bool   `tfsdk:"require_sender_authentication_enabled"`
 	ResetPasswordOnNextLogon                  types.Bool   `tfsdk:"reset_password_on_next_logon"`
 	ResourceCapacity                          types.String `tfsdk:"resource_capacity"`
-	ResourceCustom                            types.String `tfsdk:"resource_custom"`
+	ResourceCustom                            types.Set    `tfsdk:"resource_custom"`
 	RetainDeletedItemsFor                     types.String `tfsdk:"retain_deleted_items_for"`
 	RetentionComment                          types.String `tfsdk:"retention_comment"`
 	RetentionHoldEnabled                      types.Bool   `tfsdk:"retention_hold_enabled"`
@@ -180,10 +180,10 @@ type mailboxModel struct {
 	UniqueRecipientsCountLimitLevel           types.String `tfsdk:"unique_recipients_count_limit_level"`
 	UniqueUnrestrictedGroupsLimitEnabled      types.Bool   `tfsdk:"unique_unrestricted_groups_limit_enabled"`
 	UpdateEnforcedTimestamp                   types.Bool   `tfsdk:"update_enforced_timestamp"`
-	UseDatabaseQuotaDefaults                  types.String `tfsdk:"use_database_quota_defaults"`
+	UseDatabaseQuotaDefaults                  types.Bool   `tfsdk:"use_database_quota_defaults"`
 	UseDatabaseRetentionDefaults              types.Bool   `tfsdk:"use_database_retention_defaults"`
-	UserCertificate                           types.String `tfsdk:"user_certificate"`
-	UserSMimeCertificate                      types.String `tfsdk:"user_s_mime_certificate"`
+	UserCertificate                           types.Set    `tfsdk:"user_certificate"`
+	UserSMimeCertificate                      types.Set    `tfsdk:"user_s_mime_certificate"`
 	WindowsEmailAddress                       types.String `tfsdk:"windows_email_address"`
 }
 
@@ -197,23 +197,23 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"accept_messages_only_from":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_dl_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_dl_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"account_disabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AccountDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"active_sync_mailbox_policy": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncMailboxPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"address_book_policy":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddressBookPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"alias_":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"apply_mandatory_properties": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ApplyMandatoryProperties parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"archive":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Archive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"archive_name":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"audit_admin":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditAdmin parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"audit_delegate":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditDelegate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"archive_name":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ArchiveName parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"audit_admin":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AuditAdmin parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"audit_delegate":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AuditDelegate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"audit_enabled":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"audit_log_age_limit":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditLogAgeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"audit_owner":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditOwner parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"audit_owner":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AuditOwner parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"auto_archiving_enabled":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoArchivingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"bypass_moderation_from_senders_or_members":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bypass_moderation_from_senders_or_members":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"calendar_repair_disabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CalendarRepairDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"calendar_version_store_disabled":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CalendarVersionStoreDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"clear_throttling_policy_assignment":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClearThrottlingPolicyAssignment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -233,14 +233,14 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"custom_attribute8":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute8 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute9":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute9 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"data_encryption_policy":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DataEncryptionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"default_audit_set":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultAuditSet parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_audit_set":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DefaultAuditSet parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_mailbox":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"deliver_to_mailbox_and_forward":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverToMailboxAndForward parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"discovery":                                       schema.BoolAttribute{Required: true, Description: "Maps to the -Discovery parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"display_name":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"elc_processing_disabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ElcProcessingDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"email_address_display_names":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddressDisplayNames parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"email_addresses":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"email_address_display_names":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddressDisplayNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"email_addresses":                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enable_room_mailbox_account":                     schema.BoolAttribute{Required: true, Description: "Maps to the -EnableRoomMailboxAccount parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"end_date_for_retention_hold":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndDateForRetentionHold parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enforced_timestamps":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforcedTimestamps parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -248,17 +248,17 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"exclude_from_all_holds":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_org_holds":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllOrgHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_org_holds":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludeFromOrgHolds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute1":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute2":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute3":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute4":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute5":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute1":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute2":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute3":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute4":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute5":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"external_oof_options":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalOofOptions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"federated_identity":                              schema.StringAttribute{Required: true, Description: "Maps to the -FederatedIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"first_name":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_address":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_smtp_address":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingSmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"grant_send_on_behalf_to":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"grant_send_on_behalf_to":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"group_mailbox":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -GroupMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hold_for_migration":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HoldForMigration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -269,14 +269,14 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"is_excluded_from_serving_hierarchy":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsExcludedFromServingHierarchy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"issue_warning_quota":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IssueWarningQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"journal_archive_address":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalArchiveAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"languages":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Languages parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"languages":                                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Languages parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"last_name":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LastName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"litigation_hold_date":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LitigationHoldDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"litigation_hold_duration":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LitigationHoldDuration parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"litigation_hold_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LitigationHoldEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"litigation_hold_owner":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LitigationHoldOwner parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mail_tip":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_tip_translations":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tip_translations":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox_plan":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxPlan parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"mailbox_region":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxRegion parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_receive_size":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxReceiveSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -287,10 +287,10 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"message_tracking_read_status_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageTrackingReadStatusEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"microsoft_online_services_id":                    schema.StringAttribute{Required: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"migration":                                       schema.BoolAttribute{Required: true, Description: "Maps to the -Migration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"moderated_by":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"moderated_by":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                            schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"non_compliant_devices":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NonCompliantDevices parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"non_compliant_devices":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NonCompliantDevices parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"office":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"organizational_unit":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"password":                                        schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -304,9 +304,9 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"public_folder":                                   schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"recalculate_inactive_mailbox":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_dl_members":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_senders_or_members":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_dl_members":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_senders_or_members":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"remote_power_shell_enabled":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePowerShellEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"remove_compliance_tag_hold_applied":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveComplianceTagHoldApplied parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remove_delay_hold_applied":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveDelayHoldApplied parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -318,7 +318,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"require_sender_authentication_enabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSenderAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reset_password_on_next_logon":                    schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -ResetPasswordOnNextLogon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"resource_capacity":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ResourceCapacity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"resource_custom":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ResourceCustom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"resource_custom":                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourceCustom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"retain_deleted_items_for":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetainDeletedItemsFor parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"retention_comment":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionComment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"retention_hold_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionHoldEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -341,10 +341,10 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"unique_recipients_count_limit_level":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UniqueRecipientsCountLimitLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"unique_unrestricted_groups_limit_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UniqueUnrestrictedGroupsLimitEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"update_enforced_timestamp":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UpdateEnforcedTimestamp parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"use_database_quota_defaults":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UseDatabaseQuotaDefaults parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"use_database_quota_defaults":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseDatabaseQuotaDefaults parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"use_database_retention_defaults":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseDatabaseRetentionDefaults parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"user_certificate":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"user_s_mime_certificate":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"user_certificate":                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"user_s_mime_certificate":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"windows_email_address":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WindowsEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -380,6 +380,7 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		LastName:                       plan.LastName.ValueString(),
 		MailboxRegion:                  plan.MailboxRegion.ValueString(),
 		Migration:                      plan.Migration.ValueBool(),
+		ModeratedBy:                    toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics),
 		ModerationEnabled:              plan.ModerationEnabled.ValueBool(),
 		Name:                           plan.Name.ValueString(),
 		Office:                         plan.Office.ValueString(),
@@ -402,9 +403,6 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 	if v := plan.MicrosoftOnlineServicesID.ValueString(); v != "" {
 		p.MicrosoftOnlineServicesID = v
-	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		p.ModeratedBy = v
 	}
 	if v := plan.OrganizationalUnit.ValueString(); v != "" {
 		p.OrganizationalUnit = v
@@ -483,41 +481,25 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	id := r.identityOf(state)
 	sp := exo.SetMailboxParams{}
 	sp.Identity = id
-	if v := plan.AcceptMessagesOnlyFrom.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFrom = v
-	}
-	if v := plan.AcceptMessagesOnlyFromDLMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromDLMembers = v
-	}
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
-	}
+	sp.AcceptMessagesOnlyFrom = toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)
+	sp.AcceptMessagesOnlyFromDLMembers = toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)
+	sp.AcceptMessagesOnlyFromSendersOrMembers = toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)
 	sp.AccountDisabled = plan.AccountDisabled.ValueBool()
 	if v := plan.AddressBookPolicy.ValueString(); v != "" {
 		sp.AddressBookPolicy = v
 	}
 	sp.Alias = plan.Alias.ValueString()
 	sp.ApplyMandatoryProperties = plan.ApplyMandatoryProperties.ValueBool()
-	if v := plan.ArchiveName.ValueString(); v != "" {
-		sp.ArchiveName = v
-	}
-	if v := plan.AuditAdmin.ValueString(); v != "" {
-		sp.AuditAdmin = v
-	}
-	if v := plan.AuditDelegate.ValueString(); v != "" {
-		sp.AuditDelegate = v
-	}
+	sp.ArchiveName = toStringSlice(ctx, plan.ArchiveName, &resp.Diagnostics)
+	sp.AuditAdmin = toStringSlice(ctx, plan.AuditAdmin, &resp.Diagnostics)
+	sp.AuditDelegate = toStringSlice(ctx, plan.AuditDelegate, &resp.Diagnostics)
 	sp.AuditEnabled = plan.AuditEnabled.ValueBool()
 	if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
 		sp.AuditLogAgeLimit = v
 	}
-	if v := plan.AuditOwner.ValueString(); v != "" {
-		sp.AuditOwner = v
-	}
+	sp.AuditOwner = toStringSlice(ctx, plan.AuditOwner, &resp.Diagnostics)
 	sp.AutoArchivingEnabled = plan.AutoArchivingEnabled.ValueBool()
-	if v := plan.BypassModerationFromSendersOrMembers.ValueString(); v != "" {
-		sp.BypassModerationFromSendersOrMembers = v
-	}
+	sp.BypassModerationFromSendersOrMembers = toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)
 	sp.CalendarRepairDisabled = plan.CalendarRepairDisabled.ValueBool()
 	sp.CalendarVersionStoreDisabled = plan.CalendarVersionStoreDisabled.ValueBool()
 	sp.ClearThrottlingPolicyAssignment = plan.ClearThrottlingPolicyAssignment.ValueBool()
@@ -539,21 +521,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
 		sp.DataEncryptionPolicy = v
 	}
-	if v := plan.DefaultAuditSet.ValueString(); v != "" {
-		sp.DefaultAuditSet = v
-	}
+	sp.DefaultAuditSet = toStringSlice(ctx, plan.DefaultAuditSet, &resp.Diagnostics)
 	if v := plan.DefaultPublicFolderMailbox.ValueString(); v != "" {
 		sp.DefaultPublicFolderMailbox = v
 	}
 	sp.DeliverToMailboxAndForward = plan.DeliverToMailboxAndForward.ValueBool()
 	sp.DisplayName = plan.DisplayName.ValueString()
 	sp.ElcProcessingDisabled = plan.ElcProcessingDisabled.ValueBool()
-	if v := plan.EmailAddressDisplayNames.ValueString(); v != "" {
-		sp.EmailAddressDisplayNames = v
-	}
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
-	}
+	sp.EmailAddressDisplayNames = toStringSlice(ctx, plan.EmailAddressDisplayNames, &resp.Diagnostics)
+	sp.EmailAddresses = toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)
 	if v := plan.EndDateForRetentionHold.ValueString(); v != "" {
 		sp.EndDateForRetentionHold = v
 	}
@@ -561,21 +537,11 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	sp.ExcludeFromAllHolds = plan.ExcludeFromAllHolds.ValueBool()
 	sp.ExcludeFromAllOrgHolds = plan.ExcludeFromAllOrgHolds.ValueBool()
 	sp.ExcludeFromOrgHolds = toStringSlice(ctx, plan.ExcludeFromOrgHolds, &resp.Diagnostics)
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
-	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
-	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
-	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
-	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
-	}
+	sp.ExtensionCustomAttribute1 = toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute2 = toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute3 = toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute4 = toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)
+	sp.ExtensionCustomAttribute5 = toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)
 	if v := plan.ExternalOofOptions.ValueString(); v != "" {
 		sp.ExternalOofOptions = v
 	}
@@ -585,9 +551,7 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if v := plan.ForwardingSmtpAddress.ValueString(); v != "" {
 		sp.ForwardingSmtpAddress = v
 	}
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
-	}
+	sp.GrantSendOnBehalfTo = toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)
 	sp.GroupMailbox = plan.GroupMailbox.ValueBool()
 	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
 	sp.ImmutableId = plan.ImmutableId.ValueString()
@@ -599,9 +563,7 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if v := plan.JournalArchiveAddress.ValueString(); v != "" {
 		sp.JournalArchiveAddress = v
 	}
-	if v := plan.Languages.ValueString(); v != "" {
-		sp.Languages = v
-	}
+	sp.Languages = toStringSlice(ctx, plan.Languages, &resp.Diagnostics)
 	if v := plan.LitigationHoldDate.ValueString(); v != "" {
 		sp.LitigationHoldDate = v
 	}
@@ -611,9 +573,7 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	sp.LitigationHoldEnabled = plan.LitigationHoldEnabled.ValueBool()
 	sp.LitigationHoldOwner = plan.LitigationHoldOwner.ValueString()
 	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
-	}
+	sp.MailTipTranslations = toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)
 	sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	if v := plan.MaxReceiveSize.ValueString(); v != "" {
 		sp.MaxReceiveSize = v
@@ -625,13 +585,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	sp.MessageCopyForSendOnBehalfEnabled = plan.MessageCopyForSendOnBehalfEnabled.ValueBool()
 	sp.MessageCopyForSentAsEnabled = plan.MessageCopyForSentAsEnabled.ValueBool()
 	sp.MessageTrackingReadStatusEnabled = plan.MessageTrackingReadStatusEnabled.ValueBool()
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
-	}
+	sp.ModeratedBy = toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)
 	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
-	if v := plan.NonCompliantDevices.ValueString(); v != "" {
-		sp.NonCompliantDevices = v
-	}
+	sp.NonCompliantDevices = toStringSlice(ctx, plan.NonCompliantDevices, &resp.Diagnostics)
 	sp.Office = plan.Office.ValueString()
 	if v := plan.ProhibitSendQuota.ValueString(); v != "" {
 		sp.ProhibitSendQuota = v
@@ -645,15 +601,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if v := plan.RecipientLimits.ValueString(); v != "" {
 		sp.RecipientLimits = v
 	}
-	if v := plan.RejectMessagesFrom.ValueString(); v != "" {
-		sp.RejectMessagesFrom = v
-	}
-	if v := plan.RejectMessagesFromDLMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromDLMembers = v
-	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
-	}
+	sp.RejectMessagesFrom = toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)
+	sp.RejectMessagesFromDLMembers = toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)
+	sp.RejectMessagesFromSendersOrMembers = toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)
 	sp.RemoveComplianceTagHoldApplied = plan.RemoveComplianceTagHoldApplied.ValueBool()
 	sp.RemoveDelayHoldApplied = plan.RemoveDelayHoldApplied.ValueBool()
 	sp.RemoveDelayReleaseHoldApplied = plan.RemoveDelayReleaseHoldApplied.ValueBool()
@@ -664,9 +614,7 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if v := plan.ResourceCapacity.ValueString(); v != "" {
 		sp.ResourceCapacity = v
 	}
-	if v := plan.ResourceCustom.ValueString(); v != "" {
-		sp.ResourceCustom = v
-	}
+	sp.ResourceCustom = toStringSlice(ctx, plan.ResourceCustom, &resp.Diagnostics)
 	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
 		sp.RetainDeletedItemsFor = v
 	}
@@ -708,16 +656,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	sp.UniqueUnrestrictedGroupsLimitEnabled = plan.UniqueUnrestrictedGroupsLimitEnabled.ValueBool()
 	sp.UpdateEnforcedTimestamp = plan.UpdateEnforcedTimestamp.ValueBool()
-	if v := plan.UseDatabaseQuotaDefaults.ValueString(); v != "" {
-		sp.UseDatabaseQuotaDefaults = v
-	}
+	sp.UseDatabaseQuotaDefaults = plan.UseDatabaseQuotaDefaults.ValueBool()
 	sp.UseDatabaseRetentionDefaults = plan.UseDatabaseRetentionDefaults.ValueBool()
-	if v := plan.UserCertificate.ValueString(); v != "" {
-		sp.UserCertificate = v
-	}
-	if v := plan.UserSMimeCertificate.ValueString(); v != "" {
-		sp.UserSMimeCertificate = v
-	}
+	sp.UserCertificate = toStringSlice(ctx, plan.UserCertificate, &resp.Diagnostics)
+	sp.UserSMimeCertificate = toStringSlice(ctx, plan.UserSMimeCertificate, &resp.Diagnostics)
 	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
 		sp.WindowsEmailAddress = v
 	}
@@ -730,90 +672,62 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AcceptMessagesOnlyFrom":                 cfg.AcceptMessagesOnlyFrom,
-		"AcceptMessagesOnlyFromDLMembers":        cfg.AcceptMessagesOnlyFromDLMembers,
-		"AcceptMessagesOnlyFromSendersOrMembers": cfg.AcceptMessagesOnlyFromSendersOrMembers,
-		"AddressBookPolicy":                      cfg.AddressBookPolicy,
-		"Alias":                                  cfg.Alias,
-		"ArchiveName":                            cfg.ArchiveName,
-		"AuditAdmin":                             cfg.AuditAdmin,
-		"AuditDelegate":                          cfg.AuditDelegate,
-		"AuditLogAgeLimit":                       cfg.AuditLogAgeLimit,
-		"AuditOwner":                             cfg.AuditOwner,
-		"BypassModerationFromSendersOrMembers":   cfg.BypassModerationFromSendersOrMembers,
-		"CustomAttribute1":                       cfg.CustomAttribute1,
-		"CustomAttribute10":                      cfg.CustomAttribute10,
-		"CustomAttribute11":                      cfg.CustomAttribute11,
-		"CustomAttribute12":                      cfg.CustomAttribute12,
-		"CustomAttribute13":                      cfg.CustomAttribute13,
-		"CustomAttribute14":                      cfg.CustomAttribute14,
-		"CustomAttribute15":                      cfg.CustomAttribute15,
-		"CustomAttribute2":                       cfg.CustomAttribute2,
-		"CustomAttribute3":                       cfg.CustomAttribute3,
-		"CustomAttribute4":                       cfg.CustomAttribute4,
-		"CustomAttribute5":                       cfg.CustomAttribute5,
-		"CustomAttribute6":                       cfg.CustomAttribute6,
-		"CustomAttribute7":                       cfg.CustomAttribute7,
-		"CustomAttribute8":                       cfg.CustomAttribute8,
-		"CustomAttribute9":                       cfg.CustomAttribute9,
-		"DataEncryptionPolicy":                   cfg.DataEncryptionPolicy,
-		"DefaultAuditSet":                        cfg.DefaultAuditSet,
-		"DefaultPublicFolderMailbox":             cfg.DefaultPublicFolderMailbox,
-		"DisplayName":                            cfg.DisplayName,
-		"EmailAddressDisplayNames":               cfg.EmailAddressDisplayNames,
-		"EmailAddresses":                         cfg.EmailAddresses,
-		"EndDateForRetentionHold":                cfg.EndDateForRetentionHold,
-		"EnforcedTimestamps":                     cfg.EnforcedTimestamps,
-		"ExtensionCustomAttribute1":              cfg.ExtensionCustomAttribute1,
-		"ExtensionCustomAttribute2":              cfg.ExtensionCustomAttribute2,
-		"ExtensionCustomAttribute3":              cfg.ExtensionCustomAttribute3,
-		"ExtensionCustomAttribute4":              cfg.ExtensionCustomAttribute4,
-		"ExtensionCustomAttribute5":              cfg.ExtensionCustomAttribute5,
-		"ExternalOofOptions":                     cfg.ExternalOofOptions,
-		"ForwardingAddress":                      cfg.ForwardingAddress,
-		"ForwardingSmtpAddress":                  cfg.ForwardingSmtpAddress,
-		"GrantSendOnBehalfTo":                    cfg.GrantSendOnBehalfTo,
-		"ImmutableId":                            cfg.ImmutableId,
-		"IssueWarningQuota":                      cfg.IssueWarningQuota,
-		"JournalArchiveAddress":                  cfg.JournalArchiveAddress,
-		"Languages":                              cfg.Languages,
-		"LitigationHoldDate":                     cfg.LitigationHoldDate,
-		"LitigationHoldDuration":                 cfg.LitigationHoldDuration,
-		"LitigationHoldOwner":                    cfg.LitigationHoldOwner,
-		"MailTip":                                cfg.MailTip,
-		"MailTipTranslations":                    cfg.MailTipTranslations,
-		"MailboxRegion":                          cfg.MailboxRegion,
-		"MaxReceiveSize":                         cfg.MaxReceiveSize,
-		"MaxSendSize":                            cfg.MaxSendSize,
-		"ModeratedBy":                            cfg.ModeratedBy,
-		"NonCompliantDevices":                    cfg.NonCompliantDevices,
-		"Office":                                 cfg.Office,
-		"ProhibitSendQuota":                      cfg.ProhibitSendQuota,
-		"ProhibitSendReceiveQuota":               cfg.ProhibitSendReceiveQuota,
-		"RecipientLimits":                        cfg.RecipientLimits,
-		"RejectMessagesFrom":                     cfg.RejectMessagesFrom,
-		"RejectMessagesFromDLMembers":            cfg.RejectMessagesFromDLMembers,
-		"RejectMessagesFromSendersOrMembers":     cfg.RejectMessagesFromSendersOrMembers,
-		"ResourceCapacity":                       cfg.ResourceCapacity,
-		"ResourceCustom":                         cfg.ResourceCustom,
-		"RetainDeletedItemsFor":                  cfg.RetainDeletedItemsFor,
-		"RetentionComment":                       cfg.RetentionComment,
-		"RetentionPolicy":                        cfg.RetentionPolicy,
-		"RetentionUrl":                           cfg.RetentionUrl,
-		"RoleAssignmentPolicy":                   cfg.RoleAssignmentPolicy,
-		"RoomMailboxPassword":                    cfg.RoomMailboxPassword,
-		"RulesQuota":                             cfg.RulesQuota,
-		"SendModerationNotifications":            cfg.SendModerationNotifications,
-		"SharingPolicy":                          cfg.SharingPolicy,
-		"SimpleDisplayName":                      cfg.SimpleDisplayName,
-		"StartDateForRetentionHold":              cfg.StartDateForRetentionHold,
-		"StsRefreshTokensValidFrom":              cfg.StsRefreshTokensValidFrom,
-		"Type":                                   cfg.Type,
-		"UniqueRecipientsCountLimitLevel":        cfg.UniqueRecipientsCountLimitLevel,
-		"UseDatabaseQuotaDefaults":               cfg.UseDatabaseQuotaDefaults,
-		"UserCertificate":                        cfg.UserCertificate,
-		"UserSMimeCertificate":                   cfg.UserSMimeCertificate,
-		"WindowsEmailAddress":                    cfg.WindowsEmailAddress,
+		"AddressBookPolicy":               cfg.AddressBookPolicy,
+		"Alias":                           cfg.Alias,
+		"AuditLogAgeLimit":                cfg.AuditLogAgeLimit,
+		"CustomAttribute1":                cfg.CustomAttribute1,
+		"CustomAttribute10":               cfg.CustomAttribute10,
+		"CustomAttribute11":               cfg.CustomAttribute11,
+		"CustomAttribute12":               cfg.CustomAttribute12,
+		"CustomAttribute13":               cfg.CustomAttribute13,
+		"CustomAttribute14":               cfg.CustomAttribute14,
+		"CustomAttribute15":               cfg.CustomAttribute15,
+		"CustomAttribute2":                cfg.CustomAttribute2,
+		"CustomAttribute3":                cfg.CustomAttribute3,
+		"CustomAttribute4":                cfg.CustomAttribute4,
+		"CustomAttribute5":                cfg.CustomAttribute5,
+		"CustomAttribute6":                cfg.CustomAttribute6,
+		"CustomAttribute7":                cfg.CustomAttribute7,
+		"CustomAttribute8":                cfg.CustomAttribute8,
+		"CustomAttribute9":                cfg.CustomAttribute9,
+		"DataEncryptionPolicy":            cfg.DataEncryptionPolicy,
+		"DefaultPublicFolderMailbox":      cfg.DefaultPublicFolderMailbox,
+		"DisplayName":                     cfg.DisplayName,
+		"EndDateForRetentionHold":         cfg.EndDateForRetentionHold,
+		"EnforcedTimestamps":              cfg.EnforcedTimestamps,
+		"ExternalOofOptions":              cfg.ExternalOofOptions,
+		"ForwardingAddress":               cfg.ForwardingAddress,
+		"ForwardingSmtpAddress":           cfg.ForwardingSmtpAddress,
+		"ImmutableId":                     cfg.ImmutableId,
+		"IssueWarningQuota":               cfg.IssueWarningQuota,
+		"JournalArchiveAddress":           cfg.JournalArchiveAddress,
+		"LitigationHoldDate":              cfg.LitigationHoldDate,
+		"LitigationHoldDuration":          cfg.LitigationHoldDuration,
+		"LitigationHoldOwner":             cfg.LitigationHoldOwner,
+		"MailTip":                         cfg.MailTip,
+		"MailboxRegion":                   cfg.MailboxRegion,
+		"MaxReceiveSize":                  cfg.MaxReceiveSize,
+		"MaxSendSize":                     cfg.MaxSendSize,
+		"Office":                          cfg.Office,
+		"ProhibitSendQuota":               cfg.ProhibitSendQuota,
+		"ProhibitSendReceiveQuota":        cfg.ProhibitSendReceiveQuota,
+		"RecipientLimits":                 cfg.RecipientLimits,
+		"ResourceCapacity":                cfg.ResourceCapacity,
+		"RetainDeletedItemsFor":           cfg.RetainDeletedItemsFor,
+		"RetentionComment":                cfg.RetentionComment,
+		"RetentionPolicy":                 cfg.RetentionPolicy,
+		"RetentionUrl":                    cfg.RetentionUrl,
+		"RoleAssignmentPolicy":            cfg.RoleAssignmentPolicy,
+		"RoomMailboxPassword":             cfg.RoomMailboxPassword,
+		"RulesQuota":                      cfg.RulesQuota,
+		"SendModerationNotifications":     cfg.SendModerationNotifications,
+		"SharingPolicy":                   cfg.SharingPolicy,
+		"SimpleDisplayName":               cfg.SimpleDisplayName,
+		"StartDateForRetentionHold":       cfg.StartDateForRetentionHold,
+		"StsRefreshTokensValidFrom":       cfg.StsRefreshTokensValidFrom,
+		"Type":                            cfg.Type,
+		"UniqueRecipientsCountLimitLevel": cfg.UniqueRecipientsCountLimitLevel,
+		"WindowsEmailAddress":             cfg.WindowsEmailAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -875,23 +789,23 @@ func (r *mailboxResource) refresh(ctx context.Context, identity string, m *mailb
 func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AcceptMessagesOnlyFrom = types.StringValue(getString(obj, "AcceptMessagesOnlyFrom"))
-	m.AcceptMessagesOnlyFromDLMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromDLMembers"))
-	m.AcceptMessagesOnlyFromSendersOrMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
+	m.AcceptMessagesOnlyFrom = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFrom"))
+	m.AcceptMessagesOnlyFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromDLMembers"))
+	m.AcceptMessagesOnlyFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
 	m.AccountDisabled = types.BoolValue(getBool(obj, "AccountDisabled"))
 	m.ActiveSyncMailboxPolicy = types.StringValue(getString(obj, "ActiveSyncMailboxPolicy"))
 	m.AddressBookPolicy = types.StringValue(getString(obj, "AddressBookPolicy"))
 	m.Alias = types.StringValue(getString(obj, "Alias"))
 	m.ApplyMandatoryProperties = types.BoolValue(getBool(obj, "ApplyMandatoryProperties"))
 	m.Archive = types.BoolValue(getBool(obj, "Archive"))
-	m.ArchiveName = types.StringValue(getString(obj, "ArchiveName"))
-	m.AuditAdmin = types.StringValue(getString(obj, "AuditAdmin"))
-	m.AuditDelegate = types.StringValue(getString(obj, "AuditDelegate"))
+	m.ArchiveName = stringSetValue(ctx, getStringSlice(obj, "ArchiveName"))
+	m.AuditAdmin = stringSetValue(ctx, getStringSlice(obj, "AuditAdmin"))
+	m.AuditDelegate = stringSetValue(ctx, getStringSlice(obj, "AuditDelegate"))
 	m.AuditEnabled = types.BoolValue(getBool(obj, "AuditEnabled"))
 	m.AuditLogAgeLimit = types.StringValue(getString(obj, "AuditLogAgeLimit"))
-	m.AuditOwner = types.StringValue(getString(obj, "AuditOwner"))
+	m.AuditOwner = stringSetValue(ctx, getStringSlice(obj, "AuditOwner"))
 	m.AutoArchivingEnabled = types.BoolValue(getBool(obj, "AutoArchivingEnabled"))
-	m.BypassModerationFromSendersOrMembers = types.StringValue(getString(obj, "BypassModerationFromSendersOrMembers"))
+	m.BypassModerationFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "BypassModerationFromSendersOrMembers"))
 	m.CalendarRepairDisabled = types.BoolValue(getBool(obj, "CalendarRepairDisabled"))
 	m.CalendarVersionStoreDisabled = types.BoolValue(getBool(obj, "CalendarVersionStoreDisabled"))
 	m.ClearThrottlingPolicyAssignment = types.BoolValue(getBool(obj, "ClearThrottlingPolicyAssignment"))
@@ -911,14 +825,14 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.CustomAttribute8 = types.StringValue(getString(obj, "CustomAttribute8"))
 	m.CustomAttribute9 = types.StringValue(getString(obj, "CustomAttribute9"))
 	m.DataEncryptionPolicy = types.StringValue(getString(obj, "DataEncryptionPolicy"))
-	m.DefaultAuditSet = types.StringValue(getString(obj, "DefaultAuditSet"))
+	m.DefaultAuditSet = stringSetValue(ctx, getStringSlice(obj, "DefaultAuditSet"))
 	m.DefaultPublicFolderMailbox = types.StringValue(getString(obj, "DefaultPublicFolderMailbox"))
 	m.DeliverToMailboxAndForward = types.BoolValue(getBool(obj, "DeliverToMailboxAndForward"))
 	m.Discovery = types.BoolValue(getBool(obj, "Discovery"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.ElcProcessingDisabled = types.BoolValue(getBool(obj, "ElcProcessingDisabled"))
-	m.EmailAddressDisplayNames = types.StringValue(getString(obj, "EmailAddressDisplayNames"))
-	m.EmailAddresses = types.StringValue(getString(obj, "EmailAddresses"))
+	m.EmailAddressDisplayNames = stringSetValue(ctx, getStringSlice(obj, "EmailAddressDisplayNames"))
+	m.EmailAddresses = stringSetValue(ctx, getStringSlice(obj, "EmailAddresses"))
 	m.EnableRoomMailboxAccount = types.BoolValue(getBool(obj, "EnableRoomMailboxAccount"))
 	m.EndDateForRetentionHold = types.StringValue(getString(obj, "EndDateForRetentionHold"))
 	m.EnforcedTimestamps = types.StringValue(getString(obj, "EnforcedTimestamps"))
@@ -926,17 +840,17 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.ExcludeFromAllHolds = types.BoolValue(getBool(obj, "ExcludeFromAllHolds"))
 	m.ExcludeFromAllOrgHolds = types.BoolValue(getBool(obj, "ExcludeFromAllOrgHolds"))
 	m.ExcludeFromOrgHolds = stringSetValue(ctx, getStringSlice(obj, "ExcludeFromOrgHolds"))
-	m.ExtensionCustomAttribute1 = types.StringValue(getString(obj, "ExtensionCustomAttribute1"))
-	m.ExtensionCustomAttribute2 = types.StringValue(getString(obj, "ExtensionCustomAttribute2"))
-	m.ExtensionCustomAttribute3 = types.StringValue(getString(obj, "ExtensionCustomAttribute3"))
-	m.ExtensionCustomAttribute4 = types.StringValue(getString(obj, "ExtensionCustomAttribute4"))
-	m.ExtensionCustomAttribute5 = types.StringValue(getString(obj, "ExtensionCustomAttribute5"))
+	m.ExtensionCustomAttribute1 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute1"))
+	m.ExtensionCustomAttribute2 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute2"))
+	m.ExtensionCustomAttribute3 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute3"))
+	m.ExtensionCustomAttribute4 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute4"))
+	m.ExtensionCustomAttribute5 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute5"))
 	m.ExternalOofOptions = types.StringValue(getString(obj, "ExternalOofOptions"))
 	m.FederatedIdentity = types.StringValue(getString(obj, "FederatedIdentity"))
 	m.FirstName = types.StringValue(getString(obj, "FirstName"))
 	m.ForwardingAddress = types.StringValue(getString(obj, "ForwardingAddress"))
 	m.ForwardingSmtpAddress = types.StringValue(getString(obj, "ForwardingSmtpAddress"))
-	m.GrantSendOnBehalfTo = types.StringValue(getString(obj, "GrantSendOnBehalfTo"))
+	m.GrantSendOnBehalfTo = stringSetValue(ctx, getStringSlice(obj, "GrantSendOnBehalfTo"))
 	m.GroupMailbox = types.BoolValue(getBool(obj, "GroupMailbox"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
 	m.HoldForMigration = types.BoolValue(getBool(obj, "HoldForMigration"))
@@ -947,14 +861,14 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.IsExcludedFromServingHierarchy = types.BoolValue(getBool(obj, "IsExcludedFromServingHierarchy"))
 	m.IssueWarningQuota = types.StringValue(getString(obj, "IssueWarningQuota"))
 	m.JournalArchiveAddress = types.StringValue(getString(obj, "JournalArchiveAddress"))
-	m.Languages = types.StringValue(getString(obj, "Languages"))
+	m.Languages = stringSetValue(ctx, getStringSlice(obj, "Languages"))
 	m.LastName = types.StringValue(getString(obj, "LastName"))
 	m.LitigationHoldDate = types.StringValue(getString(obj, "LitigationHoldDate"))
 	m.LitigationHoldDuration = types.StringValue(getString(obj, "LitigationHoldDuration"))
 	m.LitigationHoldEnabled = types.BoolValue(getBool(obj, "LitigationHoldEnabled"))
 	m.LitigationHoldOwner = types.StringValue(getString(obj, "LitigationHoldOwner"))
 	m.MailTip = types.StringValue(getString(obj, "MailTip"))
-	m.MailTipTranslations = types.StringValue(getString(obj, "MailTipTranslations"))
+	m.MailTipTranslations = stringSetValue(ctx, getStringSlice(obj, "MailTipTranslations"))
 	m.MailboxPlan = types.StringValue(getString(obj, "MailboxPlan"))
 	m.MailboxRegion = types.StringValue(getString(obj, "MailboxRegion"))
 	m.MaxReceiveSize = types.StringValue(getString(obj, "MaxReceiveSize"))
@@ -965,10 +879,10 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.MessageTrackingReadStatusEnabled = types.BoolValue(getBool(obj, "MessageTrackingReadStatusEnabled"))
 	m.MicrosoftOnlineServicesID = types.StringValue(getString(obj, "MicrosoftOnlineServicesID"))
 	m.Migration = types.BoolValue(getBool(obj, "Migration"))
-	m.ModeratedBy = types.StringValue(getString(obj, "ModeratedBy"))
+	m.ModeratedBy = stringSetValue(ctx, getStringSlice(obj, "ModeratedBy"))
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.NonCompliantDevices = types.StringValue(getString(obj, "NonCompliantDevices"))
+	m.NonCompliantDevices = stringSetValue(ctx, getStringSlice(obj, "NonCompliantDevices"))
 	m.Office = types.StringValue(getString(obj, "Office"))
 	m.OrganizationalUnit = types.StringValue(getString(obj, "OrganizationalUnit"))
 	m.Password = types.StringValue(getString(obj, "Password"))
@@ -982,9 +896,9 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
 	m.RecalculateInactiveMailbox = types.BoolValue(getBool(obj, "RecalculateInactiveMailbox"))
 	m.RecipientLimits = types.StringValue(getString(obj, "RecipientLimits"))
-	m.RejectMessagesFrom = types.StringValue(getString(obj, "RejectMessagesFrom"))
-	m.RejectMessagesFromDLMembers = types.StringValue(getString(obj, "RejectMessagesFromDLMembers"))
-	m.RejectMessagesFromSendersOrMembers = types.StringValue(getString(obj, "RejectMessagesFromSendersOrMembers"))
+	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
+	m.RejectMessagesFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromDLMembers"))
+	m.RejectMessagesFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromSendersOrMembers"))
 	m.RemotePowerShellEnabled = types.BoolValue(getBool(obj, "RemotePowerShellEnabled"))
 	m.RemoveComplianceTagHoldApplied = types.BoolValue(getBool(obj, "RemoveComplianceTagHoldApplied"))
 	m.RemoveDelayHoldApplied = types.BoolValue(getBool(obj, "RemoveDelayHoldApplied"))
@@ -996,7 +910,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.RequireSenderAuthenticationEnabled = types.BoolValue(getBool(obj, "RequireSenderAuthenticationEnabled"))
 	m.ResetPasswordOnNextLogon = types.BoolValue(getBool(obj, "ResetPasswordOnNextLogon"))
 	m.ResourceCapacity = types.StringValue(getString(obj, "ResourceCapacity"))
-	m.ResourceCustom = types.StringValue(getString(obj, "ResourceCustom"))
+	m.ResourceCustom = stringSetValue(ctx, getStringSlice(obj, "ResourceCustom"))
 	m.RetainDeletedItemsFor = types.StringValue(getString(obj, "RetainDeletedItemsFor"))
 	m.RetentionComment = types.StringValue(getString(obj, "RetentionComment"))
 	m.RetentionHoldEnabled = types.BoolValue(getBool(obj, "RetentionHoldEnabled"))
@@ -1019,32 +933,32 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.UniqueRecipientsCountLimitLevel = types.StringValue(getString(obj, "UniqueRecipientsCountLimitLevel"))
 	m.UniqueUnrestrictedGroupsLimitEnabled = types.BoolValue(getBool(obj, "UniqueUnrestrictedGroupsLimitEnabled"))
 	m.UpdateEnforcedTimestamp = types.BoolValue(getBool(obj, "UpdateEnforcedTimestamp"))
-	m.UseDatabaseQuotaDefaults = types.StringValue(getString(obj, "UseDatabaseQuotaDefaults"))
+	m.UseDatabaseQuotaDefaults = types.BoolValue(getBool(obj, "UseDatabaseQuotaDefaults"))
 	m.UseDatabaseRetentionDefaults = types.BoolValue(getBool(obj, "UseDatabaseRetentionDefaults"))
-	m.UserCertificate = types.StringValue(getString(obj, "UserCertificate"))
-	m.UserSMimeCertificate = types.StringValue(getString(obj, "UserSMimeCertificate"))
+	m.UserCertificate = stringSetValue(ctx, getStringSlice(obj, "UserCertificate"))
+	m.UserSMimeCertificate = stringSetValue(ctx, getStringSlice(obj, "UserSMimeCertificate"))
 	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
 func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
-	read.AcceptMessagesOnlyFrom = reconcile.KeepStr(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
-	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
-	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
+	read.AcceptMessagesOnlyFrom = reconcile.KeepSet(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
+	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
+	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
 	read.AccountDisabled = reconcile.KeepBool(cfg.AccountDisabled, read.AccountDisabled)
 	read.ActiveSyncMailboxPolicy = reconcile.KeepStr(cfg.ActiveSyncMailboxPolicy, read.ActiveSyncMailboxPolicy)
 	read.AddressBookPolicy = reconcile.KeepStr(cfg.AddressBookPolicy, read.AddressBookPolicy)
 	read.Alias = reconcile.KeepStr(cfg.Alias, read.Alias)
 	read.ApplyMandatoryProperties = reconcile.KeepBool(cfg.ApplyMandatoryProperties, read.ApplyMandatoryProperties)
 	read.Archive = reconcile.KeepBool(cfg.Archive, read.Archive)
-	read.ArchiveName = reconcile.KeepStr(cfg.ArchiveName, read.ArchiveName)
-	read.AuditAdmin = reconcile.KeepStr(cfg.AuditAdmin, read.AuditAdmin)
-	read.AuditDelegate = reconcile.KeepStr(cfg.AuditDelegate, read.AuditDelegate)
+	read.ArchiveName = reconcile.KeepSet(cfg.ArchiveName, read.ArchiveName)
+	read.AuditAdmin = reconcile.KeepSet(cfg.AuditAdmin, read.AuditAdmin)
+	read.AuditDelegate = reconcile.KeepSet(cfg.AuditDelegate, read.AuditDelegate)
 	read.AuditEnabled = reconcile.KeepBool(cfg.AuditEnabled, read.AuditEnabled)
 	read.AuditLogAgeLimit = reconcile.KeepStr(cfg.AuditLogAgeLimit, read.AuditLogAgeLimit)
-	read.AuditOwner = reconcile.KeepStr(cfg.AuditOwner, read.AuditOwner)
+	read.AuditOwner = reconcile.KeepSet(cfg.AuditOwner, read.AuditOwner)
 	read.AutoArchivingEnabled = reconcile.KeepBool(cfg.AutoArchivingEnabled, read.AutoArchivingEnabled)
-	read.BypassModerationFromSendersOrMembers = reconcile.KeepStr(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
+	read.BypassModerationFromSendersOrMembers = reconcile.KeepSet(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
 	read.CalendarRepairDisabled = reconcile.KeepBool(cfg.CalendarRepairDisabled, read.CalendarRepairDisabled)
 	read.CalendarVersionStoreDisabled = reconcile.KeepBool(cfg.CalendarVersionStoreDisabled, read.CalendarVersionStoreDisabled)
 	read.ClearThrottlingPolicyAssignment = reconcile.KeepBool(cfg.ClearThrottlingPolicyAssignment, read.ClearThrottlingPolicyAssignment)
@@ -1064,14 +978,14 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.CustomAttribute8 = reconcile.KeepStr(cfg.CustomAttribute8, read.CustomAttribute8)
 	read.CustomAttribute9 = reconcile.KeepStr(cfg.CustomAttribute9, read.CustomAttribute9)
 	read.DataEncryptionPolicy = reconcile.KeepStr(cfg.DataEncryptionPolicy, read.DataEncryptionPolicy)
-	read.DefaultAuditSet = reconcile.KeepStr(cfg.DefaultAuditSet, read.DefaultAuditSet)
+	read.DefaultAuditSet = reconcile.KeepSet(cfg.DefaultAuditSet, read.DefaultAuditSet)
 	read.DefaultPublicFolderMailbox = reconcile.KeepStr(cfg.DefaultPublicFolderMailbox, read.DefaultPublicFolderMailbox)
 	read.DeliverToMailboxAndForward = reconcile.KeepBool(cfg.DeliverToMailboxAndForward, read.DeliverToMailboxAndForward)
 	read.Discovery = reconcile.KeepBool(cfg.Discovery, read.Discovery)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
 	read.ElcProcessingDisabled = reconcile.KeepBool(cfg.ElcProcessingDisabled, read.ElcProcessingDisabled)
-	read.EmailAddressDisplayNames = reconcile.KeepStr(cfg.EmailAddressDisplayNames, read.EmailAddressDisplayNames)
-	read.EmailAddresses = reconcile.KeepStr(cfg.EmailAddresses, read.EmailAddresses)
+	read.EmailAddressDisplayNames = reconcile.KeepSet(cfg.EmailAddressDisplayNames, read.EmailAddressDisplayNames)
+	read.EmailAddresses = reconcile.KeepSet(cfg.EmailAddresses, read.EmailAddresses)
 	read.EnableRoomMailboxAccount = reconcile.KeepBool(cfg.EnableRoomMailboxAccount, read.EnableRoomMailboxAccount)
 	read.EndDateForRetentionHold = reconcile.KeepStr(cfg.EndDateForRetentionHold, read.EndDateForRetentionHold)
 	read.EnforcedTimestamps = reconcile.KeepStr(cfg.EnforcedTimestamps, read.EnforcedTimestamps)
@@ -1079,17 +993,17 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.ExcludeFromAllHolds = reconcile.KeepBool(cfg.ExcludeFromAllHolds, read.ExcludeFromAllHolds)
 	read.ExcludeFromAllOrgHolds = reconcile.KeepBool(cfg.ExcludeFromAllOrgHolds, read.ExcludeFromAllOrgHolds)
 	read.ExcludeFromOrgHolds = reconcile.KeepSet(cfg.ExcludeFromOrgHolds, read.ExcludeFromOrgHolds)
-	read.ExtensionCustomAttribute1 = reconcile.KeepStr(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
-	read.ExtensionCustomAttribute2 = reconcile.KeepStr(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
-	read.ExtensionCustomAttribute3 = reconcile.KeepStr(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
-	read.ExtensionCustomAttribute4 = reconcile.KeepStr(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
-	read.ExtensionCustomAttribute5 = reconcile.KeepStr(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
+	read.ExtensionCustomAttribute1 = reconcile.KeepSet(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
+	read.ExtensionCustomAttribute2 = reconcile.KeepSet(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
+	read.ExtensionCustomAttribute3 = reconcile.KeepSet(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
+	read.ExtensionCustomAttribute4 = reconcile.KeepSet(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
+	read.ExtensionCustomAttribute5 = reconcile.KeepSet(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
 	read.ExternalOofOptions = reconcile.KeepStr(cfg.ExternalOofOptions, read.ExternalOofOptions)
 	read.FederatedIdentity = reconcile.KeepStr(cfg.FederatedIdentity, read.FederatedIdentity)
 	read.FirstName = reconcile.KeepStr(cfg.FirstName, read.FirstName)
 	read.ForwardingAddress = reconcile.KeepStr(cfg.ForwardingAddress, read.ForwardingAddress)
 	read.ForwardingSmtpAddress = reconcile.KeepStr(cfg.ForwardingSmtpAddress, read.ForwardingSmtpAddress)
-	read.GrantSendOnBehalfTo = reconcile.KeepStr(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
+	read.GrantSendOnBehalfTo = reconcile.KeepSet(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
 	read.GroupMailbox = reconcile.KeepBool(cfg.GroupMailbox, read.GroupMailbox)
 	read.HiddenFromAddressListsEnabled = reconcile.KeepBool(cfg.HiddenFromAddressListsEnabled, read.HiddenFromAddressListsEnabled)
 	read.HoldForMigration = reconcile.KeepBool(cfg.HoldForMigration, read.HoldForMigration)
@@ -1100,14 +1014,14 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.IsExcludedFromServingHierarchy = reconcile.KeepBool(cfg.IsExcludedFromServingHierarchy, read.IsExcludedFromServingHierarchy)
 	read.IssueWarningQuota = reconcile.KeepStr(cfg.IssueWarningQuota, read.IssueWarningQuota)
 	read.JournalArchiveAddress = reconcile.KeepStr(cfg.JournalArchiveAddress, read.JournalArchiveAddress)
-	read.Languages = reconcile.KeepStr(cfg.Languages, read.Languages)
+	read.Languages = reconcile.KeepSet(cfg.Languages, read.Languages)
 	read.LastName = reconcile.KeepStr(cfg.LastName, read.LastName)
 	read.LitigationHoldDate = reconcile.KeepStr(cfg.LitigationHoldDate, read.LitigationHoldDate)
 	read.LitigationHoldDuration = reconcile.KeepStr(cfg.LitigationHoldDuration, read.LitigationHoldDuration)
 	read.LitigationHoldEnabled = reconcile.KeepBool(cfg.LitigationHoldEnabled, read.LitigationHoldEnabled)
 	read.LitigationHoldOwner = reconcile.KeepStr(cfg.LitigationHoldOwner, read.LitigationHoldOwner)
 	read.MailTip = reconcile.KeepStr(cfg.MailTip, read.MailTip)
-	read.MailTipTranslations = reconcile.KeepStr(cfg.MailTipTranslations, read.MailTipTranslations)
+	read.MailTipTranslations = reconcile.KeepSet(cfg.MailTipTranslations, read.MailTipTranslations)
 	read.MailboxPlan = reconcile.KeepStr(cfg.MailboxPlan, read.MailboxPlan)
 	read.MailboxRegion = reconcile.KeepStr(cfg.MailboxRegion, read.MailboxRegion)
 	read.MaxReceiveSize = reconcile.KeepStr(cfg.MaxReceiveSize, read.MaxReceiveSize)
@@ -1118,10 +1032,10 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.MessageTrackingReadStatusEnabled = reconcile.KeepBool(cfg.MessageTrackingReadStatusEnabled, read.MessageTrackingReadStatusEnabled)
 	read.MicrosoftOnlineServicesID = reconcile.KeepStr(cfg.MicrosoftOnlineServicesID, read.MicrosoftOnlineServicesID)
 	read.Migration = reconcile.KeepBool(cfg.Migration, read.Migration)
-	read.ModeratedBy = reconcile.KeepStr(cfg.ModeratedBy, read.ModeratedBy)
+	read.ModeratedBy = reconcile.KeepSet(cfg.ModeratedBy, read.ModeratedBy)
 	read.ModerationEnabled = reconcile.KeepBool(cfg.ModerationEnabled, read.ModerationEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
-	read.NonCompliantDevices = reconcile.KeepStr(cfg.NonCompliantDevices, read.NonCompliantDevices)
+	read.NonCompliantDevices = reconcile.KeepSet(cfg.NonCompliantDevices, read.NonCompliantDevices)
 	read.Office = reconcile.KeepStr(cfg.Office, read.Office)
 	read.OrganizationalUnit = reconcile.KeepStr(cfg.OrganizationalUnit, read.OrganizationalUnit)
 	read.Password = reconcile.KeepStr(cfg.Password, read.Password)
@@ -1135,9 +1049,9 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)
 	read.RecalculateInactiveMailbox = reconcile.KeepBool(cfg.RecalculateInactiveMailbox, read.RecalculateInactiveMailbox)
 	read.RecipientLimits = reconcile.KeepStr(cfg.RecipientLimits, read.RecipientLimits)
-	read.RejectMessagesFrom = reconcile.KeepStr(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
-	read.RejectMessagesFromDLMembers = reconcile.KeepStr(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
-	read.RejectMessagesFromSendersOrMembers = reconcile.KeepStr(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
+	read.RejectMessagesFrom = reconcile.KeepSet(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
+	read.RejectMessagesFromDLMembers = reconcile.KeepSet(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
+	read.RejectMessagesFromSendersOrMembers = reconcile.KeepSet(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
 	read.RemotePowerShellEnabled = reconcile.KeepBool(cfg.RemotePowerShellEnabled, read.RemotePowerShellEnabled)
 	read.RemoveComplianceTagHoldApplied = reconcile.KeepBool(cfg.RemoveComplianceTagHoldApplied, read.RemoveComplianceTagHoldApplied)
 	read.RemoveDelayHoldApplied = reconcile.KeepBool(cfg.RemoveDelayHoldApplied, read.RemoveDelayHoldApplied)
@@ -1149,7 +1063,7 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.RequireSenderAuthenticationEnabled = reconcile.KeepBool(cfg.RequireSenderAuthenticationEnabled, read.RequireSenderAuthenticationEnabled)
 	read.ResetPasswordOnNextLogon = reconcile.KeepBool(cfg.ResetPasswordOnNextLogon, read.ResetPasswordOnNextLogon)
 	read.ResourceCapacity = reconcile.KeepStr(cfg.ResourceCapacity, read.ResourceCapacity)
-	read.ResourceCustom = reconcile.KeepStr(cfg.ResourceCustom, read.ResourceCustom)
+	read.ResourceCustom = reconcile.KeepSet(cfg.ResourceCustom, read.ResourceCustom)
 	read.RetainDeletedItemsFor = reconcile.KeepStr(cfg.RetainDeletedItemsFor, read.RetainDeletedItemsFor)
 	read.RetentionComment = reconcile.KeepStr(cfg.RetentionComment, read.RetentionComment)
 	read.RetentionHoldEnabled = reconcile.KeepBool(cfg.RetentionHoldEnabled, read.RetentionHoldEnabled)
@@ -1172,9 +1086,9 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.UniqueRecipientsCountLimitLevel = reconcile.KeepStr(cfg.UniqueRecipientsCountLimitLevel, read.UniqueRecipientsCountLimitLevel)
 	read.UniqueUnrestrictedGroupsLimitEnabled = reconcile.KeepBool(cfg.UniqueUnrestrictedGroupsLimitEnabled, read.UniqueUnrestrictedGroupsLimitEnabled)
 	read.UpdateEnforcedTimestamp = reconcile.KeepBool(cfg.UpdateEnforcedTimestamp, read.UpdateEnforcedTimestamp)
-	read.UseDatabaseQuotaDefaults = reconcile.KeepStr(cfg.UseDatabaseQuotaDefaults, read.UseDatabaseQuotaDefaults)
+	read.UseDatabaseQuotaDefaults = reconcile.KeepBool(cfg.UseDatabaseQuotaDefaults, read.UseDatabaseQuotaDefaults)
 	read.UseDatabaseRetentionDefaults = reconcile.KeepBool(cfg.UseDatabaseRetentionDefaults, read.UseDatabaseRetentionDefaults)
-	read.UserCertificate = reconcile.KeepStr(cfg.UserCertificate, read.UserCertificate)
-	read.UserSMimeCertificate = reconcile.KeepStr(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
+	read.UserCertificate = reconcile.KeepSet(cfg.UserCertificate, read.UserCertificate)
+	read.UserSMimeCertificate = reconcile.KeepSet(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
 	read.WindowsEmailAddress = reconcile.KeepStr(cfg.WindowsEmailAddress, read.WindowsEmailAddress)
 }

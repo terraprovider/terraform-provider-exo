@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -37,7 +38,7 @@ func NewActiveSyncOrganizationSettingsResource() resource.Resource {
 type activeSyncOrganizationSettingsModel struct {
 	ID                                     types.String `tfsdk:"id"`
 	Identity                               types.String `tfsdk:"identity"`
-	AdminMailRecipients                    types.String `tfsdk:"admin_mail_recipients"`
+	AdminMailRecipients                    types.Set    `tfsdk:"admin_mail_recipients"`
 	AllowAccessForUnSupportedPlatform      types.Bool   `tfsdk:"allow_access_for_un_supported_platform"`
 	AllowRMSSupportForUnenlightenedApps    types.Bool   `tfsdk:"allow_rms_support_for_unenlightened_apps"`
 	DefaultAccessLevel                     types.String `tfsdk:"default_access_level"`
@@ -57,7 +58,7 @@ func (r *activeSyncOrganizationSettingsResource) Schema(_ context.Context, _ res
 		Attributes: map[string]schema.Attribute{
 			"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                               schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"admin_mail_recipients":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminMailRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"admin_mail_recipients":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AdminMailRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"allow_access_for_un_supported_platform": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowAccessForUnSupportedPlatform parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_rms_support_for_unenlightened_apps":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRMSSupportForUnenlightenedApps parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"default_access_level":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultAccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -84,9 +85,7 @@ func (r *activeSyncOrganizationSettingsResource) Create(ctx context.Context, req
 	}
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AdminMailRecipients.ValueString(); v != "" {
-		sp.AdminMailRecipients = v
-	}
+	sp.AdminMailRecipients = toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)
 	sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBool()
 	sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBool()
 	if v := plan.DefaultAccessLevel.ValueString(); v != "" {
@@ -137,9 +136,7 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = id
-	if v := plan.AdminMailRecipients.ValueString(); v != "" {
-		sp.AdminMailRecipients = v
-	}
+	sp.AdminMailRecipients = toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)
 	sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBool()
 	sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBool()
 	if v := plan.DefaultAccessLevel.ValueString(); v != "" {
@@ -160,7 +157,6 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminMailRecipients":       cfg.AdminMailRecipients,
 		"DefaultAccessLevel":        cfg.DefaultAccessLevel,
 		"OtaNotificationMailInsert": cfg.OtaNotificationMailInsert,
 		"TenantAdminPreference":     cfg.TenantAdminPreference,
@@ -216,7 +212,7 @@ func (r *activeSyncOrganizationSettingsResource) refresh(ctx context.Context, id
 
 func readActiveSyncOrganizationSettings(ctx context.Context, obj map[string]any, m *activeSyncOrganizationSettingsModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AdminMailRecipients = types.StringValue(getString(obj, "AdminMailRecipients"))
+	m.AdminMailRecipients = stringSetValue(ctx, getStringSlice(obj, "AdminMailRecipients"))
 	m.AllowAccessForUnSupportedPlatform = types.BoolValue(getBool(obj, "AllowAccessForUnSupportedPlatform"))
 	m.AllowRMSSupportForUnenlightenedApps = types.BoolValue(getBool(obj, "AllowRMSSupportForUnenlightenedApps"))
 	m.DefaultAccessLevel = types.StringValue(getString(obj, "DefaultAccessLevel"))
@@ -228,7 +224,7 @@ func readActiveSyncOrganizationSettings(ctx context.Context, obj map[string]any,
 }
 
 func (r *activeSyncOrganizationSettingsResource) reconcileState(cfg, read *activeSyncOrganizationSettingsModel) {
-	read.AdminMailRecipients = reconcile.KeepStr(cfg.AdminMailRecipients, read.AdminMailRecipients)
+	read.AdminMailRecipients = reconcile.KeepSet(cfg.AdminMailRecipients, read.AdminMailRecipients)
 	read.AllowAccessForUnSupportedPlatform = reconcile.KeepBool(cfg.AllowAccessForUnSupportedPlatform, read.AllowAccessForUnSupportedPlatform)
 	read.AllowRMSSupportForUnenlightenedApps = reconcile.KeepBool(cfg.AllowRMSSupportForUnenlightenedApps, read.AllowRMSSupportForUnenlightenedApps)
 	read.DefaultAccessLevel = reconcile.KeepStr(cfg.DefaultAccessLevel, read.DefaultAccessLevel)

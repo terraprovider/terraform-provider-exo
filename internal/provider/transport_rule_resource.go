@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -165,6 +166,7 @@ type transportRuleModel struct {
 	Name                                         types.String `tfsdk:"name"`
 	NotifySender                                 types.String `tfsdk:"notify_sender"`
 	PrependSubject                               types.String `tfsdk:"prepend_subject"`
+	Priority                                     types.Int64  `tfsdk:"priority"`
 	Quarantine                                   types.Bool   `tfsdk:"quarantine"`
 	RecipientADAttributeContainsWords            types.Set    `tfsdk:"recipient_ad_attribute_contains_words"`
 	RecipientADAttributeMatchesPatterns          types.Set    `tfsdk:"recipient_ad_attribute_matches_patterns"`
@@ -349,6 +351,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"name":                                                schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"notify_sender":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotifySender parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"prepend_subject":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrependSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                                            schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"quarantine":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Quarantine parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_ad_attribute_contains_words":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientADAttributeContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"recipient_ad_attribute_matches_patterns":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientADAttributeMatchesPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -503,6 +506,7 @@ func (r *transportRuleResource) Create(ctx context.Context, req resource.CreateR
 		ModerateMessageByManager:                     plan.ModerateMessageByManager.ValueBool(),
 		ModerateMessageByUser:                        toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics),
 		Name:                                         plan.Name.ValueString(),
+		Priority:                                     int(plan.Priority.ValueInt64()),
 		Quarantine:                                   plan.Quarantine.ValueBool(),
 		RecipientADAttributeContainsWords:            toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics),
 		RecipientADAttributeMatchesPatterns:          toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics),
@@ -945,6 +949,7 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if v := plan.PrependSubject.ValueString(); v != "" {
 		sp.PrependSubject = v
 	}
+	sp.Priority = int(plan.Priority.ValueInt64())
 	sp.Quarantine = plan.Quarantine.ValueBool()
 	sp.RecipientADAttributeContainsWords = toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics)
 	sp.RecipientADAttributeMatchesPatterns = toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics)
@@ -1283,6 +1288,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NotifySender = types.StringValue(getString(obj, "NotifySender"))
 	m.PrependSubject = types.StringValue(getString(obj, "PrependSubject"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.Quarantine = types.BoolValue(getBool(obj, "Quarantine"))
 	m.RecipientADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "RecipientADAttributeContainsWords"))
 	m.RecipientADAttributeMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "RecipientADAttributeMatchesPatterns"))
@@ -1459,6 +1465,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NotifySender = reconcile.KeepStr(cfg.NotifySender, read.NotifySender)
 	read.PrependSubject = reconcile.KeepStr(cfg.PrependSubject, read.PrependSubject)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.Quarantine = reconcile.KeepBool(cfg.Quarantine, read.Quarantine)
 	read.RecipientADAttributeContainsWords = reconcile.KeepSet(cfg.RecipientADAttributeContainsWords, read.RecipientADAttributeContainsWords)
 	read.RecipientADAttributeMatchesPatterns = reconcile.KeepSet(cfg.RecipientADAttributeMatchesPatterns, read.RecipientADAttributeMatchesPatterns)

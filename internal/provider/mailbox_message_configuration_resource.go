@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -49,6 +50,7 @@ type mailboxMessageConfigurationModel struct {
 	DefaultFontColor                       types.String `tfsdk:"default_font_color"`
 	DefaultFontFlags                       types.String `tfsdk:"default_font_flags"`
 	DefaultFontName                        types.String `tfsdk:"default_font_name"`
+	DefaultFontSize                        types.Int64  `tfsdk:"default_font_size"`
 	DefaultFormat                          types.String `tfsdk:"default_format"`
 	DefaultSignature                       types.String `tfsdk:"default_signature"`
 	DefaultSignatureOnReply                types.String `tfsdk:"default_signature_on_reply"`
@@ -57,6 +59,7 @@ type mailboxMessageConfigurationModel struct {
 	EchoGroupMessageBackToSubscribedSender types.Bool   `tfsdk:"echo_group_message_back_to_subscribed_sender"`
 	EmailComposeMode                       types.String `tfsdk:"email_compose_mode"`
 	EmptyDeletedItemsOnLogoff              types.Bool   `tfsdk:"empty_deleted_items_on_logoff"`
+	FavoritesBitFlags                      types.Int64  `tfsdk:"favorites_bit_flags"`
 	GlobalReadingPanePosition              types.String `tfsdk:"global_reading_pane_position"`
 	HideDeletedItems                       types.Bool   `tfsdk:"hide_deleted_items"`
 	IsDarkModeTheme                        types.Bool   `tfsdk:"is_dark_mode_theme"`
@@ -66,12 +69,15 @@ type mailboxMessageConfigurationModel struct {
 	IsReplyAllTheDefaultResponse           types.Bool   `tfsdk:"is_reply_all_the_default_response"`
 	LinkPreviewEnabled                     types.Bool   `tfsdk:"link_preview_enabled"`
 	MailFolderPaneExpanded                 types.Bool   `tfsdk:"mail_folder_pane_expanded"`
+	MailSendUndoInterval                   types.Int64  `tfsdk:"mail_send_undo_interval"`
 	ManuallyPickCertificate                types.Bool   `tfsdk:"manually_pick_certificate"`
+	NavigationBarWidth                     types.Int64  `tfsdk:"navigation_bar_width"`
 	NavigationPaneViewOption               types.String `tfsdk:"navigation_pane_view_option"`
 	NewEnabledPonts                        types.String `tfsdk:"new_enabled_ponts"`
 	NewItemNotification                    types.String `tfsdk:"new_item_notification"`
 	PreferAccessibleContent                types.Bool   `tfsdk:"prefer_accessible_content"`
 	PreviewMarkAsReadBehavior              types.String `tfsdk:"preview_mark_as_read_behavior"`
+	PreviewMarkAsReadDelaytime             types.Int64  `tfsdk:"preview_mark_as_read_delaytime"`
 	ReadReceiptResponse                    types.String `tfsdk:"read_receipt_response"`
 	ReportJunkSelected                     types.Bool   `tfsdk:"report_junk_selected"`
 	SendAddressDefault                     types.String `tfsdk:"send_address_default"`
@@ -117,6 +123,7 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"default_font_color":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontColor parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_font_flags":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontFlags parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_font_name":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_font_size":                            schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontSize parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_format":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_signature":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultSignature parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_signature_on_reply":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultSignatureOnReply parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -125,6 +132,7 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"echo_group_message_back_to_subscribed_sender": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EchoGroupMessageBackToSubscribedSender parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"email_compose_mode":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailComposeMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"empty_deleted_items_on_logoff":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EmptyDeletedItemsOnLogoff parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"favorites_bit_flags":                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -FavoritesBitFlags parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"global_reading_pane_position":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GlobalReadingPanePosition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hide_deleted_items":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HideDeletedItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_dark_mode_theme":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDarkModeTheme parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -134,12 +142,15 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"is_reply_all_the_default_response":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsReplyAllTheDefaultResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"link_preview_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkPreviewEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_folder_pane_expanded":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailFolderPaneExpanded parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"mail_send_undo_interval":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MailSendUndoInterval parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"manually_pick_certificate":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ManuallyPickCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"navigation_bar_width":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -NavigationBarWidth parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"navigation_pane_view_option":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NavigationPaneViewOption parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"new_enabled_ponts":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NewEnabledPonts parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"new_item_notification":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NewItemNotification parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"prefer_accessible_content":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreferAccessibleContent parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"preview_mark_as_read_behavior":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PreviewMarkAsReadBehavior parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"preview_mark_as_read_delaytime":               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PreviewMarkAsReadDelaytime parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"read_receipt_response":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReadReceiptResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"report_junk_selected":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportJunkSelected parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_address_default":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendAddressDefault parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -198,6 +209,7 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 		sp.DefaultFontFlags = v
 	}
 	sp.DefaultFontName = plan.DefaultFontName.ValueString()
+	sp.DefaultFontSize = int(plan.DefaultFontSize.ValueInt64())
 	if v := plan.DefaultFormat.ValueString(); v != "" {
 		sp.DefaultFormat = v
 	}
@@ -212,6 +224,7 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 		sp.EmailComposeMode = v
 	}
 	sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBool()
+	sp.FavoritesBitFlags = int(plan.FavoritesBitFlags.ValueInt64())
 	if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
 		sp.GlobalReadingPanePosition = v
 	}
@@ -223,7 +236,9 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 	sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBool()
 	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
 	sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBool()
+	sp.MailSendUndoInterval = int(plan.MailSendUndoInterval.ValueInt64())
 	sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBool()
+	sp.NavigationBarWidth = int(plan.NavigationBarWidth.ValueInt64())
 	if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
 		sp.NavigationPaneViewOption = v
 	}
@@ -237,6 +252,7 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 	if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
 		sp.PreviewMarkAsReadBehavior = v
 	}
+	sp.PreviewMarkAsReadDelaytime = int(plan.PreviewMarkAsReadDelaytime.ValueInt64())
 	if v := plan.ReadReceiptResponse.ValueString(); v != "" {
 		sp.ReadReceiptResponse = v
 	}
@@ -317,6 +333,7 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 		sp.DefaultFontFlags = v
 	}
 	sp.DefaultFontName = plan.DefaultFontName.ValueString()
+	sp.DefaultFontSize = int(plan.DefaultFontSize.ValueInt64())
 	if v := plan.DefaultFormat.ValueString(); v != "" {
 		sp.DefaultFormat = v
 	}
@@ -331,6 +348,7 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 		sp.EmailComposeMode = v
 	}
 	sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBool()
+	sp.FavoritesBitFlags = int(plan.FavoritesBitFlags.ValueInt64())
 	if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
 		sp.GlobalReadingPanePosition = v
 	}
@@ -342,7 +360,9 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBool()
 	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
 	sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBool()
+	sp.MailSendUndoInterval = int(plan.MailSendUndoInterval.ValueInt64())
 	sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBool()
+	sp.NavigationBarWidth = int(plan.NavigationBarWidth.ValueInt64())
 	if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
 		sp.NavigationPaneViewOption = v
 	}
@@ -356,6 +376,7 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
 		sp.PreviewMarkAsReadBehavior = v
 	}
+	sp.PreviewMarkAsReadDelaytime = int(plan.PreviewMarkAsReadDelaytime.ValueInt64())
 	if v := plan.ReadReceiptResponse.ValueString(); v != "" {
 		sp.ReadReceiptResponse = v
 	}
@@ -476,6 +497,7 @@ func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m 
 	m.DefaultFontColor = types.StringValue(getString(obj, "DefaultFontColor"))
 	m.DefaultFontFlags = types.StringValue(getString(obj, "DefaultFontFlags"))
 	m.DefaultFontName = types.StringValue(getString(obj, "DefaultFontName"))
+	m.DefaultFontSize = types.Int64Value(getInt(obj, "DefaultFontSize"))
 	m.DefaultFormat = types.StringValue(getString(obj, "DefaultFormat"))
 	m.DefaultSignature = types.StringValue(getString(obj, "DefaultSignature"))
 	m.DefaultSignatureOnReply = types.StringValue(getString(obj, "DefaultSignatureOnReply"))
@@ -484,6 +506,7 @@ func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m 
 	m.EchoGroupMessageBackToSubscribedSender = types.BoolValue(getBool(obj, "EchoGroupMessageBackToSubscribedSender"))
 	m.EmailComposeMode = types.StringValue(getString(obj, "EmailComposeMode"))
 	m.EmptyDeletedItemsOnLogoff = types.BoolValue(getBool(obj, "EmptyDeletedItemsOnLogoff"))
+	m.FavoritesBitFlags = types.Int64Value(getInt(obj, "FavoritesBitFlags"))
 	m.GlobalReadingPanePosition = types.StringValue(getString(obj, "GlobalReadingPanePosition"))
 	m.HideDeletedItems = types.BoolValue(getBool(obj, "HideDeletedItems"))
 	m.IsDarkModeTheme = types.BoolValue(getBool(obj, "IsDarkModeTheme"))
@@ -493,12 +516,15 @@ func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m 
 	m.IsReplyAllTheDefaultResponse = types.BoolValue(getBool(obj, "IsReplyAllTheDefaultResponse"))
 	m.LinkPreviewEnabled = types.BoolValue(getBool(obj, "LinkPreviewEnabled"))
 	m.MailFolderPaneExpanded = types.BoolValue(getBool(obj, "MailFolderPaneExpanded"))
+	m.MailSendUndoInterval = types.Int64Value(getInt(obj, "MailSendUndoInterval"))
 	m.ManuallyPickCertificate = types.BoolValue(getBool(obj, "ManuallyPickCertificate"))
+	m.NavigationBarWidth = types.Int64Value(getInt(obj, "NavigationBarWidth"))
 	m.NavigationPaneViewOption = types.StringValue(getString(obj, "NavigationPaneViewOption"))
 	m.NewEnabledPonts = types.StringValue(getString(obj, "NewEnabledPonts"))
 	m.NewItemNotification = types.StringValue(getString(obj, "NewItemNotification"))
 	m.PreferAccessibleContent = types.BoolValue(getBool(obj, "PreferAccessibleContent"))
 	m.PreviewMarkAsReadBehavior = types.StringValue(getString(obj, "PreviewMarkAsReadBehavior"))
+	m.PreviewMarkAsReadDelaytime = types.Int64Value(getInt(obj, "PreviewMarkAsReadDelaytime"))
 	m.ReadReceiptResponse = types.StringValue(getString(obj, "ReadReceiptResponse"))
 	m.ReportJunkSelected = types.BoolValue(getBool(obj, "ReportJunkSelected"))
 	m.SendAddressDefault = types.StringValue(getString(obj, "SendAddressDefault"))
@@ -536,6 +562,7 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.DefaultFontColor = reconcile.KeepStr(cfg.DefaultFontColor, read.DefaultFontColor)
 	read.DefaultFontFlags = reconcile.KeepStr(cfg.DefaultFontFlags, read.DefaultFontFlags)
 	read.DefaultFontName = reconcile.KeepStr(cfg.DefaultFontName, read.DefaultFontName)
+	read.DefaultFontSize = reconcile.KeepInt64(cfg.DefaultFontSize, read.DefaultFontSize)
 	read.DefaultFormat = reconcile.KeepStr(cfg.DefaultFormat, read.DefaultFormat)
 	read.DefaultSignature = reconcile.KeepStr(cfg.DefaultSignature, read.DefaultSignature)
 	read.DefaultSignatureOnReply = reconcile.KeepStr(cfg.DefaultSignatureOnReply, read.DefaultSignatureOnReply)
@@ -544,6 +571,7 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.EchoGroupMessageBackToSubscribedSender = reconcile.KeepBool(cfg.EchoGroupMessageBackToSubscribedSender, read.EchoGroupMessageBackToSubscribedSender)
 	read.EmailComposeMode = reconcile.KeepStr(cfg.EmailComposeMode, read.EmailComposeMode)
 	read.EmptyDeletedItemsOnLogoff = reconcile.KeepBool(cfg.EmptyDeletedItemsOnLogoff, read.EmptyDeletedItemsOnLogoff)
+	read.FavoritesBitFlags = reconcile.KeepInt64(cfg.FavoritesBitFlags, read.FavoritesBitFlags)
 	read.GlobalReadingPanePosition = reconcile.KeepStr(cfg.GlobalReadingPanePosition, read.GlobalReadingPanePosition)
 	read.HideDeletedItems = reconcile.KeepBool(cfg.HideDeletedItems, read.HideDeletedItems)
 	read.IsDarkModeTheme = reconcile.KeepBool(cfg.IsDarkModeTheme, read.IsDarkModeTheme)
@@ -553,12 +581,15 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.IsReplyAllTheDefaultResponse = reconcile.KeepBool(cfg.IsReplyAllTheDefaultResponse, read.IsReplyAllTheDefaultResponse)
 	read.LinkPreviewEnabled = reconcile.KeepBool(cfg.LinkPreviewEnabled, read.LinkPreviewEnabled)
 	read.MailFolderPaneExpanded = reconcile.KeepBool(cfg.MailFolderPaneExpanded, read.MailFolderPaneExpanded)
+	read.MailSendUndoInterval = reconcile.KeepInt64(cfg.MailSendUndoInterval, read.MailSendUndoInterval)
 	read.ManuallyPickCertificate = reconcile.KeepBool(cfg.ManuallyPickCertificate, read.ManuallyPickCertificate)
+	read.NavigationBarWidth = reconcile.KeepInt64(cfg.NavigationBarWidth, read.NavigationBarWidth)
 	read.NavigationPaneViewOption = reconcile.KeepStr(cfg.NavigationPaneViewOption, read.NavigationPaneViewOption)
 	read.NewEnabledPonts = reconcile.KeepStr(cfg.NewEnabledPonts, read.NewEnabledPonts)
 	read.NewItemNotification = reconcile.KeepStr(cfg.NewItemNotification, read.NewItemNotification)
 	read.PreferAccessibleContent = reconcile.KeepBool(cfg.PreferAccessibleContent, read.PreferAccessibleContent)
 	read.PreviewMarkAsReadBehavior = reconcile.KeepStr(cfg.PreviewMarkAsReadBehavior, read.PreviewMarkAsReadBehavior)
+	read.PreviewMarkAsReadDelaytime = reconcile.KeepInt64(cfg.PreviewMarkAsReadDelaytime, read.PreviewMarkAsReadDelaytime)
 	read.ReadReceiptResponse = reconcile.KeepStr(cfg.ReadReceiptResponse, read.ReadReceiptResponse)
 	read.ReportJunkSelected = reconcile.KeepBool(cfg.ReportJunkSelected, read.ReportJunkSelected)
 	read.SendAddressDefault = reconcile.KeepStr(cfg.SendAddressDefault, read.SendAddressDefault)

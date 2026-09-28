@@ -10,16 +10,44 @@
 package main
 
 import (
+	_ "embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/terraprovider/go-exoscc/spec"
 	"github.com/terraprovider/tf-msadmin/genframework"
 )
+
+// observedJSON is a per-noun map of property kinds captured from Get-<Noun>
+// output against a live tenant. It is the only source that can tell a
+// System.Object parameter's real Terraform type apart (the cmdlet catalog says
+// "System.Object" for 2489 of them); nouns it does not cover keep the
+// string-typed fallback.
+//
+//go:embed observed/EXO-observed.json
+var observedJSON []byte
+
+type observedCatalog struct {
+	Nouns map[string]map[string]string `json:"nouns"`
+}
+
+var observed observedCatalog
+
+func init() {
+	if err := json.Unmarshal(observedJSON, &observed); err != nil {
+		panic("gen-tf: observed/EXO-observed.json: " + err.Error())
+	}
+}
+
+// observedKinds returns the observed property kinds for a noun ("" map when the
+// noun was not captured).
+func observedKinds(noun string) map[string]string { return observed.Nouns[noun] }
 
 func main() {
 	var only, out string
@@ -87,13 +115,33 @@ func main() {
 
 	check(os.MkdirAll(out, 0o755))
 	for _, f := range files {
-		check(os.WriteFile(filepath.Join(out, f.Name), f.Content, 0o644))
+		check(os.WriteFile(filepath.Join(out, f.Name), narrowInt64(f.Content), 0o644))
 	}
 	fmt.Printf("generated %d resource(s), %d file(s) -> %s\n", len(resources), len(files), out)
 	if len(skipped) > 0 {
 		sort.Strings(skipped)
 		fmt.Printf("skipped %d noun(s):\n  %s\n", len(skipped), strings.Join(skipped, "\n  "))
 	}
+}
+
+// int64Write matches the write-side accessor genframework emits for a TypeInt
+// attribute (in create and update alike).
+var int64Write = regexp.MustCompile(`plan\.[A-Za-z0-9_]+\.ValueInt64\(\)`)
+
+// narrowInt64 wraps every `plan.X.ValueInt64()` in `int(...)`. genframework
+// models an int attribute as types.Int64 and writes it straight into the
+// binding's params field, but go-exoscc types an integer cmdlet parameter as
+// Go `int` (and a System.Object one as `any`) — neither of which accepts an
+// int64. The conversion is lossless on every supported platform and compiles
+// against both field types.
+//
+// ponytail: a string rewrite on the generated output, because genframework
+// v0.7.0 has no per-attribute cast knob; drop this once it can emit the cast
+// itself (or once go-exoscc types those fields int64).
+func narrowInt64(src []byte) []byte {
+	return int64Write.ReplaceAllFunc(src, func(m []byte) []byte {
+		return []byte("int(" + string(m) + ")")
+	})
 }
 
 // buildResource maps a noun's CRUD cmdlets into a genframework.Resource.
@@ -131,15 +179,16 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		idExclude["Member"] = true
 	}
 
+	kinds := observedKinds(noun)
 	var attrs []genframework.Attribute
 	for _, name := range names {
 		if skipParam(name) || idExclude[name] {
 			continue
 		}
 		p := firstParam(name, newCmd, setCmd)
-		at, ok := attrType(p)
+		at, ok := attrType(p, kinds)
 		if !ok {
-			continue // unmappable (any/int/complex)
+			continue // unmappable (complex)
 		}
 		field := exportName(name)
 		_, inC := inNew[name]
@@ -161,7 +210,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			Description: describe(name, p),
 			InCreate:    inC,
 			InUpdate:    inU,
-			Object:      goType(p) == "any",
+			Object:      isObject(p, at),
 		})
 	}
 	if !hasCreateAttr(attrs) {
@@ -310,13 +359,14 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 	}
 	sort.Strings(names)
 
+	kinds := observedKinds(noun)
 	var attrs []genframework.Attribute
 	for _, name := range names {
 		if skipParam(name) || name == "Identity" {
 			continue
 		}
 		p := firstParam(name, setc)
-		at, ok := attrType(p)
+		at, ok := attrType(p, kinds)
 		if !ok {
 			continue
 		}
@@ -331,7 +381,7 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 			Description: describe(name, p),
 			InCreate:    true,
 			InUpdate:    true,
-			Object:      goType(p) == "any",
+			Object:      isObject(p, at),
 		})
 	}
 	if len(attrs) == 0 {
@@ -390,20 +440,43 @@ func identityFieldFor(c spec.Cmdlet, noun string) string {
 	return ""
 }
 
-func attrType(p spec.Param) (genframework.AttrType, bool) {
+// attrType maps a cmdlet parameter to a Terraform attribute type. kinds is the
+// observed property map for the noun (may be nil) and is consulted only for
+// System.Object parameters, whose catalog type carries no information.
+func attrType(p spec.Param, kinds map[string]string) (genframework.AttrType, bool) {
 	switch goType(p) {
 	case "bool":
 		return genframework.TypeBool, true
 	case "[]string":
 		return genframework.TypeStringSet, true
-	case "string", "any":
-		// "any" is a PowerShell System.Object — most are identity/string-valued
-		// (an account, a role name, a GUID). Expose them as strings (best-effort);
-		// complex objects simply read back empty and can be left unset.
+	case "int":
+		return genframework.TypeInt, true
+	case "string":
 		return genframework.TypeString, true
-	default: // int
-		return 0, false
+	default: // "any" — a PowerShell System.Object
+		switch kinds[p.Name] {
+		case "bool":
+			return genframework.TypeBool, true
+		case "int":
+			return genframework.TypeInt, true
+		case "list":
+			return genframework.TypeStringSet, true
+		default:
+			// "string", "object" or not observed: identity/string-valued in the
+			// common case (an account, a role name, a GUID). Expose as a string;
+			// complex objects read back empty and can be left unset.
+			return genframework.TypeString, true
+		}
 	}
+}
+
+// isObject marks an attribute whose binding field is `any` (a System.Object
+// parameter) AND that is still exposed as a string: genframework then assigns
+// it only when non-empty, so "" is not marshalled as a value. Object is defined
+// only for TypeString attributes — a retyped System.Object is written through
+// the normal typed path instead.
+func isObject(p spec.Param, at genframework.AttrType) bool {
+	return goType(p) == "any" && at == genframework.TypeString
 }
 
 func hasCreateAttr(attrs []genframework.Attribute) bool {
@@ -505,6 +578,10 @@ func goType(p spec.Param) string {
 		return "bool"
 	case t == "int" || strings.HasSuffix(t, ".int32") || strings.HasSuffix(t, ".int64"):
 		return "int"
+	case t == "uint" || strings.HasSuffix(t, ".uint32") || strings.HasSuffix(t, ".uint64"):
+		return "int"
+	case strings.HasSuffix(t, ".list[string]"):
+		return "[]string"
 	case strings.HasSuffix(t, ".guid"):
 		return "string"
 	default:

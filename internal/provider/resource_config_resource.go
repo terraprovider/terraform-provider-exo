@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -34,7 +35,7 @@ func NewResourceConfigResource() resource.Resource { return &resourceConfigResou
 type resourceConfigModel struct {
 	ID                     types.String `tfsdk:"id"`
 	Identity               types.String `tfsdk:"identity"`
-	ResourcePropertySchema types.String `tfsdk:"resource_property_schema"`
+	ResourcePropertySchema types.Set    `tfsdk:"resource_property_schema"`
 }
 
 func (r *resourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,7 +48,7 @@ func (r *resourceConfigResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"id":                       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"resource_property_schema": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ResourcePropertySchema parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"resource_property_schema": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourcePropertySchema parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -66,9 +67,7 @@ func (r *resourceConfigResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	sp := exo.SetResourceConfigParams{}
-	if v := plan.ResourcePropertySchema.ValueString(); v != "" {
-		sp.ResourcePropertySchema = v
-	}
+	sp.ResourcePropertySchema = toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -107,9 +106,7 @@ func (r *resourceConfigResource) Update(ctx context.Context, req resource.Update
 	}
 	id := r.identityOf(state)
 	sp := exo.SetResourceConfigParams{}
-	if v := plan.ResourcePropertySchema.ValueString(); v != "" {
-		sp.ResourcePropertySchema = v
-	}
+	sp.ResourcePropertySchema = toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -118,9 +115,7 @@ func (r *resourceConfigResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ResourcePropertySchema": cfg.ResourcePropertySchema,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -173,10 +168,10 @@ func (r *resourceConfigResource) refresh(ctx context.Context, identity string, m
 func readResourceConfig(ctx context.Context, obj map[string]any, m *resourceConfigModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.ResourcePropertySchema = types.StringValue(getString(obj, "ResourcePropertySchema"))
+	m.ResourcePropertySchema = stringSetValue(ctx, getStringSlice(obj, "ResourcePropertySchema"))
 	_ = ctx
 }
 
 func (r *resourceConfigResource) reconcileState(cfg, read *resourceConfigModel) {
-	read.ResourcePropertySchema = reconcile.KeepStr(cfg.ResourcePropertySchema, read.ResourcePropertySchema)
+	read.ResourcePropertySchema = reconcile.KeepSet(cfg.ResourcePropertySchema, read.ResourcePropertySchema)
 }

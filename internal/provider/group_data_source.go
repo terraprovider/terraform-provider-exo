@@ -35,7 +35,7 @@ func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":              schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"description":           schema.StringAttribute{Computed: true, Description: "Maps to the -Description parameter."},
+			"description":           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Description parameter."},
 			"display_name":          schema.StringAttribute{Computed: true, Description: "Maps to the -DisplayName parameter."},
 			"is_hierarchical_group": schema.BoolAttribute{Computed: true, Description: "Maps to the -IsHierarchicalGroup parameter."},
 			"managed_by":            schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ManagedBy parameter."},

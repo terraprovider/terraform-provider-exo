@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -40,6 +41,7 @@ type outlookProtectionRuleModel struct {
 	Enabled                       types.Bool   `tfsdk:"enabled"`
 	FromDepartment                types.Set    `tfsdk:"from_department"`
 	Name                          types.String `tfsdk:"name"`
+	Priority                      types.Int64  `tfsdk:"priority"`
 	SentTo                        types.Set    `tfsdk:"sent_to"`
 	SentToScope                   types.String `tfsdk:"sent_to_scope"`
 	UserCanOverride               types.Bool   `tfsdk:"user_can_override"`
@@ -59,6 +61,7 @@ func (r *outlookProtectionRuleResource) Schema(_ context.Context, _ resource.Sch
 			"enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"from_department":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromDepartment parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"sent_to":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_scope":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SentToScope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"user_can_override":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UserCanOverride parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -84,6 +87,7 @@ func (r *outlookProtectionRuleResource) Create(ctx context.Context, req resource
 		Enabled:         plan.Enabled.ValueBool(),
 		FromDepartment:  toStringSlice(ctx, plan.FromDepartment, &resp.Diagnostics),
 		Name:            plan.Name.ValueString(),
+		Priority:        int(plan.Priority.ValueInt64()),
 		SentTo:          toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
 		UserCanOverride: plan.UserCanOverride.ValueBool(),
 	}
@@ -144,6 +148,7 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 	sp := exo.SetOutlookProtectionRuleParams{}
 	sp.Identity = id
 	sp.FromDepartment = toStringSlice(ctx, plan.FromDepartment, &resp.Diagnostics)
+	sp.Priority = int(plan.Priority.ValueInt64())
 	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
 	if v := plan.SentToScope.ValueString(); v != "" {
 		sp.SentToScope = v
@@ -224,6 +229,7 @@ func readOutlookProtectionRule(ctx context.Context, obj map[string]any, m *outlo
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.FromDepartment = stringSetValue(ctx, getStringSlice(obj, "FromDepartment"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SentToScope = types.StringValue(getString(obj, "SentToScope"))
 	m.UserCanOverride = types.BoolValue(getBool(obj, "UserCanOverride"))
@@ -235,6 +241,7 @@ func (r *outlookProtectionRuleResource) reconcileState(cfg, read *outlookProtect
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.FromDepartment = reconcile.KeepSet(cfg.FromDepartment, read.FromDepartment)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 	read.SentToScope = reconcile.KeepStr(cfg.SentToScope, read.SentToScope)
 	read.UserCanOverride = reconcile.KeepBool(cfg.UserCanOverride, read.UserCanOverride)

@@ -38,7 +38,7 @@ func (d *groupListDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"groups": schema.ListNestedAttribute{Computed: true, Description: "All Group objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"description":           schema.StringAttribute{Computed: true, Description: "Maps to the -Description parameter."},
+				"description":           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Description parameter."},
 				"display_name":          schema.StringAttribute{Computed: true, Description: "Maps to the -DisplayName parameter."},
 				"is_hierarchical_group": schema.BoolAttribute{Computed: true, Description: "Maps to the -IsHierarchicalGroup parameter."},
 				"managed_by":            schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ManagedBy parameter."},

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -47,6 +48,7 @@ type hostedOutboundSpamFilterRuleModel struct {
 	FromMemberOf                   types.Set    `tfsdk:"from_member_of"`
 	HostedOutboundSpamFilterPolicy types.String `tfsdk:"hosted_outbound_spam_filter_policy"`
 	Name                           types.String `tfsdk:"name"`
+	Priority                       types.Int64  `tfsdk:"priority"`
 	SenderDomainIs                 types.Set    `tfsdk:"sender_domain_is"`
 }
 
@@ -69,6 +71,7 @@ func (r *hostedOutboundSpamFilterRuleResource) Schema(_ context.Context, _ resou
 			"from_member_of":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hosted_outbound_spam_filter_policy": schema.StringAttribute{Required: true, Description: "Maps to the -HostedOutboundSpamFilterPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"name":                               schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                           schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"sender_domain_is":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -97,6 +100,7 @@ func (r *hostedOutboundSpamFilterRuleResource) Create(ctx context.Context, req r
 		From:                   toStringSlice(ctx, plan.From, &resp.Diagnostics),
 		FromMemberOf:           toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics),
 		Name:                   plan.Name.ValueString(),
+		Priority:               int(plan.Priority.ValueInt64()),
 		SenderDomainIs:         toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics),
 	}
 	if v := plan.HostedOutboundSpamFilterPolicy.ValueString(); v != "" {
@@ -158,6 +162,7 @@ func (r *hostedOutboundSpamFilterRuleResource) Update(ctx context.Context, req r
 	sp.ExceptIfSenderDomainIs = toStringSlice(ctx, plan.ExceptIfSenderDomainIs, &resp.Diagnostics)
 	sp.From = toStringSlice(ctx, plan.From, &resp.Diagnostics)
 	sp.FromMemberOf = toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics)
+	sp.Priority = int(plan.Priority.ValueInt64())
 	sp.SenderDomainIs = toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -239,6 +244,7 @@ func readHostedOutboundSpamFilterRule(ctx context.Context, obj map[string]any, m
 	m.FromMemberOf = stringSetValue(ctx, getStringSlice(obj, "FromMemberOf"))
 	m.HostedOutboundSpamFilterPolicy = types.StringValue(getString(obj, "HostedOutboundSpamFilterPolicy"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.SenderDomainIs = stringSetValue(ctx, getStringSlice(obj, "SenderDomainIs"))
 	_ = ctx
 }
@@ -253,5 +259,6 @@ func (r *hostedOutboundSpamFilterRuleResource) reconcileState(cfg, read *hostedO
 	read.FromMemberOf = reconcile.KeepSet(cfg.FromMemberOf, read.FromMemberOf)
 	read.HostedOutboundSpamFilterPolicy = reconcile.KeepStr(cfg.HostedOutboundSpamFilterPolicy, read.HostedOutboundSpamFilterPolicy)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.SenderDomainIs = reconcile.KeepSet(cfg.SenderDomainIs, read.SenderDomainIs)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -40,13 +41,13 @@ type smimeConfigModel struct {
 	OWAAllowUserChoiceOfSigningCertificate           types.Bool   `tfsdk:"owa_allow_user_choice_of_signing_certificate"`
 	OWAAlwaysEncrypt                                 types.Bool   `tfsdk:"owa_always_encrypt"`
 	OWAAlwaysSign                                    types.Bool   `tfsdk:"owa_always_sign"`
-	OWABCCEncryptedEmailForking                      types.String `tfsdk:"owabcc_encrypted_email_forking"`
-	OWACRLConnectionTimeout                          types.String `tfsdk:"owacrl_connection_timeout"`
-	OWACRLRetrievalTimeout                           types.String `tfsdk:"owacrl_retrieval_timeout"`
+	OWABCCEncryptedEmailForking                      types.Int64  `tfsdk:"owabcc_encrypted_email_forking"`
+	OWACRLConnectionTimeout                          types.Int64  `tfsdk:"owacrl_connection_timeout"`
+	OWACRLRetrievalTimeout                           types.Int64  `tfsdk:"owacrl_retrieval_timeout"`
 	OWACheckCRLOnSend                                types.Bool   `tfsdk:"owa_check_crl_on_send"`
 	OWAClearSign                                     types.Bool   `tfsdk:"owa_clear_sign"`
 	OWACopyRecipientHeaders                          types.Bool   `tfsdk:"owa_copy_recipient_headers"`
-	OWADLExpansionTimeout                            types.String `tfsdk:"owadl_expansion_timeout"`
+	OWADLExpansionTimeout                            types.Int64  `tfsdk:"owadl_expansion_timeout"`
 	OWADisableCRLCheck                               types.Bool   `tfsdk:"owa_disable_crl_check"`
 	OWAEncryptTemporaryBuffers                       types.Bool   `tfsdk:"owa_encrypt_temporary_buffers"`
 	OWAEncryptionAlgorithms                          types.String `tfsdk:"owa_encryption_algorithms"`
@@ -78,13 +79,13 @@ func (r *smimeConfigResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"owa_allow_user_choice_of_signing_certificate":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAllowUserChoiceOfSigningCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_always_encrypt":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAlwaysEncrypt parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_always_sign":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAlwaysSign parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"owabcc_encrypted_email_forking":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"owacrl_connection_timeout":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"owacrl_retrieval_timeout":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"owabcc_encrypted_email_forking":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"owacrl_connection_timeout":                              schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"owacrl_retrieval_timeout":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"owa_check_crl_on_send":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACheckCRLOnSend parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_clear_sign":                                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAClearSign parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_copy_recipient_headers":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACopyRecipientHeaders parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"owadl_expansion_timeout":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"owadl_expansion_timeout":                                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"owa_disable_crl_check":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWADisableCRLCheck parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_encrypt_temporary_buffers":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAEncryptTemporaryBuffers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_encryption_algorithms":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAEncryptionAlgorithms parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -123,21 +124,13 @@ func (r *smimeConfigResource) Create(ctx context.Context, req resource.CreateReq
 	sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBool()
 	sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBool()
 	sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBool()
-	if v := plan.OWABCCEncryptedEmailForking.ValueString(); v != "" {
-		sp.OWABCCEncryptedEmailForking = v
-	}
-	if v := plan.OWACRLConnectionTimeout.ValueString(); v != "" {
-		sp.OWACRLConnectionTimeout = v
-	}
-	if v := plan.OWACRLRetrievalTimeout.ValueString(); v != "" {
-		sp.OWACRLRetrievalTimeout = v
-	}
+	sp.OWABCCEncryptedEmailForking = int(plan.OWABCCEncryptedEmailForking.ValueInt64())
+	sp.OWACRLConnectionTimeout = int(plan.OWACRLConnectionTimeout.ValueInt64())
+	sp.OWACRLRetrievalTimeout = int(plan.OWACRLRetrievalTimeout.ValueInt64())
 	sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBool()
 	sp.OWAClearSign = plan.OWAClearSign.ValueBool()
 	sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBool()
-	if v := plan.OWADLExpansionTimeout.ValueString(); v != "" {
-		sp.OWADLExpansionTimeout = v
-	}
+	sp.OWADLExpansionTimeout = int(plan.OWADLExpansionTimeout.ValueInt64())
 	sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBool()
 	sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBool()
 	sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
@@ -196,21 +189,13 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 	sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBool()
 	sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBool()
 	sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBool()
-	if v := plan.OWABCCEncryptedEmailForking.ValueString(); v != "" {
-		sp.OWABCCEncryptedEmailForking = v
-	}
-	if v := plan.OWACRLConnectionTimeout.ValueString(); v != "" {
-		sp.OWACRLConnectionTimeout = v
-	}
-	if v := plan.OWACRLRetrievalTimeout.ValueString(); v != "" {
-		sp.OWACRLRetrievalTimeout = v
-	}
+	sp.OWABCCEncryptedEmailForking = int(plan.OWABCCEncryptedEmailForking.ValueInt64())
+	sp.OWACRLConnectionTimeout = int(plan.OWACRLConnectionTimeout.ValueInt64())
+	sp.OWACRLRetrievalTimeout = int(plan.OWACRLRetrievalTimeout.ValueInt64())
 	sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBool()
 	sp.OWAClearSign = plan.OWAClearSign.ValueBool()
 	sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBool()
-	if v := plan.OWADLExpansionTimeout.ValueString(); v != "" {
-		sp.OWADLExpansionTimeout = v
-	}
+	sp.OWADLExpansionTimeout = int(plan.OWADLExpansionTimeout.ValueInt64())
 	sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBool()
 	sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBool()
 	sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
@@ -235,10 +220,6 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"OWABCCEncryptedEmailForking":             cfg.OWABCCEncryptedEmailForking,
-		"OWACRLConnectionTimeout":                 cfg.OWACRLConnectionTimeout,
-		"OWACRLRetrievalTimeout":                  cfg.OWACRLRetrievalTimeout,
-		"OWADLExpansionTimeout":                   cfg.OWADLExpansionTimeout,
 		"OWAEncryptionAlgorithms":                 cfg.OWAEncryptionAlgorithms,
 		"OWASenderCertificateAttributesToDisplay": cfg.OWASenderCertificateAttributesToDisplay,
 		"OWASigningAlgorithms":                    cfg.OWASigningAlgorithms,
@@ -297,13 +278,13 @@ func readSmimeConfig(ctx context.Context, obj map[string]any, m *smimeConfigMode
 	m.OWAAllowUserChoiceOfSigningCertificate = types.BoolValue(getBool(obj, "OWAAllowUserChoiceOfSigningCertificate"))
 	m.OWAAlwaysEncrypt = types.BoolValue(getBool(obj, "OWAAlwaysEncrypt"))
 	m.OWAAlwaysSign = types.BoolValue(getBool(obj, "OWAAlwaysSign"))
-	m.OWABCCEncryptedEmailForking = types.StringValue(getString(obj, "OWABCCEncryptedEmailForking"))
-	m.OWACRLConnectionTimeout = types.StringValue(getString(obj, "OWACRLConnectionTimeout"))
-	m.OWACRLRetrievalTimeout = types.StringValue(getString(obj, "OWACRLRetrievalTimeout"))
+	m.OWABCCEncryptedEmailForking = types.Int64Value(getInt(obj, "OWABCCEncryptedEmailForking"))
+	m.OWACRLConnectionTimeout = types.Int64Value(getInt(obj, "OWACRLConnectionTimeout"))
+	m.OWACRLRetrievalTimeout = types.Int64Value(getInt(obj, "OWACRLRetrievalTimeout"))
 	m.OWACheckCRLOnSend = types.BoolValue(getBool(obj, "OWACheckCRLOnSend"))
 	m.OWAClearSign = types.BoolValue(getBool(obj, "OWAClearSign"))
 	m.OWACopyRecipientHeaders = types.BoolValue(getBool(obj, "OWACopyRecipientHeaders"))
-	m.OWADLExpansionTimeout = types.StringValue(getString(obj, "OWADLExpansionTimeout"))
+	m.OWADLExpansionTimeout = types.Int64Value(getInt(obj, "OWADLExpansionTimeout"))
 	m.OWADisableCRLCheck = types.BoolValue(getBool(obj, "OWADisableCRLCheck"))
 	m.OWAEncryptTemporaryBuffers = types.BoolValue(getBool(obj, "OWAEncryptTemporaryBuffers"))
 	m.OWAEncryptionAlgorithms = types.StringValue(getString(obj, "OWAEncryptionAlgorithms"))
@@ -327,13 +308,13 @@ func (r *smimeConfigResource) reconcileState(cfg, read *smimeConfigModel) {
 	read.OWAAllowUserChoiceOfSigningCertificate = reconcile.KeepBool(cfg.OWAAllowUserChoiceOfSigningCertificate, read.OWAAllowUserChoiceOfSigningCertificate)
 	read.OWAAlwaysEncrypt = reconcile.KeepBool(cfg.OWAAlwaysEncrypt, read.OWAAlwaysEncrypt)
 	read.OWAAlwaysSign = reconcile.KeepBool(cfg.OWAAlwaysSign, read.OWAAlwaysSign)
-	read.OWABCCEncryptedEmailForking = reconcile.KeepStr(cfg.OWABCCEncryptedEmailForking, read.OWABCCEncryptedEmailForking)
-	read.OWACRLConnectionTimeout = reconcile.KeepStr(cfg.OWACRLConnectionTimeout, read.OWACRLConnectionTimeout)
-	read.OWACRLRetrievalTimeout = reconcile.KeepStr(cfg.OWACRLRetrievalTimeout, read.OWACRLRetrievalTimeout)
+	read.OWABCCEncryptedEmailForking = reconcile.KeepInt64(cfg.OWABCCEncryptedEmailForking, read.OWABCCEncryptedEmailForking)
+	read.OWACRLConnectionTimeout = reconcile.KeepInt64(cfg.OWACRLConnectionTimeout, read.OWACRLConnectionTimeout)
+	read.OWACRLRetrievalTimeout = reconcile.KeepInt64(cfg.OWACRLRetrievalTimeout, read.OWACRLRetrievalTimeout)
 	read.OWACheckCRLOnSend = reconcile.KeepBool(cfg.OWACheckCRLOnSend, read.OWACheckCRLOnSend)
 	read.OWAClearSign = reconcile.KeepBool(cfg.OWAClearSign, read.OWAClearSign)
 	read.OWACopyRecipientHeaders = reconcile.KeepBool(cfg.OWACopyRecipientHeaders, read.OWACopyRecipientHeaders)
-	read.OWADLExpansionTimeout = reconcile.KeepStr(cfg.OWADLExpansionTimeout, read.OWADLExpansionTimeout)
+	read.OWADLExpansionTimeout = reconcile.KeepInt64(cfg.OWADLExpansionTimeout, read.OWADLExpansionTimeout)
 	read.OWADisableCRLCheck = reconcile.KeepBool(cfg.OWADisableCRLCheck, read.OWADisableCRLCheck)
 	read.OWAEncryptTemporaryBuffers = reconcile.KeepBool(cfg.OWAEncryptTemporaryBuffers, read.OWAEncryptTemporaryBuffers)
 	read.OWAEncryptionAlgorithms = reconcile.KeepStr(cfg.OWAEncryptionAlgorithms, read.OWAEncryptionAlgorithms)

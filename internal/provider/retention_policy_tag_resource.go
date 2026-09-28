@@ -41,8 +41,8 @@ type retentionPolicyTagModel struct {
 	IsDefaultAutoGroupPolicyTag           types.Bool   `tfsdk:"is_default_auto_group_policy_tag"`
 	IsDefaultModeratedRecipientsPolicyTag types.Bool   `tfsdk:"is_default_moderated_recipients_policy_tag"`
 	LegacyManagedFolder                   types.String `tfsdk:"legacy_managed_folder"`
-	LocalizedComment                      types.String `tfsdk:"localized_comment"`
-	LocalizedRetentionPolicyTagName       types.String `tfsdk:"localized_retention_policy_tag_name"`
+	LocalizedComment                      types.Set    `tfsdk:"localized_comment"`
+	LocalizedRetentionPolicyTagName       types.Set    `tfsdk:"localized_retention_policy_tag_name"`
 	Mailbox                               types.String `tfsdk:"mailbox"`
 	MessageClass                          types.String `tfsdk:"message_class"`
 	MustDisplayCommentEnabled             types.Bool   `tfsdk:"must_display_comment_enabled"`
@@ -70,8 +70,8 @@ func (r *retentionPolicyTagResource) Schema(_ context.Context, _ resource.Schema
 			"is_default_auto_group_policy_tag": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefaultAutoGroupPolicyTag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"is_default_moderated_recipients_policy_tag": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefaultModeratedRecipientsPolicyTag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"legacy_managed_folder":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LegacyManagedFolder parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"localized_comment":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalizedComment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"localized_retention_policy_tag_name":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalizedRetentionPolicyTagName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"localized_comment":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LocalizedComment parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"localized_retention_policy_tag_name":        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LocalizedRetentionPolicyTagName parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_class":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageClass parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"must_display_comment_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MustDisplayCommentEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -104,6 +104,8 @@ func (r *retentionPolicyTagResource) Create(ctx context.Context, req resource.Cr
 		Comment:                               plan.Comment.ValueString(),
 		IsDefaultAutoGroupPolicyTag:           plan.IsDefaultAutoGroupPolicyTag.ValueBool(),
 		IsDefaultModeratedRecipientsPolicyTag: plan.IsDefaultModeratedRecipientsPolicyTag.ValueBool(),
+		LocalizedComment:                      toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics),
+		LocalizedRetentionPolicyTagName:       toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics),
 		MessageClass:                          plan.MessageClass.ValueString(),
 		MustDisplayCommentEnabled:             plan.MustDisplayCommentEnabled.ValueBool(),
 		Name:                                  plan.Name.ValueString(),
@@ -112,12 +114,6 @@ func (r *retentionPolicyTagResource) Create(ctx context.Context, req resource.Cr
 	}
 	if v := plan.AgeLimitForRetention.ValueString(); v != "" {
 		p.AgeLimitForRetention = v
-	}
-	if v := plan.LocalizedComment.ValueString(); v != "" {
-		p.LocalizedComment = v
-	}
-	if v := plan.LocalizedRetentionPolicyTagName.ValueString(); v != "" {
-		p.LocalizedRetentionPolicyTagName = v
 	}
 	if v := plan.RetentionAction.ValueString(); v != "" {
 		p.RetentionAction = v
@@ -185,12 +181,8 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	if v := plan.LegacyManagedFolder.ValueString(); v != "" {
 		sp.LegacyManagedFolder = v
 	}
-	if v := plan.LocalizedComment.ValueString(); v != "" {
-		sp.LocalizedComment = v
-	}
-	if v := plan.LocalizedRetentionPolicyTagName.ValueString(); v != "" {
-		sp.LocalizedRetentionPolicyTagName = v
-	}
+	sp.LocalizedComment = toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics)
+	sp.LocalizedRetentionPolicyTagName = toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics)
 	if v := plan.Mailbox.ValueString(); v != "" {
 		sp.Mailbox = v
 	}
@@ -214,15 +206,13 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AgeLimitForRetention":            cfg.AgeLimitForRetention,
-		"Comment":                         cfg.Comment,
-		"LegacyManagedFolder":             cfg.LegacyManagedFolder,
-		"LocalizedComment":                cfg.LocalizedComment,
-		"LocalizedRetentionPolicyTagName": cfg.LocalizedRetentionPolicyTagName,
-		"Mailbox":                         cfg.Mailbox,
-		"MessageClass":                    cfg.MessageClass,
-		"RetentionAction":                 cfg.RetentionAction,
-		"RetentionId":                     cfg.RetentionId,
+		"AgeLimitForRetention": cfg.AgeLimitForRetention,
+		"Comment":              cfg.Comment,
+		"LegacyManagedFolder":  cfg.LegacyManagedFolder,
+		"Mailbox":              cfg.Mailbox,
+		"MessageClass":         cfg.MessageClass,
+		"RetentionAction":      cfg.RetentionAction,
+		"RetentionId":          cfg.RetentionId,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -289,8 +279,8 @@ func readRetentionPolicyTag(ctx context.Context, obj map[string]any, m *retentio
 	m.IsDefaultAutoGroupPolicyTag = types.BoolValue(getBool(obj, "IsDefaultAutoGroupPolicyTag"))
 	m.IsDefaultModeratedRecipientsPolicyTag = types.BoolValue(getBool(obj, "IsDefaultModeratedRecipientsPolicyTag"))
 	m.LegacyManagedFolder = types.StringValue(getString(obj, "LegacyManagedFolder"))
-	m.LocalizedComment = types.StringValue(getString(obj, "LocalizedComment"))
-	m.LocalizedRetentionPolicyTagName = types.StringValue(getString(obj, "LocalizedRetentionPolicyTagName"))
+	m.LocalizedComment = stringSetValue(ctx, getStringSlice(obj, "LocalizedComment"))
+	m.LocalizedRetentionPolicyTagName = stringSetValue(ctx, getStringSlice(obj, "LocalizedRetentionPolicyTagName"))
 	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
 	m.MessageClass = types.StringValue(getString(obj, "MessageClass"))
 	m.MustDisplayCommentEnabled = types.BoolValue(getBool(obj, "MustDisplayCommentEnabled"))
@@ -310,8 +300,8 @@ func (r *retentionPolicyTagResource) reconcileState(cfg, read *retentionPolicyTa
 	read.IsDefaultAutoGroupPolicyTag = reconcile.KeepBool(cfg.IsDefaultAutoGroupPolicyTag, read.IsDefaultAutoGroupPolicyTag)
 	read.IsDefaultModeratedRecipientsPolicyTag = reconcile.KeepBool(cfg.IsDefaultModeratedRecipientsPolicyTag, read.IsDefaultModeratedRecipientsPolicyTag)
 	read.LegacyManagedFolder = reconcile.KeepStr(cfg.LegacyManagedFolder, read.LegacyManagedFolder)
-	read.LocalizedComment = reconcile.KeepStr(cfg.LocalizedComment, read.LocalizedComment)
-	read.LocalizedRetentionPolicyTagName = reconcile.KeepStr(cfg.LocalizedRetentionPolicyTagName, read.LocalizedRetentionPolicyTagName)
+	read.LocalizedComment = reconcile.KeepSet(cfg.LocalizedComment, read.LocalizedComment)
+	read.LocalizedRetentionPolicyTagName = reconcile.KeepSet(cfg.LocalizedRetentionPolicyTagName, read.LocalizedRetentionPolicyTagName)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
 	read.MessageClass = reconcile.KeepStr(cfg.MessageClass, read.MessageClass)
 	read.MustDisplayCommentEnabled = reconcile.KeepBool(cfg.MustDisplayCommentEnabled, read.MustDisplayCommentEnabled)

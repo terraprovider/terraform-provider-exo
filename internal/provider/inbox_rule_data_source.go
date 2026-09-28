@@ -102,6 +102,7 @@ func (d *inboxRuleDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"permanent_delete":                           schema.BoolAttribute{Computed: true, Description: "Maps to the -PermanentDelete parameter."},
 			"pin_message":                                schema.BoolAttribute{Computed: true, Description: "Maps to the -PinMessage parameter."},
 			"play_sound":                                 schema.StringAttribute{Computed: true, Description: "Maps to the -PlaySound parameter."},
+			"priority":                                   schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 			"received_after_date":                        schema.StringAttribute{Computed: true, Description: "Maps to the -ReceivedAfterDate parameter."},
 			"received_before_date":                       schema.StringAttribute{Computed: true, Description: "Maps to the -ReceivedBeforeDate parameter."},
 			"recipient_address_contains_words":           schema.StringAttribute{Computed: true, Description: "Maps to the -RecipientAddressContainsWords parameter."},
