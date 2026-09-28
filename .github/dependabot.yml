@@ -6,6 +6,11 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+      # Our own libraries are released and consumed together; don't delay them.
+      exclude:
+        - "github.com/terraprovider/*"
     open-pull-requests-limit: 10
     groups:
       terraprovider:
@@ -21,6 +26,8 @@ updates:
     directory: "/tools"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     groups:
       tools:
@@ -32,6 +39,8 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     groups:
       github-actions:
