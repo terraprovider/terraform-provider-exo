@@ -161,9 +161,12 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		// -Enabled) is updated in place. Naming params stay replace-only: Set
 		// renames the object, and the name often is its identity. So do
 		// mandatory switches: they select a parameter set (e.g. Set-Mailbox
-		// -PublicFolder) rather than change a setting.
+		// -PublicFolder) rather than change a setting. And a Set without its own
+		// identity key may locate the object through a mandatory param (e.g.
+		// the rule-pack ID inside Set-ClassificationRuleCollection -FileData).
 		selector := required && firstParam(name, newCmd).Kind() == spec.KindSwitch
-		replace := (required && (!inU || namingParam[name] || selector)) || (inC && !inU) || kindConflict
+		inPlace := inU && setKey != "" && !namingParam[name] && !selector
+		replace := (required && !inPlace) || (inC && !inU) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}

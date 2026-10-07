@@ -49,7 +49,7 @@ func (r *classificationRuleCollectionResource) Schema(_ context.Context, _ resou
 		Attributes: map[string]schema.Attribute{
 			"id":        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"file_data": schema.StringAttribute{Required: true, Description: "Maps to the -FileData parameter."},
+			"file_data": schema.StringAttribute{Required: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
 }
@@ -127,11 +127,6 @@ func (r *classificationRuleCollectionResource) Update(ctx context.Context, req r
 	}
 	id := r.identityOf(state)
 	sp := exo.SetClassificationRuleCollectionParams{}
-	if !plan.FileData.Equal(state.FileData) {
-		if v := plan.FileData.ValueString(); v != "" {
-			sp.FileData = objectParam(v)
-		}
-	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
