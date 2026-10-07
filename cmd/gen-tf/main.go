@@ -96,6 +96,12 @@ func main() {
 	}
 }
 
+// sparseWrite: every generated resource sends only what the operator set
+// (create) or changed (update), like the cmdlets themselves. Typed *bool/*int64
+// fields make false/0 sendable, so a full re-send would also write values that
+// were only read back — e.g. 0 for a deprecated property Get no longer returns
+// (EndUserSpamNotificationFrequency), which Set rejects as out of range.
+
 // buildResource maps a noun's CRUD cmdlets into a genframework.Resource.
 func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]map[string]spec.Cmdlet) (genframework.Resource, bool, string) {
 	newCmd := verbs["New"]
@@ -137,31 +143,33 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			continue
 		}
 		p := firstParam(name, newCmd, setCmd)
-		at, ok := attrType(p)
-		if !ok {
-			continue // unmappable (any/int/complex)
-		}
+		at := attrType(p)
 		field := exportName(name)
 		_, inC := inNew[name]
 		_, inU := inSet[name]
 		required := inC && newCmd.Parameters != nil && mandatoryIn(newCmd, name)
-		replace := required || (inC && !inU)
+		// New and Set bind the parameter differently (e.g. a -SkipReports switch on
+		// New but a Boolean on Set): one attribute cannot write both fields, so
+		// it follows New and becomes create-time only.
+		kindConflict := inC && inU && firstParam(name, newCmd).Kind() != firstParam(name, setCmd).Kind()
+		replace := required || (inC && !inU) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}
 		attrs = append(attrs, genframework.Attribute{
-			TFName:      tfName(field),
-			Field:       field,
-			APIName:     field,
-			Type:        at,
-			Required:    required,
-			Computed:    !required,
-			Sensitive:   sensitive(name),
-			Replace:     replace,
-			Description: describe(name, p),
-			InCreate:    inC,
-			InUpdate:    inU,
-			Object:      goType(p) == "any",
+			TFName:       tfName(field),
+			Field:        field,
+			APIName:      field,
+			Type:         at,
+			Required:     required,
+			Computed:     !required,
+			Sensitive:    sensitive(name),
+			Replace:      replace,
+			Description:  describe(name, p),
+			InCreate:     inC,
+			InUpdate:     inU,
+			Object:       p.Kind() == spec.KindAny,
+			PointerParam: isPointer(p),
 		})
 	}
 	if !hasCreateAttr(attrs) {
@@ -184,6 +192,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		Delete:            op(removeCmd, exportName(removeKey)),
 		Members:           members,
 		Plural:            true, // also expose a list-all data source
+		SparseWrite:       true, // see sparseWrite
 	}, true, ""
 }
 
@@ -316,22 +325,20 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 			continue
 		}
 		p := firstParam(name, setc)
-		at, ok := attrType(p)
-		if !ok {
-			continue
-		}
+		at := attrType(p)
 		field := exportName(name)
 		attrs = append(attrs, genframework.Attribute{
-			TFName:      tfName(field),
-			Field:       field,
-			APIName:     field,
-			Type:        at,
-			Computed:    true, // settings: Optional + Computed
-			Sensitive:   sensitive(name),
-			Description: describe(name, p),
-			InCreate:    true,
-			InUpdate:    true,
-			Object:      goType(p) == "any",
+			TFName:       tfName(field),
+			Field:        field,
+			APIName:      field,
+			Type:         at,
+			Computed:     true, // settings: Optional + Computed
+			Sensitive:    sensitive(name),
+			Description:  describe(name, p),
+			InCreate:     true,
+			InUpdate:     true,
+			Object:       p.Kind() == spec.KindAny,
+			PointerParam: isPointer(p),
 		})
 	}
 	if len(attrs) == 0 {
@@ -356,6 +363,7 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 		Config:      true,
 		Singleton:   singleton,
 		Plural:      !singleton, // list-all makes sense only for per-object configs
+		SparseWrite: true,       // see sparseWrite
 	}, true, ""
 }
 
@@ -390,20 +398,29 @@ func identityFieldFor(c spec.Cmdlet, noun string) string {
 	return ""
 }
 
-func attrType(p spec.Param) (genframework.AttrType, bool) {
-	switch goType(p) {
-	case "bool":
-		return genframework.TypeBool, true
-	case "[]string":
-		return genframework.TypeStringSet, true
-	case "string", "any":
-		// "any" is a PowerShell System.Object — most are identity/string-valued
-		// (an account, a role name, a GUID). Expose them as strings (best-effort);
-		// complex objects simply read back empty and can be left unset.
-		return genframework.TypeString, true
-	default: // int
-		return 0, false
+// attrType maps a parameter's binding kind (spec.Param.Kind, the same mapping
+// go-exoscc's gen-go uses for the bindings) to a Terraform attribute type.
+// System.Object parameters are refined from their docs-declared .NET type;
+// whatever stays untyped (KindAny: Unlimited, ByteQuantifiedSize, enums,
+// *IdParameter, ...) is exposed as a string.
+func attrType(p spec.Param) genframework.AttrType {
+	switch p.Kind() {
+	case spec.KindSwitch, spec.KindBool:
+		return genframework.TypeBool
+	case spec.KindInt64:
+		return genframework.TypeInt
+	case spec.KindList:
+		return genframework.TypeStringSet
+	default: // KindString, KindAny
+		return genframework.TypeString
 	}
+}
+
+// isPointer reports whether the binding field is a pointer (*bool / *int64),
+// so an explicit false / 0 is sendable and unset stays nil.
+func isPointer(p spec.Param) bool {
+	k := p.Kind()
+	return k == spec.KindBool || k == spec.KindInt64
 }
 
 func hasCreateAttr(attrs []genframework.Attribute) bool {
@@ -490,27 +507,6 @@ func unionKeys(a, b map[string]bool) []string {
 }
 
 // ---- name/type mapping (mirrors go-exoscc/cmd/gen-go) ----
-
-func goType(p spec.Param) string {
-	if p.IsSwitch {
-		return "bool"
-	}
-	t := strings.ToLower(p.Type)
-	switch {
-	case strings.HasSuffix(t, "[]"):
-		return "[]string"
-	case t == "string" || strings.HasSuffix(t, ".string"):
-		return "string"
-	case t == "bool" || strings.HasSuffix(t, ".boolean"):
-		return "bool"
-	case t == "int" || strings.HasSuffix(t, ".int32") || strings.HasSuffix(t, ".int64"):
-		return "int"
-	case strings.HasSuffix(t, ".guid"):
-		return "string"
-	default:
-		return "any"
-	}
-}
 
 func goName(cmdlet string) string {
 	parts := strings.FieldsFunc(cmdlet, func(r rune) bool { return r == '-' || r == '_' })
