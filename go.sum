@@ -1,7 +1,7 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/AzureAD/microsoft-authentication-library-for-go v1.7.2 h1:RHK7bS+HQMslb1sZpAokUt+zTVmue0hKSs2C791hhzU=
-github.com/AzureAD/microsoft-authentication-library-for-go v1.7.2/go.mod h1:HKpQxkWaGLJ+D/5H8QRpyQXA1eKjxkFlOMwck5+33Jk=
+github.com/AzureAD/microsoft-authentication-library-for-go v1.9.0 h1:MDT4FxAPve5FnYn6vOL1r7RCRDG+l9cI7a5LlCuHsqA=
+github.com/AzureAD/microsoft-authentication-library-for-go v1.9.0/go.mod h1:Y33QHnf0FfdVewFFISOGe20mkZbxX4H839o955/PoeI=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.4.1 h1:9RfcZHqEQUvP8RzecWEUafnZVtEvrBVL9BiF67IQOfM=
@@ -159,8 +159,8 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/terraprovider/go-exoscc v0.3.0 h1:PQqESwN71IAmmsJSAd6WqLq9AEFnFhHFhWTUmoSoNwI=
 github.com/terraprovider/go-exoscc v0.3.0/go.mod h1:zdVKCU3J4dbxAuMGMDQJStcDlYTp7T7NfTafOBWAc4o=
-github.com/terraprovider/go-msadmin v0.3.0 h1:DD6R/vMKxlTwedgqd/edX8Jz+hFiUk1Z8Kd+oWLHwZE=
-github.com/terraprovider/go-msadmin v0.3.0/go.mod h1:ZXE9dxcz1dtzsMeXJs6gVXQrWv+66vzf7OT5C+rshK0=
+github.com/terraprovider/go-msadmin v0.3.1 h1:N+BFpKrNSFE4OV7Ba+CNk6itybGFQlKVyohjS3dMAbs=
+github.com/terraprovider/go-msadmin v0.3.1/go.mod h1:2gcfNB6h7H4odo/5/k8GIwOtFkhbDEKrsfNfz/By/88=
 github.com/terraprovider/tf-msadmin v0.9.1 h1:b5w93Vfc5of+2hdOIVW8FWRZZFR9kHXV9IbTaro1nLY=
 github.com/terraprovider/tf-msadmin v0.9.1/go.mod h1:jFe2E+aYB60ym6kvE8IZbr0FDa0RU9KLZRiiQhDgEBU=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
