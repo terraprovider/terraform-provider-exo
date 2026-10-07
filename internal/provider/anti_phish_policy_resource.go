@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -52,27 +54,28 @@ type antiPhishPolicyModel struct {
 	EnableUnusualCharactersSafetyTips             types.Bool   `tfsdk:"enable_unusual_characters_safety_tips"`
 	EnableViaTag                                  types.Bool   `tfsdk:"enable_via_tag"`
 	Enabled                                       types.Bool   `tfsdk:"enabled"`
-	ExcludedDomains                               types.String `tfsdk:"excluded_domains"`
-	ExcludedSenders                               types.String `tfsdk:"excluded_senders"`
+	ExcludedDomains                               types.Set    `tfsdk:"excluded_domains"`
+	ExcludedSenders                               types.Set    `tfsdk:"excluded_senders"`
 	HonorDmarcPolicy                              types.Bool   `tfsdk:"honor_dmarc_policy"`
 	ImpersonationProtectionState                  types.String `tfsdk:"impersonation_protection_state"`
 	MailboxIntelligenceProtectionAction           types.String `tfsdk:"mailbox_intelligence_protection_action"`
-	MailboxIntelligenceProtectionActionRecipients types.String `tfsdk:"mailbox_intelligence_protection_action_recipients"`
+	MailboxIntelligenceProtectionActionRecipients types.Set    `tfsdk:"mailbox_intelligence_protection_action_recipients"`
 	MailboxIntelligenceQuarantineTag              types.String `tfsdk:"mailbox_intelligence_quarantine_tag"`
 	MakeDefault                                   types.Bool   `tfsdk:"make_default"`
 	Name                                          types.String `tfsdk:"name"`
+	PhishThresholdLevel                           types.Int64  `tfsdk:"phish_threshold_level"`
 	PolicyTag                                     types.String `tfsdk:"policy_tag"`
 	RecommendedPolicyType                         types.String `tfsdk:"recommended_policy_type"`
 	SimilarUsersSafetyTipsCustomText              types.String `tfsdk:"similar_users_safety_tips_custom_text"`
 	SpoofQuarantineTag                            types.String `tfsdk:"spoof_quarantine_tag"`
-	TargetedDomainActionRecipients                types.String `tfsdk:"targeted_domain_action_recipients"`
+	TargetedDomainActionRecipients                types.Set    `tfsdk:"targeted_domain_action_recipients"`
 	TargetedDomainProtectionAction                types.String `tfsdk:"targeted_domain_protection_action"`
 	TargetedDomainQuarantineTag                   types.String `tfsdk:"targeted_domain_quarantine_tag"`
-	TargetedDomainsToProtect                      types.String `tfsdk:"targeted_domains_to_protect"`
-	TargetedUserActionRecipients                  types.String `tfsdk:"targeted_user_action_recipients"`
+	TargetedDomainsToProtect                      types.Set    `tfsdk:"targeted_domains_to_protect"`
+	TargetedUserActionRecipients                  types.Set    `tfsdk:"targeted_user_action_recipients"`
 	TargetedUserProtectionAction                  types.String `tfsdk:"targeted_user_protection_action"`
 	TargetedUserQuarantineTag                     types.String `tfsdk:"targeted_user_quarantine_tag"`
-	TargetedUsersToProtect                        types.String `tfsdk:"targeted_users_to_protect"`
+	TargetedUsersToProtect                        types.Set    `tfsdk:"targeted_users_to_protect"`
 	UnusualCharactersSafetyTipsCustomText         types.String `tfsdk:"unusual_characters_safety_tips_custom_text"`
 }
 
@@ -85,7 +88,7 @@ func (r *antiPhishPolicyResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the AntiPhishPolicy object via New-AntiPhishPolicy / Get-AntiPhishPolicy / Set-AntiPhishPolicy / Remove-AntiPhishPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"authentication_fail_action":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuthenticationFailAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"dmarc_quarantine_action":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DmarcQuarantineAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -103,27 +106,28 @@ func (r *antiPhishPolicyResource) Schema(_ context.Context, _ resource.SchemaReq
 			"enable_unusual_characters_safety_tips":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableUnusualCharactersSafetyTips parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_via_tag":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableViaTag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"excluded_domains":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludedDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"excluded_senders":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludedSenders parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"excluded_domains":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludedDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"excluded_senders":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludedSenders parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"honor_dmarc_policy":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HonorDmarcPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"impersonation_protection_state":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ImpersonationProtectionState parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mailbox_intelligence_protection_action":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mailbox_intelligence_protection_action_recipients": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionActionRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mailbox_intelligence_protection_action_recipients": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailboxIntelligenceProtectionActionRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox_intelligence_quarantine_tag":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxIntelligenceQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"make_default":                                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MakeDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                              schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"phish_threshold_level":                             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PhishThresholdLevel parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"policy_tag":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PolicyTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recommended_policy_type":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecommendedPolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"similar_users_safety_tips_custom_text":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimilarUsersSafetyTipsCustomText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"spoof_quarantine_tag":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SpoofQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"targeted_domain_action_recipients":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedDomainActionRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"targeted_domain_action_recipients":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetedDomainActionRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"targeted_domain_protection_action":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedDomainProtectionAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"targeted_domain_quarantine_tag":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedDomainQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"targeted_domains_to_protect":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedDomainsToProtect parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"targeted_user_action_recipients":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedUserActionRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"targeted_domains_to_protect":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetedDomainsToProtect parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"targeted_user_action_recipients":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetedUserActionRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"targeted_user_protection_action":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedUserProtectionAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"targeted_user_quarantine_tag":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedUserQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"targeted_users_to_protect":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetedUsersToProtect parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"targeted_users_to_protect":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetedUsersToProtect parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"unusual_characters_safety_tips_custom_text":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UnusualCharactersSafetyTipsCustomText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -143,76 +147,176 @@ func (r *antiPhishPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	p := exo.NewAntiPhishPolicyParams{
-		AdminDisplayName:                      plan.AdminDisplayName.ValueString(),
-		EnableFirstContactSafetyTips:          plan.EnableFirstContactSafetyTips.ValueBool(),
-		EnableMailboxIntelligence:             plan.EnableMailboxIntelligence.ValueBool(),
-		EnableMailboxIntelligenceProtection:   plan.EnableMailboxIntelligenceProtection.ValueBool(),
-		EnableOrganizationDomainsProtection:   plan.EnableOrganizationDomainsProtection.ValueBool(),
-		EnableSimilarDomainsSafetyTips:        plan.EnableSimilarDomainsSafetyTips.ValueBool(),
-		EnableSimilarUsersSafetyTips:          plan.EnableSimilarUsersSafetyTips.ValueBool(),
-		EnableSpoofIntelligence:               plan.EnableSpoofIntelligence.ValueBool(),
-		EnableTargetedDomainsProtection:       plan.EnableTargetedDomainsProtection.ValueBool(),
-		EnableTargetedUserProtection:          plan.EnableTargetedUserProtection.ValueBool(),
-		EnableUnauthenticatedSender:           plan.EnableUnauthenticatedSender.ValueBool(),
-		EnableUnusualCharactersSafetyTips:     plan.EnableUnusualCharactersSafetyTips.ValueBool(),
-		EnableViaTag:                          plan.EnableViaTag.ValueBool(),
-		Enabled:                               plan.Enabled.ValueBool(),
-		HonorDmarcPolicy:                      plan.HonorDmarcPolicy.ValueBool(),
-		MailboxIntelligenceQuarantineTag:      plan.MailboxIntelligenceQuarantineTag.ValueString(),
-		MakeDefault:                           plan.MakeDefault.ValueBool(),
-		Name:                                  plan.Name.ValueString(),
-		PolicyTag:                             plan.PolicyTag.ValueString(),
-		SimilarUsersSafetyTipsCustomText:      plan.SimilarUsersSafetyTipsCustomText.ValueString(),
-		SpoofQuarantineTag:                    plan.SpoofQuarantineTag.ValueString(),
-		TargetedDomainQuarantineTag:           plan.TargetedDomainQuarantineTag.ValueString(),
-		TargetedUserQuarantineTag:             plan.TargetedUserQuarantineTag.ValueString(),
-		UnusualCharactersSafetyTipsCustomText: plan.UnusualCharactersSafetyTipsCustomText.ValueString(),
+	var config antiPhishPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AuthenticationFailAction.ValueString(); v != "" {
-		p.AuthenticationFailAction = v
+
+	p := exo.NewAntiPhishPolicyParams{}
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.DmarcQuarantineAction.ValueString(); v != "" {
-		p.DmarcQuarantineAction = v
+	if v := config.AuthenticationFailAction.ValueString(); v != "" {
+		p.AuthenticationFailAction = objectParam(v)
 	}
-	if v := plan.DmarcRejectAction.ValueString(); v != "" {
-		p.DmarcRejectAction = v
+	if v := config.DmarcQuarantineAction.ValueString(); v != "" {
+		p.DmarcQuarantineAction = objectParam(v)
 	}
-	if v := plan.ExcludedDomains.ValueString(); v != "" {
-		p.ExcludedDomains = v
+	if v := config.DmarcRejectAction.ValueString(); v != "" {
+		p.DmarcRejectAction = objectParam(v)
 	}
-	if v := plan.ExcludedSenders.ValueString(); v != "" {
-		p.ExcludedSenders = v
+	if !config.EnableFirstContactSafetyTips.IsNull() {
+		if !plan.EnableFirstContactSafetyTips.IsUnknown() {
+			p.EnableFirstContactSafetyTips = plan.EnableFirstContactSafetyTips.ValueBoolPointer()
+		}
 	}
-	if v := plan.ImpersonationProtectionState.ValueString(); v != "" {
-		p.ImpersonationProtectionState = v
+	if !config.EnableMailboxIntelligence.IsNull() {
+		if !plan.EnableMailboxIntelligence.IsUnknown() {
+			p.EnableMailboxIntelligence = plan.EnableMailboxIntelligence.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxIntelligenceProtectionAction.ValueString(); v != "" {
-		p.MailboxIntelligenceProtectionAction = v
+	if !config.EnableMailboxIntelligenceProtection.IsNull() {
+		if !plan.EnableMailboxIntelligenceProtection.IsUnknown() {
+			p.EnableMailboxIntelligenceProtection = plan.EnableMailboxIntelligenceProtection.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxIntelligenceProtectionActionRecipients.ValueString(); v != "" {
-		p.MailboxIntelligenceProtectionActionRecipients = v
+	if !config.EnableOrganizationDomainsProtection.IsNull() {
+		if !plan.EnableOrganizationDomainsProtection.IsUnknown() {
+			p.EnableOrganizationDomainsProtection = plan.EnableOrganizationDomainsProtection.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
-		p.RecommendedPolicyType = v
+	if !config.EnableSimilarDomainsSafetyTips.IsNull() {
+		if !plan.EnableSimilarDomainsSafetyTips.IsUnknown() {
+			p.EnableSimilarDomainsSafetyTips = plan.EnableSimilarDomainsSafetyTips.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedDomainActionRecipients.ValueString(); v != "" {
-		p.TargetedDomainActionRecipients = v
+	if !config.EnableSimilarUsersSafetyTips.IsNull() {
+		if !plan.EnableSimilarUsersSafetyTips.IsUnknown() {
+			p.EnableSimilarUsersSafetyTips = plan.EnableSimilarUsersSafetyTips.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedDomainProtectionAction.ValueString(); v != "" {
-		p.TargetedDomainProtectionAction = v
+	if !config.EnableSpoofIntelligence.IsNull() {
+		if !plan.EnableSpoofIntelligence.IsUnknown() {
+			p.EnableSpoofIntelligence = plan.EnableSpoofIntelligence.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedDomainsToProtect.ValueString(); v != "" {
-		p.TargetedDomainsToProtect = v
+	if !config.EnableTargetedDomainsProtection.IsNull() {
+		if !plan.EnableTargetedDomainsProtection.IsUnknown() {
+			p.EnableTargetedDomainsProtection = plan.EnableTargetedDomainsProtection.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedUserActionRecipients.ValueString(); v != "" {
-		p.TargetedUserActionRecipients = v
+	if !config.EnableTargetedUserProtection.IsNull() {
+		if !plan.EnableTargetedUserProtection.IsUnknown() {
+			p.EnableTargetedUserProtection = plan.EnableTargetedUserProtection.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedUserProtectionAction.ValueString(); v != "" {
-		p.TargetedUserProtectionAction = v
+	if !config.EnableUnauthenticatedSender.IsNull() {
+		if !plan.EnableUnauthenticatedSender.IsUnknown() {
+			p.EnableUnauthenticatedSender = plan.EnableUnauthenticatedSender.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetedUsersToProtect.ValueString(); v != "" {
-		p.TargetedUsersToProtect = v
+	if !config.EnableUnusualCharactersSafetyTips.IsNull() {
+		if !plan.EnableUnusualCharactersSafetyTips.IsUnknown() {
+			p.EnableUnusualCharactersSafetyTips = plan.EnableUnusualCharactersSafetyTips.ValueBoolPointer()
+		}
+	}
+	if !config.EnableViaTag.IsNull() {
+		if !plan.EnableViaTag.IsUnknown() {
+			p.EnableViaTag = plan.EnableViaTag.ValueBoolPointer()
+		}
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.ExcludedDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.ExcludedDomains, &resp.Diagnostics); len(v) > 0 {
+			p.ExcludedDomains = v
+		}
+	}
+	if !config.ExcludedSenders.IsNull() {
+		if v := toStringSlice(ctx, plan.ExcludedSenders, &resp.Diagnostics); len(v) > 0 {
+			p.ExcludedSenders = v
+		}
+	}
+	if !config.HonorDmarcPolicy.IsNull() {
+		if !plan.HonorDmarcPolicy.IsUnknown() {
+			p.HonorDmarcPolicy = plan.HonorDmarcPolicy.ValueBoolPointer()
+		}
+	}
+	if v := config.ImpersonationProtectionState.ValueString(); v != "" {
+		p.ImpersonationProtectionState = objectParam(v)
+	}
+	if v := config.MailboxIntelligenceProtectionAction.ValueString(); v != "" {
+		p.MailboxIntelligenceProtectionAction = objectParam(v)
+	}
+	if !config.MailboxIntelligenceProtectionActionRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.MailboxIntelligenceProtectionActionRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.MailboxIntelligenceProtectionActionRecipients = v
+		}
+	}
+	if !config.MailboxIntelligenceQuarantineTag.IsNull() {
+		p.MailboxIntelligenceQuarantineTag = plan.MailboxIntelligenceQuarantineTag.ValueString()
+	}
+	if !config.MakeDefault.IsNull() {
+		p.MakeDefault = plan.MakeDefault.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.PhishThresholdLevel.IsNull() {
+		if !plan.PhishThresholdLevel.IsUnknown() {
+			p.PhishThresholdLevel = plan.PhishThresholdLevel.ValueInt64Pointer()
+		}
+	}
+	if !config.PolicyTag.IsNull() {
+		p.PolicyTag = plan.PolicyTag.ValueString()
+	}
+	if v := config.RecommendedPolicyType.ValueString(); v != "" {
+		p.RecommendedPolicyType = objectParam(v)
+	}
+	if !config.SimilarUsersSafetyTipsCustomText.IsNull() {
+		p.SimilarUsersSafetyTipsCustomText = plan.SimilarUsersSafetyTipsCustomText.ValueString()
+	}
+	if !config.SpoofQuarantineTag.IsNull() {
+		p.SpoofQuarantineTag = plan.SpoofQuarantineTag.ValueString()
+	}
+	if !config.TargetedDomainActionRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetedDomainActionRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.TargetedDomainActionRecipients = v
+		}
+	}
+	if v := config.TargetedDomainProtectionAction.ValueString(); v != "" {
+		p.TargetedDomainProtectionAction = objectParam(v)
+	}
+	if !config.TargetedDomainQuarantineTag.IsNull() {
+		p.TargetedDomainQuarantineTag = plan.TargetedDomainQuarantineTag.ValueString()
+	}
+	if !config.TargetedDomainsToProtect.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetedDomainsToProtect, &resp.Diagnostics); len(v) > 0 {
+			p.TargetedDomainsToProtect = v
+		}
+	}
+	if !config.TargetedUserActionRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetedUserActionRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.TargetedUserActionRecipients = v
+		}
+	}
+	if v := config.TargetedUserProtectionAction.ValueString(); v != "" {
+		p.TargetedUserProtectionAction = objectParam(v)
+	}
+	if !config.TargetedUserQuarantineTag.IsNull() {
+		p.TargetedUserQuarantineTag = plan.TargetedUserQuarantineTag.ValueString()
+	}
+	if !config.TargetedUsersToProtect.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetedUsersToProtect, &resp.Diagnostics); len(v) > 0 {
+			p.TargetedUsersToProtect = v
+		}
+	}
+	if !config.UnusualCharactersSafetyTipsCustomText.IsNull() {
+		p.UnusualCharactersSafetyTipsCustomText = plan.UnusualCharactersSafetyTipsCustomText.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -264,68 +368,157 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetAntiPhishPolicyParams{}
 	sp.Identity = id
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	}
 	if v := plan.AuthenticationFailAction.ValueString(); v != "" {
-		sp.AuthenticationFailAction = v
+		sp.AuthenticationFailAction = objectParam(v)
 	}
 	if v := plan.DmarcQuarantineAction.ValueString(); v != "" {
-		sp.DmarcQuarantineAction = v
+		sp.DmarcQuarantineAction = objectParam(v)
 	}
 	if v := plan.DmarcRejectAction.ValueString(); v != "" {
-		sp.DmarcRejectAction = v
+		sp.DmarcRejectAction = objectParam(v)
 	}
-	sp.EnableFirstContactSafetyTips = plan.EnableFirstContactSafetyTips.ValueBool()
-	sp.EnableMailboxIntelligence = plan.EnableMailboxIntelligence.ValueBool()
-	sp.EnableMailboxIntelligenceProtection = plan.EnableMailboxIntelligenceProtection.ValueBool()
-	sp.EnableOrganizationDomainsProtection = plan.EnableOrganizationDomainsProtection.ValueBool()
-	sp.EnableSimilarDomainsSafetyTips = plan.EnableSimilarDomainsSafetyTips.ValueBool()
-	sp.EnableSimilarUsersSafetyTips = plan.EnableSimilarUsersSafetyTips.ValueBool()
-	sp.EnableSpoofIntelligence = plan.EnableSpoofIntelligence.ValueBool()
-	sp.EnableTargetedDomainsProtection = plan.EnableTargetedDomainsProtection.ValueBool()
-	sp.EnableTargetedUserProtection = plan.EnableTargetedUserProtection.ValueBool()
-	sp.EnableUnauthenticatedSender = plan.EnableUnauthenticatedSender.ValueBool()
-	sp.EnableUnusualCharactersSafetyTips = plan.EnableUnusualCharactersSafetyTips.ValueBool()
-	sp.EnableViaTag = plan.EnableViaTag.ValueBool()
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.ExcludedDomains.ValueString(); v != "" {
-		sp.ExcludedDomains = v
+	if !plan.EnableFirstContactSafetyTips.Equal(state.EnableFirstContactSafetyTips) {
+		if !plan.EnableFirstContactSafetyTips.IsUnknown() {
+			sp.EnableFirstContactSafetyTips = plan.EnableFirstContactSafetyTips.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExcludedSenders.ValueString(); v != "" {
-		sp.ExcludedSenders = v
+	if !plan.EnableMailboxIntelligence.Equal(state.EnableMailboxIntelligence) {
+		if !plan.EnableMailboxIntelligence.IsUnknown() {
+			sp.EnableMailboxIntelligence = plan.EnableMailboxIntelligence.ValueBoolPointer()
+		}
 	}
-	sp.HonorDmarcPolicy = plan.HonorDmarcPolicy.ValueBool()
+	if !plan.EnableMailboxIntelligenceProtection.Equal(state.EnableMailboxIntelligenceProtection) {
+		if !plan.EnableMailboxIntelligenceProtection.IsUnknown() {
+			sp.EnableMailboxIntelligenceProtection = plan.EnableMailboxIntelligenceProtection.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableOrganizationDomainsProtection.Equal(state.EnableOrganizationDomainsProtection) {
+		if !plan.EnableOrganizationDomainsProtection.IsUnknown() {
+			sp.EnableOrganizationDomainsProtection = plan.EnableOrganizationDomainsProtection.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSimilarDomainsSafetyTips.Equal(state.EnableSimilarDomainsSafetyTips) {
+		if !plan.EnableSimilarDomainsSafetyTips.IsUnknown() {
+			sp.EnableSimilarDomainsSafetyTips = plan.EnableSimilarDomainsSafetyTips.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSimilarUsersSafetyTips.Equal(state.EnableSimilarUsersSafetyTips) {
+		if !plan.EnableSimilarUsersSafetyTips.IsUnknown() {
+			sp.EnableSimilarUsersSafetyTips = plan.EnableSimilarUsersSafetyTips.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSpoofIntelligence.Equal(state.EnableSpoofIntelligence) {
+		if !plan.EnableSpoofIntelligence.IsUnknown() {
+			sp.EnableSpoofIntelligence = plan.EnableSpoofIntelligence.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableTargetedDomainsProtection.Equal(state.EnableTargetedDomainsProtection) {
+		if !plan.EnableTargetedDomainsProtection.IsUnknown() {
+			sp.EnableTargetedDomainsProtection = plan.EnableTargetedDomainsProtection.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableTargetedUserProtection.Equal(state.EnableTargetedUserProtection) {
+		if !plan.EnableTargetedUserProtection.IsUnknown() {
+			sp.EnableTargetedUserProtection = plan.EnableTargetedUserProtection.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableUnauthenticatedSender.Equal(state.EnableUnauthenticatedSender) {
+		if !plan.EnableUnauthenticatedSender.IsUnknown() {
+			sp.EnableUnauthenticatedSender = plan.EnableUnauthenticatedSender.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableUnusualCharactersSafetyTips.Equal(state.EnableUnusualCharactersSafetyTips) {
+		if !plan.EnableUnusualCharactersSafetyTips.IsUnknown() {
+			sp.EnableUnusualCharactersSafetyTips = plan.EnableUnusualCharactersSafetyTips.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableViaTag.Equal(state.EnableViaTag) {
+		if !plan.EnableViaTag.IsUnknown() {
+			sp.EnableViaTag = plan.EnableViaTag.ValueBoolPointer()
+		}
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExcludedDomains.Equal(state.ExcludedDomains) {
+		if !plan.ExcludedDomains.IsNull() && !plan.ExcludedDomains.IsUnknown() {
+			sp.ExcludedDomains = append([]string{}, toStringSlice(ctx, plan.ExcludedDomains, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExcludedSenders.Equal(state.ExcludedSenders) {
+		if !plan.ExcludedSenders.IsNull() && !plan.ExcludedSenders.IsUnknown() {
+			sp.ExcludedSenders = append([]string{}, toStringSlice(ctx, plan.ExcludedSenders, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.HonorDmarcPolicy.Equal(state.HonorDmarcPolicy) {
+		if !plan.HonorDmarcPolicy.IsUnknown() {
+			sp.HonorDmarcPolicy = plan.HonorDmarcPolicy.ValueBoolPointer()
+		}
+	}
 	if v := plan.ImpersonationProtectionState.ValueString(); v != "" {
-		sp.ImpersonationProtectionState = v
+		sp.ImpersonationProtectionState = objectParam(v)
 	}
 	if v := plan.MailboxIntelligenceProtectionAction.ValueString(); v != "" {
-		sp.MailboxIntelligenceProtectionAction = v
+		sp.MailboxIntelligenceProtectionAction = objectParam(v)
 	}
-	if v := plan.MailboxIntelligenceProtectionActionRecipients.ValueString(); v != "" {
-		sp.MailboxIntelligenceProtectionActionRecipients = v
+	if !plan.MailboxIntelligenceProtectionActionRecipients.Equal(state.MailboxIntelligenceProtectionActionRecipients) {
+		if !plan.MailboxIntelligenceProtectionActionRecipients.IsNull() && !plan.MailboxIntelligenceProtectionActionRecipients.IsUnknown() {
+			sp.MailboxIntelligenceProtectionActionRecipients = append([]string{}, toStringSlice(ctx, plan.MailboxIntelligenceProtectionActionRecipients, &resp.Diagnostics)...)
+		}
 	}
-	sp.MailboxIntelligenceQuarantineTag = plan.MailboxIntelligenceQuarantineTag.ValueString()
-	sp.MakeDefault = plan.MakeDefault.ValueBool()
-	sp.PolicyTag = plan.PolicyTag.ValueString()
-	sp.SpoofQuarantineTag = plan.SpoofQuarantineTag.ValueString()
-	if v := plan.TargetedDomainActionRecipients.ValueString(); v != "" {
-		sp.TargetedDomainActionRecipients = v
+	if !plan.MailboxIntelligenceQuarantineTag.Equal(state.MailboxIntelligenceQuarantineTag) {
+		sp.MailboxIntelligenceQuarantineTag = plan.MailboxIntelligenceQuarantineTag.ValueString()
+	}
+	if !plan.MakeDefault.Equal(state.MakeDefault) {
+		sp.MakeDefault = plan.MakeDefault.ValueBool()
+	}
+	if !plan.PhishThresholdLevel.Equal(state.PhishThresholdLevel) {
+		if !plan.PhishThresholdLevel.IsUnknown() {
+			sp.PhishThresholdLevel = plan.PhishThresholdLevel.ValueInt64Pointer()
+		}
+	}
+	if !plan.PolicyTag.Equal(state.PolicyTag) {
+		sp.PolicyTag = plan.PolicyTag.ValueString()
+	}
+	if !plan.SpoofQuarantineTag.Equal(state.SpoofQuarantineTag) {
+		sp.SpoofQuarantineTag = plan.SpoofQuarantineTag.ValueString()
+	}
+	if !plan.TargetedDomainActionRecipients.Equal(state.TargetedDomainActionRecipients) {
+		if !plan.TargetedDomainActionRecipients.IsNull() && !plan.TargetedDomainActionRecipients.IsUnknown() {
+			sp.TargetedDomainActionRecipients = append([]string{}, toStringSlice(ctx, plan.TargetedDomainActionRecipients, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.TargetedDomainProtectionAction.ValueString(); v != "" {
-		sp.TargetedDomainProtectionAction = v
+		sp.TargetedDomainProtectionAction = objectParam(v)
 	}
-	sp.TargetedDomainQuarantineTag = plan.TargetedDomainQuarantineTag.ValueString()
-	if v := plan.TargetedDomainsToProtect.ValueString(); v != "" {
-		sp.TargetedDomainsToProtect = v
+	if !plan.TargetedDomainQuarantineTag.Equal(state.TargetedDomainQuarantineTag) {
+		sp.TargetedDomainQuarantineTag = plan.TargetedDomainQuarantineTag.ValueString()
 	}
-	if v := plan.TargetedUserActionRecipients.ValueString(); v != "" {
-		sp.TargetedUserActionRecipients = v
+	if !plan.TargetedDomainsToProtect.Equal(state.TargetedDomainsToProtect) {
+		if !plan.TargetedDomainsToProtect.IsNull() && !plan.TargetedDomainsToProtect.IsUnknown() {
+			sp.TargetedDomainsToProtect = append([]string{}, toStringSlice(ctx, plan.TargetedDomainsToProtect, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.TargetedUserActionRecipients.Equal(state.TargetedUserActionRecipients) {
+		if !plan.TargetedUserActionRecipients.IsNull() && !plan.TargetedUserActionRecipients.IsUnknown() {
+			sp.TargetedUserActionRecipients = append([]string{}, toStringSlice(ctx, plan.TargetedUserActionRecipients, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.TargetedUserProtectionAction.ValueString(); v != "" {
-		sp.TargetedUserProtectionAction = v
+		sp.TargetedUserProtectionAction = objectParam(v)
 	}
-	sp.TargetedUserQuarantineTag = plan.TargetedUserQuarantineTag.ValueString()
-	if v := plan.TargetedUsersToProtect.ValueString(); v != "" {
-		sp.TargetedUsersToProtect = v
+	if !plan.TargetedUserQuarantineTag.Equal(state.TargetedUserQuarantineTag) {
+		sp.TargetedUserQuarantineTag = plan.TargetedUserQuarantineTag.ValueString()
+	}
+	if !plan.TargetedUsersToProtect.Equal(state.TargetedUsersToProtect) {
+		if !plan.TargetedUsersToProtect.IsNull() && !plan.TargetedUsersToProtect.IsUnknown() {
+			sp.TargetedUsersToProtect = append([]string{}, toStringSlice(ctx, plan.TargetedUsersToProtect, &resp.Diagnostics)...)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -336,26 +529,12 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminDisplayName":                              cfg.AdminDisplayName,
-		"AuthenticationFailAction":                      cfg.AuthenticationFailAction,
-		"DmarcQuarantineAction":                         cfg.DmarcQuarantineAction,
-		"DmarcRejectAction":                             cfg.DmarcRejectAction,
-		"ExcludedDomains":                               cfg.ExcludedDomains,
-		"ExcludedSenders":                               cfg.ExcludedSenders,
-		"ImpersonationProtectionState":                  cfg.ImpersonationProtectionState,
-		"MailboxIntelligenceProtectionAction":           cfg.MailboxIntelligenceProtectionAction,
-		"MailboxIntelligenceProtectionActionRecipients": cfg.MailboxIntelligenceProtectionActionRecipients,
-		"MailboxIntelligenceQuarantineTag":              cfg.MailboxIntelligenceQuarantineTag,
-		"PolicyTag":                                     cfg.PolicyTag,
-		"SpoofQuarantineTag":                            cfg.SpoofQuarantineTag,
-		"TargetedDomainActionRecipients":                cfg.TargetedDomainActionRecipients,
-		"TargetedDomainProtectionAction":                cfg.TargetedDomainProtectionAction,
-		"TargetedDomainQuarantineTag":                   cfg.TargetedDomainQuarantineTag,
-		"TargetedDomainsToProtect":                      cfg.TargetedDomainsToProtect,
-		"TargetedUserActionRecipients":                  cfg.TargetedUserActionRecipients,
-		"TargetedUserProtectionAction":                  cfg.TargetedUserProtectionAction,
-		"TargetedUserQuarantineTag":                     cfg.TargetedUserQuarantineTag,
-		"TargetedUsersToProtect":                        cfg.TargetedUsersToProtect,
+		"AdminDisplayName":                 cfg.AdminDisplayName,
+		"MailboxIntelligenceQuarantineTag": cfg.MailboxIntelligenceQuarantineTag,
+		"PolicyTag":                        cfg.PolicyTag,
+		"SpoofQuarantineTag":               cfg.SpoofQuarantineTag,
+		"TargetedDomainQuarantineTag":      cfg.TargetedDomainQuarantineTag,
+		"TargetedUserQuarantineTag":        cfg.TargetedUserQuarantineTag,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -418,9 +597,9 @@ func readAntiPhishPolicy(ctx context.Context, obj map[string]any, m *antiPhishPo
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
-	m.AuthenticationFailAction = types.StringValue(getString(obj, "AuthenticationFailAction"))
-	m.DmarcQuarantineAction = types.StringValue(getString(obj, "DmarcQuarantineAction"))
-	m.DmarcRejectAction = types.StringValue(getString(obj, "DmarcRejectAction"))
+	m.AuthenticationFailAction = types.StringValue(getObjectJSON(obj, "AuthenticationFailAction"))
+	m.DmarcQuarantineAction = types.StringValue(getObjectJSON(obj, "DmarcQuarantineAction"))
+	m.DmarcRejectAction = types.StringValue(getObjectJSON(obj, "DmarcRejectAction"))
 	m.EnableFirstContactSafetyTips = types.BoolValue(getBool(obj, "EnableFirstContactSafetyTips"))
 	m.EnableMailboxIntelligence = types.BoolValue(getBool(obj, "EnableMailboxIntelligence"))
 	m.EnableMailboxIntelligenceProtection = types.BoolValue(getBool(obj, "EnableMailboxIntelligenceProtection"))
@@ -434,27 +613,28 @@ func readAntiPhishPolicy(ctx context.Context, obj map[string]any, m *antiPhishPo
 	m.EnableUnusualCharactersSafetyTips = types.BoolValue(getBool(obj, "EnableUnusualCharactersSafetyTips"))
 	m.EnableViaTag = types.BoolValue(getBool(obj, "EnableViaTag"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.ExcludedDomains = types.StringValue(getString(obj, "ExcludedDomains"))
-	m.ExcludedSenders = types.StringValue(getString(obj, "ExcludedSenders"))
+	m.ExcludedDomains = stringSetValue(ctx, getStringSlice(obj, "ExcludedDomains"))
+	m.ExcludedSenders = stringSetValue(ctx, getStringSlice(obj, "ExcludedSenders"))
 	m.HonorDmarcPolicy = types.BoolValue(getBool(obj, "HonorDmarcPolicy"))
-	m.ImpersonationProtectionState = types.StringValue(getString(obj, "ImpersonationProtectionState"))
-	m.MailboxIntelligenceProtectionAction = types.StringValue(getString(obj, "MailboxIntelligenceProtectionAction"))
-	m.MailboxIntelligenceProtectionActionRecipients = types.StringValue(getString(obj, "MailboxIntelligenceProtectionActionRecipients"))
+	m.ImpersonationProtectionState = types.StringValue(getObjectJSON(obj, "ImpersonationProtectionState"))
+	m.MailboxIntelligenceProtectionAction = types.StringValue(getObjectJSON(obj, "MailboxIntelligenceProtectionAction"))
+	m.MailboxIntelligenceProtectionActionRecipients = stringSetValue(ctx, getStringSlice(obj, "MailboxIntelligenceProtectionActionRecipients"))
 	m.MailboxIntelligenceQuarantineTag = types.StringValue(getString(obj, "MailboxIntelligenceQuarantineTag"))
 	m.MakeDefault = types.BoolValue(getBool(obj, "MakeDefault"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.PhishThresholdLevel = types.Int64Value(getInt(obj, "PhishThresholdLevel"))
 	m.PolicyTag = types.StringValue(getString(obj, "PolicyTag"))
-	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
+	m.RecommendedPolicyType = types.StringValue(getObjectJSON(obj, "RecommendedPolicyType"))
 	m.SimilarUsersSafetyTipsCustomText = types.StringValue(getString(obj, "SimilarUsersSafetyTipsCustomText"))
 	m.SpoofQuarantineTag = types.StringValue(getString(obj, "SpoofQuarantineTag"))
-	m.TargetedDomainActionRecipients = types.StringValue(getString(obj, "TargetedDomainActionRecipients"))
-	m.TargetedDomainProtectionAction = types.StringValue(getString(obj, "TargetedDomainProtectionAction"))
+	m.TargetedDomainActionRecipients = stringSetValue(ctx, getStringSlice(obj, "TargetedDomainActionRecipients"))
+	m.TargetedDomainProtectionAction = types.StringValue(getObjectJSON(obj, "TargetedDomainProtectionAction"))
 	m.TargetedDomainQuarantineTag = types.StringValue(getString(obj, "TargetedDomainQuarantineTag"))
-	m.TargetedDomainsToProtect = types.StringValue(getString(obj, "TargetedDomainsToProtect"))
-	m.TargetedUserActionRecipients = types.StringValue(getString(obj, "TargetedUserActionRecipients"))
-	m.TargetedUserProtectionAction = types.StringValue(getString(obj, "TargetedUserProtectionAction"))
+	m.TargetedDomainsToProtect = stringSetValue(ctx, getStringSlice(obj, "TargetedDomainsToProtect"))
+	m.TargetedUserActionRecipients = stringSetValue(ctx, getStringSlice(obj, "TargetedUserActionRecipients"))
+	m.TargetedUserProtectionAction = types.StringValue(getObjectJSON(obj, "TargetedUserProtectionAction"))
 	m.TargetedUserQuarantineTag = types.StringValue(getString(obj, "TargetedUserQuarantineTag"))
-	m.TargetedUsersToProtect = types.StringValue(getString(obj, "TargetedUsersToProtect"))
+	m.TargetedUsersToProtect = stringSetValue(ctx, getStringSlice(obj, "TargetedUsersToProtect"))
 	m.UnusualCharactersSafetyTipsCustomText = types.StringValue(getString(obj, "UnusualCharactersSafetyTipsCustomText"))
 	_ = ctx
 }
@@ -477,26 +657,27 @@ func (r *antiPhishPolicyResource) reconcileState(cfg, read *antiPhishPolicyModel
 	read.EnableUnusualCharactersSafetyTips = reconcile.KeepBool(cfg.EnableUnusualCharactersSafetyTips, read.EnableUnusualCharactersSafetyTips)
 	read.EnableViaTag = reconcile.KeepBool(cfg.EnableViaTag, read.EnableViaTag)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
-	read.ExcludedDomains = reconcile.KeepStr(cfg.ExcludedDomains, read.ExcludedDomains)
-	read.ExcludedSenders = reconcile.KeepStr(cfg.ExcludedSenders, read.ExcludedSenders)
+	read.ExcludedDomains = reconcile.KeepSet(cfg.ExcludedDomains, read.ExcludedDomains)
+	read.ExcludedSenders = reconcile.KeepSet(cfg.ExcludedSenders, read.ExcludedSenders)
 	read.HonorDmarcPolicy = reconcile.KeepBool(cfg.HonorDmarcPolicy, read.HonorDmarcPolicy)
 	read.ImpersonationProtectionState = reconcile.KeepStr(cfg.ImpersonationProtectionState, read.ImpersonationProtectionState)
 	read.MailboxIntelligenceProtectionAction = reconcile.KeepStr(cfg.MailboxIntelligenceProtectionAction, read.MailboxIntelligenceProtectionAction)
-	read.MailboxIntelligenceProtectionActionRecipients = reconcile.KeepStr(cfg.MailboxIntelligenceProtectionActionRecipients, read.MailboxIntelligenceProtectionActionRecipients)
+	read.MailboxIntelligenceProtectionActionRecipients = reconcile.KeepSet(cfg.MailboxIntelligenceProtectionActionRecipients, read.MailboxIntelligenceProtectionActionRecipients)
 	read.MailboxIntelligenceQuarantineTag = reconcile.KeepStr(cfg.MailboxIntelligenceQuarantineTag, read.MailboxIntelligenceQuarantineTag)
 	read.MakeDefault = reconcile.KeepBool(cfg.MakeDefault, read.MakeDefault)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.PhishThresholdLevel = reconcile.KeepInt64(cfg.PhishThresholdLevel, read.PhishThresholdLevel)
 	read.PolicyTag = reconcile.KeepStr(cfg.PolicyTag, read.PolicyTag)
 	read.RecommendedPolicyType = reconcile.KeepStr(cfg.RecommendedPolicyType, read.RecommendedPolicyType)
 	read.SimilarUsersSafetyTipsCustomText = reconcile.KeepStr(cfg.SimilarUsersSafetyTipsCustomText, read.SimilarUsersSafetyTipsCustomText)
 	read.SpoofQuarantineTag = reconcile.KeepStr(cfg.SpoofQuarantineTag, read.SpoofQuarantineTag)
-	read.TargetedDomainActionRecipients = reconcile.KeepStr(cfg.TargetedDomainActionRecipients, read.TargetedDomainActionRecipients)
+	read.TargetedDomainActionRecipients = reconcile.KeepSet(cfg.TargetedDomainActionRecipients, read.TargetedDomainActionRecipients)
 	read.TargetedDomainProtectionAction = reconcile.KeepStr(cfg.TargetedDomainProtectionAction, read.TargetedDomainProtectionAction)
 	read.TargetedDomainQuarantineTag = reconcile.KeepStr(cfg.TargetedDomainQuarantineTag, read.TargetedDomainQuarantineTag)
-	read.TargetedDomainsToProtect = reconcile.KeepStr(cfg.TargetedDomainsToProtect, read.TargetedDomainsToProtect)
-	read.TargetedUserActionRecipients = reconcile.KeepStr(cfg.TargetedUserActionRecipients, read.TargetedUserActionRecipients)
+	read.TargetedDomainsToProtect = reconcile.KeepSet(cfg.TargetedDomainsToProtect, read.TargetedDomainsToProtect)
+	read.TargetedUserActionRecipients = reconcile.KeepSet(cfg.TargetedUserActionRecipients, read.TargetedUserActionRecipients)
 	read.TargetedUserProtectionAction = reconcile.KeepStr(cfg.TargetedUserProtectionAction, read.TargetedUserProtectionAction)
 	read.TargetedUserQuarantineTag = reconcile.KeepStr(cfg.TargetedUserQuarantineTag, read.TargetedUserQuarantineTag)
-	read.TargetedUsersToProtect = reconcile.KeepStr(cfg.TargetedUsersToProtect, read.TargetedUsersToProtect)
+	read.TargetedUsersToProtect = reconcile.KeepSet(cfg.TargetedUsersToProtect, read.TargetedUsersToProtect)
 	read.UnusualCharactersSafetyTipsCustomText = reconcile.KeepStr(cfg.UnusualCharactersSafetyTipsCustomText, read.UnusualCharactersSafetyTipsCustomText)
 }

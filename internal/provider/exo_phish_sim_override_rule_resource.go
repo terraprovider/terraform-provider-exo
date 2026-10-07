@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -36,15 +37,15 @@ func NewExoPhishSimOverrideRuleResource() resource.Resource {
 type exoPhishSimOverrideRuleModel struct {
 	ID                   types.String `tfsdk:"id"`
 	Identity             types.String `tfsdk:"identity"`
-	AddDomains           types.String `tfsdk:"add_domains"`
-	AddSenderIpRanges    types.String `tfsdk:"add_sender_ip_ranges"`
+	AddDomains           types.Set    `tfsdk:"add_domains"`
+	AddSenderIpRanges    types.Set    `tfsdk:"add_sender_ip_ranges"`
 	Comment              types.String `tfsdk:"comment"`
-	Domains              types.String `tfsdk:"domains"`
+	Domains              types.Set    `tfsdk:"domains"`
 	Name                 types.String `tfsdk:"name"`
 	Policy               types.String `tfsdk:"policy"`
-	RemoveDomains        types.String `tfsdk:"remove_domains"`
-	RemoveSenderIpRanges types.String `tfsdk:"remove_sender_ip_ranges"`
-	SenderIpRanges       types.String `tfsdk:"sender_ip_ranges"`
+	RemoveDomains        types.Set    `tfsdk:"remove_domains"`
+	RemoveSenderIpRanges types.Set    `tfsdk:"remove_sender_ip_ranges"`
+	SenderIpRanges       types.Set    `tfsdk:"sender_ip_ranges"`
 }
 
 func (r *exoPhishSimOverrideRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -56,16 +57,16 @@ func (r *exoPhishSimOverrideRuleResource) Schema(_ context.Context, _ resource.S
 		Description: "Manages the ExoPhishSimOverrideRule object via New-ExoPhishSimOverrideRule / Get-ExoPhishSimOverrideRule / Set-ExoPhishSimOverrideRule / Remove-ExoPhishSimOverrideRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                      schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"add_domains":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"add_sender_ip_ranges":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddSenderIpRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"add_domains":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AddDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"add_sender_ip_ranges":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AddSenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"comment":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"domains":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Domains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"domains":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Domains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"name":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"policy":                  schema.StringAttribute{Required: true, Description: "Maps to the -Policy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"remove_domains":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"remove_sender_ip_ranges": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveSenderIpRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"sender_ip_ranges":        schema.StringAttribute{Required: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"remove_domains":          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"remove_sender_ip_ranges": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveSenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"sender_ip_ranges":        schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 		},
 	}
 }
@@ -84,18 +85,31 @@ func (r *exoPhishSimOverrideRuleResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	p := exo.NewExoPhishSimOverrideRuleParams{
-		Comment: plan.Comment.ValueString(),
-		Name:    plan.Name.ValueString(),
+	var config exoPhishSimOverrideRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Domains.ValueString(); v != "" {
-		p.Domains = v
+
+	p := exo.NewExoPhishSimOverrideRuleParams{}
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.Policy.ValueString(); v != "" {
-		p.Policy = v
+	if !config.Domains.IsNull() {
+		if v := toStringSlice(ctx, plan.Domains, &resp.Diagnostics); len(v) > 0 {
+			p.Domains = v
+		}
 	}
-	if v := plan.SenderIpRanges.ValueString(); v != "" {
-		p.SenderIpRanges = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Policy.ValueString(); v != "" {
+		p.Policy = objectParam(v)
+	}
+	if !config.SenderIpRanges.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+			p.SenderIpRanges = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -147,18 +161,28 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetExoPhishSimOverrideRuleParams{}
 	sp.Identity = id
-	if v := plan.AddDomains.ValueString(); v != "" {
-		sp.AddDomains = v
+	if !plan.AddDomains.Equal(state.AddDomains) {
+		if !plan.AddDomains.IsNull() && !plan.AddDomains.IsUnknown() {
+			sp.AddDomains = append([]string{}, toStringSlice(ctx, plan.AddDomains, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AddSenderIpRanges.ValueString(); v != "" {
-		sp.AddSenderIpRanges = v
+	if !plan.AddSenderIpRanges.Equal(state.AddSenderIpRanges) {
+		if !plan.AddSenderIpRanges.IsNull() && !plan.AddSenderIpRanges.IsUnknown() {
+			sp.AddSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.AddSenderIpRanges, &resp.Diagnostics)...)
+		}
 	}
-	sp.Comment = plan.Comment.ValueString()
-	if v := plan.RemoveDomains.ValueString(); v != "" {
-		sp.RemoveDomains = v
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.RemoveSenderIpRanges.ValueString(); v != "" {
-		sp.RemoveSenderIpRanges = v
+	if !plan.RemoveDomains.Equal(state.RemoveDomains) {
+		if !plan.RemoveDomains.IsNull() && !plan.RemoveDomains.IsUnknown() {
+			sp.RemoveDomains = append([]string{}, toStringSlice(ctx, plan.RemoveDomains, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RemoveSenderIpRanges.Equal(state.RemoveSenderIpRanges) {
+		if !plan.RemoveSenderIpRanges.IsNull() && !plan.RemoveSenderIpRanges.IsUnknown() {
+			sp.RemoveSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.RemoveSenderIpRanges, &resp.Diagnostics)...)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -169,11 +193,7 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AddDomains":           cfg.AddDomains,
-		"AddSenderIpRanges":    cfg.AddSenderIpRanges,
-		"Comment":              cfg.Comment,
-		"RemoveDomains":        cfg.RemoveDomains,
-		"RemoveSenderIpRanges": cfg.RemoveSenderIpRanges,
+		"Comment": cfg.Comment,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -235,26 +255,26 @@ func (r *exoPhishSimOverrideRuleResource) refresh(ctx context.Context, identity 
 func readExoPhishSimOverrideRule(ctx context.Context, obj map[string]any, m *exoPhishSimOverrideRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AddDomains = types.StringValue(getString(obj, "AddDomains"))
-	m.AddSenderIpRanges = types.StringValue(getString(obj, "AddSenderIpRanges"))
+	m.AddDomains = stringSetValue(ctx, getStringSlice(obj, "AddDomains"))
+	m.AddSenderIpRanges = stringSetValue(ctx, getStringSlice(obj, "AddSenderIpRanges"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
-	m.Domains = types.StringValue(getString(obj, "Domains"))
+	m.Domains = stringSetValue(ctx, getStringSlice(obj, "Domains"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Policy = types.StringValue(getString(obj, "Policy"))
-	m.RemoveDomains = types.StringValue(getString(obj, "RemoveDomains"))
-	m.RemoveSenderIpRanges = types.StringValue(getString(obj, "RemoveSenderIpRanges"))
-	m.SenderIpRanges = types.StringValue(getString(obj, "SenderIpRanges"))
+	m.Policy = types.StringValue(getObjectJSON(obj, "Policy"))
+	m.RemoveDomains = stringSetValue(ctx, getStringSlice(obj, "RemoveDomains"))
+	m.RemoveSenderIpRanges = stringSetValue(ctx, getStringSlice(obj, "RemoveSenderIpRanges"))
+	m.SenderIpRanges = stringSetValue(ctx, getStringSlice(obj, "SenderIpRanges"))
 	_ = ctx
 }
 
 func (r *exoPhishSimOverrideRuleResource) reconcileState(cfg, read *exoPhishSimOverrideRuleModel) {
-	read.AddDomains = reconcile.KeepStr(cfg.AddDomains, read.AddDomains)
-	read.AddSenderIpRanges = reconcile.KeepStr(cfg.AddSenderIpRanges, read.AddSenderIpRanges)
+	read.AddDomains = reconcile.KeepSet(cfg.AddDomains, read.AddDomains)
+	read.AddSenderIpRanges = reconcile.KeepSet(cfg.AddSenderIpRanges, read.AddSenderIpRanges)
 	read.Comment = reconcile.KeepStr(cfg.Comment, read.Comment)
-	read.Domains = reconcile.KeepStr(cfg.Domains, read.Domains)
+	read.Domains = reconcile.KeepSet(cfg.Domains, read.Domains)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Policy = reconcile.KeepStr(cfg.Policy, read.Policy)
-	read.RemoveDomains = reconcile.KeepStr(cfg.RemoveDomains, read.RemoveDomains)
-	read.RemoveSenderIpRanges = reconcile.KeepStr(cfg.RemoveSenderIpRanges, read.RemoveSenderIpRanges)
-	read.SenderIpRanges = reconcile.KeepStr(cfg.SenderIpRanges, read.SenderIpRanges)
+	read.RemoveDomains = reconcile.KeepSet(cfg.RemoveDomains, read.RemoveDomains)
+	read.RemoveSenderIpRanges = reconcile.KeepSet(cfg.RemoveSenderIpRanges, read.RemoveSenderIpRanges)
+	read.SenderIpRanges = reconcile.KeepSet(cfg.SenderIpRanges, read.SenderIpRanges)
 }

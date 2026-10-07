@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -127,7 +128,7 @@ type transportRuleModel struct {
 	ExceptIfSenderADAttributeMatchesPatterns     types.Set    `tfsdk:"except_if_sender_ad_attribute_matches_patterns"`
 	ExceptIfSenderDomainIs                       types.Set    `tfsdk:"except_if_sender_domain_is"`
 	ExceptIfSenderInRecipientList                types.Set    `tfsdk:"except_if_sender_in_recipient_list"`
-	ExceptIfSenderIpRanges                       types.String `tfsdk:"except_if_sender_ip_ranges"`
+	ExceptIfSenderIpRanges                       types.Set    `tfsdk:"except_if_sender_ip_ranges"`
 	ExceptIfSenderManagementRelationship         types.String `tfsdk:"except_if_sender_management_relationship"`
 	ExceptIfSentTo                               types.Set    `tfsdk:"except_if_sent_to"`
 	ExceptIfSentToMemberOf                       types.Set    `tfsdk:"except_if_sent_to_member_of"`
@@ -165,6 +166,7 @@ type transportRuleModel struct {
 	Name                                         types.String `tfsdk:"name"`
 	NotifySender                                 types.String `tfsdk:"notify_sender"`
 	PrependSubject                               types.String `tfsdk:"prepend_subject"`
+	Priority                                     types.Int64  `tfsdk:"priority"`
 	Quarantine                                   types.Bool   `tfsdk:"quarantine"`
 	RecipientADAttributeContainsWords            types.Set    `tfsdk:"recipient_ad_attribute_contains_words"`
 	RecipientADAttributeMatchesPatterns          types.Set    `tfsdk:"recipient_ad_attribute_matches_patterns"`
@@ -190,7 +192,7 @@ type transportRuleModel struct {
 	SenderAddressLocation                        types.String `tfsdk:"sender_address_location"`
 	SenderDomainIs                               types.Set    `tfsdk:"sender_domain_is"`
 	SenderInRecipientList                        types.Set    `tfsdk:"sender_in_recipient_list"`
-	SenderIpRanges                               types.String `tfsdk:"sender_ip_ranges"`
+	SenderIpRanges                               types.Set    `tfsdk:"sender_ip_ranges"`
 	SenderManagementRelationship                 types.String `tfsdk:"sender_management_relationship"`
 	SentTo                                       types.Set    `tfsdk:"sent_to"`
 	SentToMemberOf                               types.Set    `tfsdk:"sent_to_member_of"`
@@ -219,7 +221,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set-TransportRule / Remove-TransportRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"activation_date":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActivationDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ad_comparison_attribute":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdComparisonAttribute parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ad_comparison_operator":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdComparisonOperator parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -311,7 +313,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"except_if_sender_ad_attribute_matches_patterns":      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderADAttributeMatchesPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sender_domain_is":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sender_in_recipient_list":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderInRecipientList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"except_if_sender_ip_ranges":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderIpRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_sender_ip_ranges":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sender_management_relationship":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderManagementRelationship parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to":                                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -349,6 +351,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"name":                                                schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"notify_sender":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotifySender parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"prepend_subject":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrependSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                                            schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"quarantine":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Quarantine parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_ad_attribute_contains_words":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientADAttributeContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"recipient_ad_attribute_matches_patterns":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientADAttributeMatchesPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -374,7 +377,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"sender_address_location":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderAddressLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"sender_domain_is":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sender_in_recipient_list":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderInRecipientList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"sender_ip_ranges":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"sender_ip_ranges":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sender_management_relationship":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderManagementRelationship parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"sent_to":                                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_member_of":                                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -410,289 +413,757 @@ func (r *transportRuleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	p := exo.NewTransportRuleParams{
-		AddToRecipients:                              toStringSlice(ctx, plan.AddToRecipients, &resp.Diagnostics),
-		AnyOfCcHeader:                                toStringSlice(ctx, plan.AnyOfCcHeader, &resp.Diagnostics),
-		AnyOfCcHeaderMemberOf:                        toStringSlice(ctx, plan.AnyOfCcHeaderMemberOf, &resp.Diagnostics),
-		AnyOfRecipientAddressContainsWords:           toStringSlice(ctx, plan.AnyOfRecipientAddressContainsWords, &resp.Diagnostics),
-		AnyOfRecipientAddressMatchesPatterns:         toStringSlice(ctx, plan.AnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics),
-		AnyOfToCcHeader:                              toStringSlice(ctx, plan.AnyOfToCcHeader, &resp.Diagnostics),
-		AnyOfToCcHeaderMemberOf:                      toStringSlice(ctx, plan.AnyOfToCcHeaderMemberOf, &resp.Diagnostics),
-		AnyOfToHeader:                                toStringSlice(ctx, plan.AnyOfToHeader, &resp.Diagnostics),
-		AnyOfToHeaderMemberOf:                        toStringSlice(ctx, plan.AnyOfToHeaderMemberOf, &resp.Diagnostics),
-		ApplyClassification:                          plan.ApplyClassification.ValueString(),
-		ApplyOME:                                     plan.ApplyOME.ValueBool(),
-		AttachmentContainsWords:                      toStringSlice(ctx, plan.AttachmentContainsWords, &resp.Diagnostics),
-		AttachmentExtensionMatchesWords:              toStringSlice(ctx, plan.AttachmentExtensionMatchesWords, &resp.Diagnostics),
-		AttachmentHasExecutableContent:               plan.AttachmentHasExecutableContent.ValueBool(),
-		AttachmentIsPasswordProtected:                plan.AttachmentIsPasswordProtected.ValueBool(),
-		AttachmentIsUnsupported:                      plan.AttachmentIsUnsupported.ValueBool(),
-		AttachmentMatchesPatterns:                    toStringSlice(ctx, plan.AttachmentMatchesPatterns, &resp.Diagnostics),
-		AttachmentNameMatchesPatterns:                toStringSlice(ctx, plan.AttachmentNameMatchesPatterns, &resp.Diagnostics),
-		AttachmentProcessingLimitExceeded:            plan.AttachmentProcessingLimitExceeded.ValueBool(),
-		AttachmentPropertyContainsWords:              toStringSlice(ctx, plan.AttachmentPropertyContainsWords, &resp.Diagnostics),
-		BetweenMemberOf1:                             toStringSlice(ctx, plan.BetweenMemberOf1, &resp.Diagnostics),
-		BetweenMemberOf2:                             toStringSlice(ctx, plan.BetweenMemberOf2, &resp.Diagnostics),
-		BlindCopyTo:                                  toStringSlice(ctx, plan.BlindCopyTo, &resp.Diagnostics),
-		Comments:                                     plan.Comments.ValueString(),
-		ContentCharacterSetContainsWords:             toStringSlice(ctx, plan.ContentCharacterSetContainsWords, &resp.Diagnostics),
-		CopyTo:                                       toStringSlice(ctx, plan.CopyTo, &resp.Diagnostics),
-		DeleteMessage:                                plan.DeleteMessage.ValueBool(),
-		Disconnect:                                   plan.Disconnect.ValueBool(),
-		DlpPolicy:                                    plan.DlpPolicy.ValueString(),
-		Enabled:                                      plan.Enabled.ValueBool(),
-		ExceptIfAnyOfCcHeader:                        toStringSlice(ctx, plan.ExceptIfAnyOfCcHeader, &resp.Diagnostics),
-		ExceptIfAnyOfCcHeaderMemberOf:                toStringSlice(ctx, plan.ExceptIfAnyOfCcHeaderMemberOf, &resp.Diagnostics),
-		ExceptIfAnyOfRecipientAddressContainsWords:   toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressContainsWords, &resp.Diagnostics),
-		ExceptIfAnyOfRecipientAddressMatchesPatterns: toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics),
-		ExceptIfAnyOfToCcHeader:                      toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeader, &resp.Diagnostics),
-		ExceptIfAnyOfToCcHeaderMemberOf:              toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeaderMemberOf, &resp.Diagnostics),
-		ExceptIfAnyOfToHeader:                        toStringSlice(ctx, plan.ExceptIfAnyOfToHeader, &resp.Diagnostics),
-		ExceptIfAnyOfToHeaderMemberOf:                toStringSlice(ctx, plan.ExceptIfAnyOfToHeaderMemberOf, &resp.Diagnostics),
-		ExceptIfAttachmentContainsWords:              toStringSlice(ctx, plan.ExceptIfAttachmentContainsWords, &resp.Diagnostics),
-		ExceptIfAttachmentExtensionMatchesWords:      toStringSlice(ctx, plan.ExceptIfAttachmentExtensionMatchesWords, &resp.Diagnostics),
-		ExceptIfAttachmentHasExecutableContent:       plan.ExceptIfAttachmentHasExecutableContent.ValueBool(),
-		ExceptIfAttachmentIsPasswordProtected:        plan.ExceptIfAttachmentIsPasswordProtected.ValueBool(),
-		ExceptIfAttachmentIsUnsupported:              plan.ExceptIfAttachmentIsUnsupported.ValueBool(),
-		ExceptIfAttachmentMatchesPatterns:            toStringSlice(ctx, plan.ExceptIfAttachmentMatchesPatterns, &resp.Diagnostics),
-		ExceptIfAttachmentNameMatchesPatterns:        toStringSlice(ctx, plan.ExceptIfAttachmentNameMatchesPatterns, &resp.Diagnostics),
-		ExceptIfAttachmentProcessingLimitExceeded:    plan.ExceptIfAttachmentProcessingLimitExceeded.ValueBool(),
-		ExceptIfAttachmentPropertyContainsWords:      toStringSlice(ctx, plan.ExceptIfAttachmentPropertyContainsWords, &resp.Diagnostics),
-		ExceptIfBetweenMemberOf1:                     toStringSlice(ctx, plan.ExceptIfBetweenMemberOf1, &resp.Diagnostics),
-		ExceptIfBetweenMemberOf2:                     toStringSlice(ctx, plan.ExceptIfBetweenMemberOf2, &resp.Diagnostics),
-		ExceptIfContentCharacterSetContainsWords:     toStringSlice(ctx, plan.ExceptIfContentCharacterSetContainsWords, &resp.Diagnostics),
-		ExceptIfFrom:                                 toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics),
-		ExceptIfFromAddressContainsWords:             toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics),
-		ExceptIfFromAddressMatchesPatterns:           toStringSlice(ctx, plan.ExceptIfFromAddressMatchesPatterns, &resp.Diagnostics),
-		ExceptIfFromMemberOf:                         toStringSlice(ctx, plan.ExceptIfFromMemberOf, &resp.Diagnostics),
-		ExceptIfHasClassification:                    plan.ExceptIfHasClassification.ValueString(),
-		ExceptIfHasNoClassification:                  plan.ExceptIfHasNoClassification.ValueBool(),
-		ExceptIfHasSenderOverride:                    plan.ExceptIfHasSenderOverride.ValueBool(),
-		ExceptIfHeaderContainsWords:                  toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics),
-		ExceptIfHeaderMatchesPatterns:                toStringSlice(ctx, plan.ExceptIfHeaderMatchesPatterns, &resp.Diagnostics),
-		ExceptIfManagerAddresses:                     toStringSlice(ctx, plan.ExceptIfManagerAddresses, &resp.Diagnostics),
-		ExceptIfMessageContainsDataClassifications:   toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics),
-		ExceptIfRecipientADAttributeContainsWords:    toStringSlice(ctx, plan.ExceptIfRecipientADAttributeContainsWords, &resp.Diagnostics),
-		ExceptIfRecipientADAttributeMatchesPatterns:  toStringSlice(ctx, plan.ExceptIfRecipientADAttributeMatchesPatterns, &resp.Diagnostics),
-		ExceptIfRecipientAddressContainsWords:        toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics),
-		ExceptIfRecipientAddressMatchesPatterns:      toStringSlice(ctx, plan.ExceptIfRecipientAddressMatchesPatterns, &resp.Diagnostics),
-		ExceptIfRecipientDomainIs:                    toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics),
-		ExceptIfRecipientInSenderList:                toStringSlice(ctx, plan.ExceptIfRecipientInSenderList, &resp.Diagnostics),
-		ExceptIfSenderADAttributeContainsWords:       toStringSlice(ctx, plan.ExceptIfSenderADAttributeContainsWords, &resp.Diagnostics),
-		ExceptIfSenderADAttributeMatchesPatterns:     toStringSlice(ctx, plan.ExceptIfSenderADAttributeMatchesPatterns, &resp.Diagnostics),
-		ExceptIfSenderDomainIs:                       toStringSlice(ctx, plan.ExceptIfSenderDomainIs, &resp.Diagnostics),
-		ExceptIfSenderInRecipientList:                toStringSlice(ctx, plan.ExceptIfSenderInRecipientList, &resp.Diagnostics),
-		ExceptIfSentTo:                               toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
-		ExceptIfSentToMemberOf:                       toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics),
-		ExceptIfSubjectContainsWords:                 toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics),
-		ExceptIfSubjectMatchesPatterns:               toStringSlice(ctx, plan.ExceptIfSubjectMatchesPatterns, &resp.Diagnostics),
-		ExceptIfSubjectOrBodyContainsWords:           toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics),
-		ExceptIfSubjectOrBodyMatchesPatterns:         toStringSlice(ctx, plan.ExceptIfSubjectOrBodyMatchesPatterns, &resp.Diagnostics),
-		From:                                         toStringSlice(ctx, plan.From, &resp.Diagnostics),
-		FromAddressContainsWords:                     toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics),
-		FromAddressMatchesPatterns:                   toStringSlice(ctx, plan.FromAddressMatchesPatterns, &resp.Diagnostics),
-		FromMemberOf:                                 toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics),
-		HasClassification:                            plan.HasClassification.ValueString(),
-		HasNoClassification:                          plan.HasNoClassification.ValueBool(),
-		HasSenderOverride:                            plan.HasSenderOverride.ValueBool(),
-		HeaderContainsWords:                          toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics),
-		HeaderMatchesPatterns:                        toStringSlice(ctx, plan.HeaderMatchesPatterns, &resp.Diagnostics),
-		IncidentReportContent:                        toStringSlice(ctx, plan.IncidentReportContent, &resp.Diagnostics),
-		ManagerAddresses:                             toStringSlice(ctx, plan.ManagerAddresses, &resp.Diagnostics),
-		MessageContainsDataClassifications:           toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics),
-		ModerateMessageByManager:                     plan.ModerateMessageByManager.ValueBool(),
-		ModerateMessageByUser:                        toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics),
-		Name:                                         plan.Name.ValueString(),
-		Quarantine:                                   plan.Quarantine.ValueBool(),
-		RecipientADAttributeContainsWords:            toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics),
-		RecipientADAttributeMatchesPatterns:          toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics),
-		RecipientAddressContainsWords:                toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics),
-		RecipientAddressMatchesPatterns:              toStringSlice(ctx, plan.RecipientAddressMatchesPatterns, &resp.Diagnostics),
-		RecipientDomainIs:                            toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics),
-		RecipientInSenderList:                        toStringSlice(ctx, plan.RecipientInSenderList, &resp.Diagnostics),
-		RedirectMessageTo:                            toStringSlice(ctx, plan.RedirectMessageTo, &resp.Diagnostics),
-		RemoveOME:                                    plan.RemoveOME.ValueBool(),
-		RemoveOMEv2:                                  plan.RemoveOMEv2.ValueBool(),
-		RemoveRMSAttachmentEncryption:                plan.RemoveRMSAttachmentEncryption.ValueBool(),
-		RouteMessageOutboundRequireTls:               plan.RouteMessageOutboundRequireTls.ValueBool(),
-		SenderADAttributeContainsWords:               toStringSlice(ctx, plan.SenderADAttributeContainsWords, &resp.Diagnostics),
-		SenderADAttributeMatchesPatterns:             toStringSlice(ctx, plan.SenderADAttributeMatchesPatterns, &resp.Diagnostics),
-		SenderDomainIs:                               toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics),
-		SenderInRecipientList:                        toStringSlice(ctx, plan.SenderInRecipientList, &resp.Diagnostics),
-		SentTo:                                       toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
-		SentToMemberOf:                               toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics),
-		SetAuditSeverity:                             plan.SetAuditSeverity.ValueString(),
-		StopRuleProcessing:                           plan.StopRuleProcessing.ValueBool(),
-		SubjectContainsWords:                         toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics),
-		SubjectMatchesPatterns:                       toStringSlice(ctx, plan.SubjectMatchesPatterns, &resp.Diagnostics),
-		SubjectOrBodyContainsWords:                   toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics),
-		SubjectOrBodyMatchesPatterns:                 toStringSlice(ctx, plan.SubjectOrBodyMatchesPatterns, &resp.Diagnostics),
-		UseLegacyRegex:                               plan.UseLegacyRegex.ValueBool(),
+	var config transportRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ActivationDate.ValueString(); v != "" {
-		p.ActivationDate = v
+
+	p := exo.NewTransportRuleParams{}
+	if v := config.ActivationDate.ValueString(); v != "" {
+		p.ActivationDate = objectParam(v)
 	}
-	if v := plan.AdComparisonAttribute.ValueString(); v != "" {
-		p.AdComparisonAttribute = v
+	if v := config.AdComparisonAttribute.ValueString(); v != "" {
+		p.AdComparisonAttribute = objectParam(v)
 	}
-	if v := plan.AdComparisonOperator.ValueString(); v != "" {
-		p.AdComparisonOperator = v
+	if v := config.AdComparisonOperator.ValueString(); v != "" {
+		p.AdComparisonOperator = objectParam(v)
 	}
-	if v := plan.AddManagerAsRecipientType.ValueString(); v != "" {
-		p.AddManagerAsRecipientType = v
+	if v := config.AddManagerAsRecipientType.ValueString(); v != "" {
+		p.AddManagerAsRecipientType = objectParam(v)
 	}
-	if v := plan.ApplyHtmlDisclaimerFallbackAction.ValueString(); v != "" {
-		p.ApplyHtmlDisclaimerFallbackAction = v
+	if !config.AddToRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.AddToRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.AddToRecipients = v
+		}
 	}
-	if v := plan.ApplyHtmlDisclaimerLocation.ValueString(); v != "" {
-		p.ApplyHtmlDisclaimerLocation = v
+	if !config.AnyOfCcHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfCcHeader, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfCcHeader = v
+		}
 	}
-	if v := plan.ApplyHtmlDisclaimerText.ValueString(); v != "" {
-		p.ApplyHtmlDisclaimerText = v
+	if !config.AnyOfCcHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfCcHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfCcHeaderMemberOf = v
+		}
 	}
-	if v := plan.ApplyRightsProtectionCustomizationTemplate.ValueString(); v != "" {
-		p.ApplyRightsProtectionCustomizationTemplate = v
+	if !config.AnyOfRecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfRecipientAddressContainsWords = v
+		}
 	}
-	if v := plan.ApplyRightsProtectionTemplate.ValueString(); v != "" {
-		p.ApplyRightsProtectionTemplate = v
+	if !config.AnyOfRecipientAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfRecipientAddressMatchesPatterns = v
+		}
 	}
-	if v := plan.AttachmentSizeOver.ValueString(); v != "" {
-		p.AttachmentSizeOver = v
+	if !config.AnyOfToCcHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfToCcHeader, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfToCcHeader = v
+		}
 	}
-	if v := plan.ExceptIfAdComparisonAttribute.ValueString(); v != "" {
-		p.ExceptIfAdComparisonAttribute = v
+	if !config.AnyOfToCcHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfToCcHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfToCcHeaderMemberOf = v
+		}
 	}
-	if v := plan.ExceptIfAdComparisonOperator.ValueString(); v != "" {
-		p.ExceptIfAdComparisonOperator = v
+	if !config.AnyOfToHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfToHeader, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfToHeader = v
+		}
 	}
-	if v := plan.ExceptIfAttachmentSizeOver.ValueString(); v != "" {
-		p.ExceptIfAttachmentSizeOver = v
+	if !config.AnyOfToHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.AnyOfToHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.AnyOfToHeaderMemberOf = v
+		}
 	}
-	if v := plan.ExceptIfFromScope.ValueString(); v != "" {
-		p.ExceptIfFromScope = v
+	if !config.ApplyClassification.IsNull() {
+		p.ApplyClassification = plan.ApplyClassification.ValueString()
 	}
-	if v := plan.ExceptIfHeaderContainsMessageHeader.ValueString(); v != "" {
-		p.ExceptIfHeaderContainsMessageHeader = v
+	if v := config.ApplyHtmlDisclaimerFallbackAction.ValueString(); v != "" {
+		p.ApplyHtmlDisclaimerFallbackAction = objectParam(v)
 	}
-	if v := plan.ExceptIfHeaderMatchesMessageHeader.ValueString(); v != "" {
-		p.ExceptIfHeaderMatchesMessageHeader = v
+	if v := config.ApplyHtmlDisclaimerLocation.ValueString(); v != "" {
+		p.ApplyHtmlDisclaimerLocation = objectParam(v)
 	}
-	if v := plan.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
-		p.ExceptIfManagerForEvaluatedUser = v
+	if v := config.ApplyHtmlDisclaimerText.ValueString(); v != "" {
+		p.ApplyHtmlDisclaimerText = objectParam(v)
 	}
-	if v := plan.ExceptIfMessageSizeOver.ValueString(); v != "" {
-		p.ExceptIfMessageSizeOver = v
+	if !config.ApplyOME.IsNull() {
+		if !plan.ApplyOME.IsUnknown() {
+			p.ApplyOME = plan.ApplyOME.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		p.ExceptIfMessageTypeMatches = v
+	if v := config.ApplyRightsProtectionCustomizationTemplate.ValueString(); v != "" {
+		p.ApplyRightsProtectionCustomizationTemplate = objectParam(v)
 	}
-	if v := plan.ExceptIfSCLOver.ValueString(); v != "" {
-		p.ExceptIfSCLOver = v
+	if v := config.ApplyRightsProtectionTemplate.ValueString(); v != "" {
+		p.ApplyRightsProtectionTemplate = objectParam(v)
 	}
-	if v := plan.ExceptIfSenderIpRanges.ValueString(); v != "" {
-		p.ExceptIfSenderIpRanges = v
+	if !config.AttachmentContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.AttachmentContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.AttachmentContainsWords = v
+		}
 	}
-	if v := plan.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
-		p.ExceptIfSenderManagementRelationship = v
+	if !config.AttachmentExtensionMatchesWords.IsNull() {
+		if v := toStringSlice(ctx, plan.AttachmentExtensionMatchesWords, &resp.Diagnostics); len(v) > 0 {
+			p.AttachmentExtensionMatchesWords = v
+		}
 	}
-	if v := plan.ExceptIfSentToScope.ValueString(); v != "" {
-		p.ExceptIfSentToScope = v
+	if !config.AttachmentHasExecutableContent.IsNull() {
+		if !plan.AttachmentHasExecutableContent.IsUnknown() {
+			p.AttachmentHasExecutableContent = plan.AttachmentHasExecutableContent.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		p.ExceptIfWithImportance = v
+	if !config.AttachmentIsPasswordProtected.IsNull() {
+		if !plan.AttachmentIsPasswordProtected.IsUnknown() {
+			p.AttachmentIsPasswordProtected = plan.AttachmentIsPasswordProtected.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExpiryDate.ValueString(); v != "" {
-		p.ExpiryDate = v
+	if !config.AttachmentIsUnsupported.IsNull() {
+		if !plan.AttachmentIsUnsupported.IsUnknown() {
+			p.AttachmentIsUnsupported = plan.AttachmentIsUnsupported.ValueBoolPointer()
+		}
 	}
-	if v := plan.FromScope.ValueString(); v != "" {
-		p.FromScope = v
+	if !config.AttachmentMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.AttachmentMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.AttachmentMatchesPatterns = v
+		}
 	}
-	if v := plan.GenerateIncidentReport.ValueString(); v != "" {
-		p.GenerateIncidentReport = v
+	if !config.AttachmentNameMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.AttachmentNameMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.AttachmentNameMatchesPatterns = v
+		}
 	}
-	if v := plan.GenerateNotification.ValueString(); v != "" {
-		p.GenerateNotification = v
+	if !config.AttachmentProcessingLimitExceeded.IsNull() {
+		if !plan.AttachmentProcessingLimitExceeded.IsUnknown() {
+			p.AttachmentProcessingLimitExceeded = plan.AttachmentProcessingLimitExceeded.ValueBoolPointer()
+		}
 	}
-	if v := plan.HeaderContainsMessageHeader.ValueString(); v != "" {
-		p.HeaderContainsMessageHeader = v
+	if !config.AttachmentPropertyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.AttachmentPropertyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.AttachmentPropertyContainsWords = v
+		}
 	}
-	if v := plan.HeaderMatchesMessageHeader.ValueString(); v != "" {
-		p.HeaderMatchesMessageHeader = v
+	if v := config.AttachmentSizeOver.ValueString(); v != "" {
+		p.AttachmentSizeOver = objectParam(v)
 	}
-	if v := plan.LogEventText.ValueString(); v != "" {
-		p.LogEventText = v
+	if !config.BetweenMemberOf1.IsNull() {
+		if v := toStringSlice(ctx, plan.BetweenMemberOf1, &resp.Diagnostics); len(v) > 0 {
+			p.BetweenMemberOf1 = v
+		}
 	}
-	if v := plan.ManagerForEvaluatedUser.ValueString(); v != "" {
-		p.ManagerForEvaluatedUser = v
+	if !config.BetweenMemberOf2.IsNull() {
+		if v := toStringSlice(ctx, plan.BetweenMemberOf2, &resp.Diagnostics); len(v) > 0 {
+			p.BetweenMemberOf2 = v
+		}
 	}
-	if v := plan.MessageSizeOver.ValueString(); v != "" {
-		p.MessageSizeOver = v
+	if !config.BlindCopyTo.IsNull() {
+		if v := toStringSlice(ctx, plan.BlindCopyTo, &resp.Diagnostics); len(v) > 0 {
+			p.BlindCopyTo = v
+		}
 	}
-	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		p.MessageTypeMatches = v
+	if !config.Comments.IsNull() {
+		p.Comments = plan.Comments.ValueString()
 	}
-	if v := plan.Mode.ValueString(); v != "" {
-		p.Mode = v
+	if !config.ContentCharacterSetContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ContentCharacterSetContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ContentCharacterSetContainsWords = v
+		}
 	}
-	if v := plan.NotifySender.ValueString(); v != "" {
-		p.NotifySender = v
+	if !config.CopyTo.IsNull() {
+		if v := toStringSlice(ctx, plan.CopyTo, &resp.Diagnostics); len(v) > 0 {
+			p.CopyTo = v
+		}
 	}
-	if v := plan.PrependSubject.ValueString(); v != "" {
-		p.PrependSubject = v
+	if !config.DeleteMessage.IsNull() {
+		if !plan.DeleteMessage.IsUnknown() {
+			p.DeleteMessage = plan.DeleteMessage.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecipientAddressType.ValueString(); v != "" {
-		p.RecipientAddressType = v
+	if !config.Disconnect.IsNull() {
+		if !plan.Disconnect.IsUnknown() {
+			p.Disconnect = plan.Disconnect.ValueBoolPointer()
+		}
 	}
-	if v := plan.RejectMessageEnhancedStatusCode.ValueString(); v != "" {
-		p.RejectMessageEnhancedStatusCode = v
+	if !config.DlpPolicy.IsNull() {
+		p.DlpPolicy = plan.DlpPolicy.ValueString()
 	}
-	if v := plan.RejectMessageReasonText.ValueString(); v != "" {
-		p.RejectMessageReasonText = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RemoveHeader.ValueString(); v != "" {
-		p.RemoveHeader = v
+	if v := config.ExceptIfAdComparisonAttribute.ValueString(); v != "" {
+		p.ExceptIfAdComparisonAttribute = objectParam(v)
 	}
-	if v := plan.RouteMessageOutboundConnector.ValueString(); v != "" {
-		p.RouteMessageOutboundConnector = v
+	if v := config.ExceptIfAdComparisonOperator.ValueString(); v != "" {
+		p.ExceptIfAdComparisonOperator = objectParam(v)
 	}
-	if v := plan.RuleErrorAction.ValueString(); v != "" {
-		p.RuleErrorAction = v
+	if !config.ExceptIfAnyOfCcHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfCcHeader, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfCcHeader = v
+		}
 	}
-	if v := plan.RuleSubType.ValueString(); v != "" {
-		p.RuleSubType = v
+	if !config.ExceptIfAnyOfCcHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfCcHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfCcHeaderMemberOf = v
+		}
 	}
-	if v := plan.SCLOver.ValueString(); v != "" {
-		p.SCLOver = v
+	if !config.ExceptIfAnyOfRecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfRecipientAddressContainsWords = v
+		}
 	}
-	if v := plan.SenderAddressLocation.ValueString(); v != "" {
-		p.SenderAddressLocation = v
+	if !config.ExceptIfAnyOfRecipientAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfRecipientAddressMatchesPatterns = v
+		}
 	}
-	if v := plan.SenderIpRanges.ValueString(); v != "" {
-		p.SenderIpRanges = v
+	if !config.ExceptIfAnyOfToCcHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeader, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfToCcHeader = v
+		}
 	}
-	if v := plan.SenderManagementRelationship.ValueString(); v != "" {
-		p.SenderManagementRelationship = v
+	if !config.ExceptIfAnyOfToCcHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfToCcHeaderMemberOf = v
+		}
 	}
-	if v := plan.SentToScope.ValueString(); v != "" {
-		p.SentToScope = v
+	if !config.ExceptIfAnyOfToHeader.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfToHeader, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfToHeader = v
+		}
 	}
-	if v := plan.SetHeaderName.ValueString(); v != "" {
-		p.SetHeaderName = v
+	if !config.ExceptIfAnyOfToHeaderMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAnyOfToHeaderMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAnyOfToHeaderMemberOf = v
+		}
 	}
-	if v := plan.SetHeaderValue.ValueString(); v != "" {
-		p.SetHeaderValue = v
+	if !config.ExceptIfAttachmentContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAttachmentContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAttachmentContainsWords = v
+		}
 	}
-	if v := plan.SetSCL.ValueString(); v != "" {
-		p.SetSCL = v
+	if !config.ExceptIfAttachmentExtensionMatchesWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAttachmentExtensionMatchesWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAttachmentExtensionMatchesWords = v
+		}
 	}
-	if v := plan.SmtpRejectMessageRejectStatusCode.ValueString(); v != "" {
-		p.SmtpRejectMessageRejectStatusCode = v
+	if !config.ExceptIfAttachmentHasExecutableContent.IsNull() {
+		if !plan.ExceptIfAttachmentHasExecutableContent.IsUnknown() {
+			p.ExceptIfAttachmentHasExecutableContent = plan.ExceptIfAttachmentHasExecutableContent.ValueBoolPointer()
+		}
 	}
-	if v := plan.SmtpRejectMessageRejectText.ValueString(); v != "" {
-		p.SmtpRejectMessageRejectText = v
+	if !config.ExceptIfAttachmentIsPasswordProtected.IsNull() {
+		if !plan.ExceptIfAttachmentIsPasswordProtected.IsUnknown() {
+			p.ExceptIfAttachmentIsPasswordProtected = plan.ExceptIfAttachmentIsPasswordProtected.ValueBoolPointer()
+		}
 	}
-	if v := plan.WithImportance.ValueString(); v != "" {
-		p.WithImportance = v
+	if !config.ExceptIfAttachmentIsUnsupported.IsNull() {
+		if !plan.ExceptIfAttachmentIsUnsupported.IsUnknown() {
+			p.ExceptIfAttachmentIsUnsupported = plan.ExceptIfAttachmentIsUnsupported.ValueBoolPointer()
+		}
+	}
+	if !config.ExceptIfAttachmentMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAttachmentMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAttachmentMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfAttachmentNameMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAttachmentNameMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAttachmentNameMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfAttachmentProcessingLimitExceeded.IsNull() {
+		if !plan.ExceptIfAttachmentProcessingLimitExceeded.IsUnknown() {
+			p.ExceptIfAttachmentProcessingLimitExceeded = plan.ExceptIfAttachmentProcessingLimitExceeded.ValueBoolPointer()
+		}
+	}
+	if !config.ExceptIfAttachmentPropertyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAttachmentPropertyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAttachmentPropertyContainsWords = v
+		}
+	}
+	if v := config.ExceptIfAttachmentSizeOver.ValueString(); v != "" {
+		p.ExceptIfAttachmentSizeOver = objectParam(v)
+	}
+	if !config.ExceptIfBetweenMemberOf1.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfBetweenMemberOf1, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfBetweenMemberOf1 = v
+		}
+	}
+	if !config.ExceptIfBetweenMemberOf2.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfBetweenMemberOf2, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfBetweenMemberOf2 = v
+		}
+	}
+	if !config.ExceptIfContentCharacterSetContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfContentCharacterSetContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfContentCharacterSetContainsWords = v
+		}
+	}
+	if !config.ExceptIfFrom.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFrom = v
+		}
+	}
+	if !config.ExceptIfFromAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFromAddressContainsWords = v
+		}
+	}
+	if !config.ExceptIfFromAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFromAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFromAddressMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfFromMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFromMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFromMemberOf = v
+		}
+	}
+	if v := config.ExceptIfFromScope.ValueString(); v != "" {
+		p.ExceptIfFromScope = objectParam(v)
+	}
+	if !config.ExceptIfHasClassification.IsNull() {
+		p.ExceptIfHasClassification = plan.ExceptIfHasClassification.ValueString()
+	}
+	if !config.ExceptIfHasNoClassification.IsNull() {
+		if !plan.ExceptIfHasNoClassification.IsUnknown() {
+			p.ExceptIfHasNoClassification = plan.ExceptIfHasNoClassification.ValueBoolPointer()
+		}
+	}
+	if !config.ExceptIfHasSenderOverride.IsNull() {
+		if !plan.ExceptIfHasSenderOverride.IsUnknown() {
+			p.ExceptIfHasSenderOverride = plan.ExceptIfHasSenderOverride.ValueBoolPointer()
+		}
+	}
+	if v := config.ExceptIfHeaderContainsMessageHeader.ValueString(); v != "" {
+		p.ExceptIfHeaderContainsMessageHeader = objectParam(v)
+	}
+	if !config.ExceptIfHeaderContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfHeaderContainsWords = v
+		}
+	}
+	if v := config.ExceptIfHeaderMatchesMessageHeader.ValueString(); v != "" {
+		p.ExceptIfHeaderMatchesMessageHeader = objectParam(v)
+	}
+	if !config.ExceptIfHeaderMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfHeaderMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfHeaderMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfManagerAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfManagerAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfManagerAddresses = v
+		}
+	}
+	if v := config.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
+		p.ExceptIfManagerForEvaluatedUser = objectParam(v)
+	}
+	if !config.ExceptIfMessageContainsDataClassifications.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfMessageContainsDataClassifications = v
+		}
+	}
+	if v := config.ExceptIfMessageSizeOver.ValueString(); v != "" {
+		p.ExceptIfMessageSizeOver = objectParam(v)
+	}
+	if v := config.ExceptIfMessageTypeMatches.ValueString(); v != "" {
+		p.ExceptIfMessageTypeMatches = objectParam(v)
+	}
+	if !config.ExceptIfRecipientADAttributeContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientADAttributeContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientADAttributeContainsWords = v
+		}
+	}
+	if !config.ExceptIfRecipientADAttributeMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientADAttributeMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientADAttributeMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfRecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientAddressContainsWords = v
+		}
+	}
+	if !config.ExceptIfRecipientAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientAddressMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfRecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientDomainIs = v
+		}
+	}
+	if !config.ExceptIfRecipientInSenderList.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientInSenderList, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientInSenderList = v
+		}
+	}
+	if v := config.ExceptIfSCLOver.ValueString(); v != "" {
+		p.ExceptIfSCLOver = objectParam(v)
+	}
+	if !config.ExceptIfSenderADAttributeContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSenderADAttributeContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSenderADAttributeContainsWords = v
+		}
+	}
+	if !config.ExceptIfSenderADAttributeMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSenderADAttributeMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSenderADAttributeMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfSenderDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSenderDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSenderDomainIs = v
+		}
+	}
+	if !config.ExceptIfSenderInRecipientList.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSenderInRecipientList, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSenderInRecipientList = v
+		}
+	}
+	if !config.ExceptIfSenderIpRanges.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSenderIpRanges = v
+		}
+	}
+	if v := config.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
+		p.ExceptIfSenderManagementRelationship = objectParam(v)
+	}
+	if !config.ExceptIfSentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentTo = v
+		}
+	}
+	if !config.ExceptIfSentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentToMemberOf = v
+		}
+	}
+	if v := config.ExceptIfSentToScope.ValueString(); v != "" {
+		p.ExceptIfSentToScope = objectParam(v)
+	}
+	if !config.ExceptIfSubjectContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectContainsWords = v
+		}
+	}
+	if !config.ExceptIfSubjectMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectMatchesPatterns = v
+		}
+	}
+	if !config.ExceptIfSubjectOrBodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectOrBodyContainsWords = v
+		}
+	}
+	if !config.ExceptIfSubjectOrBodyMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectOrBodyMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectOrBodyMatchesPatterns = v
+		}
+	}
+	if v := config.ExceptIfWithImportance.ValueString(); v != "" {
+		p.ExceptIfWithImportance = objectParam(v)
+	}
+	if v := config.ExpiryDate.ValueString(); v != "" {
+		p.ExpiryDate = objectParam(v)
+	}
+	if !config.From.IsNull() {
+		if v := toStringSlice(ctx, plan.From, &resp.Diagnostics); len(v) > 0 {
+			p.From = v
+		}
+	}
+	if !config.FromAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.FromAddressContainsWords = v
+		}
+	}
+	if !config.FromAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.FromAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.FromAddressMatchesPatterns = v
+		}
+	}
+	if !config.FromMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.FromMemberOf = v
+		}
+	}
+	if v := config.FromScope.ValueString(); v != "" {
+		p.FromScope = objectParam(v)
+	}
+	if v := config.GenerateIncidentReport.ValueString(); v != "" {
+		p.GenerateIncidentReport = objectParam(v)
+	}
+	if v := config.GenerateNotification.ValueString(); v != "" {
+		p.GenerateNotification = objectParam(v)
+	}
+	if !config.HasClassification.IsNull() {
+		p.HasClassification = plan.HasClassification.ValueString()
+	}
+	if !config.HasNoClassification.IsNull() {
+		if !plan.HasNoClassification.IsUnknown() {
+			p.HasNoClassification = plan.HasNoClassification.ValueBoolPointer()
+		}
+	}
+	if !config.HasSenderOverride.IsNull() {
+		if !plan.HasSenderOverride.IsUnknown() {
+			p.HasSenderOverride = plan.HasSenderOverride.ValueBoolPointer()
+		}
+	}
+	if v := config.HeaderContainsMessageHeader.ValueString(); v != "" {
+		p.HeaderContainsMessageHeader = objectParam(v)
+	}
+	if !config.HeaderContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.HeaderContainsWords = v
+		}
+	}
+	if v := config.HeaderMatchesMessageHeader.ValueString(); v != "" {
+		p.HeaderMatchesMessageHeader = objectParam(v)
+	}
+	if !config.HeaderMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.HeaderMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.HeaderMatchesPatterns = v
+		}
+	}
+	if !config.IncidentReportContent.IsNull() {
+		if v := toStringSlice(ctx, plan.IncidentReportContent, &resp.Diagnostics); len(v) > 0 {
+			p.IncidentReportContent = v
+		}
+	}
+	if v := config.LogEventText.ValueString(); v != "" {
+		p.LogEventText = objectParam(v)
+	}
+	if !config.ManagerAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ManagerAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ManagerAddresses = v
+		}
+	}
+	if v := config.ManagerForEvaluatedUser.ValueString(); v != "" {
+		p.ManagerForEvaluatedUser = objectParam(v)
+	}
+	if !config.MessageContainsDataClassifications.IsNull() {
+		if v := toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics); len(v) > 0 {
+			p.MessageContainsDataClassifications = v
+		}
+	}
+	if v := config.MessageSizeOver.ValueString(); v != "" {
+		p.MessageSizeOver = objectParam(v)
+	}
+	if v := config.MessageTypeMatches.ValueString(); v != "" {
+		p.MessageTypeMatches = objectParam(v)
+	}
+	if v := config.Mode.ValueString(); v != "" {
+		p.Mode = objectParam(v)
+	}
+	if !config.ModerateMessageByManager.IsNull() {
+		if !plan.ModerateMessageByManager.IsUnknown() {
+			p.ModerateMessageByManager = plan.ModerateMessageByManager.ValueBoolPointer()
+		}
+	}
+	if !config.ModerateMessageByUser.IsNull() {
+		if v := toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics); len(v) > 0 {
+			p.ModerateMessageByUser = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.NotifySender.ValueString(); v != "" {
+		p.NotifySender = objectParam(v)
+	}
+	if v := config.PrependSubject.ValueString(); v != "" {
+		p.PrependSubject = objectParam(v)
+	}
+	if !config.Priority.IsNull() {
+		if !plan.Priority.IsUnknown() {
+			p.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !config.Quarantine.IsNull() {
+		if !plan.Quarantine.IsUnknown() {
+			p.Quarantine = plan.Quarantine.ValueBoolPointer()
+		}
+	}
+	if !config.RecipientADAttributeContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientADAttributeContainsWords = v
+		}
+	}
+	if !config.RecipientADAttributeMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientADAttributeMatchesPatterns = v
+		}
+	}
+	if !config.RecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientAddressContainsWords = v
+		}
+	}
+	if !config.RecipientAddressMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientAddressMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientAddressMatchesPatterns = v
+		}
+	}
+	if v := config.RecipientAddressType.ValueString(); v != "" {
+		p.RecipientAddressType = objectParam(v)
+	}
+	if !config.RecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientDomainIs = v
+		}
+	}
+	if !config.RecipientInSenderList.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientInSenderList, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientInSenderList = v
+		}
+	}
+	if !config.RedirectMessageTo.IsNull() {
+		if v := toStringSlice(ctx, plan.RedirectMessageTo, &resp.Diagnostics); len(v) > 0 {
+			p.RedirectMessageTo = v
+		}
+	}
+	if v := config.RejectMessageEnhancedStatusCode.ValueString(); v != "" {
+		p.RejectMessageEnhancedStatusCode = objectParam(v)
+	}
+	if v := config.RejectMessageReasonText.ValueString(); v != "" {
+		p.RejectMessageReasonText = objectParam(v)
+	}
+	if v := config.RemoveHeader.ValueString(); v != "" {
+		p.RemoveHeader = objectParam(v)
+	}
+	if !config.RemoveOME.IsNull() {
+		if !plan.RemoveOME.IsUnknown() {
+			p.RemoveOME = plan.RemoveOME.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveOMEv2.IsNull() {
+		if !plan.RemoveOMEv2.IsUnknown() {
+			p.RemoveOMEv2 = plan.RemoveOMEv2.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveRMSAttachmentEncryption.IsNull() {
+		if !plan.RemoveRMSAttachmentEncryption.IsUnknown() {
+			p.RemoveRMSAttachmentEncryption = plan.RemoveRMSAttachmentEncryption.ValueBoolPointer()
+		}
+	}
+	if v := config.RouteMessageOutboundConnector.ValueString(); v != "" {
+		p.RouteMessageOutboundConnector = objectParam(v)
+	}
+	if !config.RouteMessageOutboundRequireTls.IsNull() {
+		if !plan.RouteMessageOutboundRequireTls.IsUnknown() {
+			p.RouteMessageOutboundRequireTls = plan.RouteMessageOutboundRequireTls.ValueBoolPointer()
+		}
+	}
+	if v := config.RuleErrorAction.ValueString(); v != "" {
+		p.RuleErrorAction = objectParam(v)
+	}
+	if v := config.RuleSubType.ValueString(); v != "" {
+		p.RuleSubType = objectParam(v)
+	}
+	if v := config.SCLOver.ValueString(); v != "" {
+		p.SCLOver = objectParam(v)
+	}
+	if !config.SenderADAttributeContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderADAttributeContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.SenderADAttributeContainsWords = v
+		}
+	}
+	if !config.SenderADAttributeMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderADAttributeMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.SenderADAttributeMatchesPatterns = v
+		}
+	}
+	if v := config.SenderAddressLocation.ValueString(); v != "" {
+		p.SenderAddressLocation = objectParam(v)
+	}
+	if !config.SenderDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.SenderDomainIs = v
+		}
+	}
+	if !config.SenderInRecipientList.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderInRecipientList, &resp.Diagnostics); len(v) > 0 {
+			p.SenderInRecipientList = v
+		}
+	}
+	if !config.SenderIpRanges.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+			p.SenderIpRanges = v
+		}
+	}
+	if v := config.SenderManagementRelationship.ValueString(); v != "" {
+		p.SenderManagementRelationship = objectParam(v)
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
+	}
+	if !config.SentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.SentToMemberOf = v
+		}
+	}
+	if v := config.SentToScope.ValueString(); v != "" {
+		p.SentToScope = objectParam(v)
+	}
+	if !config.SetAuditSeverity.IsNull() {
+		p.SetAuditSeverity = plan.SetAuditSeverity.ValueString()
+	}
+	if v := config.SetHeaderName.ValueString(); v != "" {
+		p.SetHeaderName = objectParam(v)
+	}
+	if v := config.SetHeaderValue.ValueString(); v != "" {
+		p.SetHeaderValue = objectParam(v)
+	}
+	if v := config.SetSCL.ValueString(); v != "" {
+		p.SetSCL = objectParam(v)
+	}
+	if v := config.SmtpRejectMessageRejectStatusCode.ValueString(); v != "" {
+		p.SmtpRejectMessageRejectStatusCode = objectParam(v)
+	}
+	if v := config.SmtpRejectMessageRejectText.ValueString(); v != "" {
+		p.SmtpRejectMessageRejectText = objectParam(v)
+	}
+	if !config.StopRuleProcessing.IsNull() {
+		if !plan.StopRuleProcessing.IsUnknown() {
+			p.StopRuleProcessing = plan.StopRuleProcessing.ValueBoolPointer()
+		}
+	}
+	if !config.SubjectContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectContainsWords = v
+		}
+	}
+	if !config.SubjectMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectMatchesPatterns = v
+		}
+	}
+	if !config.SubjectOrBodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectOrBodyContainsWords = v
+		}
+	}
+	if !config.SubjectOrBodyMatchesPatterns.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectOrBodyMatchesPatterns, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectOrBodyMatchesPatterns = v
+		}
+	}
+	if !config.UseLegacyRegex.IsNull() {
+		if !plan.UseLegacyRegex.IsUnknown() {
+			p.UseLegacyRegex = plan.UseLegacyRegex.ValueBoolPointer()
+		}
+	}
+	if v := config.WithImportance.ValueString(); v != "" {
+		p.WithImportance = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -745,283 +1216,736 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	sp := exo.SetTransportRuleParams{}
 	sp.Identity = id
 	if v := plan.ActivationDate.ValueString(); v != "" {
-		sp.ActivationDate = v
+		sp.ActivationDate = objectParam(v)
 	}
 	if v := plan.AdComparisonAttribute.ValueString(); v != "" {
-		sp.AdComparisonAttribute = v
+		sp.AdComparisonAttribute = objectParam(v)
 	}
 	if v := plan.AdComparisonOperator.ValueString(); v != "" {
-		sp.AdComparisonOperator = v
+		sp.AdComparisonOperator = objectParam(v)
 	}
 	if v := plan.AddManagerAsRecipientType.ValueString(); v != "" {
-		sp.AddManagerAsRecipientType = v
+		sp.AddManagerAsRecipientType = objectParam(v)
 	}
-	sp.AddToRecipients = toStringSlice(ctx, plan.AddToRecipients, &resp.Diagnostics)
-	sp.AnyOfCcHeader = toStringSlice(ctx, plan.AnyOfCcHeader, &resp.Diagnostics)
-	sp.AnyOfCcHeaderMemberOf = toStringSlice(ctx, plan.AnyOfCcHeaderMemberOf, &resp.Diagnostics)
-	sp.AnyOfRecipientAddressContainsWords = toStringSlice(ctx, plan.AnyOfRecipientAddressContainsWords, &resp.Diagnostics)
-	sp.AnyOfRecipientAddressMatchesPatterns = toStringSlice(ctx, plan.AnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics)
-	sp.AnyOfToCcHeader = toStringSlice(ctx, plan.AnyOfToCcHeader, &resp.Diagnostics)
-	sp.AnyOfToCcHeaderMemberOf = toStringSlice(ctx, plan.AnyOfToCcHeaderMemberOf, &resp.Diagnostics)
-	sp.AnyOfToHeader = toStringSlice(ctx, plan.AnyOfToHeader, &resp.Diagnostics)
-	sp.AnyOfToHeaderMemberOf = toStringSlice(ctx, plan.AnyOfToHeaderMemberOf, &resp.Diagnostics)
-	sp.ApplyClassification = plan.ApplyClassification.ValueString()
+	if !plan.AddToRecipients.Equal(state.AddToRecipients) {
+		if !plan.AddToRecipients.IsNull() && !plan.AddToRecipients.IsUnknown() {
+			sp.AddToRecipients = append([]string{}, toStringSlice(ctx, plan.AddToRecipients, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfCcHeader.Equal(state.AnyOfCcHeader) {
+		if !plan.AnyOfCcHeader.IsNull() && !plan.AnyOfCcHeader.IsUnknown() {
+			sp.AnyOfCcHeader = append([]string{}, toStringSlice(ctx, plan.AnyOfCcHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfCcHeaderMemberOf.Equal(state.AnyOfCcHeaderMemberOf) {
+		if !plan.AnyOfCcHeaderMemberOf.IsNull() && !plan.AnyOfCcHeaderMemberOf.IsUnknown() {
+			sp.AnyOfCcHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.AnyOfCcHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfRecipientAddressContainsWords.Equal(state.AnyOfRecipientAddressContainsWords) {
+		if !plan.AnyOfRecipientAddressContainsWords.IsNull() && !plan.AnyOfRecipientAddressContainsWords.IsUnknown() {
+			sp.AnyOfRecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.AnyOfRecipientAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfRecipientAddressMatchesPatterns.Equal(state.AnyOfRecipientAddressMatchesPatterns) {
+		if !plan.AnyOfRecipientAddressMatchesPatterns.IsNull() && !plan.AnyOfRecipientAddressMatchesPatterns.IsUnknown() {
+			sp.AnyOfRecipientAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.AnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfToCcHeader.Equal(state.AnyOfToCcHeader) {
+		if !plan.AnyOfToCcHeader.IsNull() && !plan.AnyOfToCcHeader.IsUnknown() {
+			sp.AnyOfToCcHeader = append([]string{}, toStringSlice(ctx, plan.AnyOfToCcHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfToCcHeaderMemberOf.Equal(state.AnyOfToCcHeaderMemberOf) {
+		if !plan.AnyOfToCcHeaderMemberOf.IsNull() && !plan.AnyOfToCcHeaderMemberOf.IsUnknown() {
+			sp.AnyOfToCcHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.AnyOfToCcHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfToHeader.Equal(state.AnyOfToHeader) {
+		if !plan.AnyOfToHeader.IsNull() && !plan.AnyOfToHeader.IsUnknown() {
+			sp.AnyOfToHeader = append([]string{}, toStringSlice(ctx, plan.AnyOfToHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AnyOfToHeaderMemberOf.Equal(state.AnyOfToHeaderMemberOf) {
+		if !plan.AnyOfToHeaderMemberOf.IsNull() && !plan.AnyOfToHeaderMemberOf.IsUnknown() {
+			sp.AnyOfToHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.AnyOfToHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ApplyClassification.Equal(state.ApplyClassification) {
+		sp.ApplyClassification = plan.ApplyClassification.ValueString()
+	}
 	if v := plan.ApplyHtmlDisclaimerFallbackAction.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerFallbackAction = v
+		sp.ApplyHtmlDisclaimerFallbackAction = objectParam(v)
 	}
 	if v := plan.ApplyHtmlDisclaimerLocation.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerLocation = v
+		sp.ApplyHtmlDisclaimerLocation = objectParam(v)
 	}
 	if v := plan.ApplyHtmlDisclaimerText.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerText = v
+		sp.ApplyHtmlDisclaimerText = objectParam(v)
 	}
-	sp.ApplyOME = plan.ApplyOME.ValueBool()
+	if !plan.ApplyOME.Equal(state.ApplyOME) {
+		if !plan.ApplyOME.IsUnknown() {
+			sp.ApplyOME = plan.ApplyOME.ValueBoolPointer()
+		}
+	}
 	if v := plan.ApplyRightsProtectionCustomizationTemplate.ValueString(); v != "" {
-		sp.ApplyRightsProtectionCustomizationTemplate = v
+		sp.ApplyRightsProtectionCustomizationTemplate = objectParam(v)
 	}
 	if v := plan.ApplyRightsProtectionTemplate.ValueString(); v != "" {
-		sp.ApplyRightsProtectionTemplate = v
+		sp.ApplyRightsProtectionTemplate = objectParam(v)
 	}
-	sp.AttachmentContainsWords = toStringSlice(ctx, plan.AttachmentContainsWords, &resp.Diagnostics)
-	sp.AttachmentExtensionMatchesWords = toStringSlice(ctx, plan.AttachmentExtensionMatchesWords, &resp.Diagnostics)
-	sp.AttachmentHasExecutableContent = plan.AttachmentHasExecutableContent.ValueBool()
-	sp.AttachmentIsPasswordProtected = plan.AttachmentIsPasswordProtected.ValueBool()
-	sp.AttachmentIsUnsupported = plan.AttachmentIsUnsupported.ValueBool()
-	sp.AttachmentMatchesPatterns = toStringSlice(ctx, plan.AttachmentMatchesPatterns, &resp.Diagnostics)
-	sp.AttachmentNameMatchesPatterns = toStringSlice(ctx, plan.AttachmentNameMatchesPatterns, &resp.Diagnostics)
-	sp.AttachmentProcessingLimitExceeded = plan.AttachmentProcessingLimitExceeded.ValueBool()
-	sp.AttachmentPropertyContainsWords = toStringSlice(ctx, plan.AttachmentPropertyContainsWords, &resp.Diagnostics)
+	if !plan.AttachmentContainsWords.Equal(state.AttachmentContainsWords) {
+		if !plan.AttachmentContainsWords.IsNull() && !plan.AttachmentContainsWords.IsUnknown() {
+			sp.AttachmentContainsWords = append([]string{}, toStringSlice(ctx, plan.AttachmentContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AttachmentExtensionMatchesWords.Equal(state.AttachmentExtensionMatchesWords) {
+		if !plan.AttachmentExtensionMatchesWords.IsNull() && !plan.AttachmentExtensionMatchesWords.IsUnknown() {
+			sp.AttachmentExtensionMatchesWords = append([]string{}, toStringSlice(ctx, plan.AttachmentExtensionMatchesWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AttachmentHasExecutableContent.Equal(state.AttachmentHasExecutableContent) {
+		if !plan.AttachmentHasExecutableContent.IsUnknown() {
+			sp.AttachmentHasExecutableContent = plan.AttachmentHasExecutableContent.ValueBoolPointer()
+		}
+	}
+	if !plan.AttachmentIsPasswordProtected.Equal(state.AttachmentIsPasswordProtected) {
+		if !plan.AttachmentIsPasswordProtected.IsUnknown() {
+			sp.AttachmentIsPasswordProtected = plan.AttachmentIsPasswordProtected.ValueBoolPointer()
+		}
+	}
+	if !plan.AttachmentIsUnsupported.Equal(state.AttachmentIsUnsupported) {
+		if !plan.AttachmentIsUnsupported.IsUnknown() {
+			sp.AttachmentIsUnsupported = plan.AttachmentIsUnsupported.ValueBoolPointer()
+		}
+	}
+	if !plan.AttachmentMatchesPatterns.Equal(state.AttachmentMatchesPatterns) {
+		if !plan.AttachmentMatchesPatterns.IsNull() && !plan.AttachmentMatchesPatterns.IsUnknown() {
+			sp.AttachmentMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.AttachmentMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AttachmentNameMatchesPatterns.Equal(state.AttachmentNameMatchesPatterns) {
+		if !plan.AttachmentNameMatchesPatterns.IsNull() && !plan.AttachmentNameMatchesPatterns.IsUnknown() {
+			sp.AttachmentNameMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.AttachmentNameMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AttachmentProcessingLimitExceeded.Equal(state.AttachmentProcessingLimitExceeded) {
+		if !plan.AttachmentProcessingLimitExceeded.IsUnknown() {
+			sp.AttachmentProcessingLimitExceeded = plan.AttachmentProcessingLimitExceeded.ValueBoolPointer()
+		}
+	}
+	if !plan.AttachmentPropertyContainsWords.Equal(state.AttachmentPropertyContainsWords) {
+		if !plan.AttachmentPropertyContainsWords.IsNull() && !plan.AttachmentPropertyContainsWords.IsUnknown() {
+			sp.AttachmentPropertyContainsWords = append([]string{}, toStringSlice(ctx, plan.AttachmentPropertyContainsWords, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.AttachmentSizeOver.ValueString(); v != "" {
-		sp.AttachmentSizeOver = v
+		sp.AttachmentSizeOver = objectParam(v)
 	}
-	sp.BetweenMemberOf1 = toStringSlice(ctx, plan.BetweenMemberOf1, &resp.Diagnostics)
-	sp.BetweenMemberOf2 = toStringSlice(ctx, plan.BetweenMemberOf2, &resp.Diagnostics)
-	sp.BlindCopyTo = toStringSlice(ctx, plan.BlindCopyTo, &resp.Diagnostics)
-	sp.Comments = plan.Comments.ValueString()
-	sp.ContentCharacterSetContainsWords = toStringSlice(ctx, plan.ContentCharacterSetContainsWords, &resp.Diagnostics)
-	sp.CopyTo = toStringSlice(ctx, plan.CopyTo, &resp.Diagnostics)
-	sp.DeleteMessage = plan.DeleteMessage.ValueBool()
-	sp.Disconnect = plan.Disconnect.ValueBool()
-	sp.DlpPolicy = plan.DlpPolicy.ValueString()
+	if !plan.BetweenMemberOf1.Equal(state.BetweenMemberOf1) {
+		if !plan.BetweenMemberOf1.IsNull() && !plan.BetweenMemberOf1.IsUnknown() {
+			sp.BetweenMemberOf1 = append([]string{}, toStringSlice(ctx, plan.BetweenMemberOf1, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.BetweenMemberOf2.Equal(state.BetweenMemberOf2) {
+		if !plan.BetweenMemberOf2.IsNull() && !plan.BetweenMemberOf2.IsUnknown() {
+			sp.BetweenMemberOf2 = append([]string{}, toStringSlice(ctx, plan.BetweenMemberOf2, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.BlindCopyTo.Equal(state.BlindCopyTo) {
+		if !plan.BlindCopyTo.IsNull() && !plan.BlindCopyTo.IsUnknown() {
+			sp.BlindCopyTo = append([]string{}, toStringSlice(ctx, plan.BlindCopyTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Comments.Equal(state.Comments) {
+		sp.Comments = plan.Comments.ValueString()
+	}
+	if !plan.ContentCharacterSetContainsWords.Equal(state.ContentCharacterSetContainsWords) {
+		if !plan.ContentCharacterSetContainsWords.IsNull() && !plan.ContentCharacterSetContainsWords.IsUnknown() {
+			sp.ContentCharacterSetContainsWords = append([]string{}, toStringSlice(ctx, plan.ContentCharacterSetContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.CopyTo.Equal(state.CopyTo) {
+		if !plan.CopyTo.IsNull() && !plan.CopyTo.IsUnknown() {
+			sp.CopyTo = append([]string{}, toStringSlice(ctx, plan.CopyTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.DeleteMessage.Equal(state.DeleteMessage) {
+		if !plan.DeleteMessage.IsUnknown() {
+			sp.DeleteMessage = plan.DeleteMessage.ValueBoolPointer()
+		}
+	}
+	if !plan.Disconnect.Equal(state.Disconnect) {
+		if !plan.Disconnect.IsUnknown() {
+			sp.Disconnect = plan.Disconnect.ValueBoolPointer()
+		}
+	}
+	if !plan.DlpPolicy.Equal(state.DlpPolicy) {
+		sp.DlpPolicy = plan.DlpPolicy.ValueString()
+	}
 	if v := plan.ExceptIfAdComparisonAttribute.ValueString(); v != "" {
-		sp.ExceptIfAdComparisonAttribute = v
+		sp.ExceptIfAdComparisonAttribute = objectParam(v)
 	}
 	if v := plan.ExceptIfAdComparisonOperator.ValueString(); v != "" {
-		sp.ExceptIfAdComparisonOperator = v
+		sp.ExceptIfAdComparisonOperator = objectParam(v)
 	}
-	sp.ExceptIfAnyOfCcHeader = toStringSlice(ctx, plan.ExceptIfAnyOfCcHeader, &resp.Diagnostics)
-	sp.ExceptIfAnyOfCcHeaderMemberOf = toStringSlice(ctx, plan.ExceptIfAnyOfCcHeaderMemberOf, &resp.Diagnostics)
-	sp.ExceptIfAnyOfRecipientAddressContainsWords = toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressContainsWords, &resp.Diagnostics)
-	sp.ExceptIfAnyOfRecipientAddressMatchesPatterns = toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfAnyOfToCcHeader = toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeader, &resp.Diagnostics)
-	sp.ExceptIfAnyOfToCcHeaderMemberOf = toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeaderMemberOf, &resp.Diagnostics)
-	sp.ExceptIfAnyOfToHeader = toStringSlice(ctx, plan.ExceptIfAnyOfToHeader, &resp.Diagnostics)
-	sp.ExceptIfAnyOfToHeaderMemberOf = toStringSlice(ctx, plan.ExceptIfAnyOfToHeaderMemberOf, &resp.Diagnostics)
-	sp.ExceptIfAttachmentContainsWords = toStringSlice(ctx, plan.ExceptIfAttachmentContainsWords, &resp.Diagnostics)
-	sp.ExceptIfAttachmentExtensionMatchesWords = toStringSlice(ctx, plan.ExceptIfAttachmentExtensionMatchesWords, &resp.Diagnostics)
-	sp.ExceptIfAttachmentHasExecutableContent = plan.ExceptIfAttachmentHasExecutableContent.ValueBool()
-	sp.ExceptIfAttachmentIsPasswordProtected = plan.ExceptIfAttachmentIsPasswordProtected.ValueBool()
-	sp.ExceptIfAttachmentIsUnsupported = plan.ExceptIfAttachmentIsUnsupported.ValueBool()
-	sp.ExceptIfAttachmentMatchesPatterns = toStringSlice(ctx, plan.ExceptIfAttachmentMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfAttachmentNameMatchesPatterns = toStringSlice(ctx, plan.ExceptIfAttachmentNameMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfAttachmentProcessingLimitExceeded = plan.ExceptIfAttachmentProcessingLimitExceeded.ValueBool()
-	sp.ExceptIfAttachmentPropertyContainsWords = toStringSlice(ctx, plan.ExceptIfAttachmentPropertyContainsWords, &resp.Diagnostics)
+	if !plan.ExceptIfAnyOfCcHeader.Equal(state.ExceptIfAnyOfCcHeader) {
+		if !plan.ExceptIfAnyOfCcHeader.IsNull() && !plan.ExceptIfAnyOfCcHeader.IsUnknown() {
+			sp.ExceptIfAnyOfCcHeader = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfCcHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfCcHeaderMemberOf.Equal(state.ExceptIfAnyOfCcHeaderMemberOf) {
+		if !plan.ExceptIfAnyOfCcHeaderMemberOf.IsNull() && !plan.ExceptIfAnyOfCcHeaderMemberOf.IsUnknown() {
+			sp.ExceptIfAnyOfCcHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfCcHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfRecipientAddressContainsWords.Equal(state.ExceptIfAnyOfRecipientAddressContainsWords) {
+		if !plan.ExceptIfAnyOfRecipientAddressContainsWords.IsNull() && !plan.ExceptIfAnyOfRecipientAddressContainsWords.IsUnknown() {
+			sp.ExceptIfAnyOfRecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfRecipientAddressMatchesPatterns.Equal(state.ExceptIfAnyOfRecipientAddressMatchesPatterns) {
+		if !plan.ExceptIfAnyOfRecipientAddressMatchesPatterns.IsNull() && !plan.ExceptIfAnyOfRecipientAddressMatchesPatterns.IsUnknown() {
+			sp.ExceptIfAnyOfRecipientAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfRecipientAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfToCcHeader.Equal(state.ExceptIfAnyOfToCcHeader) {
+		if !plan.ExceptIfAnyOfToCcHeader.IsNull() && !plan.ExceptIfAnyOfToCcHeader.IsUnknown() {
+			sp.ExceptIfAnyOfToCcHeader = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfToCcHeaderMemberOf.Equal(state.ExceptIfAnyOfToCcHeaderMemberOf) {
+		if !plan.ExceptIfAnyOfToCcHeaderMemberOf.IsNull() && !plan.ExceptIfAnyOfToCcHeaderMemberOf.IsUnknown() {
+			sp.ExceptIfAnyOfToCcHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfToCcHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfToHeader.Equal(state.ExceptIfAnyOfToHeader) {
+		if !plan.ExceptIfAnyOfToHeader.IsNull() && !plan.ExceptIfAnyOfToHeader.IsUnknown() {
+			sp.ExceptIfAnyOfToHeader = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfToHeader, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAnyOfToHeaderMemberOf.Equal(state.ExceptIfAnyOfToHeaderMemberOf) {
+		if !plan.ExceptIfAnyOfToHeaderMemberOf.IsNull() && !plan.ExceptIfAnyOfToHeaderMemberOf.IsUnknown() {
+			sp.ExceptIfAnyOfToHeaderMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfAnyOfToHeaderMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAttachmentContainsWords.Equal(state.ExceptIfAttachmentContainsWords) {
+		if !plan.ExceptIfAttachmentContainsWords.IsNull() && !plan.ExceptIfAttachmentContainsWords.IsUnknown() {
+			sp.ExceptIfAttachmentContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAttachmentExtensionMatchesWords.Equal(state.ExceptIfAttachmentExtensionMatchesWords) {
+		if !plan.ExceptIfAttachmentExtensionMatchesWords.IsNull() && !plan.ExceptIfAttachmentExtensionMatchesWords.IsUnknown() {
+			sp.ExceptIfAttachmentExtensionMatchesWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentExtensionMatchesWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAttachmentHasExecutableContent.Equal(state.ExceptIfAttachmentHasExecutableContent) {
+		if !plan.ExceptIfAttachmentHasExecutableContent.IsUnknown() {
+			sp.ExceptIfAttachmentHasExecutableContent = plan.ExceptIfAttachmentHasExecutableContent.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfAttachmentIsPasswordProtected.Equal(state.ExceptIfAttachmentIsPasswordProtected) {
+		if !plan.ExceptIfAttachmentIsPasswordProtected.IsUnknown() {
+			sp.ExceptIfAttachmentIsPasswordProtected = plan.ExceptIfAttachmentIsPasswordProtected.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfAttachmentIsUnsupported.Equal(state.ExceptIfAttachmentIsUnsupported) {
+		if !plan.ExceptIfAttachmentIsUnsupported.IsUnknown() {
+			sp.ExceptIfAttachmentIsUnsupported = plan.ExceptIfAttachmentIsUnsupported.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfAttachmentMatchesPatterns.Equal(state.ExceptIfAttachmentMatchesPatterns) {
+		if !plan.ExceptIfAttachmentMatchesPatterns.IsNull() && !plan.ExceptIfAttachmentMatchesPatterns.IsUnknown() {
+			sp.ExceptIfAttachmentMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAttachmentNameMatchesPatterns.Equal(state.ExceptIfAttachmentNameMatchesPatterns) {
+		if !plan.ExceptIfAttachmentNameMatchesPatterns.IsNull() && !plan.ExceptIfAttachmentNameMatchesPatterns.IsUnknown() {
+			sp.ExceptIfAttachmentNameMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentNameMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfAttachmentProcessingLimitExceeded.Equal(state.ExceptIfAttachmentProcessingLimitExceeded) {
+		if !plan.ExceptIfAttachmentProcessingLimitExceeded.IsUnknown() {
+			sp.ExceptIfAttachmentProcessingLimitExceeded = plan.ExceptIfAttachmentProcessingLimitExceeded.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfAttachmentPropertyContainsWords.Equal(state.ExceptIfAttachmentPropertyContainsWords) {
+		if !plan.ExceptIfAttachmentPropertyContainsWords.IsNull() && !plan.ExceptIfAttachmentPropertyContainsWords.IsUnknown() {
+			sp.ExceptIfAttachmentPropertyContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentPropertyContainsWords, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfAttachmentSizeOver.ValueString(); v != "" {
-		sp.ExceptIfAttachmentSizeOver = v
+		sp.ExceptIfAttachmentSizeOver = objectParam(v)
 	}
-	sp.ExceptIfBetweenMemberOf1 = toStringSlice(ctx, plan.ExceptIfBetweenMemberOf1, &resp.Diagnostics)
-	sp.ExceptIfBetweenMemberOf2 = toStringSlice(ctx, plan.ExceptIfBetweenMemberOf2, &resp.Diagnostics)
-	sp.ExceptIfContentCharacterSetContainsWords = toStringSlice(ctx, plan.ExceptIfContentCharacterSetContainsWords, &resp.Diagnostics)
-	sp.ExceptIfFrom = toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics)
-	sp.ExceptIfFromAddressContainsWords = toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics)
-	sp.ExceptIfFromAddressMatchesPatterns = toStringSlice(ctx, plan.ExceptIfFromAddressMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfFromMemberOf = toStringSlice(ctx, plan.ExceptIfFromMemberOf, &resp.Diagnostics)
+	if !plan.ExceptIfBetweenMemberOf1.Equal(state.ExceptIfBetweenMemberOf1) {
+		if !plan.ExceptIfBetweenMemberOf1.IsNull() && !plan.ExceptIfBetweenMemberOf1.IsUnknown() {
+			sp.ExceptIfBetweenMemberOf1 = append([]string{}, toStringSlice(ctx, plan.ExceptIfBetweenMemberOf1, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfBetweenMemberOf2.Equal(state.ExceptIfBetweenMemberOf2) {
+		if !plan.ExceptIfBetweenMemberOf2.IsNull() && !plan.ExceptIfBetweenMemberOf2.IsUnknown() {
+			sp.ExceptIfBetweenMemberOf2 = append([]string{}, toStringSlice(ctx, plan.ExceptIfBetweenMemberOf2, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfContentCharacterSetContainsWords.Equal(state.ExceptIfContentCharacterSetContainsWords) {
+		if !plan.ExceptIfContentCharacterSetContainsWords.IsNull() && !plan.ExceptIfContentCharacterSetContainsWords.IsUnknown() {
+			sp.ExceptIfContentCharacterSetContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfContentCharacterSetContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfFrom.Equal(state.ExceptIfFrom) {
+		if !plan.ExceptIfFrom.IsNull() && !plan.ExceptIfFrom.IsUnknown() {
+			sp.ExceptIfFrom = append([]string{}, toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfFromAddressContainsWords.Equal(state.ExceptIfFromAddressContainsWords) {
+		if !plan.ExceptIfFromAddressContainsWords.IsNull() && !plan.ExceptIfFromAddressContainsWords.IsUnknown() {
+			sp.ExceptIfFromAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfFromAddressMatchesPatterns.Equal(state.ExceptIfFromAddressMatchesPatterns) {
+		if !plan.ExceptIfFromAddressMatchesPatterns.IsNull() && !plan.ExceptIfFromAddressMatchesPatterns.IsUnknown() {
+			sp.ExceptIfFromAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfFromAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfFromMemberOf.Equal(state.ExceptIfFromMemberOf) {
+		if !plan.ExceptIfFromMemberOf.IsNull() && !plan.ExceptIfFromMemberOf.IsUnknown() {
+			sp.ExceptIfFromMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfFromMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfFromScope.ValueString(); v != "" {
-		sp.ExceptIfFromScope = v
+		sp.ExceptIfFromScope = objectParam(v)
 	}
-	sp.ExceptIfHasClassification = plan.ExceptIfHasClassification.ValueString()
-	sp.ExceptIfHasNoClassification = plan.ExceptIfHasNoClassification.ValueBool()
-	sp.ExceptIfHasSenderOverride = plan.ExceptIfHasSenderOverride.ValueBool()
+	if !plan.ExceptIfHasClassification.Equal(state.ExceptIfHasClassification) {
+		sp.ExceptIfHasClassification = plan.ExceptIfHasClassification.ValueString()
+	}
+	if !plan.ExceptIfHasNoClassification.Equal(state.ExceptIfHasNoClassification) {
+		if !plan.ExceptIfHasNoClassification.IsUnknown() {
+			sp.ExceptIfHasNoClassification = plan.ExceptIfHasNoClassification.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfHasSenderOverride.Equal(state.ExceptIfHasSenderOverride) {
+		if !plan.ExceptIfHasSenderOverride.IsUnknown() {
+			sp.ExceptIfHasSenderOverride = plan.ExceptIfHasSenderOverride.ValueBoolPointer()
+		}
+	}
 	if v := plan.ExceptIfHeaderContainsMessageHeader.ValueString(); v != "" {
-		sp.ExceptIfHeaderContainsMessageHeader = v
+		sp.ExceptIfHeaderContainsMessageHeader = objectParam(v)
 	}
-	sp.ExceptIfHeaderContainsWords = toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics)
+	if !plan.ExceptIfHeaderContainsWords.Equal(state.ExceptIfHeaderContainsWords) {
+		if !plan.ExceptIfHeaderContainsWords.IsNull() && !plan.ExceptIfHeaderContainsWords.IsUnknown() {
+			sp.ExceptIfHeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfHeaderMatchesMessageHeader.ValueString(); v != "" {
-		sp.ExceptIfHeaderMatchesMessageHeader = v
+		sp.ExceptIfHeaderMatchesMessageHeader = objectParam(v)
 	}
-	sp.ExceptIfHeaderMatchesPatterns = toStringSlice(ctx, plan.ExceptIfHeaderMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfManagerAddresses = toStringSlice(ctx, plan.ExceptIfManagerAddresses, &resp.Diagnostics)
+	if !plan.ExceptIfHeaderMatchesPatterns.Equal(state.ExceptIfHeaderMatchesPatterns) {
+		if !plan.ExceptIfHeaderMatchesPatterns.IsNull() && !plan.ExceptIfHeaderMatchesPatterns.IsUnknown() {
+			sp.ExceptIfHeaderMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfHeaderMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfManagerAddresses.Equal(state.ExceptIfManagerAddresses) {
+		if !plan.ExceptIfManagerAddresses.IsNull() && !plan.ExceptIfManagerAddresses.IsUnknown() {
+			sp.ExceptIfManagerAddresses = append([]string{}, toStringSlice(ctx, plan.ExceptIfManagerAddresses, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
-		sp.ExceptIfManagerForEvaluatedUser = v
+		sp.ExceptIfManagerForEvaluatedUser = objectParam(v)
 	}
-	sp.ExceptIfMessageContainsDataClassifications = toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics)
+	if !plan.ExceptIfMessageContainsDataClassifications.Equal(state.ExceptIfMessageContainsDataClassifications) {
+		if !plan.ExceptIfMessageContainsDataClassifications.IsNull() && !plan.ExceptIfMessageContainsDataClassifications.IsUnknown() {
+			sp.ExceptIfMessageContainsDataClassifications = append([]string{}, toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfMessageSizeOver.ValueString(); v != "" {
-		sp.ExceptIfMessageSizeOver = v
+		sp.ExceptIfMessageSizeOver = objectParam(v)
 	}
 	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		sp.ExceptIfMessageTypeMatches = v
+		sp.ExceptIfMessageTypeMatches = objectParam(v)
 	}
-	sp.ExceptIfRecipientADAttributeContainsWords = toStringSlice(ctx, plan.ExceptIfRecipientADAttributeContainsWords, &resp.Diagnostics)
-	sp.ExceptIfRecipientADAttributeMatchesPatterns = toStringSlice(ctx, plan.ExceptIfRecipientADAttributeMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfRecipientAddressContainsWords = toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics)
-	sp.ExceptIfRecipientAddressMatchesPatterns = toStringSlice(ctx, plan.ExceptIfRecipientAddressMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfRecipientDomainIs = toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)
-	sp.ExceptIfRecipientInSenderList = toStringSlice(ctx, plan.ExceptIfRecipientInSenderList, &resp.Diagnostics)
+	if !plan.ExceptIfRecipientADAttributeContainsWords.Equal(state.ExceptIfRecipientADAttributeContainsWords) {
+		if !plan.ExceptIfRecipientADAttributeContainsWords.IsNull() && !plan.ExceptIfRecipientADAttributeContainsWords.IsUnknown() {
+			sp.ExceptIfRecipientADAttributeContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientADAttributeContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfRecipientADAttributeMatchesPatterns.Equal(state.ExceptIfRecipientADAttributeMatchesPatterns) {
+		if !plan.ExceptIfRecipientADAttributeMatchesPatterns.IsNull() && !plan.ExceptIfRecipientADAttributeMatchesPatterns.IsUnknown() {
+			sp.ExceptIfRecipientADAttributeMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientADAttributeMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfRecipientAddressContainsWords.Equal(state.ExceptIfRecipientAddressContainsWords) {
+		if !plan.ExceptIfRecipientAddressContainsWords.IsNull() && !plan.ExceptIfRecipientAddressContainsWords.IsUnknown() {
+			sp.ExceptIfRecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfRecipientAddressMatchesPatterns.Equal(state.ExceptIfRecipientAddressMatchesPatterns) {
+		if !plan.ExceptIfRecipientAddressMatchesPatterns.IsNull() && !plan.ExceptIfRecipientAddressMatchesPatterns.IsUnknown() {
+			sp.ExceptIfRecipientAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfRecipientDomainIs.Equal(state.ExceptIfRecipientDomainIs) {
+		if !plan.ExceptIfRecipientDomainIs.IsNull() && !plan.ExceptIfRecipientDomainIs.IsUnknown() {
+			sp.ExceptIfRecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfRecipientInSenderList.Equal(state.ExceptIfRecipientInSenderList) {
+		if !plan.ExceptIfRecipientInSenderList.IsNull() && !plan.ExceptIfRecipientInSenderList.IsUnknown() {
+			sp.ExceptIfRecipientInSenderList = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientInSenderList, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfSCLOver.ValueString(); v != "" {
-		sp.ExceptIfSCLOver = v
+		sp.ExceptIfSCLOver = objectParam(v)
 	}
-	sp.ExceptIfSenderADAttributeContainsWords = toStringSlice(ctx, plan.ExceptIfSenderADAttributeContainsWords, &resp.Diagnostics)
-	sp.ExceptIfSenderADAttributeMatchesPatterns = toStringSlice(ctx, plan.ExceptIfSenderADAttributeMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfSenderDomainIs = toStringSlice(ctx, plan.ExceptIfSenderDomainIs, &resp.Diagnostics)
-	sp.ExceptIfSenderInRecipientList = toStringSlice(ctx, plan.ExceptIfSenderInRecipientList, &resp.Diagnostics)
-	if v := plan.ExceptIfSenderIpRanges.ValueString(); v != "" {
-		sp.ExceptIfSenderIpRanges = v
+	if !plan.ExceptIfSenderADAttributeContainsWords.Equal(state.ExceptIfSenderADAttributeContainsWords) {
+		if !plan.ExceptIfSenderADAttributeContainsWords.IsNull() && !plan.ExceptIfSenderADAttributeContainsWords.IsUnknown() {
+			sp.ExceptIfSenderADAttributeContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderADAttributeContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSenderADAttributeMatchesPatterns.Equal(state.ExceptIfSenderADAttributeMatchesPatterns) {
+		if !plan.ExceptIfSenderADAttributeMatchesPatterns.IsNull() && !plan.ExceptIfSenderADAttributeMatchesPatterns.IsUnknown() {
+			sp.ExceptIfSenderADAttributeMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderADAttributeMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSenderDomainIs.Equal(state.ExceptIfSenderDomainIs) {
+		if !plan.ExceptIfSenderDomainIs.IsNull() && !plan.ExceptIfSenderDomainIs.IsUnknown() {
+			sp.ExceptIfSenderDomainIs = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSenderInRecipientList.Equal(state.ExceptIfSenderInRecipientList) {
+		if !plan.ExceptIfSenderInRecipientList.IsNull() && !plan.ExceptIfSenderInRecipientList.IsUnknown() {
+			sp.ExceptIfSenderInRecipientList = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderInRecipientList, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSenderIpRanges.Equal(state.ExceptIfSenderIpRanges) {
+		if !plan.ExceptIfSenderIpRanges.IsNull() && !plan.ExceptIfSenderIpRanges.IsUnknown() {
+			sp.ExceptIfSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderIpRanges, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
-		sp.ExceptIfSenderManagementRelationship = v
+		sp.ExceptIfSenderManagementRelationship = objectParam(v)
 	}
-	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
-	sp.ExceptIfSentToMemberOf = toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)
+	if !plan.ExceptIfSentTo.Equal(state.ExceptIfSentTo) {
+		if !plan.ExceptIfSentTo.IsNull() && !plan.ExceptIfSentTo.IsUnknown() {
+			sp.ExceptIfSentTo = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSentToMemberOf.Equal(state.ExceptIfSentToMemberOf) {
+		if !plan.ExceptIfSentToMemberOf.IsNull() && !plan.ExceptIfSentToMemberOf.IsUnknown() {
+			sp.ExceptIfSentToMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfSentToScope.ValueString(); v != "" {
-		sp.ExceptIfSentToScope = v
+		sp.ExceptIfSentToScope = objectParam(v)
 	}
-	sp.ExceptIfSubjectContainsWords = toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics)
-	sp.ExceptIfSubjectMatchesPatterns = toStringSlice(ctx, plan.ExceptIfSubjectMatchesPatterns, &resp.Diagnostics)
-	sp.ExceptIfSubjectOrBodyContainsWords = toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics)
-	sp.ExceptIfSubjectOrBodyMatchesPatterns = toStringSlice(ctx, plan.ExceptIfSubjectOrBodyMatchesPatterns, &resp.Diagnostics)
+	if !plan.ExceptIfSubjectContainsWords.Equal(state.ExceptIfSubjectContainsWords) {
+		if !plan.ExceptIfSubjectContainsWords.IsNull() && !plan.ExceptIfSubjectContainsWords.IsUnknown() {
+			sp.ExceptIfSubjectContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSubjectMatchesPatterns.Equal(state.ExceptIfSubjectMatchesPatterns) {
+		if !plan.ExceptIfSubjectMatchesPatterns.IsNull() && !plan.ExceptIfSubjectMatchesPatterns.IsUnknown() {
+			sp.ExceptIfSubjectMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSubjectOrBodyContainsWords.Equal(state.ExceptIfSubjectOrBodyContainsWords) {
+		if !plan.ExceptIfSubjectOrBodyContainsWords.IsNull() && !plan.ExceptIfSubjectOrBodyContainsWords.IsUnknown() {
+			sp.ExceptIfSubjectOrBodyContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSubjectOrBodyMatchesPatterns.Equal(state.ExceptIfSubjectOrBodyMatchesPatterns) {
+		if !plan.ExceptIfSubjectOrBodyMatchesPatterns.IsNull() && !plan.ExceptIfSubjectOrBodyMatchesPatterns.IsUnknown() {
+			sp.ExceptIfSubjectOrBodyMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectOrBodyMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		sp.ExceptIfWithImportance = v
+		sp.ExceptIfWithImportance = objectParam(v)
 	}
 	if v := plan.ExpiryDate.ValueString(); v != "" {
-		sp.ExpiryDate = v
+		sp.ExpiryDate = objectParam(v)
 	}
-	sp.From = toStringSlice(ctx, plan.From, &resp.Diagnostics)
-	sp.FromAddressContainsWords = toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics)
-	sp.FromAddressMatchesPatterns = toStringSlice(ctx, plan.FromAddressMatchesPatterns, &resp.Diagnostics)
-	sp.FromMemberOf = toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics)
+	if !plan.From.Equal(state.From) {
+		if !plan.From.IsNull() && !plan.From.IsUnknown() {
+			sp.From = append([]string{}, toStringSlice(ctx, plan.From, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.FromAddressContainsWords.Equal(state.FromAddressContainsWords) {
+		if !plan.FromAddressContainsWords.IsNull() && !plan.FromAddressContainsWords.IsUnknown() {
+			sp.FromAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.FromAddressMatchesPatterns.Equal(state.FromAddressMatchesPatterns) {
+		if !plan.FromAddressMatchesPatterns.IsNull() && !plan.FromAddressMatchesPatterns.IsUnknown() {
+			sp.FromAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.FromAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.FromMemberOf.Equal(state.FromMemberOf) {
+		if !plan.FromMemberOf.IsNull() && !plan.FromMemberOf.IsUnknown() {
+			sp.FromMemberOf = append([]string{}, toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.FromScope.ValueString(); v != "" {
-		sp.FromScope = v
+		sp.FromScope = objectParam(v)
 	}
 	if v := plan.GenerateIncidentReport.ValueString(); v != "" {
-		sp.GenerateIncidentReport = v
+		sp.GenerateIncidentReport = objectParam(v)
 	}
 	if v := plan.GenerateNotification.ValueString(); v != "" {
-		sp.GenerateNotification = v
+		sp.GenerateNotification = objectParam(v)
 	}
-	sp.HasClassification = plan.HasClassification.ValueString()
-	sp.HasNoClassification = plan.HasNoClassification.ValueBool()
-	sp.HasSenderOverride = plan.HasSenderOverride.ValueBool()
+	if !plan.HasClassification.Equal(state.HasClassification) {
+		sp.HasClassification = plan.HasClassification.ValueString()
+	}
+	if !plan.HasNoClassification.Equal(state.HasNoClassification) {
+		if !plan.HasNoClassification.IsUnknown() {
+			sp.HasNoClassification = plan.HasNoClassification.ValueBoolPointer()
+		}
+	}
+	if !plan.HasSenderOverride.Equal(state.HasSenderOverride) {
+		if !plan.HasSenderOverride.IsUnknown() {
+			sp.HasSenderOverride = plan.HasSenderOverride.ValueBoolPointer()
+		}
+	}
 	if v := plan.HeaderContainsMessageHeader.ValueString(); v != "" {
-		sp.HeaderContainsMessageHeader = v
+		sp.HeaderContainsMessageHeader = objectParam(v)
 	}
-	sp.HeaderContainsWords = toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics)
+	if !plan.HeaderContainsWords.Equal(state.HeaderContainsWords) {
+		if !plan.HeaderContainsWords.IsNull() && !plan.HeaderContainsWords.IsUnknown() {
+			sp.HeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.HeaderMatchesMessageHeader.ValueString(); v != "" {
-		sp.HeaderMatchesMessageHeader = v
+		sp.HeaderMatchesMessageHeader = objectParam(v)
 	}
-	sp.HeaderMatchesPatterns = toStringSlice(ctx, plan.HeaderMatchesPatterns, &resp.Diagnostics)
-	sp.IncidentReportContent = toStringSlice(ctx, plan.IncidentReportContent, &resp.Diagnostics)
+	if !plan.HeaderMatchesPatterns.Equal(state.HeaderMatchesPatterns) {
+		if !plan.HeaderMatchesPatterns.IsNull() && !plan.HeaderMatchesPatterns.IsUnknown() {
+			sp.HeaderMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.HeaderMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.IncidentReportContent.Equal(state.IncidentReportContent) {
+		if !plan.IncidentReportContent.IsNull() && !plan.IncidentReportContent.IsUnknown() {
+			sp.IncidentReportContent = append([]string{}, toStringSlice(ctx, plan.IncidentReportContent, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.LogEventText.ValueString(); v != "" {
-		sp.LogEventText = v
+		sp.LogEventText = objectParam(v)
 	}
-	sp.ManagerAddresses = toStringSlice(ctx, plan.ManagerAddresses, &resp.Diagnostics)
+	if !plan.ManagerAddresses.Equal(state.ManagerAddresses) {
+		if !plan.ManagerAddresses.IsNull() && !plan.ManagerAddresses.IsUnknown() {
+			sp.ManagerAddresses = append([]string{}, toStringSlice(ctx, plan.ManagerAddresses, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.ManagerForEvaluatedUser.ValueString(); v != "" {
-		sp.ManagerForEvaluatedUser = v
+		sp.ManagerForEvaluatedUser = objectParam(v)
 	}
-	sp.MessageContainsDataClassifications = toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics)
+	if !plan.MessageContainsDataClassifications.Equal(state.MessageContainsDataClassifications) {
+		if !plan.MessageContainsDataClassifications.IsNull() && !plan.MessageContainsDataClassifications.IsUnknown() {
+			sp.MessageContainsDataClassifications = append([]string{}, toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.MessageSizeOver.ValueString(); v != "" {
-		sp.MessageSizeOver = v
+		sp.MessageSizeOver = objectParam(v)
 	}
 	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		sp.MessageTypeMatches = v
+		sp.MessageTypeMatches = objectParam(v)
 	}
 	if v := plan.Mode.ValueString(); v != "" {
-		sp.Mode = v
+		sp.Mode = objectParam(v)
 	}
-	sp.ModerateMessageByManager = plan.ModerateMessageByManager.ValueBool()
-	sp.ModerateMessageByUser = toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics)
+	if !plan.ModerateMessageByManager.Equal(state.ModerateMessageByManager) {
+		if !plan.ModerateMessageByManager.IsUnknown() {
+			sp.ModerateMessageByManager = plan.ModerateMessageByManager.ValueBoolPointer()
+		}
+	}
+	if !plan.ModerateMessageByUser.Equal(state.ModerateMessageByUser) {
+		if !plan.ModerateMessageByUser.IsNull() && !plan.ModerateMessageByUser.IsUnknown() {
+			sp.ModerateMessageByUser = append([]string{}, toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.NotifySender.ValueString(); v != "" {
-		sp.NotifySender = v
+		sp.NotifySender = objectParam(v)
 	}
 	if v := plan.PrependSubject.ValueString(); v != "" {
-		sp.PrependSubject = v
+		sp.PrependSubject = objectParam(v)
 	}
-	sp.Quarantine = plan.Quarantine.ValueBool()
-	sp.RecipientADAttributeContainsWords = toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics)
-	sp.RecipientADAttributeMatchesPatterns = toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics)
-	sp.RecipientAddressContainsWords = toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics)
-	sp.RecipientAddressMatchesPatterns = toStringSlice(ctx, plan.RecipientAddressMatchesPatterns, &resp.Diagnostics)
+	if !plan.Priority.Equal(state.Priority) {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !plan.Quarantine.Equal(state.Quarantine) {
+		if !plan.Quarantine.IsUnknown() {
+			sp.Quarantine = plan.Quarantine.ValueBoolPointer()
+		}
+	}
+	if !plan.RecipientADAttributeContainsWords.Equal(state.RecipientADAttributeContainsWords) {
+		if !plan.RecipientADAttributeContainsWords.IsNull() && !plan.RecipientADAttributeContainsWords.IsUnknown() {
+			sp.RecipientADAttributeContainsWords = append([]string{}, toStringSlice(ctx, plan.RecipientADAttributeContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RecipientADAttributeMatchesPatterns.Equal(state.RecipientADAttributeMatchesPatterns) {
+		if !plan.RecipientADAttributeMatchesPatterns.IsNull() && !plan.RecipientADAttributeMatchesPatterns.IsUnknown() {
+			sp.RecipientADAttributeMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.RecipientADAttributeMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RecipientAddressContainsWords.Equal(state.RecipientAddressContainsWords) {
+		if !plan.RecipientAddressContainsWords.IsNull() && !plan.RecipientAddressContainsWords.IsUnknown() {
+			sp.RecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RecipientAddressMatchesPatterns.Equal(state.RecipientAddressMatchesPatterns) {
+		if !plan.RecipientAddressMatchesPatterns.IsNull() && !plan.RecipientAddressMatchesPatterns.IsUnknown() {
+			sp.RecipientAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.RecipientAddressMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.RecipientAddressType.ValueString(); v != "" {
-		sp.RecipientAddressType = v
+		sp.RecipientAddressType = objectParam(v)
 	}
-	sp.RecipientDomainIs = toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)
-	sp.RecipientInSenderList = toStringSlice(ctx, plan.RecipientInSenderList, &resp.Diagnostics)
-	sp.RedirectMessageTo = toStringSlice(ctx, plan.RedirectMessageTo, &resp.Diagnostics)
+	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
+		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
+			sp.RecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RecipientInSenderList.Equal(state.RecipientInSenderList) {
+		if !plan.RecipientInSenderList.IsNull() && !plan.RecipientInSenderList.IsUnknown() {
+			sp.RecipientInSenderList = append([]string{}, toStringSlice(ctx, plan.RecipientInSenderList, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RedirectMessageTo.Equal(state.RedirectMessageTo) {
+		if !plan.RedirectMessageTo.IsNull() && !plan.RedirectMessageTo.IsUnknown() {
+			sp.RedirectMessageTo = append([]string{}, toStringSlice(ctx, plan.RedirectMessageTo, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.RejectMessageEnhancedStatusCode.ValueString(); v != "" {
-		sp.RejectMessageEnhancedStatusCode = v
+		sp.RejectMessageEnhancedStatusCode = objectParam(v)
 	}
 	if v := plan.RejectMessageReasonText.ValueString(); v != "" {
-		sp.RejectMessageReasonText = v
+		sp.RejectMessageReasonText = objectParam(v)
 	}
 	if v := plan.RemoveHeader.ValueString(); v != "" {
-		sp.RemoveHeader = v
+		sp.RemoveHeader = objectParam(v)
 	}
-	sp.RemoveOME = plan.RemoveOME.ValueBool()
-	sp.RemoveOMEv2 = plan.RemoveOMEv2.ValueBool()
-	sp.RemoveRMSAttachmentEncryption = plan.RemoveRMSAttachmentEncryption.ValueBool()
+	if !plan.RemoveOME.Equal(state.RemoveOME) {
+		if !plan.RemoveOME.IsUnknown() {
+			sp.RemoveOME = plan.RemoveOME.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveOMEv2.Equal(state.RemoveOMEv2) {
+		if !plan.RemoveOMEv2.IsUnknown() {
+			sp.RemoveOMEv2 = plan.RemoveOMEv2.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveRMSAttachmentEncryption.Equal(state.RemoveRMSAttachmentEncryption) {
+		if !plan.RemoveRMSAttachmentEncryption.IsUnknown() {
+			sp.RemoveRMSAttachmentEncryption = plan.RemoveRMSAttachmentEncryption.ValueBoolPointer()
+		}
+	}
 	if v := plan.RouteMessageOutboundConnector.ValueString(); v != "" {
-		sp.RouteMessageOutboundConnector = v
+		sp.RouteMessageOutboundConnector = objectParam(v)
 	}
-	sp.RouteMessageOutboundRequireTls = plan.RouteMessageOutboundRequireTls.ValueBool()
+	if !plan.RouteMessageOutboundRequireTls.Equal(state.RouteMessageOutboundRequireTls) {
+		if !plan.RouteMessageOutboundRequireTls.IsUnknown() {
+			sp.RouteMessageOutboundRequireTls = plan.RouteMessageOutboundRequireTls.ValueBoolPointer()
+		}
+	}
 	if v := plan.RuleErrorAction.ValueString(); v != "" {
-		sp.RuleErrorAction = v
+		sp.RuleErrorAction = objectParam(v)
 	}
 	if v := plan.RuleSubType.ValueString(); v != "" {
-		sp.RuleSubType = v
+		sp.RuleSubType = objectParam(v)
 	}
 	if v := plan.SCLOver.ValueString(); v != "" {
-		sp.SCLOver = v
+		sp.SCLOver = objectParam(v)
 	}
-	sp.SenderADAttributeContainsWords = toStringSlice(ctx, plan.SenderADAttributeContainsWords, &resp.Diagnostics)
-	sp.SenderADAttributeMatchesPatterns = toStringSlice(ctx, plan.SenderADAttributeMatchesPatterns, &resp.Diagnostics)
+	if !plan.SenderADAttributeContainsWords.Equal(state.SenderADAttributeContainsWords) {
+		if !plan.SenderADAttributeContainsWords.IsNull() && !plan.SenderADAttributeContainsWords.IsUnknown() {
+			sp.SenderADAttributeContainsWords = append([]string{}, toStringSlice(ctx, plan.SenderADAttributeContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SenderADAttributeMatchesPatterns.Equal(state.SenderADAttributeMatchesPatterns) {
+		if !plan.SenderADAttributeMatchesPatterns.IsNull() && !plan.SenderADAttributeMatchesPatterns.IsUnknown() {
+			sp.SenderADAttributeMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.SenderADAttributeMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.SenderAddressLocation.ValueString(); v != "" {
-		sp.SenderAddressLocation = v
+		sp.SenderAddressLocation = objectParam(v)
 	}
-	sp.SenderDomainIs = toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics)
-	sp.SenderInRecipientList = toStringSlice(ctx, plan.SenderInRecipientList, &resp.Diagnostics)
-	if v := plan.SenderIpRanges.ValueString(); v != "" {
-		sp.SenderIpRanges = v
+	if !plan.SenderDomainIs.Equal(state.SenderDomainIs) {
+		if !plan.SenderDomainIs.IsNull() && !plan.SenderDomainIs.IsUnknown() {
+			sp.SenderDomainIs = append([]string{}, toStringSlice(ctx, plan.SenderDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SenderInRecipientList.Equal(state.SenderInRecipientList) {
+		if !plan.SenderInRecipientList.IsNull() && !plan.SenderInRecipientList.IsUnknown() {
+			sp.SenderInRecipientList = append([]string{}, toStringSlice(ctx, plan.SenderInRecipientList, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SenderIpRanges.Equal(state.SenderIpRanges) {
+		if !plan.SenderIpRanges.IsNull() && !plan.SenderIpRanges.IsUnknown() {
+			sp.SenderIpRanges = append([]string{}, toStringSlice(ctx, plan.SenderIpRanges, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.SenderManagementRelationship.ValueString(); v != "" {
-		sp.SenderManagementRelationship = v
+		sp.SenderManagementRelationship = objectParam(v)
 	}
-	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
-	sp.SentToMemberOf = toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)
+	if !plan.SentTo.Equal(state.SentTo) {
+		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
+			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentToMemberOf.Equal(state.SentToMemberOf) {
+		if !plan.SentToMemberOf.IsNull() && !plan.SentToMemberOf.IsUnknown() {
+			sp.SentToMemberOf = append([]string{}, toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.SentToScope.ValueString(); v != "" {
-		sp.SentToScope = v
+		sp.SentToScope = objectParam(v)
 	}
-	sp.SetAuditSeverity = plan.SetAuditSeverity.ValueString()
+	if !plan.SetAuditSeverity.Equal(state.SetAuditSeverity) {
+		sp.SetAuditSeverity = plan.SetAuditSeverity.ValueString()
+	}
 	if v := plan.SetHeaderName.ValueString(); v != "" {
-		sp.SetHeaderName = v
+		sp.SetHeaderName = objectParam(v)
 	}
 	if v := plan.SetHeaderValue.ValueString(); v != "" {
-		sp.SetHeaderValue = v
+		sp.SetHeaderValue = objectParam(v)
 	}
 	if v := plan.SetSCL.ValueString(); v != "" {
-		sp.SetSCL = v
+		sp.SetSCL = objectParam(v)
 	}
 	if v := plan.SmtpRejectMessageRejectStatusCode.ValueString(); v != "" {
-		sp.SmtpRejectMessageRejectStatusCode = v
+		sp.SmtpRejectMessageRejectStatusCode = objectParam(v)
 	}
 	if v := plan.SmtpRejectMessageRejectText.ValueString(); v != "" {
-		sp.SmtpRejectMessageRejectText = v
+		sp.SmtpRejectMessageRejectText = objectParam(v)
 	}
-	sp.StopRuleProcessing = plan.StopRuleProcessing.ValueBool()
-	sp.SubjectContainsWords = toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics)
-	sp.SubjectMatchesPatterns = toStringSlice(ctx, plan.SubjectMatchesPatterns, &resp.Diagnostics)
-	sp.SubjectOrBodyContainsWords = toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics)
-	sp.SubjectOrBodyMatchesPatterns = toStringSlice(ctx, plan.SubjectOrBodyMatchesPatterns, &resp.Diagnostics)
+	if !plan.StopRuleProcessing.Equal(state.StopRuleProcessing) {
+		if !plan.StopRuleProcessing.IsUnknown() {
+			sp.StopRuleProcessing = plan.StopRuleProcessing.ValueBoolPointer()
+		}
+	}
+	if !plan.SubjectContainsWords.Equal(state.SubjectContainsWords) {
+		if !plan.SubjectContainsWords.IsNull() && !plan.SubjectContainsWords.IsUnknown() {
+			sp.SubjectContainsWords = append([]string{}, toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SubjectMatchesPatterns.Equal(state.SubjectMatchesPatterns) {
+		if !plan.SubjectMatchesPatterns.IsNull() && !plan.SubjectMatchesPatterns.IsUnknown() {
+			sp.SubjectMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.SubjectMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SubjectOrBodyContainsWords.Equal(state.SubjectOrBodyContainsWords) {
+		if !plan.SubjectOrBodyContainsWords.IsNull() && !plan.SubjectOrBodyContainsWords.IsUnknown() {
+			sp.SubjectOrBodyContainsWords = append([]string{}, toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SubjectOrBodyMatchesPatterns.Equal(state.SubjectOrBodyMatchesPatterns) {
+		if !plan.SubjectOrBodyMatchesPatterns.IsNull() && !plan.SubjectOrBodyMatchesPatterns.IsUnknown() {
+			sp.SubjectOrBodyMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.SubjectOrBodyMatchesPatterns, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.WithImportance.ValueString(); v != "" {
-		sp.WithImportance = v
+		sp.WithImportance = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -1032,67 +1956,12 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ActivationDate":                             cfg.ActivationDate,
-		"AdComparisonAttribute":                      cfg.AdComparisonAttribute,
-		"AdComparisonOperator":                       cfg.AdComparisonOperator,
-		"AddManagerAsRecipientType":                  cfg.AddManagerAsRecipientType,
-		"ApplyClassification":                        cfg.ApplyClassification,
-		"ApplyHtmlDisclaimerFallbackAction":          cfg.ApplyHtmlDisclaimerFallbackAction,
-		"ApplyHtmlDisclaimerLocation":                cfg.ApplyHtmlDisclaimerLocation,
-		"ApplyHtmlDisclaimerText":                    cfg.ApplyHtmlDisclaimerText,
-		"ApplyRightsProtectionCustomizationTemplate": cfg.ApplyRightsProtectionCustomizationTemplate,
-		"ApplyRightsProtectionTemplate":              cfg.ApplyRightsProtectionTemplate,
-		"AttachmentSizeOver":                         cfg.AttachmentSizeOver,
-		"Comments":                                   cfg.Comments,
-		"DlpPolicy":                                  cfg.DlpPolicy,
-		"ExceptIfAdComparisonAttribute":              cfg.ExceptIfAdComparisonAttribute,
-		"ExceptIfAdComparisonOperator":               cfg.ExceptIfAdComparisonOperator,
-		"ExceptIfAttachmentSizeOver":                 cfg.ExceptIfAttachmentSizeOver,
-		"ExceptIfFromScope":                          cfg.ExceptIfFromScope,
-		"ExceptIfHasClassification":                  cfg.ExceptIfHasClassification,
-		"ExceptIfHeaderContainsMessageHeader":        cfg.ExceptIfHeaderContainsMessageHeader,
-		"ExceptIfHeaderMatchesMessageHeader":         cfg.ExceptIfHeaderMatchesMessageHeader,
-		"ExceptIfManagerForEvaluatedUser":            cfg.ExceptIfManagerForEvaluatedUser,
-		"ExceptIfMessageSizeOver":                    cfg.ExceptIfMessageSizeOver,
-		"ExceptIfMessageTypeMatches":                 cfg.ExceptIfMessageTypeMatches,
-		"ExceptIfSCLOver":                            cfg.ExceptIfSCLOver,
-		"ExceptIfSenderIpRanges":                     cfg.ExceptIfSenderIpRanges,
-		"ExceptIfSenderManagementRelationship":       cfg.ExceptIfSenderManagementRelationship,
-		"ExceptIfSentToScope":                        cfg.ExceptIfSentToScope,
-		"ExceptIfWithImportance":                     cfg.ExceptIfWithImportance,
-		"ExpiryDate":                                 cfg.ExpiryDate,
-		"FromScope":                                  cfg.FromScope,
-		"GenerateIncidentReport":                     cfg.GenerateIncidentReport,
-		"GenerateNotification":                       cfg.GenerateNotification,
-		"HasClassification":                          cfg.HasClassification,
-		"HeaderContainsMessageHeader":                cfg.HeaderContainsMessageHeader,
-		"HeaderMatchesMessageHeader":                 cfg.HeaderMatchesMessageHeader,
-		"LogEventText":                               cfg.LogEventText,
-		"ManagerForEvaluatedUser":                    cfg.ManagerForEvaluatedUser,
-		"MessageSizeOver":                            cfg.MessageSizeOver,
-		"MessageTypeMatches":                         cfg.MessageTypeMatches,
-		"Mode":                                       cfg.Mode,
-		"NotifySender":                               cfg.NotifySender,
-		"PrependSubject":                             cfg.PrependSubject,
-		"RecipientAddressType":                       cfg.RecipientAddressType,
-		"RejectMessageEnhancedStatusCode":            cfg.RejectMessageEnhancedStatusCode,
-		"RejectMessageReasonText":                    cfg.RejectMessageReasonText,
-		"RemoveHeader":                               cfg.RemoveHeader,
-		"RouteMessageOutboundConnector":              cfg.RouteMessageOutboundConnector,
-		"RuleErrorAction":                            cfg.RuleErrorAction,
-		"RuleSubType":                                cfg.RuleSubType,
-		"SCLOver":                                    cfg.SCLOver,
-		"SenderAddressLocation":                      cfg.SenderAddressLocation,
-		"SenderIpRanges":                             cfg.SenderIpRanges,
-		"SenderManagementRelationship":               cfg.SenderManagementRelationship,
-		"SentToScope":                                cfg.SentToScope,
-		"SetAuditSeverity":                           cfg.SetAuditSeverity,
-		"SetHeaderName":                              cfg.SetHeaderName,
-		"SetHeaderValue":                             cfg.SetHeaderValue,
-		"SetSCL":                                     cfg.SetSCL,
-		"SmtpRejectMessageRejectStatusCode":          cfg.SmtpRejectMessageRejectStatusCode,
-		"SmtpRejectMessageRejectText":                cfg.SmtpRejectMessageRejectText,
-		"WithImportance":                             cfg.WithImportance,
+		"ApplyClassification":       cfg.ApplyClassification,
+		"Comments":                  cfg.Comments,
+		"DlpPolicy":                 cfg.DlpPolicy,
+		"ExceptIfHasClassification": cfg.ExceptIfHasClassification,
+		"HasClassification":         cfg.HasClassification,
+		"SetAuditSeverity":          cfg.SetAuditSeverity,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -1154,10 +2023,10 @@ func (r *transportRuleResource) refresh(ctx context.Context, identity string, m 
 func readTransportRule(ctx context.Context, obj map[string]any, m *transportRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.ActivationDate = types.StringValue(getString(obj, "ActivationDate"))
-	m.AdComparisonAttribute = types.StringValue(getString(obj, "AdComparisonAttribute"))
-	m.AdComparisonOperator = types.StringValue(getString(obj, "AdComparisonOperator"))
-	m.AddManagerAsRecipientType = types.StringValue(getString(obj, "AddManagerAsRecipientType"))
+	m.ActivationDate = types.StringValue(getObjectJSON(obj, "ActivationDate"))
+	m.AdComparisonAttribute = types.StringValue(getObjectJSON(obj, "AdComparisonAttribute"))
+	m.AdComparisonOperator = types.StringValue(getObjectJSON(obj, "AdComparisonOperator"))
+	m.AddManagerAsRecipientType = types.StringValue(getObjectJSON(obj, "AddManagerAsRecipientType"))
 	m.AddToRecipients = stringSetValue(ctx, getStringSlice(obj, "AddToRecipients"))
 	m.AnyOfCcHeader = stringSetValue(ctx, getStringSlice(obj, "AnyOfCcHeader"))
 	m.AnyOfCcHeaderMemberOf = stringSetValue(ctx, getStringSlice(obj, "AnyOfCcHeaderMemberOf"))
@@ -1168,12 +2037,12 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.AnyOfToHeader = stringSetValue(ctx, getStringSlice(obj, "AnyOfToHeader"))
 	m.AnyOfToHeaderMemberOf = stringSetValue(ctx, getStringSlice(obj, "AnyOfToHeaderMemberOf"))
 	m.ApplyClassification = types.StringValue(getString(obj, "ApplyClassification"))
-	m.ApplyHtmlDisclaimerFallbackAction = types.StringValue(getString(obj, "ApplyHtmlDisclaimerFallbackAction"))
-	m.ApplyHtmlDisclaimerLocation = types.StringValue(getString(obj, "ApplyHtmlDisclaimerLocation"))
-	m.ApplyHtmlDisclaimerText = types.StringValue(getString(obj, "ApplyHtmlDisclaimerText"))
+	m.ApplyHtmlDisclaimerFallbackAction = types.StringValue(getObjectJSON(obj, "ApplyHtmlDisclaimerFallbackAction"))
+	m.ApplyHtmlDisclaimerLocation = types.StringValue(getObjectJSON(obj, "ApplyHtmlDisclaimerLocation"))
+	m.ApplyHtmlDisclaimerText = types.StringValue(getObjectJSON(obj, "ApplyHtmlDisclaimerText"))
 	m.ApplyOME = types.BoolValue(getBool(obj, "ApplyOME"))
-	m.ApplyRightsProtectionCustomizationTemplate = types.StringValue(getString(obj, "ApplyRightsProtectionCustomizationTemplate"))
-	m.ApplyRightsProtectionTemplate = types.StringValue(getString(obj, "ApplyRightsProtectionTemplate"))
+	m.ApplyRightsProtectionCustomizationTemplate = types.StringValue(getObjectJSON(obj, "ApplyRightsProtectionCustomizationTemplate"))
+	m.ApplyRightsProtectionTemplate = types.StringValue(getObjectJSON(obj, "ApplyRightsProtectionTemplate"))
 	m.AttachmentContainsWords = stringSetValue(ctx, getStringSlice(obj, "AttachmentContainsWords"))
 	m.AttachmentExtensionMatchesWords = stringSetValue(ctx, getStringSlice(obj, "AttachmentExtensionMatchesWords"))
 	m.AttachmentHasExecutableContent = types.BoolValue(getBool(obj, "AttachmentHasExecutableContent"))
@@ -1183,7 +2052,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.AttachmentNameMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "AttachmentNameMatchesPatterns"))
 	m.AttachmentProcessingLimitExceeded = types.BoolValue(getBool(obj, "AttachmentProcessingLimitExceeded"))
 	m.AttachmentPropertyContainsWords = stringSetValue(ctx, getStringSlice(obj, "AttachmentPropertyContainsWords"))
-	m.AttachmentSizeOver = types.StringValue(getString(obj, "AttachmentSizeOver"))
+	m.AttachmentSizeOver = types.StringValue(getObjectJSON(obj, "AttachmentSizeOver"))
 	m.BetweenMemberOf1 = stringSetValue(ctx, getStringSlice(obj, "BetweenMemberOf1"))
 	m.BetweenMemberOf2 = stringSetValue(ctx, getStringSlice(obj, "BetweenMemberOf2"))
 	m.BlindCopyTo = stringSetValue(ctx, getStringSlice(obj, "BlindCopyTo"))
@@ -1194,8 +2063,8 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.Disconnect = types.BoolValue(getBool(obj, "Disconnect"))
 	m.DlpPolicy = types.StringValue(getString(obj, "DlpPolicy"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.ExceptIfAdComparisonAttribute = types.StringValue(getString(obj, "ExceptIfAdComparisonAttribute"))
-	m.ExceptIfAdComparisonOperator = types.StringValue(getString(obj, "ExceptIfAdComparisonOperator"))
+	m.ExceptIfAdComparisonAttribute = types.StringValue(getObjectJSON(obj, "ExceptIfAdComparisonAttribute"))
+	m.ExceptIfAdComparisonOperator = types.StringValue(getObjectJSON(obj, "ExceptIfAdComparisonOperator"))
 	m.ExceptIfAnyOfCcHeader = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAnyOfCcHeader"))
 	m.ExceptIfAnyOfCcHeaderMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAnyOfCcHeaderMemberOf"))
 	m.ExceptIfAnyOfRecipientAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAnyOfRecipientAddressContainsWords"))
@@ -1213,7 +2082,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.ExceptIfAttachmentNameMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAttachmentNameMatchesPatterns"))
 	m.ExceptIfAttachmentProcessingLimitExceeded = types.BoolValue(getBool(obj, "ExceptIfAttachmentProcessingLimitExceeded"))
 	m.ExceptIfAttachmentPropertyContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAttachmentPropertyContainsWords"))
-	m.ExceptIfAttachmentSizeOver = types.StringValue(getString(obj, "ExceptIfAttachmentSizeOver"))
+	m.ExceptIfAttachmentSizeOver = types.StringValue(getObjectJSON(obj, "ExceptIfAttachmentSizeOver"))
 	m.ExceptIfBetweenMemberOf1 = stringSetValue(ctx, getStringSlice(obj, "ExceptIfBetweenMemberOf1"))
 	m.ExceptIfBetweenMemberOf2 = stringSetValue(ctx, getStringSlice(obj, "ExceptIfBetweenMemberOf2"))
 	m.ExceptIfContentCharacterSetContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfContentCharacterSetContainsWords"))
@@ -1221,111 +2090,112 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.ExceptIfFromAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfFromAddressContainsWords"))
 	m.ExceptIfFromAddressMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfFromAddressMatchesPatterns"))
 	m.ExceptIfFromMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfFromMemberOf"))
-	m.ExceptIfFromScope = types.StringValue(getString(obj, "ExceptIfFromScope"))
+	m.ExceptIfFromScope = types.StringValue(getObjectJSON(obj, "ExceptIfFromScope"))
 	m.ExceptIfHasClassification = types.StringValue(getString(obj, "ExceptIfHasClassification"))
 	m.ExceptIfHasNoClassification = types.BoolValue(getBool(obj, "ExceptIfHasNoClassification"))
 	m.ExceptIfHasSenderOverride = types.BoolValue(getBool(obj, "ExceptIfHasSenderOverride"))
-	m.ExceptIfHeaderContainsMessageHeader = types.StringValue(getString(obj, "ExceptIfHeaderContainsMessageHeader"))
+	m.ExceptIfHeaderContainsMessageHeader = types.StringValue(getObjectJSON(obj, "ExceptIfHeaderContainsMessageHeader"))
 	m.ExceptIfHeaderContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfHeaderContainsWords"))
-	m.ExceptIfHeaderMatchesMessageHeader = types.StringValue(getString(obj, "ExceptIfHeaderMatchesMessageHeader"))
+	m.ExceptIfHeaderMatchesMessageHeader = types.StringValue(getObjectJSON(obj, "ExceptIfHeaderMatchesMessageHeader"))
 	m.ExceptIfHeaderMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfHeaderMatchesPatterns"))
 	m.ExceptIfManagerAddresses = stringSetValue(ctx, getStringSlice(obj, "ExceptIfManagerAddresses"))
-	m.ExceptIfManagerForEvaluatedUser = types.StringValue(getString(obj, "ExceptIfManagerForEvaluatedUser"))
+	m.ExceptIfManagerForEvaluatedUser = types.StringValue(getObjectJSON(obj, "ExceptIfManagerForEvaluatedUser"))
 	m.ExceptIfMessageContainsDataClassifications = stringSetValue(ctx, getStringSlice(obj, "ExceptIfMessageContainsDataClassifications"))
-	m.ExceptIfMessageSizeOver = types.StringValue(getString(obj, "ExceptIfMessageSizeOver"))
-	m.ExceptIfMessageTypeMatches = types.StringValue(getString(obj, "ExceptIfMessageTypeMatches"))
+	m.ExceptIfMessageSizeOver = types.StringValue(getObjectJSON(obj, "ExceptIfMessageSizeOver"))
+	m.ExceptIfMessageTypeMatches = types.StringValue(getObjectJSON(obj, "ExceptIfMessageTypeMatches"))
 	m.ExceptIfRecipientADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientADAttributeContainsWords"))
 	m.ExceptIfRecipientADAttributeMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientADAttributeMatchesPatterns"))
 	m.ExceptIfRecipientAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientAddressContainsWords"))
 	m.ExceptIfRecipientAddressMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientAddressMatchesPatterns"))
 	m.ExceptIfRecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientDomainIs"))
 	m.ExceptIfRecipientInSenderList = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientInSenderList"))
-	m.ExceptIfSCLOver = types.StringValue(getString(obj, "ExceptIfSCLOver"))
+	m.ExceptIfSCLOver = types.StringValue(getObjectJSON(obj, "ExceptIfSCLOver"))
 	m.ExceptIfSenderADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSenderADAttributeContainsWords"))
 	m.ExceptIfSenderADAttributeMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSenderADAttributeMatchesPatterns"))
 	m.ExceptIfSenderDomainIs = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSenderDomainIs"))
 	m.ExceptIfSenderInRecipientList = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSenderInRecipientList"))
-	m.ExceptIfSenderIpRanges = types.StringValue(getString(obj, "ExceptIfSenderIpRanges"))
-	m.ExceptIfSenderManagementRelationship = types.StringValue(getString(obj, "ExceptIfSenderManagementRelationship"))
+	m.ExceptIfSenderIpRanges = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSenderIpRanges"))
+	m.ExceptIfSenderManagementRelationship = types.StringValue(getObjectJSON(obj, "ExceptIfSenderManagementRelationship"))
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))
-	m.ExceptIfSentToScope = types.StringValue(getString(obj, "ExceptIfSentToScope"))
+	m.ExceptIfSentToScope = types.StringValue(getObjectJSON(obj, "ExceptIfSentToScope"))
 	m.ExceptIfSubjectContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectContainsWords"))
 	m.ExceptIfSubjectMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectMatchesPatterns"))
 	m.ExceptIfSubjectOrBodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectOrBodyContainsWords"))
 	m.ExceptIfSubjectOrBodyMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectOrBodyMatchesPatterns"))
-	m.ExceptIfWithImportance = types.StringValue(getString(obj, "ExceptIfWithImportance"))
-	m.ExpiryDate = types.StringValue(getString(obj, "ExpiryDate"))
+	m.ExceptIfWithImportance = types.StringValue(getObjectJSON(obj, "ExceptIfWithImportance"))
+	m.ExpiryDate = types.StringValue(getObjectJSON(obj, "ExpiryDate"))
 	m.From = stringSetValue(ctx, getStringSlice(obj, "From"))
 	m.FromAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "FromAddressContainsWords"))
 	m.FromAddressMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "FromAddressMatchesPatterns"))
 	m.FromMemberOf = stringSetValue(ctx, getStringSlice(obj, "FromMemberOf"))
-	m.FromScope = types.StringValue(getString(obj, "FromScope"))
-	m.GenerateIncidentReport = types.StringValue(getString(obj, "GenerateIncidentReport"))
-	m.GenerateNotification = types.StringValue(getString(obj, "GenerateNotification"))
+	m.FromScope = types.StringValue(getObjectJSON(obj, "FromScope"))
+	m.GenerateIncidentReport = types.StringValue(getObjectJSON(obj, "GenerateIncidentReport"))
+	m.GenerateNotification = types.StringValue(getObjectJSON(obj, "GenerateNotification"))
 	m.HasClassification = types.StringValue(getString(obj, "HasClassification"))
 	m.HasNoClassification = types.BoolValue(getBool(obj, "HasNoClassification"))
 	m.HasSenderOverride = types.BoolValue(getBool(obj, "HasSenderOverride"))
-	m.HeaderContainsMessageHeader = types.StringValue(getString(obj, "HeaderContainsMessageHeader"))
+	m.HeaderContainsMessageHeader = types.StringValue(getObjectJSON(obj, "HeaderContainsMessageHeader"))
 	m.HeaderContainsWords = stringSetValue(ctx, getStringSlice(obj, "HeaderContainsWords"))
-	m.HeaderMatchesMessageHeader = types.StringValue(getString(obj, "HeaderMatchesMessageHeader"))
+	m.HeaderMatchesMessageHeader = types.StringValue(getObjectJSON(obj, "HeaderMatchesMessageHeader"))
 	m.HeaderMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "HeaderMatchesPatterns"))
 	m.IncidentReportContent = stringSetValue(ctx, getStringSlice(obj, "IncidentReportContent"))
-	m.LogEventText = types.StringValue(getString(obj, "LogEventText"))
+	m.LogEventText = types.StringValue(getObjectJSON(obj, "LogEventText"))
 	m.ManagerAddresses = stringSetValue(ctx, getStringSlice(obj, "ManagerAddresses"))
-	m.ManagerForEvaluatedUser = types.StringValue(getString(obj, "ManagerForEvaluatedUser"))
+	m.ManagerForEvaluatedUser = types.StringValue(getObjectJSON(obj, "ManagerForEvaluatedUser"))
 	m.MessageContainsDataClassifications = stringSetValue(ctx, getStringSlice(obj, "MessageContainsDataClassifications"))
-	m.MessageSizeOver = types.StringValue(getString(obj, "MessageSizeOver"))
-	m.MessageTypeMatches = types.StringValue(getString(obj, "MessageTypeMatches"))
-	m.Mode = types.StringValue(getString(obj, "Mode"))
+	m.MessageSizeOver = types.StringValue(getObjectJSON(obj, "MessageSizeOver"))
+	m.MessageTypeMatches = types.StringValue(getObjectJSON(obj, "MessageTypeMatches"))
+	m.Mode = types.StringValue(getObjectJSON(obj, "Mode"))
 	m.ModerateMessageByManager = types.BoolValue(getBool(obj, "ModerateMessageByManager"))
 	m.ModerateMessageByUser = stringSetValue(ctx, getStringSlice(obj, "ModerateMessageByUser"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.NotifySender = types.StringValue(getString(obj, "NotifySender"))
-	m.PrependSubject = types.StringValue(getString(obj, "PrependSubject"))
+	m.NotifySender = types.StringValue(getObjectJSON(obj, "NotifySender"))
+	m.PrependSubject = types.StringValue(getObjectJSON(obj, "PrependSubject"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.Quarantine = types.BoolValue(getBool(obj, "Quarantine"))
 	m.RecipientADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "RecipientADAttributeContainsWords"))
 	m.RecipientADAttributeMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "RecipientADAttributeMatchesPatterns"))
 	m.RecipientAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "RecipientAddressContainsWords"))
 	m.RecipientAddressMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "RecipientAddressMatchesPatterns"))
-	m.RecipientAddressType = types.StringValue(getString(obj, "RecipientAddressType"))
+	m.RecipientAddressType = types.StringValue(getObjectJSON(obj, "RecipientAddressType"))
 	m.RecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "RecipientDomainIs"))
 	m.RecipientInSenderList = stringSetValue(ctx, getStringSlice(obj, "RecipientInSenderList"))
 	m.RedirectMessageTo = stringSetValue(ctx, getStringSlice(obj, "RedirectMessageTo"))
-	m.RejectMessageEnhancedStatusCode = types.StringValue(getString(obj, "RejectMessageEnhancedStatusCode"))
-	m.RejectMessageReasonText = types.StringValue(getString(obj, "RejectMessageReasonText"))
-	m.RemoveHeader = types.StringValue(getString(obj, "RemoveHeader"))
+	m.RejectMessageEnhancedStatusCode = types.StringValue(getObjectJSON(obj, "RejectMessageEnhancedStatusCode"))
+	m.RejectMessageReasonText = types.StringValue(getObjectJSON(obj, "RejectMessageReasonText"))
+	m.RemoveHeader = types.StringValue(getObjectJSON(obj, "RemoveHeader"))
 	m.RemoveOME = types.BoolValue(getBool(obj, "RemoveOME"))
 	m.RemoveOMEv2 = types.BoolValue(getBool(obj, "RemoveOMEv2"))
 	m.RemoveRMSAttachmentEncryption = types.BoolValue(getBool(obj, "RemoveRMSAttachmentEncryption"))
-	m.RouteMessageOutboundConnector = types.StringValue(getString(obj, "RouteMessageOutboundConnector"))
+	m.RouteMessageOutboundConnector = types.StringValue(getObjectJSON(obj, "RouteMessageOutboundConnector"))
 	m.RouteMessageOutboundRequireTls = types.BoolValue(getBool(obj, "RouteMessageOutboundRequireTls"))
-	m.RuleErrorAction = types.StringValue(getString(obj, "RuleErrorAction"))
-	m.RuleSubType = types.StringValue(getString(obj, "RuleSubType"))
-	m.SCLOver = types.StringValue(getString(obj, "SCLOver"))
+	m.RuleErrorAction = types.StringValue(getObjectJSON(obj, "RuleErrorAction"))
+	m.RuleSubType = types.StringValue(getObjectJSON(obj, "RuleSubType"))
+	m.SCLOver = types.StringValue(getObjectJSON(obj, "SCLOver"))
 	m.SenderADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "SenderADAttributeContainsWords"))
 	m.SenderADAttributeMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "SenderADAttributeMatchesPatterns"))
-	m.SenderAddressLocation = types.StringValue(getString(obj, "SenderAddressLocation"))
+	m.SenderAddressLocation = types.StringValue(getObjectJSON(obj, "SenderAddressLocation"))
 	m.SenderDomainIs = stringSetValue(ctx, getStringSlice(obj, "SenderDomainIs"))
 	m.SenderInRecipientList = stringSetValue(ctx, getStringSlice(obj, "SenderInRecipientList"))
-	m.SenderIpRanges = types.StringValue(getString(obj, "SenderIpRanges"))
-	m.SenderManagementRelationship = types.StringValue(getString(obj, "SenderManagementRelationship"))
+	m.SenderIpRanges = stringSetValue(ctx, getStringSlice(obj, "SenderIpRanges"))
+	m.SenderManagementRelationship = types.StringValue(getObjectJSON(obj, "SenderManagementRelationship"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "SentToMemberOf"))
-	m.SentToScope = types.StringValue(getString(obj, "SentToScope"))
+	m.SentToScope = types.StringValue(getObjectJSON(obj, "SentToScope"))
 	m.SetAuditSeverity = types.StringValue(getString(obj, "SetAuditSeverity"))
-	m.SetHeaderName = types.StringValue(getString(obj, "SetHeaderName"))
-	m.SetHeaderValue = types.StringValue(getString(obj, "SetHeaderValue"))
-	m.SetSCL = types.StringValue(getString(obj, "SetSCL"))
-	m.SmtpRejectMessageRejectStatusCode = types.StringValue(getString(obj, "SmtpRejectMessageRejectStatusCode"))
-	m.SmtpRejectMessageRejectText = types.StringValue(getString(obj, "SmtpRejectMessageRejectText"))
+	m.SetHeaderName = types.StringValue(getObjectJSON(obj, "SetHeaderName"))
+	m.SetHeaderValue = types.StringValue(getObjectJSON(obj, "SetHeaderValue"))
+	m.SetSCL = types.StringValue(getObjectJSON(obj, "SetSCL"))
+	m.SmtpRejectMessageRejectStatusCode = types.StringValue(getObjectJSON(obj, "SmtpRejectMessageRejectStatusCode"))
+	m.SmtpRejectMessageRejectText = types.StringValue(getObjectJSON(obj, "SmtpRejectMessageRejectText"))
 	m.StopRuleProcessing = types.BoolValue(getBool(obj, "StopRuleProcessing"))
 	m.SubjectContainsWords = stringSetValue(ctx, getStringSlice(obj, "SubjectContainsWords"))
 	m.SubjectMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "SubjectMatchesPatterns"))
 	m.SubjectOrBodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "SubjectOrBodyContainsWords"))
 	m.SubjectOrBodyMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "SubjectOrBodyMatchesPatterns"))
 	m.UseLegacyRegex = types.BoolValue(getBool(obj, "UseLegacyRegex"))
-	m.WithImportance = types.StringValue(getString(obj, "WithImportance"))
+	m.WithImportance = types.StringValue(getObjectJSON(obj, "WithImportance"))
 	_ = ctx
 }
 
@@ -1421,7 +2291,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.ExceptIfSenderADAttributeMatchesPatterns = reconcile.KeepSet(cfg.ExceptIfSenderADAttributeMatchesPatterns, read.ExceptIfSenderADAttributeMatchesPatterns)
 	read.ExceptIfSenderDomainIs = reconcile.KeepSet(cfg.ExceptIfSenderDomainIs, read.ExceptIfSenderDomainIs)
 	read.ExceptIfSenderInRecipientList = reconcile.KeepSet(cfg.ExceptIfSenderInRecipientList, read.ExceptIfSenderInRecipientList)
-	read.ExceptIfSenderIpRanges = reconcile.KeepStr(cfg.ExceptIfSenderIpRanges, read.ExceptIfSenderIpRanges)
+	read.ExceptIfSenderIpRanges = reconcile.KeepSet(cfg.ExceptIfSenderIpRanges, read.ExceptIfSenderIpRanges)
 	read.ExceptIfSenderManagementRelationship = reconcile.KeepStr(cfg.ExceptIfSenderManagementRelationship, read.ExceptIfSenderManagementRelationship)
 	read.ExceptIfSentTo = reconcile.KeepSet(cfg.ExceptIfSentTo, read.ExceptIfSentTo)
 	read.ExceptIfSentToMemberOf = reconcile.KeepSet(cfg.ExceptIfSentToMemberOf, read.ExceptIfSentToMemberOf)
@@ -1459,6 +2329,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NotifySender = reconcile.KeepStr(cfg.NotifySender, read.NotifySender)
 	read.PrependSubject = reconcile.KeepStr(cfg.PrependSubject, read.PrependSubject)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.Quarantine = reconcile.KeepBool(cfg.Quarantine, read.Quarantine)
 	read.RecipientADAttributeContainsWords = reconcile.KeepSet(cfg.RecipientADAttributeContainsWords, read.RecipientADAttributeContainsWords)
 	read.RecipientADAttributeMatchesPatterns = reconcile.KeepSet(cfg.RecipientADAttributeMatchesPatterns, read.RecipientADAttributeMatchesPatterns)
@@ -1484,7 +2355,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.SenderAddressLocation = reconcile.KeepStr(cfg.SenderAddressLocation, read.SenderAddressLocation)
 	read.SenderDomainIs = reconcile.KeepSet(cfg.SenderDomainIs, read.SenderDomainIs)
 	read.SenderInRecipientList = reconcile.KeepSet(cfg.SenderInRecipientList, read.SenderInRecipientList)
-	read.SenderIpRanges = reconcile.KeepStr(cfg.SenderIpRanges, read.SenderIpRanges)
+	read.SenderIpRanges = reconcile.KeepSet(cfg.SenderIpRanges, read.SenderIpRanges)
 	read.SenderManagementRelationship = reconcile.KeepStr(cfg.SenderManagementRelationship, read.SenderManagementRelationship)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 	read.SentToMemberOf = reconcile.KeepSet(cfg.SentToMemberOf, read.SentToMemberOf)

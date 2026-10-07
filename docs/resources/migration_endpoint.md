@@ -47,6 +47,7 @@ Manages the MigrationEndpoint object via New-MigrationEndpoint / Get-MigrationEn
 - `max_concurrent_migrations` (String) Maps to the -MaxConcurrentMigrations parameter.
 - `nspi_server` (String) Maps to the -NspiServer parameter.
 - `partition` (String) Maps to the -Partition parameter.
+- `port` (Number) Maps to the -Port parameter.
 - `redirect_uri` (String) Maps to the -RedirectUri parameter.
 - `remote_tenant` (String) Maps to the -RemoteTenant parameter.
 - `security` (String) Maps to the -Security parameter.

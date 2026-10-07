@@ -42,6 +42,7 @@ Look up an existing MigrationEndpoint object. Set identity or name to select it.
 - `nspi_server` (String) Maps to the -NspiServer parameter.
 - `o_auth_code` (String) Maps to the -OAuthCode parameter.
 - `partition` (String) Maps to the -Partition parameter.
+- `port` (Number) Maps to the -Port parameter.
 - `public_folder` (Boolean) Maps to the -PublicFolder parameter.
 - `public_folder_database_server_legacy_dn` (String) Maps to the -PublicFolderDatabaseServerLegacyDN parameter.
 - `public_folder_to_unified_group` (Boolean) Maps to the -PublicFolderToUnifiedGroup parameter.

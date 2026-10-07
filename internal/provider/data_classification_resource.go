@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -37,7 +38,7 @@ type dataClassificationModel struct {
 	Identity                             types.String `tfsdk:"identity"`
 	ClassificationRuleCollectionIdentity types.String `tfsdk:"classification_rule_collection_identity"`
 	Description                          types.String `tfsdk:"description"`
-	Fingerprints                         types.String `tfsdk:"fingerprints"`
+	Fingerprints                         types.Set    `tfsdk:"fingerprints"`
 	IsDefault                            types.Bool   `tfsdk:"is_default"`
 	Locale                               types.String `tfsdk:"locale"`
 	Name                                 types.String `tfsdk:"name"`
@@ -52,10 +53,10 @@ func (r *dataClassificationResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the DataClassification object via New-DataClassification / Get-DataClassification / Set-DataClassification / Remove-DataClassification.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"classification_rule_collection_identity": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassificationRuleCollectionIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"description":  schema.StringAttribute{Required: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"fingerprints": schema.StringAttribute{Required: true, Description: "Maps to the -Fingerprints parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"fingerprints": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Fingerprints parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"is_default":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"locale":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Locale parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -77,18 +78,29 @@ func (r *dataClassificationResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	p := exo.NewDataClassificationParams{
-		Description: plan.Description.ValueString(),
-		Name:        plan.Name.ValueString(),
+	var config dataClassificationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ClassificationRuleCollectionIdentity.ValueString(); v != "" {
-		p.ClassificationRuleCollectionIdentity = v
+
+	p := exo.NewDataClassificationParams{}
+	if v := config.ClassificationRuleCollectionIdentity.ValueString(); v != "" {
+		p.ClassificationRuleCollectionIdentity = objectParam(v)
 	}
-	if v := plan.Fingerprints.ValueString(); v != "" {
-		p.Fingerprints = v
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
 	}
-	if v := plan.Locale.ValueString(); v != "" {
-		p.Locale = v
+	if !config.Fingerprints.IsNull() {
+		if v := toStringSlice(ctx, plan.Fingerprints, &resp.Diagnostics); len(v) > 0 {
+			p.Fingerprints = v
+		}
+	}
+	if v := config.Locale.ValueString(); v != "" {
+		p.Locale = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,9 +152,11 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetDataClassificationParams{}
 	sp.Identity = id
-	sp.IsDefault = plan.IsDefault.ValueBool()
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		sp.IsDefault = plan.IsDefault.ValueBool()
+	}
 	if v := plan.Locale.ValueString(); v != "" {
-		sp.Locale = v
+		sp.Locale = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -152,9 +166,7 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Locale": cfg.Locale,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -215,11 +227,11 @@ func (r *dataClassificationResource) refresh(ctx context.Context, identity strin
 func readDataClassification(ctx context.Context, obj map[string]any, m *dataClassificationModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.ClassificationRuleCollectionIdentity = types.StringValue(getString(obj, "ClassificationRuleCollectionIdentity"))
+	m.ClassificationRuleCollectionIdentity = types.StringValue(getObjectJSON(obj, "ClassificationRuleCollectionIdentity"))
 	m.Description = types.StringValue(getString(obj, "Description"))
-	m.Fingerprints = types.StringValue(getString(obj, "Fingerprints"))
+	m.Fingerprints = stringSetValue(ctx, getStringSlice(obj, "Fingerprints"))
 	m.IsDefault = types.BoolValue(getBool(obj, "IsDefault"))
-	m.Locale = types.StringValue(getString(obj, "Locale"))
+	m.Locale = types.StringValue(getObjectJSON(obj, "Locale"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	_ = ctx
 }
@@ -227,7 +239,7 @@ func readDataClassification(ctx context.Context, obj map[string]any, m *dataClas
 func (r *dataClassificationResource) reconcileState(cfg, read *dataClassificationModel) {
 	read.ClassificationRuleCollectionIdentity = reconcile.KeepStr(cfg.ClassificationRuleCollectionIdentity, read.ClassificationRuleCollectionIdentity)
 	read.Description = reconcile.KeepStr(cfg.Description, read.Description)
-	read.Fingerprints = reconcile.KeepStr(cfg.Fingerprints, read.Fingerprints)
+	read.Fingerprints = reconcile.KeepSet(cfg.Fingerprints, read.Fingerprints)
 	read.IsDefault = reconcile.KeepBool(cfg.IsDefault, read.IsDefault)
 	read.Locale = reconcile.KeepStr(cfg.Locale, read.Locale)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)

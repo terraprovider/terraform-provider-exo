@@ -24,7 +24,7 @@ List every AvailabilityConfig object (Get-AvailabilityConfig).
 
 Read-Only:
 
-- `allowed_tenant_ids` (String) Maps to the -AllowedTenantIds parameter.
+- `allowed_tenant_ids` (Set of String) Maps to the -AllowedTenantIds parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `org_wide_account` (String) Maps to the -OrgWideAccount parameter.

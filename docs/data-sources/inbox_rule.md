@@ -24,28 +24,28 @@ Look up an existing InboxRule object. Set identity or name to select it.
 
 - `always_delete_outlook_rules_blob` (Boolean) Maps to the -AlwaysDeleteOutlookRulesBlob parameter.
 - `any_category` (Boolean) Maps to the -AnyCategory parameter.
-- `apply_category` (String) Maps to the -ApplyCategory parameter.
-- `apply_system_category` (String) Maps to the -ApplySystemCategory parameter.
-- `assigned_categories` (String) Maps to the -AssignedCategories parameter.
-- `body_contains_words` (String) Maps to the -BodyContainsWords parameter.
+- `apply_category` (Set of String) Maps to the -ApplyCategory parameter.
+- `apply_system_category` (Set of String) Maps to the -ApplySystemCategory parameter.
+- `assigned_categories` (Set of String) Maps to the -AssignedCategories parameter.
+- `body_contains_words` (Set of String) Maps to the -BodyContainsWords parameter.
 - `bulk_category` (String) Maps to the -BulkCategory parameter.
 - `clear_categories` (Boolean) Maps to the -ClearCategories parameter.
 - `clear_flag` (Boolean) Maps to the -ClearFlag parameter.
 - `complete_flag` (Boolean) Maps to the -CompleteFlag parameter.
 - `copy_to_folder` (String) Maps to the -CopyToFolder parameter.
 - `delete_message` (Boolean) Maps to the -DeleteMessage parameter.
-- `delete_system_category` (String) Maps to the -DeleteSystemCategory parameter.
+- `delete_system_category` (Set of String) Maps to the -DeleteSystemCategory parameter.
 - `display_alert` (String) Maps to the -DisplayAlert parameter.
 - `except_if_any_category` (Boolean) Maps to the -ExceptIfAnyCategory parameter.
-- `except_if_assigned_categories` (String) Maps to the -ExceptIfAssignedCategories parameter.
-- `except_if_body_contains_words` (String) Maps to the -ExceptIfBodyContainsWords parameter.
+- `except_if_assigned_categories` (Set of String) Maps to the -ExceptIfAssignedCategories parameter.
+- `except_if_body_contains_words` (Set of String) Maps to the -ExceptIfBodyContainsWords parameter.
 - `except_if_bulk_category` (String) Maps to the -ExceptIfBulkCategory parameter.
 - `except_if_flagged_for_action` (String) Maps to the -ExceptIfFlaggedForAction parameter.
 - `except_if_from` (Set of String) Maps to the -ExceptIfFrom parameter.
-- `except_if_from_address_contains_words` (String) Maps to the -ExceptIfFromAddressContainsWords parameter.
+- `except_if_from_address_contains_words` (Set of String) Maps to the -ExceptIfFromAddressContainsWords parameter.
 - `except_if_has_attachment` (Boolean) Maps to the -ExceptIfHasAttachment parameter.
 - `except_if_has_classification` (Set of String) Maps to the -ExceptIfHasClassification parameter.
-- `except_if_header_contains_words` (String) Maps to the -ExceptIfHeaderContainsWords parameter.
+- `except_if_header_contains_words` (Set of String) Maps to the -ExceptIfHeaderContainsWords parameter.
 - `except_if_is_external` (Boolean) Maps to the -ExceptIfIsExternal parameter.
 - `except_if_is_mentioned` (Boolean) Maps to the -ExceptIfIsMentioned parameter.
 - `except_if_message_type_matches` (String) Maps to the -ExceptIfMessageTypeMatches parameter.
@@ -55,11 +55,11 @@ Look up an existing InboxRule object. Set identity or name to select it.
 - `except_if_my_name_not_in_to_box` (Boolean) Maps to the -ExceptIfMyNameNotInToBox parameter.
 - `except_if_received_after_date` (String) Maps to the -ExceptIfReceivedAfterDate parameter.
 - `except_if_received_before_date` (String) Maps to the -ExceptIfReceivedBeforeDate parameter.
-- `except_if_recipient_address_contains_words` (String) Maps to the -ExceptIfRecipientAddressContainsWords parameter.
+- `except_if_recipient_address_contains_words` (Set of String) Maps to the -ExceptIfRecipientAddressContainsWords parameter.
 - `except_if_sent_only_to_me` (Boolean) Maps to the -ExceptIfSentOnlyToMe parameter.
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
-- `except_if_subject_contains_words` (String) Maps to the -ExceptIfSubjectContainsWords parameter.
-- `except_if_subject_or_body_contains_words` (String) Maps to the -ExceptIfSubjectOrBodyContainsWords parameter.
+- `except_if_subject_contains_words` (Set of String) Maps to the -ExceptIfSubjectContainsWords parameter.
+- `except_if_subject_or_body_contains_words` (Set of String) Maps to the -ExceptIfSubjectOrBodyContainsWords parameter.
 - `except_if_with_importance` (String) Maps to the -ExceptIfWithImportance parameter.
 - `except_if_with_sensitivity` (String) Maps to the -ExceptIfWithSensitivity parameter.
 - `except_if_within_size_range_maximum` (String) Maps to the -ExceptIfWithinSizeRangeMaximum parameter.
@@ -69,11 +69,11 @@ Look up an existing InboxRule object. Set identity or name to select it.
 - `forward_as_attachment_to` (Set of String) Maps to the -ForwardAsAttachmentTo parameter.
 - `forward_to` (Set of String) Maps to the -ForwardTo parameter.
 - `from` (Set of String) Maps to the -From parameter.
-- `from_address_contains_words` (String) Maps to the -FromAddressContainsWords parameter.
+- `from_address_contains_words` (Set of String) Maps to the -FromAddressContainsWords parameter.
 - `from_message_id` (String) Maps to the -FromMessageId parameter.
 - `has_attachment` (Boolean) Maps to the -HasAttachment parameter.
 - `has_classification` (Set of String) Maps to the -HasClassification parameter.
-- `header_contains_words` (String) Maps to the -HeaderContainsWords parameter.
+- `header_contains_words` (Set of String) Maps to the -HeaderContainsWords parameter.
 - `id` (String) Object identifier (GUID).
 - `is_external` (Boolean) Maps to the -IsExternal parameter.
 - `is_mentioned` (Boolean) Maps to the -IsMentioned parameter.
@@ -89,16 +89,17 @@ Look up an existing InboxRule object. Set identity or name to select it.
 - `permanent_delete` (Boolean) Maps to the -PermanentDelete parameter.
 - `pin_message` (Boolean) Maps to the -PinMessage parameter.
 - `play_sound` (String) Maps to the -PlaySound parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `received_after_date` (String) Maps to the -ReceivedAfterDate parameter.
 - `received_before_date` (String) Maps to the -ReceivedBeforeDate parameter.
-- `recipient_address_contains_words` (String) Maps to the -RecipientAddressContainsWords parameter.
+- `recipient_address_contains_words` (Set of String) Maps to the -RecipientAddressContainsWords parameter.
 - `redirect_to` (Set of String) Maps to the -RedirectTo parameter.
 - `sent_only_to_me` (Boolean) Maps to the -SentOnlyToMe parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `soft_delete_message` (Boolean) Maps to the -SoftDeleteMessage parameter.
 - `stop_processing_rules` (Boolean) Maps to the -StopProcessingRules parameter.
-- `subject_contains_words` (String) Maps to the -SubjectContainsWords parameter.
-- `subject_or_body_contains_words` (String) Maps to the -SubjectOrBodyContainsWords parameter.
+- `subject_contains_words` (Set of String) Maps to the -SubjectContainsWords parameter.
+- `subject_or_body_contains_words` (Set of String) Maps to the -SubjectOrBodyContainsWords parameter.
 - `validate_only` (Boolean) Maps to the -ValidateOnly parameter.
 - `with_importance` (String) Maps to the -WithImportance parameter.
 - `with_sensitivity` (String) Maps to the -WithSensitivity parameter.

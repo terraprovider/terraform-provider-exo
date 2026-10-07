@@ -28,6 +28,7 @@ Look up an existing ATPProtectionPolicyRule object. Set identity or name to sele
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
 - `except_if_sent_to_member_of` (Set of String) Maps to the -ExceptIfSentToMemberOf parameter.
 - `id` (String) Object identifier (GUID).
+- `priority` (Number) Maps to the -Priority parameter.
 - `recipient_domain_is` (Set of String) Maps to the -RecipientDomainIs parameter.
 - `safe_attachment_policy` (String) Maps to the -SafeAttachmentPolicy parameter.
 - `safe_links_policy` (String) Maps to the -SafeLinksPolicy parameter.

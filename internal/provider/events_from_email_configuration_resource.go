@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &eventsFromEmailConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &eventsFromEmailConfigurationResource{}
 	_ resource.ResourceWithImportState = &eventsFromEmailConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &eventsFromEmailConfigurationResource{}
 )
 
 type eventsFromEmailConfigurationResource struct{ client *clients.Client }
@@ -86,18 +87,45 @@ func (r *eventsFromEmailConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config eventsFromEmailConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetEventsFromEmailConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBool()
-	sp.EventReservationProcessingLevel = plan.EventReservationProcessingLevel.ValueString()
-	sp.FlightReservationProcessingLevel = plan.FlightReservationProcessingLevel.ValueString()
-	sp.FoodEstablishmentReservationProcessingLevel = plan.FoodEstablishmentReservationProcessingLevel.ValueString()
-	sp.InvoiceProcessingLevel = plan.InvoiceProcessingLevel.ValueString()
-	sp.LodgingReservationProcessingLevel = plan.LodgingReservationProcessingLevel.ValueString()
-	sp.ParcelDeliveryProcessingLevel = plan.ParcelDeliveryProcessingLevel.ValueString()
-	sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
-	sp.ResetSettings = plan.ResetSettings.ValueBool()
-	sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
+	if !config.CreateEventsFromEmailAsPrivate.IsNull() {
+		if !plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+			sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBoolPointer()
+		}
+	}
+	if !config.EventReservationProcessingLevel.IsNull() {
+		sp.EventReservationProcessingLevel = plan.EventReservationProcessingLevel.ValueString()
+	}
+	if !config.FlightReservationProcessingLevel.IsNull() {
+		sp.FlightReservationProcessingLevel = plan.FlightReservationProcessingLevel.ValueString()
+	}
+	if !config.FoodEstablishmentReservationProcessingLevel.IsNull() {
+		sp.FoodEstablishmentReservationProcessingLevel = plan.FoodEstablishmentReservationProcessingLevel.ValueString()
+	}
+	if !config.InvoiceProcessingLevel.IsNull() {
+		sp.InvoiceProcessingLevel = plan.InvoiceProcessingLevel.ValueString()
+	}
+	if !config.LodgingReservationProcessingLevel.IsNull() {
+		sp.LodgingReservationProcessingLevel = plan.LodgingReservationProcessingLevel.ValueString()
+	}
+	if !config.ParcelDeliveryProcessingLevel.IsNull() {
+		sp.ParcelDeliveryProcessingLevel = plan.ParcelDeliveryProcessingLevel.ValueString()
+	}
+	if !config.RentalCarReservationProcessingLevel.IsNull() {
+		sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
+	}
+	if !config.ResetSettings.IsNull() {
+		sp.ResetSettings = plan.ResetSettings.ValueBool()
+	}
+	if !config.ServiceReservationProcessingLevel.IsNull() {
+		sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -137,16 +165,38 @@ func (r *eventsFromEmailConfigurationResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetEventsFromEmailConfigurationParams{}
 	sp.Identity = id
-	sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBool()
-	sp.EventReservationProcessingLevel = plan.EventReservationProcessingLevel.ValueString()
-	sp.FlightReservationProcessingLevel = plan.FlightReservationProcessingLevel.ValueString()
-	sp.FoodEstablishmentReservationProcessingLevel = plan.FoodEstablishmentReservationProcessingLevel.ValueString()
-	sp.InvoiceProcessingLevel = plan.InvoiceProcessingLevel.ValueString()
-	sp.LodgingReservationProcessingLevel = plan.LodgingReservationProcessingLevel.ValueString()
-	sp.ParcelDeliveryProcessingLevel = plan.ParcelDeliveryProcessingLevel.ValueString()
-	sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
-	sp.ResetSettings = plan.ResetSettings.ValueBool()
-	sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
+	if !plan.CreateEventsFromEmailAsPrivate.Equal(state.CreateEventsFromEmailAsPrivate) {
+		if !plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+			sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBoolPointer()
+		}
+	}
+	if !plan.EventReservationProcessingLevel.Equal(state.EventReservationProcessingLevel) {
+		sp.EventReservationProcessingLevel = plan.EventReservationProcessingLevel.ValueString()
+	}
+	if !plan.FlightReservationProcessingLevel.Equal(state.FlightReservationProcessingLevel) {
+		sp.FlightReservationProcessingLevel = plan.FlightReservationProcessingLevel.ValueString()
+	}
+	if !plan.FoodEstablishmentReservationProcessingLevel.Equal(state.FoodEstablishmentReservationProcessingLevel) {
+		sp.FoodEstablishmentReservationProcessingLevel = plan.FoodEstablishmentReservationProcessingLevel.ValueString()
+	}
+	if !plan.InvoiceProcessingLevel.Equal(state.InvoiceProcessingLevel) {
+		sp.InvoiceProcessingLevel = plan.InvoiceProcessingLevel.ValueString()
+	}
+	if !plan.LodgingReservationProcessingLevel.Equal(state.LodgingReservationProcessingLevel) {
+		sp.LodgingReservationProcessingLevel = plan.LodgingReservationProcessingLevel.ValueString()
+	}
+	if !plan.ParcelDeliveryProcessingLevel.Equal(state.ParcelDeliveryProcessingLevel) {
+		sp.ParcelDeliveryProcessingLevel = plan.ParcelDeliveryProcessingLevel.ValueString()
+	}
+	if !plan.RentalCarReservationProcessingLevel.Equal(state.RentalCarReservationProcessingLevel) {
+		sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
+	}
+	if !plan.ResetSettings.Equal(state.ResetSettings) {
+		sp.ResetSettings = plan.ResetSettings.ValueBool()
+	}
+	if !plan.ServiceReservationProcessingLevel.Equal(state.ServiceReservationProcessingLevel) {
+		sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -177,6 +227,68 @@ func (r *eventsFromEmailConfigurationResource) Delete(_ context.Context, _ resou
 func (r *eventsFromEmailConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *eventsFromEmailConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan eventsFromEmailConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetEventsFromEmailConfiguration(ctx, exo.GetEventsFromEmailConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur eventsFromEmailConfigurationModel
+	readEventsFromEmailConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+		plan.CreateEventsFromEmailAsPrivate = cur.CreateEventsFromEmailAsPrivate
+	}
+	if plan.EventReservationProcessingLevel.IsUnknown() {
+		plan.EventReservationProcessingLevel = cur.EventReservationProcessingLevel
+	}
+	if plan.FlightReservationProcessingLevel.IsUnknown() {
+		plan.FlightReservationProcessingLevel = cur.FlightReservationProcessingLevel
+	}
+	if plan.FoodEstablishmentReservationProcessingLevel.IsUnknown() {
+		plan.FoodEstablishmentReservationProcessingLevel = cur.FoodEstablishmentReservationProcessingLevel
+	}
+	if plan.InvoiceProcessingLevel.IsUnknown() {
+		plan.InvoiceProcessingLevel = cur.InvoiceProcessingLevel
+	}
+	if plan.LodgingReservationProcessingLevel.IsUnknown() {
+		plan.LodgingReservationProcessingLevel = cur.LodgingReservationProcessingLevel
+	}
+	if plan.ParcelDeliveryProcessingLevel.IsUnknown() {
+		plan.ParcelDeliveryProcessingLevel = cur.ParcelDeliveryProcessingLevel
+	}
+	if plan.RentalCarReservationProcessingLevel.IsUnknown() {
+		plan.RentalCarReservationProcessingLevel = cur.RentalCarReservationProcessingLevel
+	}
+	if plan.ResetSettings.IsUnknown() {
+		plan.ResetSettings = cur.ResetSettings
+	}
+	if plan.ServiceReservationProcessingLevel.IsUnknown() {
+		plan.ServiceReservationProcessingLevel = cur.ServiceReservationProcessingLevel
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *eventsFromEmailConfigurationResource) identityOf(m eventsFromEmailConfigurationModel) string {

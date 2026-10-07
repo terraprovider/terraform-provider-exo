@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = &activeSyncOrganizationSettingsResource{}
 	_ resource.ResourceWithConfigure   = &activeSyncOrganizationSettingsResource{}
 	_ resource.ResourceWithImportState = &activeSyncOrganizationSettingsResource{}
+	_ resource.ResourceWithModifyPlan  = &activeSyncOrganizationSettingsResource{}
 )
 
 type activeSyncOrganizationSettingsResource struct{ client *clients.Client }
@@ -37,7 +39,7 @@ func NewActiveSyncOrganizationSettingsResource() resource.Resource {
 type activeSyncOrganizationSettingsModel struct {
 	ID                                     types.String `tfsdk:"id"`
 	Identity                               types.String `tfsdk:"identity"`
-	AdminMailRecipients                    types.String `tfsdk:"admin_mail_recipients"`
+	AdminMailRecipients                    types.Set    `tfsdk:"admin_mail_recipients"`
 	AllowAccessForUnSupportedPlatform      types.Bool   `tfsdk:"allow_access_for_un_supported_platform"`
 	AllowRMSSupportForUnenlightenedApps    types.Bool   `tfsdk:"allow_rms_support_for_unenlightened_apps"`
 	DefaultAccessLevel                     types.String `tfsdk:"default_access_level"`
@@ -57,7 +59,7 @@ func (r *activeSyncOrganizationSettingsResource) Schema(_ context.Context, _ res
 		Attributes: map[string]schema.Attribute{
 			"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                               schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"admin_mail_recipients":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminMailRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"admin_mail_recipients":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AdminMailRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"allow_access_for_un_supported_platform": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowAccessForUnSupportedPlatform parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_rms_support_for_unenlightened_apps":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRMSSupportForUnenlightenedApps parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"default_access_level":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultAccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -82,22 +84,45 @@ func (r *activeSyncOrganizationSettingsResource) Create(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config activeSyncOrganizationSettingsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AdminMailRecipients.ValueString(); v != "" {
-		sp.AdminMailRecipients = v
+	if !config.AdminMailRecipients.IsNull() {
+		if !plan.AdminMailRecipients.IsNull() && !plan.AdminMailRecipients.IsUnknown() {
+			sp.AdminMailRecipients = append([]string{}, toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)...)
+		}
 	}
-	sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBool()
-	sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBool()
-	if v := plan.DefaultAccessLevel.ValueString(); v != "" {
-		sp.DefaultAccessLevel = v
+	if !config.AllowAccessForUnSupportedPlatform.IsNull() {
+		if !plan.AllowAccessForUnSupportedPlatform.IsUnknown() {
+			sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBoolPointer()
+		}
 	}
-	sp.EnableMobileMailboxPolicyWhenCAInplace = plan.EnableMobileMailboxPolicyWhenCAInplace.ValueBool()
-	sp.OtaNotificationMailInsert = plan.OtaNotificationMailInsert.ValueString()
-	if v := plan.TenantAdminPreference.ValueString(); v != "" {
-		sp.TenantAdminPreference = v
+	if !config.AllowRMSSupportForUnenlightenedApps.IsNull() {
+		if !plan.AllowRMSSupportForUnenlightenedApps.IsUnknown() {
+			sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBoolPointer()
+		}
 	}
-	sp.UserMailInsert = plan.UserMailInsert.ValueString()
+	if v := config.DefaultAccessLevel.ValueString(); v != "" {
+		sp.DefaultAccessLevel = objectParam(v)
+	}
+	if !config.EnableMobileMailboxPolicyWhenCAInplace.IsNull() {
+		if !plan.EnableMobileMailboxPolicyWhenCAInplace.IsUnknown() {
+			sp.EnableMobileMailboxPolicyWhenCAInplace = plan.EnableMobileMailboxPolicyWhenCAInplace.ValueBoolPointer()
+		}
+	}
+	if !config.OtaNotificationMailInsert.IsNull() {
+		sp.OtaNotificationMailInsert = plan.OtaNotificationMailInsert.ValueString()
+	}
+	if v := config.TenantAdminPreference.ValueString(); v != "" {
+		sp.TenantAdminPreference = objectParam(v)
+	}
+	if !config.UserMailInsert.IsNull() {
+		sp.UserMailInsert = plan.UserMailInsert.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -137,20 +162,38 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = id
-	if v := plan.AdminMailRecipients.ValueString(); v != "" {
-		sp.AdminMailRecipients = v
+	if !plan.AdminMailRecipients.Equal(state.AdminMailRecipients) {
+		if !plan.AdminMailRecipients.IsNull() && !plan.AdminMailRecipients.IsUnknown() {
+			sp.AdminMailRecipients = append([]string{}, toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)...)
+		}
 	}
-	sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBool()
-	sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBool()
+	if !plan.AllowAccessForUnSupportedPlatform.Equal(state.AllowAccessForUnSupportedPlatform) {
+		if !plan.AllowAccessForUnSupportedPlatform.IsUnknown() {
+			sp.AllowAccessForUnSupportedPlatform = plan.AllowAccessForUnSupportedPlatform.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowRMSSupportForUnenlightenedApps.Equal(state.AllowRMSSupportForUnenlightenedApps) {
+		if !plan.AllowRMSSupportForUnenlightenedApps.IsUnknown() {
+			sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBoolPointer()
+		}
+	}
 	if v := plan.DefaultAccessLevel.ValueString(); v != "" {
-		sp.DefaultAccessLevel = v
+		sp.DefaultAccessLevel = objectParam(v)
 	}
-	sp.EnableMobileMailboxPolicyWhenCAInplace = plan.EnableMobileMailboxPolicyWhenCAInplace.ValueBool()
-	sp.OtaNotificationMailInsert = plan.OtaNotificationMailInsert.ValueString()
+	if !plan.EnableMobileMailboxPolicyWhenCAInplace.Equal(state.EnableMobileMailboxPolicyWhenCAInplace) {
+		if !plan.EnableMobileMailboxPolicyWhenCAInplace.IsUnknown() {
+			sp.EnableMobileMailboxPolicyWhenCAInplace = plan.EnableMobileMailboxPolicyWhenCAInplace.ValueBoolPointer()
+		}
+	}
+	if !plan.OtaNotificationMailInsert.Equal(state.OtaNotificationMailInsert) {
+		sp.OtaNotificationMailInsert = plan.OtaNotificationMailInsert.ValueString()
+	}
 	if v := plan.TenantAdminPreference.ValueString(); v != "" {
-		sp.TenantAdminPreference = v
+		sp.TenantAdminPreference = objectParam(v)
 	}
-	sp.UserMailInsert = plan.UserMailInsert.ValueString()
+	if !plan.UserMailInsert.Equal(state.UserMailInsert) {
+		sp.UserMailInsert = plan.UserMailInsert.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -160,10 +203,7 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminMailRecipients":       cfg.AdminMailRecipients,
-		"DefaultAccessLevel":        cfg.DefaultAccessLevel,
 		"OtaNotificationMailInsert": cfg.OtaNotificationMailInsert,
-		"TenantAdminPreference":     cfg.TenantAdminPreference,
 		"UserMailInsert":            cfg.UserMailInsert,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
@@ -178,6 +218,62 @@ func (r *activeSyncOrganizationSettingsResource) Delete(_ context.Context, _ res
 func (r *activeSyncOrganizationSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *activeSyncOrganizationSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan activeSyncOrganizationSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetActiveSyncOrganizationSettings(ctx, exo.GetActiveSyncOrganizationSettingsParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur activeSyncOrganizationSettingsModel
+	readActiveSyncOrganizationSettings(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AdminMailRecipients.IsUnknown() {
+		plan.AdminMailRecipients = cur.AdminMailRecipients
+	}
+	if plan.AllowAccessForUnSupportedPlatform.IsUnknown() {
+		plan.AllowAccessForUnSupportedPlatform = cur.AllowAccessForUnSupportedPlatform
+	}
+	if plan.AllowRMSSupportForUnenlightenedApps.IsUnknown() {
+		plan.AllowRMSSupportForUnenlightenedApps = cur.AllowRMSSupportForUnenlightenedApps
+	}
+	if plan.DefaultAccessLevel.IsUnknown() {
+		plan.DefaultAccessLevel = cur.DefaultAccessLevel
+	}
+	if plan.EnableMobileMailboxPolicyWhenCAInplace.IsUnknown() {
+		plan.EnableMobileMailboxPolicyWhenCAInplace = cur.EnableMobileMailboxPolicyWhenCAInplace
+	}
+	if plan.OtaNotificationMailInsert.IsUnknown() {
+		plan.OtaNotificationMailInsert = cur.OtaNotificationMailInsert
+	}
+	if plan.TenantAdminPreference.IsUnknown() {
+		plan.TenantAdminPreference = cur.TenantAdminPreference
+	}
+	if plan.UserMailInsert.IsUnknown() {
+		plan.UserMailInsert = cur.UserMailInsert
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *activeSyncOrganizationSettingsResource) identityOf(m activeSyncOrganizationSettingsModel) string {
@@ -216,19 +312,19 @@ func (r *activeSyncOrganizationSettingsResource) refresh(ctx context.Context, id
 
 func readActiveSyncOrganizationSettings(ctx context.Context, obj map[string]any, m *activeSyncOrganizationSettingsModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AdminMailRecipients = types.StringValue(getString(obj, "AdminMailRecipients"))
+	m.AdminMailRecipients = stringSetValue(ctx, getStringSlice(obj, "AdminMailRecipients"))
 	m.AllowAccessForUnSupportedPlatform = types.BoolValue(getBool(obj, "AllowAccessForUnSupportedPlatform"))
 	m.AllowRMSSupportForUnenlightenedApps = types.BoolValue(getBool(obj, "AllowRMSSupportForUnenlightenedApps"))
-	m.DefaultAccessLevel = types.StringValue(getString(obj, "DefaultAccessLevel"))
+	m.DefaultAccessLevel = types.StringValue(getObjectJSON(obj, "DefaultAccessLevel"))
 	m.EnableMobileMailboxPolicyWhenCAInplace = types.BoolValue(getBool(obj, "EnableMobileMailboxPolicyWhenCAInplace"))
 	m.OtaNotificationMailInsert = types.StringValue(getString(obj, "OtaNotificationMailInsert"))
-	m.TenantAdminPreference = types.StringValue(getString(obj, "TenantAdminPreference"))
+	m.TenantAdminPreference = types.StringValue(getObjectJSON(obj, "TenantAdminPreference"))
 	m.UserMailInsert = types.StringValue(getString(obj, "UserMailInsert"))
 	_ = ctx
 }
 
 func (r *activeSyncOrganizationSettingsResource) reconcileState(cfg, read *activeSyncOrganizationSettingsModel) {
-	read.AdminMailRecipients = reconcile.KeepStr(cfg.AdminMailRecipients, read.AdminMailRecipients)
+	read.AdminMailRecipients = reconcile.KeepSet(cfg.AdminMailRecipients, read.AdminMailRecipients)
 	read.AllowAccessForUnSupportedPlatform = reconcile.KeepBool(cfg.AllowAccessForUnSupportedPlatform, read.AllowAccessForUnSupportedPlatform)
 	read.AllowRMSSupportForUnenlightenedApps = reconcile.KeepBool(cfg.AllowRMSSupportForUnenlightenedApps, read.AllowRMSSupportForUnenlightenedApps)
 	read.DefaultAccessLevel = reconcile.KeepStr(cfg.DefaultAccessLevel, read.DefaultAccessLevel)

@@ -21,7 +21,7 @@ Manages the LinkedUser configuration via Set-LinkedUser.
 
 ### Optional
 
-- `certificate_subject` (String) Maps to the -CertificateSubject parameter.
+- `certificate_subject` (Set of String) Maps to the -CertificateSubject parameter.
 
 ### Read-Only
 

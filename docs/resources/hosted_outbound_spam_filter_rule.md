@@ -29,6 +29,7 @@ Manages the HostedOutboundSpamFilterRule object via New-HostedOutboundSpamFilter
 - `except_if_sender_domain_is` (Set of String) Maps to the -ExceptIfSenderDomainIs parameter.
 - `from` (Set of String) Maps to the -From parameter.
 - `from_member_of` (Set of String) Maps to the -FromMemberOf parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `sender_domain_is` (Set of String) Maps to the -SenderDomainIs parameter.
 
 ### Read-Only

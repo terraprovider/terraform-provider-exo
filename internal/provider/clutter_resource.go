@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &clutterResource{}
 	_ resource.ResourceWithConfigure   = &clutterResource{}
 	_ resource.ResourceWithImportState = &clutterResource{}
+	_ resource.ResourceWithModifyPlan  = &clutterResource{}
 )
 
 type clutterResource struct{ client *clients.Client }
@@ -35,7 +36,7 @@ func NewClutterResource() resource.Resource { return &clutterResource{} }
 type clutterModel struct {
 	ID               types.String `tfsdk:"id"`
 	Identity         types.String `tfsdk:"identity"`
-	Enable           types.String `tfsdk:"enable"`
+	Enable           types.Bool   `tfsdk:"enable"`
 	UseCustomRouting types.Bool   `tfsdk:"use_custom_routing"`
 }
 
@@ -49,7 +50,7 @@ func (r *clutterResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":           schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"enable":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Enable parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"enable":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enable parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"use_custom_routing": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseCustomRouting parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -68,12 +69,21 @@ func (r *clutterResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config clutterModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetClutterParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.Enable.ValueString(); v != "" {
-		sp.Enable = v
+	if !config.Enable.IsNull() {
+		if !plan.Enable.IsUnknown() {
+			sp.Enable = plan.Enable.ValueBoolPointer()
+		}
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !config.UseCustomRouting.IsNull() {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -113,10 +123,14 @@ func (r *clutterResource) Update(ctx context.Context, req resource.UpdateRequest
 	id := r.identityOf(state)
 	sp := exo.SetClutterParams{}
 	sp.Identity = id
-	if v := plan.Enable.ValueString(); v != "" {
-		sp.Enable = v
+	if !plan.Enable.Equal(state.Enable) {
+		if !plan.Enable.IsUnknown() {
+			sp.Enable = plan.Enable.ValueBoolPointer()
+		}
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -125,9 +139,7 @@ func (r *clutterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Enable": cfg.Enable,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -140,6 +152,44 @@ func (r *clutterResource) Delete(_ context.Context, _ resource.DeleteRequest, re
 func (r *clutterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *clutterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan clutterModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetClutter(ctx, exo.GetClutterParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur clutterModel
+	readClutter(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Enable.IsUnknown() {
+		plan.Enable = cur.Enable
+	}
+	if plan.UseCustomRouting.IsUnknown() {
+		plan.UseCustomRouting = cur.UseCustomRouting
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *clutterResource) identityOf(m clutterModel) string {
@@ -178,12 +228,12 @@ func (r *clutterResource) refresh(ctx context.Context, identity string, m *clutt
 
 func readClutter(ctx context.Context, obj map[string]any, m *clutterModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.Enable = types.StringValue(getString(obj, "Enable"))
+	m.Enable = types.BoolValue(getBool(obj, "Enable"))
 	m.UseCustomRouting = types.BoolValue(getBool(obj, "UseCustomRouting"))
 	_ = ctx
 }
 
 func (r *clutterResource) reconcileState(cfg, read *clutterModel) {
-	read.Enable = reconcile.KeepStr(cfg.Enable, read.Enable)
+	read.Enable = reconcile.KeepBool(cfg.Enable, read.Enable)
 	read.UseCustomRouting = reconcile.KeepBool(cfg.UseCustomRouting, read.UseCustomRouting)
 }

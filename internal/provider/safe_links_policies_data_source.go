@@ -46,7 +46,7 @@ func (d *safeLinksPolicyListDataSource) Schema(_ context.Context, _ datasource.S
 				"custom_url_list":                  schema.StringAttribute{Computed: true, Description: "Maps to the -CustomUrlList parameter."},
 				"deliver_message_after_scan":       schema.BoolAttribute{Computed: true, Description: "Maps to the -DeliverMessageAfterScan parameter."},
 				"disable_url_rewrite":              schema.BoolAttribute{Computed: true, Description: "Maps to the -DisableUrlRewrite parameter."},
-				"do_not_rewrite_urls":              schema.StringAttribute{Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter."},
+				"do_not_rewrite_urls":              schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter."},
 				"enable_for_internal_senders":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableForInternalSenders parameter."},
 				"enable_organization_branding":     schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableOrganizationBranding parameter."},
 				"enable_safe_links_for_email":      schema.BoolAttribute{Computed: true, Description: "Maps to the -EnableSafeLinksForEmail parameter."},

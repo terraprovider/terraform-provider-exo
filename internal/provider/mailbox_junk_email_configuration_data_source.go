@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -36,14 +37,14 @@ func (d *mailboxJunkEmailConfigurationDataSource) Schema(_ context.Context, _ da
 		Attributes: map[string]schema.Attribute{
 			"id":                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"blocked_senders_and_domains":    schema.StringAttribute{Computed: true, Description: "Maps to the -BlockedSendersAndDomains parameter."},
+			"blocked_senders_and_domains":    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -BlockedSendersAndDomains parameter."},
 			"contacts_trusted":               schema.BoolAttribute{Computed: true, Description: "Maps to the -ContactsTrusted parameter."},
 			"enabled":                        schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"fail_on_error":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -FailOnError parameter."},
 			"sender_screening_enabled":       schema.BoolAttribute{Computed: true, Description: "Maps to the -SenderScreeningEnabled parameter."},
 			"trusted_lists_only":             schema.BoolAttribute{Computed: true, Description: "Maps to the -TrustedListsOnly parameter."},
-			"trusted_recipients_and_domains": schema.StringAttribute{Computed: true, Description: "Maps to the -TrustedRecipientsAndDomains parameter."},
-			"trusted_senders_and_domains":    schema.StringAttribute{Computed: true, Description: "Maps to the -TrustedSendersAndDomains parameter."},
+			"trusted_recipients_and_domains": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TrustedRecipientsAndDomains parameter."},
+			"trusted_senders_and_domains":    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TrustedSendersAndDomains parameter."},
 		},
 	}
 }

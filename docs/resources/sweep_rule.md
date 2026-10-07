@@ -24,8 +24,8 @@ Manages the SweepRule object via New-SweepRule / Get-SweepRule / Set-SweepRule /
 
 - `destination_folder` (String) Maps to the -DestinationFolder parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
-- `keep_for_days` (String) Maps to the -KeepForDays parameter.
-- `keep_latest` (String) Maps to the -KeepLatest parameter.
+- `keep_for_days` (Number) Maps to the -KeepForDays parameter.
+- `keep_latest` (Number) Maps to the -KeepLatest parameter.
 - `mailbox` (String) Maps to the -Mailbox parameter.
 - `sender` (String) Maps to the -Sender parameter.
 - `source_folder` (String) Maps to the -SourceFolder parameter.

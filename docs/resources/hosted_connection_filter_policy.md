@@ -24,8 +24,8 @@ Manages the HostedConnectionFilterPolicy object via New-HostedConnectionFilterPo
 - `admin_display_name` (String) Maps to the -AdminDisplayName parameter.
 - `configuration_xml_raw` (String) Maps to the -ConfigurationXmlRaw parameter.
 - `enable_safe_list` (Boolean) Maps to the -EnableSafeList parameter.
-- `ip_allow_list` (String) Maps to the -IPAllowList parameter.
-- `ip_block_list` (String) Maps to the -IPBlockList parameter.
+- `ip_allow_list` (Set of String) Maps to the -IPAllowList parameter.
+- `ip_block_list` (Set of String) Maps to the -IPBlockList parameter.
 - `make_default` (Boolean) Maps to the -MakeDefault parameter.
 
 ### Read-Only

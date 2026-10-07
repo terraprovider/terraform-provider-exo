@@ -51,7 +51,7 @@ func (r *roleAssignmentPolicyResource) Schema(_ context.Context, _ resource.Sche
 		Description: "Manages the RoleAssignmentPolicy object via New-RoleAssignmentPolicy / Get-RoleAssignmentPolicy / Set-RoleAssignmentPolicy / Remove-RoleAssignmentPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":          schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":    schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":    schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"description": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_default":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":        schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -74,11 +74,26 @@ func (r *roleAssignmentPolicyResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	p := exo.NewRoleAssignmentPolicyParams{
-		Description: plan.Description.ValueString(),
-		IsDefault:   plan.IsDefault.ValueBool(),
-		Name:        plan.Name.ValueString(),
-		Roles:       toStringSlice(ctx, plan.Roles, &resp.Diagnostics),
+	var config roleAssignmentPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewRoleAssignmentPolicyParams{}
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
+	}
+	if !config.IsDefault.IsNull() {
+		p.IsDefault = plan.IsDefault.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.Roles.IsNull() {
+		if v := toStringSlice(ctx, plan.Roles, &resp.Diagnostics); len(v) > 0 {
+			p.Roles = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -130,8 +145,12 @@ func (r *roleAssignmentPolicyResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetRoleAssignmentPolicyParams{}
 	sp.Identity = id
-	sp.Description = plan.Description.ValueString()
-	sp.IsDefault = plan.IsDefault.ValueBool()
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
+	}
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		sp.IsDefault = plan.IsDefault.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

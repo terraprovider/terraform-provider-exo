@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -34,7 +35,7 @@ func (d *linkedUserDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":            schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"certificate_subject": schema.StringAttribute{Computed: true, Description: "Maps to the -CertificateSubject parameter."},
+			"certificate_subject": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -CertificateSubject parameter."},
 		},
 	}
 }

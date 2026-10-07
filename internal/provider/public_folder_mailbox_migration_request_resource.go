@@ -26,6 +26,7 @@ var (
 	_ resource.Resource                = &publicFolderMailboxMigrationRequestResource{}
 	_ resource.ResourceWithConfigure   = &publicFolderMailboxMigrationRequestResource{}
 	_ resource.ResourceWithImportState = &publicFolderMailboxMigrationRequestResource{}
+	_ resource.ResourceWithModifyPlan  = &publicFolderMailboxMigrationRequestResource{}
 )
 
 type publicFolderMailboxMigrationRequestResource struct{ client *clients.Client }
@@ -75,13 +76,26 @@ func (r *publicFolderMailboxMigrationRequestResource) Create(ctx context.Context
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config publicFolderMailboxMigrationRequestModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetPublicFolderMailboxMigrationRequestParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
-	sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
-	sp.SkipMerging = toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = v
+	if !config.AcceptLargeDataLoss.IsNull() {
+		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+	}
+	if !config.SkipInitialConnectionValidation.IsNull() {
+		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+	}
+	if !config.SkipMerging.IsNull() {
+		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
+			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
+		}
+	}
+	if v := config.SkippedItemApprovalTime.ValueString(); v != "" {
+		sp.SkippedItemApprovalTime = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -122,11 +136,19 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 	id := r.identityOf(state)
 	sp := exo.SetPublicFolderMailboxMigrationRequestParams{}
 	sp.Identity = id
-	sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
-	sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
-	sp.SkipMerging = toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)
+	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+	}
+	if !plan.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
+		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+	}
+	if !plan.SkipMerging.Equal(state.SkipMerging) {
+		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
+			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
+		}
+	}
 	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = v
+		sp.SkippedItemApprovalTime = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -136,9 +158,7 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"SkippedItemApprovalTime": cfg.SkippedItemApprovalTime,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -151,6 +171,50 @@ func (r *publicFolderMailboxMigrationRequestResource) Delete(_ context.Context, 
 func (r *publicFolderMailboxMigrationRequestResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *publicFolderMailboxMigrationRequestResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan publicFolderMailboxMigrationRequestModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetPublicFolderMailboxMigrationRequest(ctx, exo.GetPublicFolderMailboxMigrationRequestParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur publicFolderMailboxMigrationRequestModel
+	readPublicFolderMailboxMigrationRequest(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AcceptLargeDataLoss.IsUnknown() {
+		plan.AcceptLargeDataLoss = cur.AcceptLargeDataLoss
+	}
+	if plan.SkipInitialConnectionValidation.IsUnknown() {
+		plan.SkipInitialConnectionValidation = cur.SkipInitialConnectionValidation
+	}
+	if plan.SkipMerging.IsUnknown() {
+		plan.SkipMerging = cur.SkipMerging
+	}
+	if plan.SkippedItemApprovalTime.IsUnknown() {
+		plan.SkippedItemApprovalTime = cur.SkippedItemApprovalTime
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *publicFolderMailboxMigrationRequestResource) identityOf(m publicFolderMailboxMigrationRequestModel) string {
@@ -192,7 +256,7 @@ func readPublicFolderMailboxMigrationRequest(ctx context.Context, obj map[string
 	m.AcceptLargeDataLoss = types.BoolValue(getBool(obj, "AcceptLargeDataLoss"))
 	m.SkipInitialConnectionValidation = types.BoolValue(getBool(obj, "SkipInitialConnectionValidation"))
 	m.SkipMerging = stringSetValue(ctx, getStringSlice(obj, "SkipMerging"))
-	m.SkippedItemApprovalTime = types.StringValue(getString(obj, "SkippedItemApprovalTime"))
+	m.SkippedItemApprovalTime = types.StringValue(getObjectJSON(obj, "SkippedItemApprovalTime"))
 	_ = ctx
 }
 

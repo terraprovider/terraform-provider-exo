@@ -55,7 +55,7 @@ func (r *safeAttachmentPolicyResource) Schema(_ context.Context, _ resource.Sche
 		Description: "Manages the SafeAttachmentPolicy object via New-SafeAttachmentPolicy / Get-SafeAttachmentPolicy / Set-SafeAttachmentPolicy / Remove-SafeAttachmentPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"action":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Action parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enable":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enable parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -83,22 +83,43 @@ func (r *safeAttachmentPolicyResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	p := exo.NewSafeAttachmentPolicyParams{
-		AdminDisplayName:      plan.AdminDisplayName.ValueString(),
-		Enable:                plan.Enable.ValueBool(),
-		MakeBuiltInProtection: plan.MakeBuiltInProtection.ValueBool(),
-		Name:                  plan.Name.ValueString(),
-		QuarantineTag:         plan.QuarantineTag.ValueString(),
-		Redirect:              plan.Redirect.ValueBool(),
+	var config safeAttachmentPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Action.ValueString(); v != "" {
-		p.Action = v
+
+	p := exo.NewSafeAttachmentPolicyParams{}
+	if v := config.Action.ValueString(); v != "" {
+		p.Action = objectParam(v)
 	}
-	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
-		p.RecommendedPolicyType = v
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.RedirectAddress.ValueString(); v != "" {
-		p.RedirectAddress = v
+	if !config.Enable.IsNull() {
+		if !plan.Enable.IsUnknown() {
+			p.Enable = plan.Enable.ValueBoolPointer()
+		}
+	}
+	if !config.MakeBuiltInProtection.IsNull() {
+		p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.QuarantineTag.IsNull() {
+		p.QuarantineTag = plan.QuarantineTag.ValueString()
+	}
+	if v := config.RecommendedPolicyType.ValueString(); v != "" {
+		p.RecommendedPolicyType = objectParam(v)
+	}
+	if !config.Redirect.IsNull() {
+		if !plan.Redirect.IsUnknown() {
+			p.Redirect = plan.Redirect.ValueBoolPointer()
+		}
+	}
+	if v := config.RedirectAddress.ValueString(); v != "" {
+		p.RedirectAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -151,14 +172,26 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 	sp := exo.SetSafeAttachmentPolicyParams{}
 	sp.Identity = id
 	if v := plan.Action.ValueString(); v != "" {
-		sp.Action = v
+		sp.Action = objectParam(v)
 	}
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
-	sp.Enable = plan.Enable.ValueBool()
-	sp.QuarantineTag = plan.QuarantineTag.ValueString()
-	sp.Redirect = plan.Redirect.ValueBool()
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	}
+	if !plan.Enable.Equal(state.Enable) {
+		if !plan.Enable.IsUnknown() {
+			sp.Enable = plan.Enable.ValueBoolPointer()
+		}
+	}
+	if !plan.QuarantineTag.Equal(state.QuarantineTag) {
+		sp.QuarantineTag = plan.QuarantineTag.ValueString()
+	}
+	if !plan.Redirect.Equal(state.Redirect) {
+		if !plan.Redirect.IsUnknown() {
+			sp.Redirect = plan.Redirect.ValueBoolPointer()
+		}
+	}
 	if v := plan.RedirectAddress.ValueString(); v != "" {
-		sp.RedirectAddress = v
+		sp.RedirectAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -169,10 +202,8 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Action":           cfg.Action,
 		"AdminDisplayName": cfg.AdminDisplayName,
 		"QuarantineTag":    cfg.QuarantineTag,
-		"RedirectAddress":  cfg.RedirectAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -234,15 +265,15 @@ func (r *safeAttachmentPolicyResource) refresh(ctx context.Context, identity str
 func readSafeAttachmentPolicy(ctx context.Context, obj map[string]any, m *safeAttachmentPolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.Action = types.StringValue(getString(obj, "Action"))
+	m.Action = types.StringValue(getObjectJSON(obj, "Action"))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.Enable = types.BoolValue(getBool(obj, "Enable"))
 	m.MakeBuiltInProtection = types.BoolValue(getBool(obj, "MakeBuiltInProtection"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.QuarantineTag = types.StringValue(getString(obj, "QuarantineTag"))
-	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
+	m.RecommendedPolicyType = types.StringValue(getObjectJSON(obj, "RecommendedPolicyType"))
 	m.Redirect = types.BoolValue(getBool(obj, "Redirect"))
-	m.RedirectAddress = types.StringValue(getString(obj, "RedirectAddress"))
+	m.RedirectAddress = types.StringValue(getObjectJSON(obj, "RedirectAddress"))
 	_ = ctx
 }
 

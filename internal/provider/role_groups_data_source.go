@@ -41,7 +41,7 @@ func (d *roleGroupListDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				"custom_recipient_write_scope": schema.StringAttribute{Computed: true, Description: "Maps to the -CustomRecipientWriteScope parameter."},
 				"description":                  schema.StringAttribute{Computed: true, Description: "Maps to the -Description parameter."},
 				"display_name":                 schema.StringAttribute{Computed: true, Description: "Maps to the -DisplayName parameter."},
-				"managed_by":                   schema.StringAttribute{Computed: true, Description: "Maps to the -ManagedBy parameter."},
+				"managed_by":                   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ManagedBy parameter."},
 				"name":                         schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
 				"roles":                        schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Roles parameter."},
 				"well_known_object":            schema.StringAttribute{Computed: true, Description: "Maps to the -WellKnownObject parameter."},

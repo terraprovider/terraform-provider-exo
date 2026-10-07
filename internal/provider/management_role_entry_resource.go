@@ -26,6 +26,7 @@ var (
 	_ resource.Resource                = &managementRoleEntryResource{}
 	_ resource.ResourceWithConfigure   = &managementRoleEntryResource{}
 	_ resource.ResourceWithImportState = &managementRoleEntryResource{}
+	_ resource.ResourceWithModifyPlan  = &managementRoleEntryResource{}
 )
 
 type managementRoleEntryResource struct{ client *clients.Client }
@@ -71,11 +72,24 @@ func (r *managementRoleEntryResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config managementRoleEntryModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetManagementRoleEntryParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AddParameter = plan.AddParameter.ValueBool()
-	sp.Parameters = toStringSlice(ctx, plan.Parameters, &resp.Diagnostics)
-	sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+	if !config.AddParameter.IsNull() {
+		sp.AddParameter = plan.AddParameter.ValueBool()
+	}
+	if !config.Parameters.IsNull() {
+		if !plan.Parameters.IsNull() && !plan.Parameters.IsUnknown() {
+			sp.Parameters = append([]string{}, toStringSlice(ctx, plan.Parameters, &resp.Diagnostics)...)
+		}
+	}
+	if !config.RemoveParameter.IsNull() {
+		sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -115,9 +129,17 @@ func (r *managementRoleEntryResource) Update(ctx context.Context, req resource.U
 	id := r.identityOf(state)
 	sp := exo.SetManagementRoleEntryParams{}
 	sp.Identity = id
-	sp.AddParameter = plan.AddParameter.ValueBool()
-	sp.Parameters = toStringSlice(ctx, plan.Parameters, &resp.Diagnostics)
-	sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+	if !plan.AddParameter.Equal(state.AddParameter) {
+		sp.AddParameter = plan.AddParameter.ValueBool()
+	}
+	if !plan.Parameters.Equal(state.Parameters) {
+		if !plan.Parameters.IsNull() && !plan.Parameters.IsUnknown() {
+			sp.Parameters = append([]string{}, toStringSlice(ctx, plan.Parameters, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RemoveParameter.Equal(state.RemoveParameter) {
+		sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -139,6 +161,47 @@ func (r *managementRoleEntryResource) Delete(_ context.Context, _ resource.Delet
 func (r *managementRoleEntryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *managementRoleEntryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan managementRoleEntryModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetManagementRoleEntry(ctx, exo.GetManagementRoleEntryParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur managementRoleEntryModel
+	readManagementRoleEntry(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AddParameter.IsUnknown() {
+		plan.AddParameter = cur.AddParameter
+	}
+	if plan.Parameters.IsUnknown() {
+		plan.Parameters = cur.Parameters
+	}
+	if plan.RemoveParameter.IsUnknown() {
+		plan.RemoveParameter = cur.RemoveParameter
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *managementRoleEntryResource) identityOf(m managementRoleEntryModel) string {

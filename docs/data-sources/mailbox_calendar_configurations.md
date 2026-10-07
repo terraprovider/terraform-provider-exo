@@ -34,6 +34,9 @@ Read-Only:
 - `conversational_scheduling_enabled` (Boolean) Maps to the -ConversationalSchedulingEnabled parameter.
 - `create_events_from_email_as_private` (Boolean) Maps to the -CreateEventsFromEmailAsPrivate parameter.
 - `daily_agenda_mail_schedule` (String) Maps to the -DailyAgendaMailSchedule parameter.
+- `default_meeting_duration` (Number) Maps to the -DefaultMeetingDuration parameter.
+- `default_minutes_to_reduce_long_events_by` (Number) Maps to the -DefaultMinutesToReduceLongEventsBy parameter.
+- `default_minutes_to_reduce_short_events_by` (Number) Maps to the -DefaultMinutesToReduceShortEventsBy parameter.
 - `default_online_meeting_provider` (String) Maps to the -DefaultOnlineMeetingProvider parameter.
 - `default_reminder_time` (String) Maps to the -DefaultReminderTime parameter.
 - `delete_meeting_request_on_respond` (Boolean) Maps to the -DeleteMeetingRequestOnRespond parameter.
@@ -48,7 +51,7 @@ Read-Only:
 - `invoice_events_from_email_enabled` (Boolean) Maps to the -InvoiceEventsFromEmailEnabled parameter.
 - `location_details_in_free_busy` (String) Maps to the -LocationDetailsInFreeBusy parameter.
 - `mailbox_location` (String) Maps to the -MailboxLocation parameter.
-- `online_meetings_by_default_enabled` (String) Maps to the -OnlineMeetingsByDefaultEnabled parameter.
+- `online_meetings_by_default_enabled` (Boolean) Maps to the -OnlineMeetingsByDefaultEnabled parameter.
 - `package_delivery_events_from_email_enabled` (Boolean) Maps to the -PackageDeliveryEventsFromEmailEnabled parameter.
 - `preserve_declined_meetings` (Boolean) Maps to the -PreserveDeclinedMeetings parameter.
 - `reminder_sound_enabled` (Boolean) Maps to the -ReminderSoundEnabled parameter.
@@ -60,12 +63,13 @@ Read-Only:
 - `skip_agenda_mail_on_free_days` (Boolean) Maps to the -SkipAgendaMailOnFreeDays parameter.
 - `time_increment` (String) Maps to the -TimeIncrement parameter.
 - `use_bright_calendar_color_theme_in_owa` (Boolean) Maps to the -UseBrightCalendarColorThemeInOwa parameter.
-- `weather_enabled` (String) Maps to the -WeatherEnabled parameter.
-- `weather_locations` (String) Maps to the -WeatherLocations parameter.
+- `weather_enabled` (Boolean) Maps to the -WeatherEnabled parameter.
+- `weather_location_bookmark` (Number) Maps to the -WeatherLocationBookmark parameter.
+- `weather_locations` (Set of String) Maps to the -WeatherLocations parameter.
 - `weather_unit` (String) Maps to the -WeatherUnit parameter.
 - `week_start_day` (String) Maps to the -WeekStartDay parameter.
 - `work_days` (String) Maps to the -WorkDays parameter.
 - `working_hours_end_time` (String) Maps to the -WorkingHoursEndTime parameter.
 - `working_hours_start_time` (String) Maps to the -WorkingHoursStartTime parameter.
 - `working_hours_time_zone` (String) Maps to the -WorkingHoursTimeZone parameter.
-- `workspace_user_enabled` (String) Maps to the -WorkspaceUserEnabled parameter.
+- `workspace_user_enabled` (Boolean) Maps to the -WorkspaceUserEnabled parameter.

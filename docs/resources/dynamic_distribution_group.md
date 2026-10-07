@@ -23,29 +23,29 @@ Manages the DynamicDistributionGroup object via New-DynamicDistributionGroup / G
 
 ### Optional
 
-- `accept_messages_only_from` (String) Maps to the -AcceptMessagesOnlyFrom parameter.
-- `accept_messages_only_from_dl_members` (String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
-- `accept_messages_only_from_senders_or_members` (String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
+- `accept_messages_only_from` (Set of String) Maps to the -AcceptMessagesOnlyFrom parameter.
+- `accept_messages_only_from_dl_members` (Set of String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
+- `accept_messages_only_from_senders_or_members` (Set of String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
 - `alias_` (String) Maps to the -Alias parameter.
-- `bypass_moderation_from_senders_or_members` (String) Maps to the -BypassModerationFromSendersOrMembers parameter.
-- `conditional_company` (String) Maps to the -ConditionalCompany parameter.
-- `conditional_custom_attribute1` (String) Maps to the -ConditionalCustomAttribute1 parameter.
-- `conditional_custom_attribute10` (String) Maps to the -ConditionalCustomAttribute10 parameter.
-- `conditional_custom_attribute11` (String) Maps to the -ConditionalCustomAttribute11 parameter.
-- `conditional_custom_attribute12` (String) Maps to the -ConditionalCustomAttribute12 parameter.
-- `conditional_custom_attribute13` (String) Maps to the -ConditionalCustomAttribute13 parameter.
-- `conditional_custom_attribute14` (String) Maps to the -ConditionalCustomAttribute14 parameter.
-- `conditional_custom_attribute15` (String) Maps to the -ConditionalCustomAttribute15 parameter.
-- `conditional_custom_attribute2` (String) Maps to the -ConditionalCustomAttribute2 parameter.
-- `conditional_custom_attribute3` (String) Maps to the -ConditionalCustomAttribute3 parameter.
-- `conditional_custom_attribute4` (String) Maps to the -ConditionalCustomAttribute4 parameter.
-- `conditional_custom_attribute5` (String) Maps to the -ConditionalCustomAttribute5 parameter.
-- `conditional_custom_attribute6` (String) Maps to the -ConditionalCustomAttribute6 parameter.
-- `conditional_custom_attribute7` (String) Maps to the -ConditionalCustomAttribute7 parameter.
-- `conditional_custom_attribute8` (String) Maps to the -ConditionalCustomAttribute8 parameter.
-- `conditional_custom_attribute9` (String) Maps to the -ConditionalCustomAttribute9 parameter.
-- `conditional_department` (String) Maps to the -ConditionalDepartment parameter.
-- `conditional_state_or_province` (String) Maps to the -ConditionalStateOrProvince parameter.
+- `bypass_moderation_from_senders_or_members` (Set of String) Maps to the -BypassModerationFromSendersOrMembers parameter.
+- `conditional_company` (Set of String) Maps to the -ConditionalCompany parameter.
+- `conditional_custom_attribute1` (Set of String) Maps to the -ConditionalCustomAttribute1 parameter.
+- `conditional_custom_attribute10` (Set of String) Maps to the -ConditionalCustomAttribute10 parameter.
+- `conditional_custom_attribute11` (Set of String) Maps to the -ConditionalCustomAttribute11 parameter.
+- `conditional_custom_attribute12` (Set of String) Maps to the -ConditionalCustomAttribute12 parameter.
+- `conditional_custom_attribute13` (Set of String) Maps to the -ConditionalCustomAttribute13 parameter.
+- `conditional_custom_attribute14` (Set of String) Maps to the -ConditionalCustomAttribute14 parameter.
+- `conditional_custom_attribute15` (Set of String) Maps to the -ConditionalCustomAttribute15 parameter.
+- `conditional_custom_attribute2` (Set of String) Maps to the -ConditionalCustomAttribute2 parameter.
+- `conditional_custom_attribute3` (Set of String) Maps to the -ConditionalCustomAttribute3 parameter.
+- `conditional_custom_attribute4` (Set of String) Maps to the -ConditionalCustomAttribute4 parameter.
+- `conditional_custom_attribute5` (Set of String) Maps to the -ConditionalCustomAttribute5 parameter.
+- `conditional_custom_attribute6` (Set of String) Maps to the -ConditionalCustomAttribute6 parameter.
+- `conditional_custom_attribute7` (Set of String) Maps to the -ConditionalCustomAttribute7 parameter.
+- `conditional_custom_attribute8` (Set of String) Maps to the -ConditionalCustomAttribute8 parameter.
+- `conditional_custom_attribute9` (Set of String) Maps to the -ConditionalCustomAttribute9 parameter.
+- `conditional_department` (Set of String) Maps to the -ConditionalDepartment parameter.
+- `conditional_state_or_province` (Set of String) Maps to the -ConditionalStateOrProvince parameter.
 - `custom_attribute1` (String) Maps to the -CustomAttribute1 parameter.
 - `custom_attribute10` (String) Maps to the -CustomAttribute10 parameter.
 - `custom_attribute11` (String) Maps to the -CustomAttribute11 parameter.
@@ -63,29 +63,29 @@ Manages the DynamicDistributionGroup object via New-DynamicDistributionGroup / G
 - `custom_attribute9` (String) Maps to the -CustomAttribute9 parameter.
 - `direct_membership_only` (Boolean) Maps to the -DirectMembershipOnly parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
-- `email_addresses` (String) Maps to the -EmailAddresses parameter.
-- `extension_custom_attribute1` (String) Maps to the -ExtensionCustomAttribute1 parameter.
-- `extension_custom_attribute2` (String) Maps to the -ExtensionCustomAttribute2 parameter.
-- `extension_custom_attribute3` (String) Maps to the -ExtensionCustomAttribute3 parameter.
-- `extension_custom_attribute4` (String) Maps to the -ExtensionCustomAttribute4 parameter.
-- `extension_custom_attribute5` (String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
+- `extension_custom_attribute1` (Set of String) Maps to the -ExtensionCustomAttribute1 parameter.
+- `extension_custom_attribute2` (Set of String) Maps to the -ExtensionCustomAttribute2 parameter.
+- `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
+- `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
+- `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `force_membership_refresh` (Boolean) Maps to the -ForceMembershipRefresh parameter.
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
-- `grant_send_on_behalf_to` (String) Maps to the -GrantSendOnBehalfTo parameter.
+- `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
-- `mail_tip_translations` (String) Maps to the -MailTipTranslations parameter.
+- `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `managed_by` (String) Maps to the -ManagedBy parameter.
-- `moderated_by` (String) Maps to the -ModeratedBy parameter.
+- `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `notes` (String) Maps to the -Notes parameter.
 - `organizational_unit` (String) Maps to the -OrganizationalUnit parameter.
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
 - `recipient_container` (String) Maps to the -RecipientContainer parameter.
-- `reject_messages_from` (String) Maps to the -RejectMessagesFrom parameter.
-- `reject_messages_from_dl_members` (String) Maps to the -RejectMessagesFromDLMembers parameter.
-- `reject_messages_from_senders_or_members` (String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
+- `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
+- `reject_messages_from_dl_members` (Set of String) Maps to the -RejectMessagesFromDLMembers parameter.
+- `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
 - `report_to_manager_enabled` (Boolean) Maps to the -ReportToManagerEnabled parameter.
 - `report_to_originator_enabled` (Boolean) Maps to the -ReportToOriginatorEnabled parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.

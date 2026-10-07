@@ -22,14 +22,14 @@ Look up an existing Group object. Set identity or name to select it.
 
 ### Read-Only
 
-- `description` (String) Maps to the -Description parameter.
+- `description` (Set of String) Maps to the -Description parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `id` (String) Object identifier (GUID).
 - `is_hierarchical_group` (Boolean) Maps to the -IsHierarchicalGroup parameter.
 - `managed_by` (Set of String) Maps to the -ManagedBy parameter.
 - `notes` (String) Maps to the -Notes parameter.
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
-- `seniority_index` (String) Maps to the -SeniorityIndex parameter.
+- `seniority_index` (Number) Maps to the -SeniorityIndex parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.
 - `universal` (Boolean) Maps to the -Universal parameter.
 - `windows_email_address` (String) Maps to the -WindowsEmailAddress parameter.

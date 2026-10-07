@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -40,7 +41,7 @@ type dkimSigningConfigModel struct {
 	DomainName             types.String `tfsdk:"domain_name"`
 	Enabled                types.Bool   `tfsdk:"enabled"`
 	HeaderCanonicalization types.String `tfsdk:"header_canonicalization"`
-	KeySize                types.String `tfsdk:"key_size"`
+	KeySize                types.Int64  `tfsdk:"key_size"`
 	PublishTxtRecords      types.Bool   `tfsdk:"publish_txt_records"`
 }
 
@@ -53,13 +54,13 @@ func (r *dkimSigningConfigResource) Schema(_ context.Context, _ resource.SchemaR
 		Description: "Manages the DkimSigningConfig object via New-DkimSigningConfig / Get-DkimSigningConfig / Set-DkimSigningConfig / Remove-DkimSigningConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":                      schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"body_canonicalization":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BodyCanonicalization parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"domain_name":             schema.StringAttribute{Required: true, Description: "Maps to the -DomainName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"enabled":                 schema.BoolAttribute{Required: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"header_canonicalization": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HeaderCanonicalization parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"key_size":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -KeySize parameter. Allowed values: 1024, 2048.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"key_size":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -KeySize parameter. Allowed values: 1024, 2048.", PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace(), int64planmodifier.UseStateForUnknown()}},
 			"publish_txt_records":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublishTxtRecords parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -79,21 +80,34 @@ func (r *dkimSigningConfigResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	p := exo.NewDkimSigningConfigParams{
-		AdminDisplayName: plan.AdminDisplayName.ValueString(),
-		Enabled:          plan.Enabled.ValueBool(),
+	var config dkimSigningConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.BodyCanonicalization.ValueString(); v != "" {
-		p.BodyCanonicalization = v
+
+	p := exo.NewDkimSigningConfigParams{}
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.DomainName.ValueString(); v != "" {
-		p.DomainName = v
+	if v := config.BodyCanonicalization.ValueString(); v != "" {
+		p.BodyCanonicalization = objectParam(v)
 	}
-	if v := plan.HeaderCanonicalization.ValueString(); v != "" {
-		p.HeaderCanonicalization = v
+	if v := config.DomainName.ValueString(); v != "" {
+		p.DomainName = objectParam(v)
 	}
-	if v := plan.KeySize.ValueString(); v != "" {
-		p.KeySize = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if v := config.HeaderCanonicalization.ValueString(); v != "" {
+		p.HeaderCanonicalization = objectParam(v)
+	}
+	if !config.KeySize.IsNull() {
+		if !plan.KeySize.IsUnknown() {
+			p.KeySize = plan.KeySize.ValueInt64Pointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -145,14 +159,18 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetDkimSigningConfigParams{}
 	sp.Identity = id
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	}
 	if v := plan.BodyCanonicalization.ValueString(); v != "" {
-		sp.BodyCanonicalization = v
+		sp.BodyCanonicalization = objectParam(v)
 	}
 	if v := plan.HeaderCanonicalization.ValueString(); v != "" {
-		sp.HeaderCanonicalization = v
+		sp.HeaderCanonicalization = objectParam(v)
 	}
-	sp.PublishTxtRecords = plan.PublishTxtRecords.ValueBool()
+	if !plan.PublishTxtRecords.Equal(state.PublishTxtRecords) {
+		sp.PublishTxtRecords = plan.PublishTxtRecords.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -162,9 +180,7 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminDisplayName":       cfg.AdminDisplayName,
-		"BodyCanonicalization":   cfg.BodyCanonicalization,
-		"HeaderCanonicalization": cfg.HeaderCanonicalization,
+		"AdminDisplayName": cfg.AdminDisplayName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -227,11 +243,11 @@ func readDkimSigningConfig(ctx context.Context, obj map[string]any, m *dkimSigni
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
-	m.BodyCanonicalization = types.StringValue(getString(obj, "BodyCanonicalization"))
-	m.DomainName = types.StringValue(getString(obj, "DomainName"))
+	m.BodyCanonicalization = types.StringValue(getObjectJSON(obj, "BodyCanonicalization"))
+	m.DomainName = types.StringValue(getObjectJSON(obj, "DomainName"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.HeaderCanonicalization = types.StringValue(getString(obj, "HeaderCanonicalization"))
-	m.KeySize = types.StringValue(getString(obj, "KeySize"))
+	m.HeaderCanonicalization = types.StringValue(getObjectJSON(obj, "HeaderCanonicalization"))
+	m.KeySize = types.Int64Value(getInt(obj, "KeySize"))
 	m.PublishTxtRecords = types.BoolValue(getBool(obj, "PublishTxtRecords"))
 	_ = ctx
 }
@@ -242,6 +258,6 @@ func (r *dkimSigningConfigResource) reconcileState(cfg, read *dkimSigningConfigM
 	read.DomainName = reconcile.KeepStr(cfg.DomainName, read.DomainName)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.HeaderCanonicalization = reconcile.KeepStr(cfg.HeaderCanonicalization, read.HeaderCanonicalization)
-	read.KeySize = reconcile.KeepStr(cfg.KeySize, read.KeySize)
+	read.KeySize = reconcile.KeepInt64(cfg.KeySize, read.KeySize)
 	read.PublishTxtRecords = reconcile.KeepBool(cfg.PublishTxtRecords, read.PublishTxtRecords)
 }

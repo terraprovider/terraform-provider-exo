@@ -24,7 +24,7 @@ List every Clutter object (Get-Clutter).
 
 Read-Only:
 
-- `enable` (String) Maps to the -Enable parameter.
+- `enable` (Boolean) Maps to the -Enable parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.

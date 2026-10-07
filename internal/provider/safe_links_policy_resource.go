@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -41,7 +42,7 @@ type safeLinksPolicyModel struct {
 	CustomUrlList                 types.String `tfsdk:"custom_url_list"`
 	DeliverMessageAfterScan       types.Bool   `tfsdk:"deliver_message_after_scan"`
 	DisableUrlRewrite             types.Bool   `tfsdk:"disable_url_rewrite"`
-	DoNotRewriteUrls              types.String `tfsdk:"do_not_rewrite_urls"`
+	DoNotRewriteUrls              types.Set    `tfsdk:"do_not_rewrite_urls"`
 	EnableForInternalSenders      types.Bool   `tfsdk:"enable_for_internal_senders"`
 	EnableOrganizationBranding    types.Bool   `tfsdk:"enable_organization_branding"`
 	EnableSafeLinksForEmail       types.Bool   `tfsdk:"enable_safe_links_for_email"`
@@ -66,14 +67,14 @@ func (r *safeLinksPolicyResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the SafeLinksPolicy object via New-SafeLinksPolicy / Get-SafeLinksPolicy / Set-SafeLinksPolicy / Remove-SafeLinksPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allow_click_through":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowClickThrough parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"custom_notification_text":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomNotificationText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_url_list":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomUrlList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"deliver_message_after_scan":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverMessageAfterScan parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disable_url_rewrite":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisableUrlRewrite parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"do_not_rewrite_urls":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"do_not_rewrite_urls":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DoNotRewriteUrls parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enable_for_internal_senders":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableForInternalSenders parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_organization_branding":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableOrganizationBranding parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_safe_links_for_email":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeLinksForEmail parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -105,32 +106,95 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	p := exo.NewSafeLinksPolicyParams{
-		AdminDisplayName:              plan.AdminDisplayName.ValueString(),
-		AllowClickThrough:             plan.AllowClickThrough.ValueBool(),
-		CustomNotificationText:        plan.CustomNotificationText.ValueString(),
-		DeliverMessageAfterScan:       plan.DeliverMessageAfterScan.ValueBool(),
-		DisableUrlRewrite:             plan.DisableUrlRewrite.ValueBool(),
-		EnableForInternalSenders:      plan.EnableForInternalSenders.ValueBool(),
-		EnableOrganizationBranding:    plan.EnableOrganizationBranding.ValueBool(),
-		EnableSafeLinksForEmail:       plan.EnableSafeLinksForEmail.ValueBool(),
-		EnableSafeLinksForOffice:      plan.EnableSafeLinksForOffice.ValueBool(),
-		EnableSafeLinksForTeams:       plan.EnableSafeLinksForTeams.ValueBool(),
-		MakeBuiltInProtection:         plan.MakeBuiltInProtection.ValueBool(),
-		Name:                          plan.Name.ValueString(),
-		ScanUrls:                      plan.ScanUrls.ValueBool(),
-		TrackClicks:                   plan.TrackClicks.ValueBool(),
-		UseTranslatedNotificationText: plan.UseTranslatedNotificationText.ValueBool(),
-		UseTranslatedUrlText:          plan.UseTranslatedUrlText.ValueBool(),
+	var config safeLinksPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.CustomUrlList.ValueString(); v != "" {
-		p.CustomUrlList = v
+
+	p := exo.NewSafeLinksPolicyParams{}
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.DoNotRewriteUrls.ValueString(); v != "" {
-		p.DoNotRewriteUrls = v
+	if !config.AllowClickThrough.IsNull() {
+		if !plan.AllowClickThrough.IsUnknown() {
+			p.AllowClickThrough = plan.AllowClickThrough.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
-		p.RecommendedPolicyType = v
+	if !config.CustomNotificationText.IsNull() {
+		p.CustomNotificationText = plan.CustomNotificationText.ValueString()
+	}
+	if v := config.CustomUrlList.ValueString(); v != "" {
+		p.CustomUrlList = objectParam(v)
+	}
+	if !config.DeliverMessageAfterScan.IsNull() {
+		if !plan.DeliverMessageAfterScan.IsUnknown() {
+			p.DeliverMessageAfterScan = plan.DeliverMessageAfterScan.ValueBoolPointer()
+		}
+	}
+	if !config.DisableUrlRewrite.IsNull() {
+		if !plan.DisableUrlRewrite.IsUnknown() {
+			p.DisableUrlRewrite = plan.DisableUrlRewrite.ValueBoolPointer()
+		}
+	}
+	if !config.DoNotRewriteUrls.IsNull() {
+		if v := toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics); len(v) > 0 {
+			p.DoNotRewriteUrls = v
+		}
+	}
+	if !config.EnableForInternalSenders.IsNull() {
+		if !plan.EnableForInternalSenders.IsUnknown() {
+			p.EnableForInternalSenders = plan.EnableForInternalSenders.ValueBoolPointer()
+		}
+	}
+	if !config.EnableOrganizationBranding.IsNull() {
+		if !plan.EnableOrganizationBranding.IsUnknown() {
+			p.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBoolPointer()
+		}
+	}
+	if !config.EnableSafeLinksForEmail.IsNull() {
+		if !plan.EnableSafeLinksForEmail.IsUnknown() {
+			p.EnableSafeLinksForEmail = plan.EnableSafeLinksForEmail.ValueBoolPointer()
+		}
+	}
+	if !config.EnableSafeLinksForOffice.IsNull() {
+		if !plan.EnableSafeLinksForOffice.IsUnknown() {
+			p.EnableSafeLinksForOffice = plan.EnableSafeLinksForOffice.ValueBoolPointer()
+		}
+	}
+	if !config.EnableSafeLinksForTeams.IsNull() {
+		if !plan.EnableSafeLinksForTeams.IsUnknown() {
+			p.EnableSafeLinksForTeams = plan.EnableSafeLinksForTeams.ValueBoolPointer()
+		}
+	}
+	if !config.MakeBuiltInProtection.IsNull() {
+		p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.RecommendedPolicyType.ValueString(); v != "" {
+		p.RecommendedPolicyType = objectParam(v)
+	}
+	if !config.ScanUrls.IsNull() {
+		if !plan.ScanUrls.IsUnknown() {
+			p.ScanUrls = plan.ScanUrls.ValueBoolPointer()
+		}
+	}
+	if !config.TrackClicks.IsNull() {
+		if !plan.TrackClicks.IsUnknown() {
+			p.TrackClicks = plan.TrackClicks.ValueBoolPointer()
+		}
+	}
+	if !config.UseTranslatedNotificationText.IsNull() {
+		if !plan.UseTranslatedNotificationText.IsUnknown() {
+			p.UseTranslatedNotificationText = plan.UseTranslatedNotificationText.ValueBoolPointer()
+		}
+	}
+	if !config.UseTranslatedUrlText.IsNull() {
+		if !plan.UseTranslatedUrlText.IsUnknown() {
+			p.UseTranslatedUrlText = plan.UseTranslatedUrlText.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -182,29 +246,83 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetSafeLinksPolicyParams{}
 	sp.Identity = id
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
-	sp.AllowClickThrough = plan.AllowClickThrough.ValueBool()
-	sp.CustomNotificationText = plan.CustomNotificationText.ValueString()
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
+	}
+	if !plan.AllowClickThrough.Equal(state.AllowClickThrough) {
+		if !plan.AllowClickThrough.IsUnknown() {
+			sp.AllowClickThrough = plan.AllowClickThrough.ValueBoolPointer()
+		}
+	}
+	if !plan.CustomNotificationText.Equal(state.CustomNotificationText) {
+		sp.CustomNotificationText = plan.CustomNotificationText.ValueString()
+	}
 	if v := plan.CustomUrlList.ValueString(); v != "" {
-		sp.CustomUrlList = v
+		sp.CustomUrlList = objectParam(v)
 	}
-	sp.DeliverMessageAfterScan = plan.DeliverMessageAfterScan.ValueBool()
-	sp.DisableUrlRewrite = plan.DisableUrlRewrite.ValueBool()
-	if v := plan.DoNotRewriteUrls.ValueString(); v != "" {
-		sp.DoNotRewriteUrls = v
+	if !plan.DeliverMessageAfterScan.Equal(state.DeliverMessageAfterScan) {
+		if !plan.DeliverMessageAfterScan.IsUnknown() {
+			sp.DeliverMessageAfterScan = plan.DeliverMessageAfterScan.ValueBoolPointer()
+		}
 	}
-	sp.EnableForInternalSenders = plan.EnableForInternalSenders.ValueBool()
-	sp.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBool()
-	sp.EnableSafeLinksForEmail = plan.EnableSafeLinksForEmail.ValueBool()
-	sp.EnableSafeLinksForOffice = plan.EnableSafeLinksForOffice.ValueBool()
-	sp.EnableSafeLinksForTeams = plan.EnableSafeLinksForTeams.ValueBool()
+	if !plan.DisableUrlRewrite.Equal(state.DisableUrlRewrite) {
+		if !plan.DisableUrlRewrite.IsUnknown() {
+			sp.DisableUrlRewrite = plan.DisableUrlRewrite.ValueBoolPointer()
+		}
+	}
+	if !plan.DoNotRewriteUrls.Equal(state.DoNotRewriteUrls) {
+		if !plan.DoNotRewriteUrls.IsNull() && !plan.DoNotRewriteUrls.IsUnknown() {
+			sp.DoNotRewriteUrls = append([]string{}, toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.EnableForInternalSenders.Equal(state.EnableForInternalSenders) {
+		if !plan.EnableForInternalSenders.IsUnknown() {
+			sp.EnableForInternalSenders = plan.EnableForInternalSenders.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableOrganizationBranding.Equal(state.EnableOrganizationBranding) {
+		if !plan.EnableOrganizationBranding.IsUnknown() {
+			sp.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSafeLinksForEmail.Equal(state.EnableSafeLinksForEmail) {
+		if !plan.EnableSafeLinksForEmail.IsUnknown() {
+			sp.EnableSafeLinksForEmail = plan.EnableSafeLinksForEmail.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSafeLinksForOffice.Equal(state.EnableSafeLinksForOffice) {
+		if !plan.EnableSafeLinksForOffice.IsUnknown() {
+			sp.EnableSafeLinksForOffice = plan.EnableSafeLinksForOffice.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSafeLinksForTeams.Equal(state.EnableSafeLinksForTeams) {
+		if !plan.EnableSafeLinksForTeams.IsUnknown() {
+			sp.EnableSafeLinksForTeams = plan.EnableSafeLinksForTeams.ValueBoolPointer()
+		}
+	}
 	if v := plan.LocalizedNotificationTextList.ValueString(); v != "" {
-		sp.LocalizedNotificationTextList = v
+		sp.LocalizedNotificationTextList = objectParam(v)
 	}
-	sp.ScanUrls = plan.ScanUrls.ValueBool()
-	sp.TrackClicks = plan.TrackClicks.ValueBool()
-	sp.UseTranslatedNotificationText = plan.UseTranslatedNotificationText.ValueBool()
-	sp.UseTranslatedUrlText = plan.UseTranslatedUrlText.ValueBool()
+	if !plan.ScanUrls.Equal(state.ScanUrls) {
+		if !plan.ScanUrls.IsUnknown() {
+			sp.ScanUrls = plan.ScanUrls.ValueBoolPointer()
+		}
+	}
+	if !plan.TrackClicks.Equal(state.TrackClicks) {
+		if !plan.TrackClicks.IsUnknown() {
+			sp.TrackClicks = plan.TrackClicks.ValueBoolPointer()
+		}
+	}
+	if !plan.UseTranslatedNotificationText.Equal(state.UseTranslatedNotificationText) {
+		if !plan.UseTranslatedNotificationText.IsUnknown() {
+			sp.UseTranslatedNotificationText = plan.UseTranslatedNotificationText.ValueBoolPointer()
+		}
+	}
+	if !plan.UseTranslatedUrlText.Equal(state.UseTranslatedUrlText) {
+		if !plan.UseTranslatedUrlText.IsUnknown() {
+			sp.UseTranslatedUrlText = plan.UseTranslatedUrlText.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -214,11 +332,8 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminDisplayName":              cfg.AdminDisplayName,
-		"CustomNotificationText":        cfg.CustomNotificationText,
-		"CustomUrlList":                 cfg.CustomUrlList,
-		"DoNotRewriteUrls":              cfg.DoNotRewriteUrls,
-		"LocalizedNotificationTextList": cfg.LocalizedNotificationTextList,
+		"AdminDisplayName":       cfg.AdminDisplayName,
+		"CustomNotificationText": cfg.CustomNotificationText,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -283,19 +398,19 @@ func readSafeLinksPolicy(ctx context.Context, obj map[string]any, m *safeLinksPo
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.AllowClickThrough = types.BoolValue(getBool(obj, "AllowClickThrough"))
 	m.CustomNotificationText = types.StringValue(getString(obj, "CustomNotificationText"))
-	m.CustomUrlList = types.StringValue(getString(obj, "CustomUrlList"))
+	m.CustomUrlList = types.StringValue(getObjectJSON(obj, "CustomUrlList"))
 	m.DeliverMessageAfterScan = types.BoolValue(getBool(obj, "DeliverMessageAfterScan"))
 	m.DisableUrlRewrite = types.BoolValue(getBool(obj, "DisableUrlRewrite"))
-	m.DoNotRewriteUrls = types.StringValue(getString(obj, "DoNotRewriteUrls"))
+	m.DoNotRewriteUrls = stringSetValue(ctx, getStringSlice(obj, "DoNotRewriteUrls"))
 	m.EnableForInternalSenders = types.BoolValue(getBool(obj, "EnableForInternalSenders"))
 	m.EnableOrganizationBranding = types.BoolValue(getBool(obj, "EnableOrganizationBranding"))
 	m.EnableSafeLinksForEmail = types.BoolValue(getBool(obj, "EnableSafeLinksForEmail"))
 	m.EnableSafeLinksForOffice = types.BoolValue(getBool(obj, "EnableSafeLinksForOffice"))
 	m.EnableSafeLinksForTeams = types.BoolValue(getBool(obj, "EnableSafeLinksForTeams"))
-	m.LocalizedNotificationTextList = types.StringValue(getString(obj, "LocalizedNotificationTextList"))
+	m.LocalizedNotificationTextList = types.StringValue(getObjectJSON(obj, "LocalizedNotificationTextList"))
 	m.MakeBuiltInProtection = types.BoolValue(getBool(obj, "MakeBuiltInProtection"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
+	m.RecommendedPolicyType = types.StringValue(getObjectJSON(obj, "RecommendedPolicyType"))
 	m.ScanUrls = types.BoolValue(getBool(obj, "ScanUrls"))
 	m.TrackClicks = types.BoolValue(getBool(obj, "TrackClicks"))
 	m.UseTranslatedNotificationText = types.BoolValue(getBool(obj, "UseTranslatedNotificationText"))
@@ -310,7 +425,7 @@ func (r *safeLinksPolicyResource) reconcileState(cfg, read *safeLinksPolicyModel
 	read.CustomUrlList = reconcile.KeepStr(cfg.CustomUrlList, read.CustomUrlList)
 	read.DeliverMessageAfterScan = reconcile.KeepBool(cfg.DeliverMessageAfterScan, read.DeliverMessageAfterScan)
 	read.DisableUrlRewrite = reconcile.KeepBool(cfg.DisableUrlRewrite, read.DisableUrlRewrite)
-	read.DoNotRewriteUrls = reconcile.KeepStr(cfg.DoNotRewriteUrls, read.DoNotRewriteUrls)
+	read.DoNotRewriteUrls = reconcile.KeepSet(cfg.DoNotRewriteUrls, read.DoNotRewriteUrls)
 	read.EnableForInternalSenders = reconcile.KeepBool(cfg.EnableForInternalSenders, read.EnableForInternalSenders)
 	read.EnableOrganizationBranding = reconcile.KeepBool(cfg.EnableOrganizationBranding, read.EnableOrganizationBranding)
 	read.EnableSafeLinksForEmail = reconcile.KeepBool(cfg.EnableSafeLinksForEmail, read.EnableSafeLinksForEmail)

@@ -21,14 +21,14 @@ Manages the MailboxJunkEmailConfiguration configuration via Set-MailboxJunkEmail
 
 ### Optional
 
-- `blocked_senders_and_domains` (String) Maps to the -BlockedSendersAndDomains parameter.
+- `blocked_senders_and_domains` (Set of String) Maps to the -BlockedSendersAndDomains parameter.
 - `contacts_trusted` (Boolean) Maps to the -ContactsTrusted parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `fail_on_error` (Boolean) Maps to the -FailOnError parameter.
 - `sender_screening_enabled` (Boolean) Maps to the -SenderScreeningEnabled parameter.
 - `trusted_lists_only` (Boolean) Maps to the -TrustedListsOnly parameter.
-- `trusted_recipients_and_domains` (String) Maps to the -TrustedRecipientsAndDomains parameter.
-- `trusted_senders_and_domains` (String) Maps to the -TrustedSendersAndDomains parameter.
+- `trusted_recipients_and_domains` (Set of String) Maps to the -TrustedRecipientsAndDomains parameter.
+- `trusted_senders_and_domains` (Set of String) Maps to the -TrustedSendersAndDomains parameter.
 
 ### Read-Only
 

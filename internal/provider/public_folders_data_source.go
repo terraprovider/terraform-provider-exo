@@ -41,7 +41,7 @@ func (d *publicFolderListDataSource) Schema(_ context.Context, _ datasource.Sche
 				"age_limit":                   schema.StringAttribute{Computed: true, Description: "Maps to the -AgeLimit parameter."},
 				"eforms_locale_id":            schema.StringAttribute{Computed: true, Description: "Maps to the -EformsLocaleId parameter."},
 				"issue_warning_quota":         schema.StringAttribute{Computed: true, Description: "Maps to the -IssueWarningQuota parameter."},
-				"mail_enabled":                schema.StringAttribute{Computed: true, Description: "Maps to the -MailEnabled parameter."},
+				"mail_enabled":                schema.BoolAttribute{Computed: true, Description: "Maps to the -MailEnabled parameter."},
 				"mail_recipient_guid":         schema.StringAttribute{Computed: true, Description: "Maps to the -MailRecipientGuid parameter."},
 				"mailbox":                     schema.StringAttribute{Computed: true, Description: "Maps to the -Mailbox parameter."},
 				"max_item_size":               schema.StringAttribute{Computed: true, Description: "Maps to the -MaxItemSize parameter."},

@@ -26,7 +26,7 @@ Look up an existing PublicFolder object. Set identity or name to select it.
 - `eforms_locale_id` (String) Maps to the -EformsLocaleId parameter.
 - `id` (String) Object identifier (GUID).
 - `issue_warning_quota` (String) Maps to the -IssueWarningQuota parameter.
-- `mail_enabled` (String) Maps to the -MailEnabled parameter.
+- `mail_enabled` (Boolean) Maps to the -MailEnabled parameter.
 - `mail_recipient_guid` (String) Maps to the -MailRecipientGuid parameter.
 - `mailbox` (String) Maps to the -Mailbox parameter.
 - `max_item_size` (String) Maps to the -MaxItemSize parameter.

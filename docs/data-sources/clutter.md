@@ -21,6 +21,6 @@ Look up an existing Clutter object. Set identity to select it.
 
 ### Read-Only
 
-- `enable` (String) Maps to the -Enable parameter.
+- `enable` (Boolean) Maps to the -Enable parameter.
 - `id` (String) Object identifier (GUID).
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.

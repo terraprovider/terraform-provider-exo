@@ -18,17 +18,17 @@ Manages the ExoPhishSimOverrideRule object via New-ExoPhishSimOverrideRule / Get
 ### Required
 
 - `policy` (String) Maps to the -Policy parameter.
-- `sender_ip_ranges` (String) Maps to the -SenderIpRanges parameter.
+- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.
 
 ### Optional
 
-- `add_domains` (String) Maps to the -AddDomains parameter.
-- `add_sender_ip_ranges` (String) Maps to the -AddSenderIpRanges parameter.
+- `add_domains` (Set of String) Maps to the -AddDomains parameter.
+- `add_sender_ip_ranges` (Set of String) Maps to the -AddSenderIpRanges parameter.
 - `comment` (String) Maps to the -Comment parameter.
-- `domains` (String) Maps to the -Domains parameter.
+- `domains` (Set of String) Maps to the -Domains parameter.
 - `name` (String) Maps to the -Name parameter.
-- `remove_domains` (String) Maps to the -RemoveDomains parameter.
-- `remove_sender_ip_ranges` (String) Maps to the -RemoveSenderIpRanges parameter.
+- `remove_domains` (Set of String) Maps to the -RemoveDomains parameter.
+- `remove_sender_ip_ranges` (Set of String) Maps to the -RemoveSenderIpRanges parameter.
 
 ### Read-Only
 

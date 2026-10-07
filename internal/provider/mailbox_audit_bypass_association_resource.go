@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &mailboxAuditBypassAssociationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxAuditBypassAssociationResource{}
 	_ resource.ResourceWithImportState = &mailboxAuditBypassAssociationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxAuditBypassAssociationResource{}
 )
 
 type mailboxAuditBypassAssociationResource struct{ client *clients.Client }
@@ -68,9 +69,18 @@ func (r *mailboxAuditBypassAssociationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxAuditBypassAssociationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxAuditBypassAssociationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AuditBypassEnabled = plan.AuditBypassEnabled.ValueBool()
+	if !config.AuditBypassEnabled.IsNull() {
+		if !plan.AuditBypassEnabled.IsUnknown() {
+			sp.AuditBypassEnabled = plan.AuditBypassEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -110,7 +120,11 @@ func (r *mailboxAuditBypassAssociationResource) Update(ctx context.Context, req 
 	id := r.identityOf(state)
 	sp := exo.SetMailboxAuditBypassAssociationParams{}
 	sp.Identity = id
-	sp.AuditBypassEnabled = plan.AuditBypassEnabled.ValueBool()
+	if !plan.AuditBypassEnabled.Equal(state.AuditBypassEnabled) {
+		if !plan.AuditBypassEnabled.IsUnknown() {
+			sp.AuditBypassEnabled = plan.AuditBypassEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -132,6 +146,41 @@ func (r *mailboxAuditBypassAssociationResource) Delete(_ context.Context, _ reso
 func (r *mailboxAuditBypassAssociationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxAuditBypassAssociationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxAuditBypassAssociationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxAuditBypassAssociation(ctx, exo.GetMailboxAuditBypassAssociationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxAuditBypassAssociationModel
+	readMailboxAuditBypassAssociation(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AuditBypassEnabled.IsUnknown() {
+		plan.AuditBypassEnabled = cur.AuditBypassEnabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxAuditBypassAssociationResource) identityOf(m mailboxAuditBypassAssociationModel) string {

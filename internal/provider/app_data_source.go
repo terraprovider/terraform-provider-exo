@@ -57,7 +57,7 @@ func (d *appDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 			"provided_to":                   schema.StringAttribute{Computed: true, Description: "Maps to the -ProvidedTo parameter."},
 			"update_app_state":              schema.BoolAttribute{Computed: true, Description: "Maps to the -UpdateAppState parameter."},
 			"url":                           schema.StringAttribute{Computed: true, Description: "Maps to the -Url parameter."},
-			"user_list":                     schema.StringAttribute{Computed: true, Description: "Maps to the -UserList parameter."},
+			"user_list":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -UserList parameter."},
 			"version":                       schema.StringAttribute{Computed: true, Description: "Maps to the -Version parameter."},
 		},
 	}

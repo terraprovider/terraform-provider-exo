@@ -24,11 +24,11 @@ List every MailContact object (Get-MailContact).
 
 Read-Only:
 
-- `accept_messages_only_from` (String) Maps to the -AcceptMessagesOnlyFrom parameter.
-- `accept_messages_only_from_dl_members` (String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
-- `accept_messages_only_from_senders_or_members` (String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
+- `accept_messages_only_from` (Set of String) Maps to the -AcceptMessagesOnlyFrom parameter.
+- `accept_messages_only_from_dl_members` (Set of String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
+- `accept_messages_only_from_senders_or_members` (Set of String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
 - `alias_` (String) Maps to the -Alias parameter.
-- `bypass_moderation_from_senders_or_members` (String) Maps to the -BypassModerationFromSendersOrMembers parameter.
+- `bypass_moderation_from_senders_or_members` (Set of String) Maps to the -BypassModerationFromSendersOrMembers parameter.
 - `custom_attribute1` (String) Maps to the -CustomAttribute1 parameter.
 - `custom_attribute10` (String) Maps to the -CustomAttribute10 parameter.
 - `custom_attribute11` (String) Maps to the -CustomAttribute11 parameter.
@@ -45,16 +45,16 @@ Read-Only:
 - `custom_attribute8` (String) Maps to the -CustomAttribute8 parameter.
 - `custom_attribute9` (String) Maps to the -CustomAttribute9 parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
-- `email_addresses` (String) Maps to the -EmailAddresses parameter.
-- `extension_custom_attribute1` (String) Maps to the -ExtensionCustomAttribute1 parameter.
-- `extension_custom_attribute2` (String) Maps to the -ExtensionCustomAttribute2 parameter.
-- `extension_custom_attribute3` (String) Maps to the -ExtensionCustomAttribute3 parameter.
-- `extension_custom_attribute4` (String) Maps to the -ExtensionCustomAttribute4 parameter.
-- `extension_custom_attribute5` (String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
+- `extension_custom_attribute1` (Set of String) Maps to the -ExtensionCustomAttribute1 parameter.
+- `extension_custom_attribute2` (Set of String) Maps to the -ExtensionCustomAttribute2 parameter.
+- `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
+- `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
+- `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `external_email_address` (String) Maps to the -ExternalEmailAddress parameter.
 - `first_name` (String) Maps to the -FirstName parameter.
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
-- `grant_send_on_behalf_to` (String) Maps to the -GrantSendOnBehalfTo parameter.
+- `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
@@ -62,21 +62,21 @@ Read-Only:
 - `last_name` (String) Maps to the -LastName parameter.
 - `mac_attachment_format` (String) Maps to the -MacAttachmentFormat parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
-- `mail_tip_translations` (String) Maps to the -MailTipTranslations parameter.
+- `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `message_body_format` (String) Maps to the -MessageBodyFormat parameter.
 - `message_format` (String) Maps to the -MessageFormat parameter.
-- `moderated_by` (String) Maps to the -ModeratedBy parameter.
+- `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `name` (String) Maps to the -Name parameter.
 - `organizational_unit` (String) Maps to the -OrganizationalUnit parameter.
-- `reject_messages_from` (String) Maps to the -RejectMessagesFrom parameter.
-- `reject_messages_from_dl_members` (String) Maps to the -RejectMessagesFromDLMembers parameter.
-- `reject_messages_from_senders_or_members` (String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
+- `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
+- `reject_messages_from_dl_members` (Set of String) Maps to the -RejectMessagesFromDLMembers parameter.
+- `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.
 - `send_moderation_notifications` (String) Maps to the -SendModerationNotifications parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.
 - `use_mapi_rich_text_format` (String) Maps to the -UseMapiRichTextFormat parameter.
 - `use_prefer_message_format` (Boolean) Maps to the -UsePreferMessageFormat parameter.
-- `user_certificate` (String) Maps to the -UserCertificate parameter.
-- `user_s_mime_certificate` (String) Maps to the -UserSMimeCertificate parameter.
+- `user_certificate` (Set of String) Maps to the -UserCertificate parameter.
+- `user_s_mime_certificate` (Set of String) Maps to the -UserSMimeCertificate parameter.
 - `windows_email_address` (String) Maps to the -WindowsEmailAddress parameter.

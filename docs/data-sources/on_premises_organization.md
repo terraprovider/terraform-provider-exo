@@ -23,7 +23,7 @@ Look up an existing OnPremisesOrganization object. Set identity or name to selec
 ### Read-Only
 
 - `comment` (String) Maps to the -Comment parameter.
-- `hybrid_domains` (String) Maps to the -HybridDomains parameter.
+- `hybrid_domains` (Set of String) Maps to the -HybridDomains parameter.
 - `id` (String) Object identifier (GUID).
 - `inbound_connector` (String) Maps to the -InboundConnector parameter.
 - `organization_guid` (String) Maps to the -OrganizationGuid parameter.

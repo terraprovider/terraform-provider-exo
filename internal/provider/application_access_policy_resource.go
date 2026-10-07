@@ -52,7 +52,7 @@ func (r *applicationAccessPolicyResource) Schema(_ context.Context, _ resource.S
 		Description: "Manages the ApplicationAccessPolicy object via New-ApplicationAccessPolicy / Get-ApplicationAccessPolicy / Set-ApplicationAccessPolicy / Remove-ApplicationAccessPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"access_right":          schema.StringAttribute{Required: true, Description: "Maps to the -AccessRight parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"app_id":                schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -AppId parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"description":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -75,15 +75,26 @@ func (r *applicationAccessPolicyResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	p := exo.NewApplicationAccessPolicyParams{
-		AppId:       toStringSlice(ctx, plan.AppId, &resp.Diagnostics),
-		Description: plan.Description.ValueString(),
+	var config applicationAccessPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AccessRight.ValueString(); v != "" {
-		p.AccessRight = v
+
+	p := exo.NewApplicationAccessPolicyParams{}
+	if v := config.AccessRight.ValueString(); v != "" {
+		p.AccessRight = objectParam(v)
 	}
-	if v := plan.PolicyScopeGroupId.ValueString(); v != "" {
-		p.PolicyScopeGroupId = v
+	if !config.AppId.IsNull() {
+		if v := toStringSlice(ctx, plan.AppId, &resp.Diagnostics); len(v) > 0 {
+			p.AppId = v
+		}
+	}
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
+	}
+	if v := config.PolicyScopeGroupId.ValueString(); v != "" {
+		p.PolicyScopeGroupId = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -135,7 +146,9 @@ func (r *applicationAccessPolicyResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetApplicationAccessPolicyParams{}
 	sp.Identity = id
-	sp.Description = plan.Description.ValueString()
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -207,10 +220,10 @@ func (r *applicationAccessPolicyResource) refresh(ctx context.Context, identity 
 func readApplicationAccessPolicy(ctx context.Context, obj map[string]any, m *applicationAccessPolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AccessRight = types.StringValue(getString(obj, "AccessRight"))
+	m.AccessRight = types.StringValue(getObjectJSON(obj, "AccessRight"))
 	m.AppId = stringSetValue(ctx, getStringSlice(obj, "AppId"))
 	m.Description = types.StringValue(getString(obj, "Description"))
-	m.PolicyScopeGroupId = types.StringValue(getString(obj, "PolicyScopeGroupId"))
+	m.PolicyScopeGroupId = types.StringValue(getObjectJSON(obj, "PolicyScopeGroupId"))
 	_ = ctx
 }
 

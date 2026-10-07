@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &mailboxPlanResource{}
 	_ resource.ResourceWithConfigure   = &mailboxPlanResource{}
 	_ resource.ResourceWithImportState = &mailboxPlanResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxPlanResource{}
 )
 
 type mailboxPlanResource struct{ client *clients.Client }
@@ -84,35 +85,42 @@ func (r *mailboxPlanResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxPlanModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxPlanParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.IsDefault = plan.IsDefault.ValueBool()
-	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = v
+	if !config.IsDefault.IsNull() {
+		sp.IsDefault = plan.IsDefault.ValueBool()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = v
+	if v := config.IssueWarningQuota.ValueString(); v != "" {
+		sp.IssueWarningQuota = objectParam(v)
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = v
+	if v := config.MaxReceiveSize.ValueString(); v != "" {
+		sp.MaxReceiveSize = objectParam(v)
 	}
-	if v := plan.ProhibitSendQuota.ValueString(); v != "" {
-		sp.ProhibitSendQuota = v
+	if v := config.MaxSendSize.ValueString(); v != "" {
+		sp.MaxSendSize = objectParam(v)
 	}
-	if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
-		sp.ProhibitSendReceiveQuota = v
+	if v := config.ProhibitSendQuota.ValueString(); v != "" {
+		sp.ProhibitSendQuota = objectParam(v)
 	}
-	if v := plan.RecipientLimits.ValueString(); v != "" {
-		sp.RecipientLimits = v
+	if v := config.ProhibitSendReceiveQuota.ValueString(); v != "" {
+		sp.ProhibitSendReceiveQuota = objectParam(v)
 	}
-	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = v
+	if v := config.RecipientLimits.ValueString(); v != "" {
+		sp.RecipientLimits = objectParam(v)
 	}
-	if v := plan.RetentionPolicy.ValueString(); v != "" {
-		sp.RetentionPolicy = v
+	if v := config.RetainDeletedItemsFor.ValueString(); v != "" {
+		sp.RetainDeletedItemsFor = objectParam(v)
 	}
-	if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
-		sp.RoleAssignmentPolicy = v
+	if v := config.RetentionPolicy.ValueString(); v != "" {
+		sp.RetentionPolicy = objectParam(v)
+	}
+	if v := config.RoleAssignmentPolicy.ValueString(); v != "" {
+		sp.RoleAssignmentPolicy = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,33 +161,35 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetMailboxPlanParams{}
 	sp.Identity = id
-	sp.IsDefault = plan.IsDefault.ValueBool()
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		sp.IsDefault = plan.IsDefault.ValueBool()
+	}
 	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = v
+		sp.IssueWarningQuota = objectParam(v)
 	}
 	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = v
+		sp.MaxReceiveSize = objectParam(v)
 	}
 	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = v
+		sp.MaxSendSize = objectParam(v)
 	}
 	if v := plan.ProhibitSendQuota.ValueString(); v != "" {
-		sp.ProhibitSendQuota = v
+		sp.ProhibitSendQuota = objectParam(v)
 	}
 	if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
-		sp.ProhibitSendReceiveQuota = v
+		sp.ProhibitSendReceiveQuota = objectParam(v)
 	}
 	if v := plan.RecipientLimits.ValueString(); v != "" {
-		sp.RecipientLimits = v
+		sp.RecipientLimits = objectParam(v)
 	}
 	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = v
+		sp.RetainDeletedItemsFor = objectParam(v)
 	}
 	if v := plan.RetentionPolicy.ValueString(); v != "" {
-		sp.RetentionPolicy = v
+		sp.RetentionPolicy = objectParam(v)
 	}
 	if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
-		sp.RoleAssignmentPolicy = v
+		sp.RoleAssignmentPolicy = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -189,17 +199,7 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"IssueWarningQuota":        cfg.IssueWarningQuota,
-		"MaxReceiveSize":           cfg.MaxReceiveSize,
-		"MaxSendSize":              cfg.MaxSendSize,
-		"ProhibitSendQuota":        cfg.ProhibitSendQuota,
-		"ProhibitSendReceiveQuota": cfg.ProhibitSendReceiveQuota,
-		"RecipientLimits":          cfg.RecipientLimits,
-		"RetainDeletedItemsFor":    cfg.RetainDeletedItemsFor,
-		"RetentionPolicy":          cfg.RetentionPolicy,
-		"RoleAssignmentPolicy":     cfg.RoleAssignmentPolicy,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -212,6 +212,68 @@ func (r *mailboxPlanResource) Delete(_ context.Context, _ resource.DeleteRequest
 func (r *mailboxPlanResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxPlanResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxPlanModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxPlan(ctx, exo.GetMailboxPlanParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxPlanModel
+	readMailboxPlan(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.IsDefault.IsUnknown() {
+		plan.IsDefault = cur.IsDefault
+	}
+	if plan.IssueWarningQuota.IsUnknown() {
+		plan.IssueWarningQuota = cur.IssueWarningQuota
+	}
+	if plan.MaxReceiveSize.IsUnknown() {
+		plan.MaxReceiveSize = cur.MaxReceiveSize
+	}
+	if plan.MaxSendSize.IsUnknown() {
+		plan.MaxSendSize = cur.MaxSendSize
+	}
+	if plan.ProhibitSendQuota.IsUnknown() {
+		plan.ProhibitSendQuota = cur.ProhibitSendQuota
+	}
+	if plan.ProhibitSendReceiveQuota.IsUnknown() {
+		plan.ProhibitSendReceiveQuota = cur.ProhibitSendReceiveQuota
+	}
+	if plan.RecipientLimits.IsUnknown() {
+		plan.RecipientLimits = cur.RecipientLimits
+	}
+	if plan.RetainDeletedItemsFor.IsUnknown() {
+		plan.RetainDeletedItemsFor = cur.RetainDeletedItemsFor
+	}
+	if plan.RetentionPolicy.IsUnknown() {
+		plan.RetentionPolicy = cur.RetentionPolicy
+	}
+	if plan.RoleAssignmentPolicy.IsUnknown() {
+		plan.RoleAssignmentPolicy = cur.RoleAssignmentPolicy
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxPlanResource) identityOf(m mailboxPlanModel) string {
@@ -251,15 +313,15 @@ func (r *mailboxPlanResource) refresh(ctx context.Context, identity string, m *m
 func readMailboxPlan(ctx context.Context, obj map[string]any, m *mailboxPlanModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.IsDefault = types.BoolValue(getBool(obj, "IsDefault"))
-	m.IssueWarningQuota = types.StringValue(getString(obj, "IssueWarningQuota"))
-	m.MaxReceiveSize = types.StringValue(getString(obj, "MaxReceiveSize"))
-	m.MaxSendSize = types.StringValue(getString(obj, "MaxSendSize"))
-	m.ProhibitSendQuota = types.StringValue(getString(obj, "ProhibitSendQuota"))
-	m.ProhibitSendReceiveQuota = types.StringValue(getString(obj, "ProhibitSendReceiveQuota"))
-	m.RecipientLimits = types.StringValue(getString(obj, "RecipientLimits"))
-	m.RetainDeletedItemsFor = types.StringValue(getString(obj, "RetainDeletedItemsFor"))
-	m.RetentionPolicy = types.StringValue(getString(obj, "RetentionPolicy"))
-	m.RoleAssignmentPolicy = types.StringValue(getString(obj, "RoleAssignmentPolicy"))
+	m.IssueWarningQuota = types.StringValue(getObjectJSON(obj, "IssueWarningQuota"))
+	m.MaxReceiveSize = types.StringValue(getObjectJSON(obj, "MaxReceiveSize"))
+	m.MaxSendSize = types.StringValue(getObjectJSON(obj, "MaxSendSize"))
+	m.ProhibitSendQuota = types.StringValue(getObjectJSON(obj, "ProhibitSendQuota"))
+	m.ProhibitSendReceiveQuota = types.StringValue(getObjectJSON(obj, "ProhibitSendReceiveQuota"))
+	m.RecipientLimits = types.StringValue(getObjectJSON(obj, "RecipientLimits"))
+	m.RetainDeletedItemsFor = types.StringValue(getObjectJSON(obj, "RetainDeletedItemsFor"))
+	m.RetentionPolicy = types.StringValue(getObjectJSON(obj, "RetentionPolicy"))
+	m.RoleAssignmentPolicy = types.StringValue(getObjectJSON(obj, "RoleAssignmentPolicy"))
 	_ = ctx
 }
 

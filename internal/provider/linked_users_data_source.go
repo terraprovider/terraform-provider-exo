@@ -38,7 +38,7 @@ func (d *linkedUserListDataSource) Schema(_ context.Context, _ datasource.Schema
 			"linked_users": schema.ListNestedAttribute{Computed: true, Description: "All LinkedUser objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"certificate_subject": schema.StringAttribute{Computed: true, Description: "Maps to the -CertificateSubject parameter."},
+				"certificate_subject": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -CertificateSubject parameter."},
 			}}},
 		},
 	}

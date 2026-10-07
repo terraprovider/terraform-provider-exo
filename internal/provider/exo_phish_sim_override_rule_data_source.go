@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -36,15 +37,15 @@ func (d *exoPhishSimOverrideRuleDataSource) Schema(_ context.Context, _ datasour
 		Attributes: map[string]schema.Attribute{
 			"id":                      schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"add_domains":             schema.StringAttribute{Computed: true, Description: "Maps to the -AddDomains parameter."},
-			"add_sender_ip_ranges":    schema.StringAttribute{Computed: true, Description: "Maps to the -AddSenderIpRanges parameter."},
+			"add_domains":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AddDomains parameter."},
+			"add_sender_ip_ranges":    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AddSenderIpRanges parameter."},
 			"comment":                 schema.StringAttribute{Computed: true, Description: "Maps to the -Comment parameter."},
-			"domains":                 schema.StringAttribute{Computed: true, Description: "Maps to the -Domains parameter."},
+			"domains":                 schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Domains parameter."},
 			"name":                    schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"policy":                  schema.StringAttribute{Computed: true, Description: "Maps to the -Policy parameter."},
-			"remove_domains":          schema.StringAttribute{Computed: true, Description: "Maps to the -RemoveDomains parameter."},
-			"remove_sender_ip_ranges": schema.StringAttribute{Computed: true, Description: "Maps to the -RemoveSenderIpRanges parameter."},
-			"sender_ip_ranges":        schema.StringAttribute{Computed: true, Description: "Maps to the -SenderIpRanges parameter."},
+			"remove_domains":          schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RemoveDomains parameter."},
+			"remove_sender_ip_ranges": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RemoveSenderIpRanges parameter."},
+			"sender_ip_ranges":        schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SenderIpRanges parameter."},
 		},
 	}
 }

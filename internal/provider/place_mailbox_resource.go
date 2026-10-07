@@ -61,7 +61,7 @@ func (r *placeMailboxResource) Schema(_ context.Context, _ resource.SchemaReques
 		Description: "Manages the PlaceMailbox object via New-PlaceMailbox / Get-PlaceMailbox / Set-PlaceMailbox / Remove-PlaceMailbox.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"alias_":                            schema.StringAttribute{Required: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"booking_policy":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"city":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -City parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -95,32 +95,59 @@ func (r *placeMailboxResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	p := exo.NewPlaceMailboxParams{
-		Alias:                         plan.Alias.ValueString(),
-		BookingPolicy:                 plan.BookingPolicy.ValueString(),
-		City:                          plan.City.ValueString(),
-		DisplayName:                   plan.DisplayName.ValueString(),
-		ExternalDirectoryObjectId:     plan.ExternalDirectoryObjectId.ValueString(),
-		HiddenFromAddressListsEnabled: plan.HiddenFromAddressListsEnabled.ValueBool(),
-		Phone:                         plan.Phone.ValueString(),
-		PostalCode:                    plan.PostalCode.ValueString(),
-		StateOrProvince:               plan.StateOrProvince.ValueString(),
-		StreetAddress:                 plan.StreetAddress.ValueString(),
+	var config placeMailboxModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		p.CountryOrRegion = v
+
+	p := exo.NewPlaceMailboxParams{}
+	if !config.Alias.IsNull() {
+		p.Alias = plan.Alias.ValueString()
 	}
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		p.GeoCoordinates = v
+	if !config.BookingPolicy.IsNull() {
+		p.BookingPolicy = plan.BookingPolicy.ValueString()
 	}
-	if v := plan.Organization.ValueString(); v != "" {
-		p.Organization = v
+	if !config.City.IsNull() {
+		p.City = plan.City.ValueString()
 	}
-	if v := plan.ResourceCapacity.ValueString(); v != "" {
-		p.ResourceCapacity = v
+	if v := config.CountryOrRegion.ValueString(); v != "" {
+		p.CountryOrRegion = objectParam(v)
 	}
-	if v := plan.ResourceType.ValueString(); v != "" {
-		p.ResourceType = v
+	if !config.DisplayName.IsNull() {
+		p.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !config.ExternalDirectoryObjectId.IsNull() {
+		p.ExternalDirectoryObjectId = plan.ExternalDirectoryObjectId.ValueString()
+	}
+	if v := config.GeoCoordinates.ValueString(); v != "" {
+		p.GeoCoordinates = objectParam(v)
+	}
+	if !config.HiddenFromAddressListsEnabled.IsNull() {
+		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
+			p.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.Organization.ValueString(); v != "" {
+		p.Organization = objectParam(v)
+	}
+	if !config.Phone.IsNull() {
+		p.Phone = plan.Phone.ValueString()
+	}
+	if !config.PostalCode.IsNull() {
+		p.PostalCode = plan.PostalCode.ValueString()
+	}
+	if v := config.ResourceCapacity.ValueString(); v != "" {
+		p.ResourceCapacity = objectParam(v)
+	}
+	if v := config.ResourceType.ValueString(); v != "" {
+		p.ResourceType = objectParam(v)
+	}
+	if !config.StateOrProvince.IsNull() {
+		p.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !config.StreetAddress.IsNull() {
+		p.StreetAddress = plan.StreetAddress.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -172,25 +199,41 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetPlaceMailboxParams{}
 	sp.PlaceMailboxId = id
-	sp.City = plan.City.ValueString()
+	if !plan.City.Equal(state.City) {
+		sp.City = plan.City.ValueString()
+	}
 	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+		sp.CountryOrRegion = objectParam(v)
 	}
-	sp.DisplayName = plan.DisplayName.ValueString()
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
 	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+		sp.GeoCoordinates = objectParam(v)
 	}
-	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PostalCode = plan.PostalCode.ValueString()
+	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
+			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.Phone.Equal(state.Phone) {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !plan.PostalCode.Equal(state.PostalCode) {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
 	if v := plan.ResourceCapacity.ValueString(); v != "" {
-		sp.ResourceCapacity = v
+		sp.ResourceCapacity = objectParam(v)
 	}
 	if v := plan.ResourceType.ValueString(); v != "" {
-		sp.ResourceType = v
+		sp.ResourceType = objectParam(v)
 	}
-	sp.StateOrProvince = plan.StateOrProvince.ValueString()
-	sp.StreetAddress = plan.StreetAddress.ValueString()
+	if !plan.StateOrProvince.Equal(state.StateOrProvince) {
+		sp.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !plan.StreetAddress.Equal(state.StreetAddress) {
+		sp.StreetAddress = plan.StreetAddress.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -200,16 +243,12 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"City":             cfg.City,
-		"CountryOrRegion":  cfg.CountryOrRegion,
-		"DisplayName":      cfg.DisplayName,
-		"GeoCoordinates":   cfg.GeoCoordinates,
-		"Phone":            cfg.Phone,
-		"PostalCode":       cfg.PostalCode,
-		"ResourceCapacity": cfg.ResourceCapacity,
-		"ResourceType":     cfg.ResourceType,
-		"StateOrProvince":  cfg.StateOrProvince,
-		"StreetAddress":    cfg.StreetAddress,
+		"City":            cfg.City,
+		"DisplayName":     cfg.DisplayName,
+		"Phone":           cfg.Phone,
+		"PostalCode":      cfg.PostalCode,
+		"StateOrProvince": cfg.StateOrProvince,
+		"StreetAddress":   cfg.StreetAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -274,16 +313,16 @@ func readPlaceMailbox(ctx context.Context, obj map[string]any, m *placeMailboxMo
 	m.Alias = types.StringValue(getString(obj, "Alias"))
 	m.BookingPolicy = types.StringValue(getString(obj, "BookingPolicy"))
 	m.City = types.StringValue(getString(obj, "City"))
-	m.CountryOrRegion = types.StringValue(getString(obj, "CountryOrRegion"))
+	m.CountryOrRegion = types.StringValue(getObjectJSON(obj, "CountryOrRegion"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.ExternalDirectoryObjectId = types.StringValue(getString(obj, "ExternalDirectoryObjectId"))
-	m.GeoCoordinates = types.StringValue(getString(obj, "GeoCoordinates"))
+	m.GeoCoordinates = types.StringValue(getObjectJSON(obj, "GeoCoordinates"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
-	m.Organization = types.StringValue(getString(obj, "Organization"))
+	m.Organization = types.StringValue(getObjectJSON(obj, "Organization"))
 	m.Phone = types.StringValue(getString(obj, "Phone"))
 	m.PostalCode = types.StringValue(getString(obj, "PostalCode"))
-	m.ResourceCapacity = types.StringValue(getString(obj, "ResourceCapacity"))
-	m.ResourceType = types.StringValue(getString(obj, "ResourceType"))
+	m.ResourceCapacity = types.StringValue(getObjectJSON(obj, "ResourceCapacity"))
+	m.ResourceType = types.StringValue(getObjectJSON(obj, "ResourceType"))
 	m.StateOrProvince = types.StringValue(getString(obj, "StateOrProvince"))
 	m.StreetAddress = types.StringValue(getString(obj, "StreetAddress"))
 	_ = ctx

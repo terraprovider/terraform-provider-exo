@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -26,6 +27,7 @@ var (
 	_ resource.Resource                = &smimeConfigResource{}
 	_ resource.ResourceWithConfigure   = &smimeConfigResource{}
 	_ resource.ResourceWithImportState = &smimeConfigResource{}
+	_ resource.ResourceWithModifyPlan  = &smimeConfigResource{}
 )
 
 type smimeConfigResource struct{ client *clients.Client }
@@ -40,13 +42,13 @@ type smimeConfigModel struct {
 	OWAAllowUserChoiceOfSigningCertificate           types.Bool   `tfsdk:"owa_allow_user_choice_of_signing_certificate"`
 	OWAAlwaysEncrypt                                 types.Bool   `tfsdk:"owa_always_encrypt"`
 	OWAAlwaysSign                                    types.Bool   `tfsdk:"owa_always_sign"`
-	OWABCCEncryptedEmailForking                      types.String `tfsdk:"owabcc_encrypted_email_forking"`
-	OWACRLConnectionTimeout                          types.String `tfsdk:"owacrl_connection_timeout"`
-	OWACRLRetrievalTimeout                           types.String `tfsdk:"owacrl_retrieval_timeout"`
+	OWABCCEncryptedEmailForking                      types.Int64  `tfsdk:"owabcc_encrypted_email_forking"`
+	OWACRLConnectionTimeout                          types.Int64  `tfsdk:"owacrl_connection_timeout"`
+	OWACRLRetrievalTimeout                           types.Int64  `tfsdk:"owacrl_retrieval_timeout"`
 	OWACheckCRLOnSend                                types.Bool   `tfsdk:"owa_check_crl_on_send"`
 	OWAClearSign                                     types.Bool   `tfsdk:"owa_clear_sign"`
 	OWACopyRecipientHeaders                          types.Bool   `tfsdk:"owa_copy_recipient_headers"`
-	OWADLExpansionTimeout                            types.String `tfsdk:"owadl_expansion_timeout"`
+	OWADLExpansionTimeout                            types.Int64  `tfsdk:"owadl_expansion_timeout"`
 	OWADisableCRLCheck                               types.Bool   `tfsdk:"owa_disable_crl_check"`
 	OWAEncryptTemporaryBuffers                       types.Bool   `tfsdk:"owa_encrypt_temporary_buffers"`
 	OWAEncryptionAlgorithms                          types.String `tfsdk:"owa_encryption_algorithms"`
@@ -78,13 +80,13 @@ func (r *smimeConfigResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"owa_allow_user_choice_of_signing_certificate":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAllowUserChoiceOfSigningCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_always_encrypt":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAlwaysEncrypt parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_always_sign":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAAlwaysSign parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"owabcc_encrypted_email_forking":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"owacrl_connection_timeout":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"owacrl_retrieval_timeout":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"owabcc_encrypted_email_forking":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"owacrl_connection_timeout":                              schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"owacrl_retrieval_timeout":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"owa_check_crl_on_send":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACheckCRLOnSend parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_clear_sign":                                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAClearSign parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_copy_recipient_headers":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWACopyRecipientHeaders parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"owadl_expansion_timeout":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"owadl_expansion_timeout":                                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"owa_disable_crl_check":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWADisableCRLCheck parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_encrypt_temporary_buffers":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAEncryptTemporaryBuffers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_encryption_algorithms":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAEncryptionAlgorithms parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -117,42 +119,137 @@ func (r *smimeConfigResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config smimeConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetSmimeConfigParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.NoSignOnReply = plan.NoSignOnReply.ValueBool()
-	sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBool()
-	sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBool()
-	sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBool()
-	if v := plan.OWABCCEncryptedEmailForking.ValueString(); v != "" {
-		sp.OWABCCEncryptedEmailForking = v
+	if !config.NoSignOnReply.IsNull() {
+		if !plan.NoSignOnReply.IsUnknown() {
+			sp.NoSignOnReply = plan.NoSignOnReply.ValueBoolPointer()
+		}
 	}
-	if v := plan.OWACRLConnectionTimeout.ValueString(); v != "" {
-		sp.OWACRLConnectionTimeout = v
+	if !config.OWAAllowUserChoiceOfSigningCertificate.IsNull() {
+		if !plan.OWAAllowUserChoiceOfSigningCertificate.IsUnknown() {
+			sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBoolPointer()
+		}
 	}
-	if v := plan.OWACRLRetrievalTimeout.ValueString(); v != "" {
-		sp.OWACRLRetrievalTimeout = v
+	if !config.OWAAlwaysEncrypt.IsNull() {
+		if !plan.OWAAlwaysEncrypt.IsUnknown() {
+			sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBoolPointer()
+		}
 	}
-	sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBool()
-	sp.OWAClearSign = plan.OWAClearSign.ValueBool()
-	sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBool()
-	if v := plan.OWADLExpansionTimeout.ValueString(); v != "" {
-		sp.OWADLExpansionTimeout = v
+	if !config.OWAAlwaysSign.IsNull() {
+		if !plan.OWAAlwaysSign.IsUnknown() {
+			sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBoolPointer()
+		}
 	}
-	sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBool()
-	sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBool()
-	sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
-	sp.OWAForceSMIMEClientUpgrade = plan.OWAForceSMIMEClientUpgrade.ValueBool()
-	sp.OWAIncludeCertificateChainAndRootCertificate = plan.OWAIncludeCertificateChainAndRootCertificate.ValueBool()
-	sp.OWAIncludeCertificateChainWithoutRootCertificate = plan.OWAIncludeCertificateChainWithoutRootCertificate.ValueBool()
-	sp.OWAIncludeSMIMECapabilitiesInMessage = plan.OWAIncludeSMIMECapabilitiesInMessage.ValueBool()
-	sp.OWAOnlyUseSmartCard = plan.OWAOnlyUseSmartCard.ValueBool()
-	sp.OWASenderCertificateAttributesToDisplay = plan.OWASenderCertificateAttributesToDisplay.ValueString()
-	sp.OWASignedEmailCertificateInclusion = plan.OWASignedEmailCertificateInclusion.ValueBool()
-	sp.OWASigningAlgorithms = plan.OWASigningAlgorithms.ValueString()
-	sp.OWATripleWrapSignedEncryptedMail = plan.OWATripleWrapSignedEncryptedMail.ValueBool()
-	sp.OWAUseKeyIdentifier = plan.OWAUseKeyIdentifier.ValueBool()
-	sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBool()
-	sp.SMIMECertificateIssuingCA = toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)
+	if !config.OWABCCEncryptedEmailForking.IsNull() {
+		if !plan.OWABCCEncryptedEmailForking.IsUnknown() {
+			sp.OWABCCEncryptedEmailForking = plan.OWABCCEncryptedEmailForking.ValueInt64Pointer()
+		}
+	}
+	if !config.OWACRLConnectionTimeout.IsNull() {
+		if !plan.OWACRLConnectionTimeout.IsUnknown() {
+			sp.OWACRLConnectionTimeout = plan.OWACRLConnectionTimeout.ValueInt64Pointer()
+		}
+	}
+	if !config.OWACRLRetrievalTimeout.IsNull() {
+		if !plan.OWACRLRetrievalTimeout.IsUnknown() {
+			sp.OWACRLRetrievalTimeout = plan.OWACRLRetrievalTimeout.ValueInt64Pointer()
+		}
+	}
+	if !config.OWACheckCRLOnSend.IsNull() {
+		if !plan.OWACheckCRLOnSend.IsUnknown() {
+			sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBoolPointer()
+		}
+	}
+	if !config.OWAClearSign.IsNull() {
+		if !plan.OWAClearSign.IsUnknown() {
+			sp.OWAClearSign = plan.OWAClearSign.ValueBoolPointer()
+		}
+	}
+	if !config.OWACopyRecipientHeaders.IsNull() {
+		if !plan.OWACopyRecipientHeaders.IsUnknown() {
+			sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBoolPointer()
+		}
+	}
+	if !config.OWADLExpansionTimeout.IsNull() {
+		if !plan.OWADLExpansionTimeout.IsUnknown() {
+			sp.OWADLExpansionTimeout = plan.OWADLExpansionTimeout.ValueInt64Pointer()
+		}
+	}
+	if !config.OWADisableCRLCheck.IsNull() {
+		if !plan.OWADisableCRLCheck.IsUnknown() {
+			sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBoolPointer()
+		}
+	}
+	if !config.OWAEncryptTemporaryBuffers.IsNull() {
+		if !plan.OWAEncryptTemporaryBuffers.IsUnknown() {
+			sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBoolPointer()
+		}
+	}
+	if !config.OWAEncryptionAlgorithms.IsNull() {
+		sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
+	}
+	if !config.OWAForceSMIMEClientUpgrade.IsNull() {
+		if !plan.OWAForceSMIMEClientUpgrade.IsUnknown() {
+			sp.OWAForceSMIMEClientUpgrade = plan.OWAForceSMIMEClientUpgrade.ValueBoolPointer()
+		}
+	}
+	if !config.OWAIncludeCertificateChainAndRootCertificate.IsNull() {
+		if !plan.OWAIncludeCertificateChainAndRootCertificate.IsUnknown() {
+			sp.OWAIncludeCertificateChainAndRootCertificate = plan.OWAIncludeCertificateChainAndRootCertificate.ValueBoolPointer()
+		}
+	}
+	if !config.OWAIncludeCertificateChainWithoutRootCertificate.IsNull() {
+		if !plan.OWAIncludeCertificateChainWithoutRootCertificate.IsUnknown() {
+			sp.OWAIncludeCertificateChainWithoutRootCertificate = plan.OWAIncludeCertificateChainWithoutRootCertificate.ValueBoolPointer()
+		}
+	}
+	if !config.OWAIncludeSMIMECapabilitiesInMessage.IsNull() {
+		if !plan.OWAIncludeSMIMECapabilitiesInMessage.IsUnknown() {
+			sp.OWAIncludeSMIMECapabilitiesInMessage = plan.OWAIncludeSMIMECapabilitiesInMessage.ValueBoolPointer()
+		}
+	}
+	if !config.OWAOnlyUseSmartCard.IsNull() {
+		if !plan.OWAOnlyUseSmartCard.IsUnknown() {
+			sp.OWAOnlyUseSmartCard = plan.OWAOnlyUseSmartCard.ValueBoolPointer()
+		}
+	}
+	if !config.OWASenderCertificateAttributesToDisplay.IsNull() {
+		sp.OWASenderCertificateAttributesToDisplay = plan.OWASenderCertificateAttributesToDisplay.ValueString()
+	}
+	if !config.OWASignedEmailCertificateInclusion.IsNull() {
+		if !plan.OWASignedEmailCertificateInclusion.IsUnknown() {
+			sp.OWASignedEmailCertificateInclusion = plan.OWASignedEmailCertificateInclusion.ValueBoolPointer()
+		}
+	}
+	if !config.OWASigningAlgorithms.IsNull() {
+		sp.OWASigningAlgorithms = plan.OWASigningAlgorithms.ValueString()
+	}
+	if !config.OWATripleWrapSignedEncryptedMail.IsNull() {
+		if !plan.OWATripleWrapSignedEncryptedMail.IsUnknown() {
+			sp.OWATripleWrapSignedEncryptedMail = plan.OWATripleWrapSignedEncryptedMail.ValueBoolPointer()
+		}
+	}
+	if !config.OWAUseKeyIdentifier.IsNull() {
+		if !plan.OWAUseKeyIdentifier.IsUnknown() {
+			sp.OWAUseKeyIdentifier = plan.OWAUseKeyIdentifier.ValueBoolPointer()
+		}
+	}
+	if !config.OWAUseSecondaryProxiesWhenFindingCertificates.IsNull() {
+		if !plan.OWAUseSecondaryProxiesWhenFindingCertificates.IsUnknown() {
+			sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBoolPointer()
+		}
+	}
+	if !config.SMIMECertificateIssuingCA.IsNull() {
+		if !plan.SMIMECertificateIssuingCA.IsNull() && !plan.SMIMECertificateIssuingCA.IsUnknown() {
+			sp.SMIMECertificateIssuingCA = append([]string{}, toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -192,40 +289,130 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetSmimeConfigParams{}
 	sp.Identity = id
-	sp.NoSignOnReply = plan.NoSignOnReply.ValueBool()
-	sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBool()
-	sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBool()
-	sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBool()
-	if v := plan.OWABCCEncryptedEmailForking.ValueString(); v != "" {
-		sp.OWABCCEncryptedEmailForking = v
+	if !plan.NoSignOnReply.Equal(state.NoSignOnReply) {
+		if !plan.NoSignOnReply.IsUnknown() {
+			sp.NoSignOnReply = plan.NoSignOnReply.ValueBoolPointer()
+		}
 	}
-	if v := plan.OWACRLConnectionTimeout.ValueString(); v != "" {
-		sp.OWACRLConnectionTimeout = v
+	if !plan.OWAAllowUserChoiceOfSigningCertificate.Equal(state.OWAAllowUserChoiceOfSigningCertificate) {
+		if !plan.OWAAllowUserChoiceOfSigningCertificate.IsUnknown() {
+			sp.OWAAllowUserChoiceOfSigningCertificate = plan.OWAAllowUserChoiceOfSigningCertificate.ValueBoolPointer()
+		}
 	}
-	if v := plan.OWACRLRetrievalTimeout.ValueString(); v != "" {
-		sp.OWACRLRetrievalTimeout = v
+	if !plan.OWAAlwaysEncrypt.Equal(state.OWAAlwaysEncrypt) {
+		if !plan.OWAAlwaysEncrypt.IsUnknown() {
+			sp.OWAAlwaysEncrypt = plan.OWAAlwaysEncrypt.ValueBoolPointer()
+		}
 	}
-	sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBool()
-	sp.OWAClearSign = plan.OWAClearSign.ValueBool()
-	sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBool()
-	if v := plan.OWADLExpansionTimeout.ValueString(); v != "" {
-		sp.OWADLExpansionTimeout = v
+	if !plan.OWAAlwaysSign.Equal(state.OWAAlwaysSign) {
+		if !plan.OWAAlwaysSign.IsUnknown() {
+			sp.OWAAlwaysSign = plan.OWAAlwaysSign.ValueBoolPointer()
+		}
 	}
-	sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBool()
-	sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBool()
-	sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
-	sp.OWAForceSMIMEClientUpgrade = plan.OWAForceSMIMEClientUpgrade.ValueBool()
-	sp.OWAIncludeCertificateChainAndRootCertificate = plan.OWAIncludeCertificateChainAndRootCertificate.ValueBool()
-	sp.OWAIncludeCertificateChainWithoutRootCertificate = plan.OWAIncludeCertificateChainWithoutRootCertificate.ValueBool()
-	sp.OWAIncludeSMIMECapabilitiesInMessage = plan.OWAIncludeSMIMECapabilitiesInMessage.ValueBool()
-	sp.OWAOnlyUseSmartCard = plan.OWAOnlyUseSmartCard.ValueBool()
-	sp.OWASenderCertificateAttributesToDisplay = plan.OWASenderCertificateAttributesToDisplay.ValueString()
-	sp.OWASignedEmailCertificateInclusion = plan.OWASignedEmailCertificateInclusion.ValueBool()
-	sp.OWASigningAlgorithms = plan.OWASigningAlgorithms.ValueString()
-	sp.OWATripleWrapSignedEncryptedMail = plan.OWATripleWrapSignedEncryptedMail.ValueBool()
-	sp.OWAUseKeyIdentifier = plan.OWAUseKeyIdentifier.ValueBool()
-	sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBool()
-	sp.SMIMECertificateIssuingCA = toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)
+	if !plan.OWABCCEncryptedEmailForking.Equal(state.OWABCCEncryptedEmailForking) {
+		if !plan.OWABCCEncryptedEmailForking.IsUnknown() {
+			sp.OWABCCEncryptedEmailForking = plan.OWABCCEncryptedEmailForking.ValueInt64Pointer()
+		}
+	}
+	if !plan.OWACRLConnectionTimeout.Equal(state.OWACRLConnectionTimeout) {
+		if !plan.OWACRLConnectionTimeout.IsUnknown() {
+			sp.OWACRLConnectionTimeout = plan.OWACRLConnectionTimeout.ValueInt64Pointer()
+		}
+	}
+	if !plan.OWACRLRetrievalTimeout.Equal(state.OWACRLRetrievalTimeout) {
+		if !plan.OWACRLRetrievalTimeout.IsUnknown() {
+			sp.OWACRLRetrievalTimeout = plan.OWACRLRetrievalTimeout.ValueInt64Pointer()
+		}
+	}
+	if !plan.OWACheckCRLOnSend.Equal(state.OWACheckCRLOnSend) {
+		if !plan.OWACheckCRLOnSend.IsUnknown() {
+			sp.OWACheckCRLOnSend = plan.OWACheckCRLOnSend.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAClearSign.Equal(state.OWAClearSign) {
+		if !plan.OWAClearSign.IsUnknown() {
+			sp.OWAClearSign = plan.OWAClearSign.ValueBoolPointer()
+		}
+	}
+	if !plan.OWACopyRecipientHeaders.Equal(state.OWACopyRecipientHeaders) {
+		if !plan.OWACopyRecipientHeaders.IsUnknown() {
+			sp.OWACopyRecipientHeaders = plan.OWACopyRecipientHeaders.ValueBoolPointer()
+		}
+	}
+	if !plan.OWADLExpansionTimeout.Equal(state.OWADLExpansionTimeout) {
+		if !plan.OWADLExpansionTimeout.IsUnknown() {
+			sp.OWADLExpansionTimeout = plan.OWADLExpansionTimeout.ValueInt64Pointer()
+		}
+	}
+	if !plan.OWADisableCRLCheck.Equal(state.OWADisableCRLCheck) {
+		if !plan.OWADisableCRLCheck.IsUnknown() {
+			sp.OWADisableCRLCheck = plan.OWADisableCRLCheck.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAEncryptTemporaryBuffers.Equal(state.OWAEncryptTemporaryBuffers) {
+		if !plan.OWAEncryptTemporaryBuffers.IsUnknown() {
+			sp.OWAEncryptTemporaryBuffers = plan.OWAEncryptTemporaryBuffers.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAEncryptionAlgorithms.Equal(state.OWAEncryptionAlgorithms) {
+		sp.OWAEncryptionAlgorithms = plan.OWAEncryptionAlgorithms.ValueString()
+	}
+	if !plan.OWAForceSMIMEClientUpgrade.Equal(state.OWAForceSMIMEClientUpgrade) {
+		if !plan.OWAForceSMIMEClientUpgrade.IsUnknown() {
+			sp.OWAForceSMIMEClientUpgrade = plan.OWAForceSMIMEClientUpgrade.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAIncludeCertificateChainAndRootCertificate.Equal(state.OWAIncludeCertificateChainAndRootCertificate) {
+		if !plan.OWAIncludeCertificateChainAndRootCertificate.IsUnknown() {
+			sp.OWAIncludeCertificateChainAndRootCertificate = plan.OWAIncludeCertificateChainAndRootCertificate.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAIncludeCertificateChainWithoutRootCertificate.Equal(state.OWAIncludeCertificateChainWithoutRootCertificate) {
+		if !plan.OWAIncludeCertificateChainWithoutRootCertificate.IsUnknown() {
+			sp.OWAIncludeCertificateChainWithoutRootCertificate = plan.OWAIncludeCertificateChainWithoutRootCertificate.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAIncludeSMIMECapabilitiesInMessage.Equal(state.OWAIncludeSMIMECapabilitiesInMessage) {
+		if !plan.OWAIncludeSMIMECapabilitiesInMessage.IsUnknown() {
+			sp.OWAIncludeSMIMECapabilitiesInMessage = plan.OWAIncludeSMIMECapabilitiesInMessage.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAOnlyUseSmartCard.Equal(state.OWAOnlyUseSmartCard) {
+		if !plan.OWAOnlyUseSmartCard.IsUnknown() {
+			sp.OWAOnlyUseSmartCard = plan.OWAOnlyUseSmartCard.ValueBoolPointer()
+		}
+	}
+	if !plan.OWASenderCertificateAttributesToDisplay.Equal(state.OWASenderCertificateAttributesToDisplay) {
+		sp.OWASenderCertificateAttributesToDisplay = plan.OWASenderCertificateAttributesToDisplay.ValueString()
+	}
+	if !plan.OWASignedEmailCertificateInclusion.Equal(state.OWASignedEmailCertificateInclusion) {
+		if !plan.OWASignedEmailCertificateInclusion.IsUnknown() {
+			sp.OWASignedEmailCertificateInclusion = plan.OWASignedEmailCertificateInclusion.ValueBoolPointer()
+		}
+	}
+	if !plan.OWASigningAlgorithms.Equal(state.OWASigningAlgorithms) {
+		sp.OWASigningAlgorithms = plan.OWASigningAlgorithms.ValueString()
+	}
+	if !plan.OWATripleWrapSignedEncryptedMail.Equal(state.OWATripleWrapSignedEncryptedMail) {
+		if !plan.OWATripleWrapSignedEncryptedMail.IsUnknown() {
+			sp.OWATripleWrapSignedEncryptedMail = plan.OWATripleWrapSignedEncryptedMail.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAUseKeyIdentifier.Equal(state.OWAUseKeyIdentifier) {
+		if !plan.OWAUseKeyIdentifier.IsUnknown() {
+			sp.OWAUseKeyIdentifier = plan.OWAUseKeyIdentifier.ValueBoolPointer()
+		}
+	}
+	if !plan.OWAUseSecondaryProxiesWhenFindingCertificates.Equal(state.OWAUseSecondaryProxiesWhenFindingCertificates) {
+		if !plan.OWAUseSecondaryProxiesWhenFindingCertificates.IsUnknown() {
+			sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBoolPointer()
+		}
+	}
+	if !plan.SMIMECertificateIssuingCA.Equal(state.SMIMECertificateIssuingCA) {
+		if !plan.SMIMECertificateIssuingCA.IsNull() && !plan.SMIMECertificateIssuingCA.IsUnknown() {
+			sp.SMIMECertificateIssuingCA = append([]string{}, toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -235,10 +422,6 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"OWABCCEncryptedEmailForking":             cfg.OWABCCEncryptedEmailForking,
-		"OWACRLConnectionTimeout":                 cfg.OWACRLConnectionTimeout,
-		"OWACRLRetrievalTimeout":                  cfg.OWACRLRetrievalTimeout,
-		"OWADLExpansionTimeout":                   cfg.OWADLExpansionTimeout,
 		"OWAEncryptionAlgorithms":                 cfg.OWAEncryptionAlgorithms,
 		"OWASenderCertificateAttributesToDisplay": cfg.OWASenderCertificateAttributesToDisplay,
 		"OWASigningAlgorithms":                    cfg.OWASigningAlgorithms,
@@ -255,6 +438,116 @@ func (r *smimeConfigResource) Delete(_ context.Context, _ resource.DeleteRequest
 func (r *smimeConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *smimeConfigResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan smimeConfigModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetSmimeConfig(ctx, exo.GetSmimeConfigParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur smimeConfigModel
+	readSmimeConfig(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.NoSignOnReply.IsUnknown() {
+		plan.NoSignOnReply = cur.NoSignOnReply
+	}
+	if plan.OWAAllowUserChoiceOfSigningCertificate.IsUnknown() {
+		plan.OWAAllowUserChoiceOfSigningCertificate = cur.OWAAllowUserChoiceOfSigningCertificate
+	}
+	if plan.OWAAlwaysEncrypt.IsUnknown() {
+		plan.OWAAlwaysEncrypt = cur.OWAAlwaysEncrypt
+	}
+	if plan.OWAAlwaysSign.IsUnknown() {
+		plan.OWAAlwaysSign = cur.OWAAlwaysSign
+	}
+	if plan.OWABCCEncryptedEmailForking.IsUnknown() {
+		plan.OWABCCEncryptedEmailForking = cur.OWABCCEncryptedEmailForking
+	}
+	if plan.OWACRLConnectionTimeout.IsUnknown() {
+		plan.OWACRLConnectionTimeout = cur.OWACRLConnectionTimeout
+	}
+	if plan.OWACRLRetrievalTimeout.IsUnknown() {
+		plan.OWACRLRetrievalTimeout = cur.OWACRLRetrievalTimeout
+	}
+	if plan.OWACheckCRLOnSend.IsUnknown() {
+		plan.OWACheckCRLOnSend = cur.OWACheckCRLOnSend
+	}
+	if plan.OWAClearSign.IsUnknown() {
+		plan.OWAClearSign = cur.OWAClearSign
+	}
+	if plan.OWACopyRecipientHeaders.IsUnknown() {
+		plan.OWACopyRecipientHeaders = cur.OWACopyRecipientHeaders
+	}
+	if plan.OWADLExpansionTimeout.IsUnknown() {
+		plan.OWADLExpansionTimeout = cur.OWADLExpansionTimeout
+	}
+	if plan.OWADisableCRLCheck.IsUnknown() {
+		plan.OWADisableCRLCheck = cur.OWADisableCRLCheck
+	}
+	if plan.OWAEncryptTemporaryBuffers.IsUnknown() {
+		plan.OWAEncryptTemporaryBuffers = cur.OWAEncryptTemporaryBuffers
+	}
+	if plan.OWAEncryptionAlgorithms.IsUnknown() {
+		plan.OWAEncryptionAlgorithms = cur.OWAEncryptionAlgorithms
+	}
+	if plan.OWAForceSMIMEClientUpgrade.IsUnknown() {
+		plan.OWAForceSMIMEClientUpgrade = cur.OWAForceSMIMEClientUpgrade
+	}
+	if plan.OWAIncludeCertificateChainAndRootCertificate.IsUnknown() {
+		plan.OWAIncludeCertificateChainAndRootCertificate = cur.OWAIncludeCertificateChainAndRootCertificate
+	}
+	if plan.OWAIncludeCertificateChainWithoutRootCertificate.IsUnknown() {
+		plan.OWAIncludeCertificateChainWithoutRootCertificate = cur.OWAIncludeCertificateChainWithoutRootCertificate
+	}
+	if plan.OWAIncludeSMIMECapabilitiesInMessage.IsUnknown() {
+		plan.OWAIncludeSMIMECapabilitiesInMessage = cur.OWAIncludeSMIMECapabilitiesInMessage
+	}
+	if plan.OWAOnlyUseSmartCard.IsUnknown() {
+		plan.OWAOnlyUseSmartCard = cur.OWAOnlyUseSmartCard
+	}
+	if plan.OWASenderCertificateAttributesToDisplay.IsUnknown() {
+		plan.OWASenderCertificateAttributesToDisplay = cur.OWASenderCertificateAttributesToDisplay
+	}
+	if plan.OWASignedEmailCertificateInclusion.IsUnknown() {
+		plan.OWASignedEmailCertificateInclusion = cur.OWASignedEmailCertificateInclusion
+	}
+	if plan.OWASigningAlgorithms.IsUnknown() {
+		plan.OWASigningAlgorithms = cur.OWASigningAlgorithms
+	}
+	if plan.OWATripleWrapSignedEncryptedMail.IsUnknown() {
+		plan.OWATripleWrapSignedEncryptedMail = cur.OWATripleWrapSignedEncryptedMail
+	}
+	if plan.OWAUseKeyIdentifier.IsUnknown() {
+		plan.OWAUseKeyIdentifier = cur.OWAUseKeyIdentifier
+	}
+	if plan.OWAUseSecondaryProxiesWhenFindingCertificates.IsUnknown() {
+		plan.OWAUseSecondaryProxiesWhenFindingCertificates = cur.OWAUseSecondaryProxiesWhenFindingCertificates
+	}
+	if plan.SMIMECertificateIssuingCA.IsUnknown() {
+		plan.SMIMECertificateIssuingCA = cur.SMIMECertificateIssuingCA
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *smimeConfigResource) identityOf(m smimeConfigModel) string {
@@ -297,13 +590,13 @@ func readSmimeConfig(ctx context.Context, obj map[string]any, m *smimeConfigMode
 	m.OWAAllowUserChoiceOfSigningCertificate = types.BoolValue(getBool(obj, "OWAAllowUserChoiceOfSigningCertificate"))
 	m.OWAAlwaysEncrypt = types.BoolValue(getBool(obj, "OWAAlwaysEncrypt"))
 	m.OWAAlwaysSign = types.BoolValue(getBool(obj, "OWAAlwaysSign"))
-	m.OWABCCEncryptedEmailForking = types.StringValue(getString(obj, "OWABCCEncryptedEmailForking"))
-	m.OWACRLConnectionTimeout = types.StringValue(getString(obj, "OWACRLConnectionTimeout"))
-	m.OWACRLRetrievalTimeout = types.StringValue(getString(obj, "OWACRLRetrievalTimeout"))
+	m.OWABCCEncryptedEmailForking = types.Int64Value(getInt(obj, "OWABCCEncryptedEmailForking"))
+	m.OWACRLConnectionTimeout = types.Int64Value(getInt(obj, "OWACRLConnectionTimeout"))
+	m.OWACRLRetrievalTimeout = types.Int64Value(getInt(obj, "OWACRLRetrievalTimeout"))
 	m.OWACheckCRLOnSend = types.BoolValue(getBool(obj, "OWACheckCRLOnSend"))
 	m.OWAClearSign = types.BoolValue(getBool(obj, "OWAClearSign"))
 	m.OWACopyRecipientHeaders = types.BoolValue(getBool(obj, "OWACopyRecipientHeaders"))
-	m.OWADLExpansionTimeout = types.StringValue(getString(obj, "OWADLExpansionTimeout"))
+	m.OWADLExpansionTimeout = types.Int64Value(getInt(obj, "OWADLExpansionTimeout"))
 	m.OWADisableCRLCheck = types.BoolValue(getBool(obj, "OWADisableCRLCheck"))
 	m.OWAEncryptTemporaryBuffers = types.BoolValue(getBool(obj, "OWAEncryptTemporaryBuffers"))
 	m.OWAEncryptionAlgorithms = types.StringValue(getString(obj, "OWAEncryptionAlgorithms"))
@@ -327,13 +620,13 @@ func (r *smimeConfigResource) reconcileState(cfg, read *smimeConfigModel) {
 	read.OWAAllowUserChoiceOfSigningCertificate = reconcile.KeepBool(cfg.OWAAllowUserChoiceOfSigningCertificate, read.OWAAllowUserChoiceOfSigningCertificate)
 	read.OWAAlwaysEncrypt = reconcile.KeepBool(cfg.OWAAlwaysEncrypt, read.OWAAlwaysEncrypt)
 	read.OWAAlwaysSign = reconcile.KeepBool(cfg.OWAAlwaysSign, read.OWAAlwaysSign)
-	read.OWABCCEncryptedEmailForking = reconcile.KeepStr(cfg.OWABCCEncryptedEmailForking, read.OWABCCEncryptedEmailForking)
-	read.OWACRLConnectionTimeout = reconcile.KeepStr(cfg.OWACRLConnectionTimeout, read.OWACRLConnectionTimeout)
-	read.OWACRLRetrievalTimeout = reconcile.KeepStr(cfg.OWACRLRetrievalTimeout, read.OWACRLRetrievalTimeout)
+	read.OWABCCEncryptedEmailForking = reconcile.KeepInt64(cfg.OWABCCEncryptedEmailForking, read.OWABCCEncryptedEmailForking)
+	read.OWACRLConnectionTimeout = reconcile.KeepInt64(cfg.OWACRLConnectionTimeout, read.OWACRLConnectionTimeout)
+	read.OWACRLRetrievalTimeout = reconcile.KeepInt64(cfg.OWACRLRetrievalTimeout, read.OWACRLRetrievalTimeout)
 	read.OWACheckCRLOnSend = reconcile.KeepBool(cfg.OWACheckCRLOnSend, read.OWACheckCRLOnSend)
 	read.OWAClearSign = reconcile.KeepBool(cfg.OWAClearSign, read.OWAClearSign)
 	read.OWACopyRecipientHeaders = reconcile.KeepBool(cfg.OWACopyRecipientHeaders, read.OWACopyRecipientHeaders)
-	read.OWADLExpansionTimeout = reconcile.KeepStr(cfg.OWADLExpansionTimeout, read.OWADLExpansionTimeout)
+	read.OWADLExpansionTimeout = reconcile.KeepInt64(cfg.OWADLExpansionTimeout, read.OWADLExpansionTimeout)
 	read.OWADisableCRLCheck = reconcile.KeepBool(cfg.OWADisableCRLCheck, read.OWADisableCRLCheck)
 	read.OWAEncryptTemporaryBuffers = reconcile.KeepBool(cfg.OWAEncryptTemporaryBuffers, read.OWAEncryptTemporaryBuffers)
 	read.OWAEncryptionAlgorithms = reconcile.KeepStr(cfg.OWAEncryptionAlgorithms, read.OWAEncryptionAlgorithms)

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,7 +36,7 @@ func NewEmailAddressPolicyResource() resource.Resource { return &emailAddressPol
 type emailAddressPolicyModel struct {
 	ID                                types.String `tfsdk:"id"`
 	Identity                          types.String `tfsdk:"identity"`
-	EnabledEmailAddressTemplates      types.String `tfsdk:"enabled_email_address_templates"`
+	EnabledEmailAddressTemplates      types.Set    `tfsdk:"enabled_email_address_templates"`
 	EnabledPrimarySMTPAddressTemplate types.String `tfsdk:"enabled_primary_smtp_address_template"`
 	ForceUpgrade                      types.Bool   `tfsdk:"force_upgrade"`
 	IncludeUnifiedGroupRecipients     types.Bool   `tfsdk:"include_unified_group_recipients"`
@@ -53,8 +54,8 @@ func (r *emailAddressPolicyResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the EmailAddressPolicy object via New-EmailAddressPolicy / Get-EmailAddressPolicy / Set-EmailAddressPolicy / Remove-EmailAddressPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"enabled_email_address_templates":       schema.StringAttribute{Required: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"identity":                              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"enabled_email_address_templates":       schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"enabled_primary_smtp_address_template": schema.StringAttribute{Required: true, Description: "Maps to the -EnabledPrimarySMTPAddressTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"force_upgrade":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"include_unified_group_recipients":      schema.BoolAttribute{Required: true, Description: "Maps to the -IncludeUnifiedGroupRecipients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -79,17 +80,32 @@ func (r *emailAddressPolicyResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	p := exo.NewEmailAddressPolicyParams{
-		EnabledPrimarySMTPAddressTemplate: plan.EnabledPrimarySMTPAddressTemplate.ValueString(),
-		IncludeUnifiedGroupRecipients:     plan.IncludeUnifiedGroupRecipients.ValueBool(),
-		ManagedByFilter:                   plan.ManagedByFilter.ValueString(),
-		Name:                              plan.Name.ValueString(),
+	var config emailAddressPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.EnabledEmailAddressTemplates.ValueString(); v != "" {
-		p.EnabledEmailAddressTemplates = v
+
+	p := exo.NewEmailAddressPolicyParams{}
+	if !config.EnabledEmailAddressTemplates.IsNull() {
+		if v := toStringSlice(ctx, plan.EnabledEmailAddressTemplates, &resp.Diagnostics); len(v) > 0 {
+			p.EnabledEmailAddressTemplates = v
+		}
 	}
-	if v := plan.Priority.ValueString(); v != "" {
-		p.Priority = v
+	if !config.EnabledPrimarySMTPAddressTemplate.IsNull() {
+		p.EnabledPrimarySMTPAddressTemplate = plan.EnabledPrimarySMTPAddressTemplate.ValueString()
+	}
+	if !config.IncludeUnifiedGroupRecipients.IsNull() {
+		p.IncludeUnifiedGroupRecipients = plan.IncludeUnifiedGroupRecipients.ValueBool()
+	}
+	if !config.ManagedByFilter.IsNull() {
+		p.ManagedByFilter = plan.ManagedByFilter.ValueString()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Priority.ValueString(); v != "" {
+		p.Priority = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -141,9 +157,11 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetEmailAddressPolicyParams{}
 	sp.Identity = id
-	sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
+		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+	}
 	if v := plan.Priority.ValueString(); v != "" {
-		sp.Priority = v
+		sp.Priority = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,9 +171,7 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Priority": cfg.Priority,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -216,18 +232,18 @@ func (r *emailAddressPolicyResource) refresh(ctx context.Context, identity strin
 func readEmailAddressPolicy(ctx context.Context, obj map[string]any, m *emailAddressPolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.EnabledEmailAddressTemplates = types.StringValue(getString(obj, "EnabledEmailAddressTemplates"))
+	m.EnabledEmailAddressTemplates = stringSetValue(ctx, getStringSlice(obj, "EnabledEmailAddressTemplates"))
 	m.EnabledPrimarySMTPAddressTemplate = types.StringValue(getString(obj, "EnabledPrimarySMTPAddressTemplate"))
 	m.ForceUpgrade = types.BoolValue(getBool(obj, "ForceUpgrade"))
 	m.IncludeUnifiedGroupRecipients = types.BoolValue(getBool(obj, "IncludeUnifiedGroupRecipients"))
 	m.ManagedByFilter = types.StringValue(getString(obj, "ManagedByFilter"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Priority = types.StringValue(getString(obj, "Priority"))
+	m.Priority = types.StringValue(getObjectJSON(obj, "Priority"))
 	_ = ctx
 }
 
 func (r *emailAddressPolicyResource) reconcileState(cfg, read *emailAddressPolicyModel) {
-	read.EnabledEmailAddressTemplates = reconcile.KeepStr(cfg.EnabledEmailAddressTemplates, read.EnabledEmailAddressTemplates)
+	read.EnabledEmailAddressTemplates = reconcile.KeepSet(cfg.EnabledEmailAddressTemplates, read.EnabledEmailAddressTemplates)
 	read.EnabledPrimarySMTPAddressTemplate = reconcile.KeepStr(cfg.EnabledPrimarySMTPAddressTemplate, read.EnabledPrimarySMTPAddressTemplate)
 	read.ForceUpgrade = reconcile.KeepBool(cfg.ForceUpgrade, read.ForceUpgrade)
 	read.IncludeUnifiedGroupRecipients = reconcile.KeepBool(cfg.IncludeUnifiedGroupRecipients, read.IncludeUnifiedGroupRecipients)

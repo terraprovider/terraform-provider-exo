@@ -21,7 +21,7 @@ Manages the ActiveSyncOrganizationSettings configuration via Set-ActiveSyncOrgan
 
 ### Optional
 
-- `admin_mail_recipients` (String) Maps to the -AdminMailRecipients parameter.
+- `admin_mail_recipients` (Set of String) Maps to the -AdminMailRecipients parameter.
 - `allow_access_for_un_supported_platform` (Boolean) Maps to the -AllowAccessForUnSupportedPlatform parameter.
 - `allow_rms_support_for_unenlightened_apps` (Boolean) Maps to the -AllowRMSSupportForUnenlightenedApps parameter.
 - `default_access_level` (String) Maps to the -DefaultAccessLevel parameter.

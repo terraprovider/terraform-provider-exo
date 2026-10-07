@@ -22,7 +22,7 @@ Look up an existing EmailAddressPolicy object. Set identity or name to select it
 
 ### Read-Only
 
-- `enabled_email_address_templates` (String) Maps to the -EnabledEmailAddressTemplates parameter.
+- `enabled_email_address_templates` (Set of String) Maps to the -EnabledEmailAddressTemplates parameter.
 - `enabled_primary_smtp_address_template` (String) Maps to the -EnabledPrimarySMTPAddressTemplate parameter.
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
 - `id` (String) Object identifier (GUID).

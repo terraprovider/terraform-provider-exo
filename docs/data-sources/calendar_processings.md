@@ -36,6 +36,8 @@ Read-Only:
 - `automate_processing` (String) Maps to the -AutomateProcessing parameter.
 - `book_in_policy` (Set of String) Maps to the -BookInPolicy parameter.
 - `booking_type` (String) Maps to the -BookingType parameter.
+- `booking_window_in_days` (Number) Maps to the -BookingWindowInDays parameter.
+- `conflict_percentage_allowed` (Number) Maps to the -ConflictPercentageAllowed parameter.
 - `delete_attachments` (Boolean) Maps to the -DeleteAttachments parameter.
 - `delete_comments` (Boolean) Maps to the -DeleteComments parameter.
 - `delete_non_calendar_items` (Boolean) Maps to the -DeleteNonCalendarItems parameter.
@@ -47,7 +49,11 @@ Read-Only:
 - `forward_requests_to_delegates` (Boolean) Maps to the -ForwardRequestsToDelegates parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
+- `maximum_conflict_instances` (Number) Maps to the -MaximumConflictInstances parameter.
+- `maximum_duration_in_minutes` (Number) Maps to the -MaximumDurationInMinutes parameter.
+- `minimum_duration_in_minutes` (Number) Maps to the -MinimumDurationInMinutes parameter.
 - `organizer_info` (Boolean) Maps to the -OrganizerInfo parameter.
+- `post_reservation_max_claim_time_in_minutes` (Number) Maps to the -PostReservationMaxClaimTimeInMinutes parameter.
 - `process_external_meeting_messages` (Boolean) Maps to the -ProcessExternalMeetingMessages parameter.
 - `remove_canceled_meetings` (Boolean) Maps to the -RemoveCanceledMeetings parameter.
 - `remove_forwarded_meeting_notifications` (Boolean) Maps to the -RemoveForwardedMeetingNotifications parameter.

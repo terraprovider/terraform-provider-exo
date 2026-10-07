@@ -21,19 +21,19 @@ Look up an existing CASMailbox object. Set identity to select it.
 
 ### Read-Only
 
-- `active_sync_allowed_device_i_ds` (String) Maps to the -ActiveSyncAllowedDeviceIDs parameter.
-- `active_sync_blocked_device_i_ds` (String) Maps to the -ActiveSyncBlockedDeviceIDs parameter.
+- `active_sync_allowed_device_i_ds` (Set of String) Maps to the -ActiveSyncAllowedDeviceIDs parameter.
+- `active_sync_blocked_device_i_ds` (Set of String) Maps to the -ActiveSyncBlockedDeviceIDs parameter.
 - `active_sync_debug_logging` (Boolean) Maps to the -ActiveSyncDebugLogging parameter.
 - `active_sync_enabled` (Boolean) Maps to the -ActiveSyncEnabled parameter.
 - `active_sync_mailbox_policy` (String) Maps to the -ActiveSyncMailboxPolicy parameter.
 - `active_sync_suppress_read_receipt` (Boolean) Maps to the -ActiveSyncSuppressReadReceipt parameter.
-- `ews_allow_entourage` (String) Maps to the -EwsAllowEntourage parameter.
-- `ews_allow_list` (String) Maps to the -EwsAllowList parameter.
-- `ews_allow_mac_outlook` (String) Maps to the -EwsAllowMacOutlook parameter.
-- `ews_allow_outlook` (String) Maps to the -EwsAllowOutlook parameter.
+- `ews_allow_entourage` (Boolean) Maps to the -EwsAllowEntourage parameter.
+- `ews_allow_list` (Set of String) Maps to the -EwsAllowList parameter.
+- `ews_allow_mac_outlook` (Boolean) Maps to the -EwsAllowMacOutlook parameter.
+- `ews_allow_outlook` (Boolean) Maps to the -EwsAllowOutlook parameter.
 - `ews_application_access_policy` (String) Maps to the -EwsApplicationAccessPolicy parameter.
-- `ews_block_list` (String) Maps to the -EwsBlockList parameter.
-- `ews_enabled` (String) Maps to the -EwsEnabled parameter.
+- `ews_block_list` (Set of String) Maps to the -EwsBlockList parameter.
+- `ews_enabled` (Boolean) Maps to the -EwsEnabled parameter.
 - `id` (String) Object identifier (GUID).
 - `imap_enabled` (Boolean) Maps to the -ImapEnabled parameter.
 - `imap_force_i_cal_for_calendar_retrieval_option` (Boolean) Maps to the -ImapForceICalForCalendarRetrievalOption parameter.
@@ -41,10 +41,10 @@ Look up an existing CASMailbox object. Set identity to select it.
 - `imap_suppress_read_receipt` (Boolean) Maps to the -ImapSuppressReadReceipt parameter.
 - `imap_use_protocol_defaults` (Boolean) Maps to the -ImapUseProtocolDefaults parameter.
 - `is_optimized_for_accessibility` (Boolean) Maps to the -IsOptimizedForAccessibility parameter.
-- `mac_outlook_enabled` (String) Maps to the -MacOutlookEnabled parameter.
+- `mac_outlook_enabled` (Boolean) Maps to the -MacOutlookEnabled parameter.
 - `mapi_enabled` (Boolean) Maps to the -MAPIEnabled parameter.
-- `one_win_native_outlook_enabled` (String) Maps to the -OneWinNativeOutlookEnabled parameter.
-- `outlook_mobile_enabled` (String) Maps to the -OutlookMobileEnabled parameter.
+- `one_win_native_outlook_enabled` (Boolean) Maps to the -OneWinNativeOutlookEnabled parameter.
+- `outlook_mobile_enabled` (Boolean) Maps to the -OutlookMobileEnabled parameter.
 - `ow_afor_devices_enabled` (Boolean) Maps to the -OWAforDevicesEnabled parameter.
 - `owa_enabled` (Boolean) Maps to the -OWAEnabled parameter.
 - `owa_mailbox_policy` (String) Maps to the -OwaMailboxPolicy parameter.
@@ -55,5 +55,5 @@ Look up an existing CASMailbox object. Set identity to select it.
 - `pop_use_protocol_defaults` (Boolean) Maps to the -PopUseProtocolDefaults parameter.
 - `public_folder_client_access` (Boolean) Maps to the -PublicFolderClientAccess parameter.
 - `show_gal_as_default_view` (Boolean) Maps to the -ShowGalAsDefaultView parameter.
-- `smtp_client_authentication_disabled` (String) Maps to the -SmtpClientAuthenticationDisabled parameter.
-- `universal_outlook_enabled` (String) Maps to the -UniversalOutlookEnabled parameter.
+- `smtp_client_authentication_disabled` (Boolean) Maps to the -SmtpClientAuthenticationDisabled parameter.
+- `universal_outlook_enabled` (Boolean) Maps to the -UniversalOutlookEnabled parameter.

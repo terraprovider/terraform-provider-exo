@@ -38,7 +38,7 @@ type roleGroupModel struct {
 	CustomRecipientWriteScope types.String `tfsdk:"custom_recipient_write_scope"`
 	Description               types.String `tfsdk:"description"`
 	DisplayName               types.String `tfsdk:"display_name"`
-	ManagedBy                 types.String `tfsdk:"managed_by"`
+	ManagedBy                 types.Set    `tfsdk:"managed_by"`
 	Name                      types.String `tfsdk:"name"`
 	Roles                     types.Set    `tfsdk:"roles"`
 	WellKnownObject           types.String `tfsdk:"well_known_object"`
@@ -54,11 +54,11 @@ func (r *roleGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 		Description: "Manages the RoleGroup object via New-RoleGroup / Get-RoleGroup / Set-RoleGroup / Remove-RoleGroup.",
 		Attributes: map[string]schema.Attribute{
 			"id":                           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_recipient_write_scope": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomRecipientWriteScope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"description":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"display_name":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"managed_by":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"managed_by":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"roles":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Roles parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"well_known_object":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WellKnownObject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -81,18 +81,37 @@ func (r *roleGroupResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	p := exo.NewRoleGroupParams{
-		Description:     plan.Description.ValueString(),
-		DisplayName:     plan.DisplayName.ValueString(),
-		Name:            plan.Name.ValueString(),
-		Roles:           toStringSlice(ctx, plan.Roles, &resp.Diagnostics),
-		WellKnownObject: plan.WellKnownObject.ValueString(),
+	var config roleGroupModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
-		p.CustomRecipientWriteScope = v
+
+	p := exo.NewRoleGroupParams{}
+	if v := config.CustomRecipientWriteScope.ValueString(); v != "" {
+		p.CustomRecipientWriteScope = objectParam(v)
 	}
-	if v := plan.ManagedBy.ValueString(); v != "" {
-		p.ManagedBy = v
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
+	}
+	if !config.DisplayName.IsNull() {
+		p.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !config.ManagedBy.IsNull() {
+		if v := toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics); len(v) > 0 {
+			p.ManagedBy = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.Roles.IsNull() {
+		if v := toStringSlice(ctx, plan.Roles, &resp.Diagnostics); len(v) > 0 {
+			p.Roles = v
+		}
+	}
+	if !config.WellKnownObject.IsNull() {
+		p.WellKnownObject = plan.WellKnownObject.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -154,12 +173,20 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetRoleGroupParams{}
 	sp.Identity = id
-	sp.Description = plan.Description.ValueString()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	if v := plan.ManagedBy.ValueString(); v != "" {
-		sp.ManagedBy = v
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
 	}
-	sp.WellKnownObject = plan.WellKnownObject.ValueString()
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !plan.ManagedBy.Equal(state.ManagedBy) {
+		if !plan.ManagedBy.IsNull() && !plan.ManagedBy.IsUnknown() {
+			sp.ManagedBy = append([]string{}, toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.WellKnownObject.Equal(state.WellKnownObject) {
+		sp.WellKnownObject = plan.WellKnownObject.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -171,7 +198,6 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Description":     cfg.Description,
 		"DisplayName":     cfg.DisplayName,
-		"ManagedBy":       cfg.ManagedBy,
 		"WellKnownObject": cfg.WellKnownObject,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
@@ -246,10 +272,10 @@ func (r *roleGroupResource) refresh(ctx context.Context, identity string, m *rol
 func readRoleGroup(ctx context.Context, obj map[string]any, m *roleGroupModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.CustomRecipientWriteScope = types.StringValue(getString(obj, "CustomRecipientWriteScope"))
+	m.CustomRecipientWriteScope = types.StringValue(getObjectJSON(obj, "CustomRecipientWriteScope"))
 	m.Description = types.StringValue(getString(obj, "Description"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
-	m.ManagedBy = types.StringValue(getString(obj, "ManagedBy"))
+	m.ManagedBy = stringSetValue(ctx, getStringSlice(obj, "ManagedBy"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Roles = stringSetValue(ctx, getStringSlice(obj, "Roles"))
 	m.WellKnownObject = types.StringValue(getString(obj, "WellKnownObject"))
@@ -260,7 +286,7 @@ func (r *roleGroupResource) reconcileState(cfg, read *roleGroupModel) {
 	read.CustomRecipientWriteScope = reconcile.KeepStr(cfg.CustomRecipientWriteScope, read.CustomRecipientWriteScope)
 	read.Description = reconcile.KeepStr(cfg.Description, read.Description)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
-	read.ManagedBy = reconcile.KeepStr(cfg.ManagedBy, read.ManagedBy)
+	read.ManagedBy = reconcile.KeepSet(cfg.ManagedBy, read.ManagedBy)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Roles = reconcile.KeepSet(cfg.Roles, read.Roles)
 	read.WellKnownObject = reconcile.KeepStr(cfg.WellKnownObject, read.WellKnownObject)

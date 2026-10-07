@@ -55,7 +55,7 @@ func (r *messageClassificationResource) Schema(_ context.Context, _ resource.Sch
 		Description: "Manages the MessageClassification object via New-MessageClassification / Get-MessageClassification / Set-MessageClassification / Remove-MessageClassification.",
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"classification_id":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassificationID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"display_name":                  schema.StringAttribute{Required: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"display_precedence":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayPrecedence parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -83,22 +83,43 @@ func (r *messageClassificationResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	p := exo.NewMessageClassificationParams{
-		DisplayName:                 plan.DisplayName.ValueString(),
-		Name:                        plan.Name.ValueString(),
-		PermissionMenuVisible:       plan.PermissionMenuVisible.ValueBool(),
-		RecipientDescription:        plan.RecipientDescription.ValueString(),
-		RetainClassificationEnabled: plan.RetainClassificationEnabled.ValueBool(),
-		SenderDescription:           plan.SenderDescription.ValueString(),
+	var config messageClassificationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ClassificationID.ValueString(); v != "" {
-		p.ClassificationID = v
+
+	p := exo.NewMessageClassificationParams{}
+	if !config.ClassificationID.IsNull() {
+		p.ClassificationID = plan.ClassificationID.ValueString()
 	}
-	if v := plan.DisplayPrecedence.ValueString(); v != "" {
-		p.DisplayPrecedence = v
+	if !config.DisplayName.IsNull() {
+		p.DisplayName = plan.DisplayName.ValueString()
 	}
-	if v := plan.Locale.ValueString(); v != "" {
-		p.Locale = v
+	if v := config.DisplayPrecedence.ValueString(); v != "" {
+		p.DisplayPrecedence = objectParam(v)
+	}
+	if v := config.Locale.ValueString(); v != "" {
+		p.Locale = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.PermissionMenuVisible.IsNull() {
+		if !plan.PermissionMenuVisible.IsUnknown() {
+			p.PermissionMenuVisible = plan.PermissionMenuVisible.ValueBoolPointer()
+		}
+	}
+	if !config.RecipientDescription.IsNull() {
+		p.RecipientDescription = plan.RecipientDescription.ValueString()
+	}
+	if !config.RetainClassificationEnabled.IsNull() {
+		if !plan.RetainClassificationEnabled.IsUnknown() {
+			p.RetainClassificationEnabled = plan.RetainClassificationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SenderDescription.IsNull() {
+		p.SenderDescription = plan.SenderDescription.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,15 +171,25 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetMessageClassificationParams{}
 	sp.Identity = id
-	if v := plan.ClassificationID.ValueString(); v != "" {
-		sp.ClassificationID = v
+	if !plan.ClassificationID.Equal(state.ClassificationID) {
+		sp.ClassificationID = plan.ClassificationID.ValueString()
 	}
 	if v := plan.DisplayPrecedence.ValueString(); v != "" {
-		sp.DisplayPrecedence = v
+		sp.DisplayPrecedence = objectParam(v)
 	}
-	sp.PermissionMenuVisible = plan.PermissionMenuVisible.ValueBool()
-	sp.RecipientDescription = plan.RecipientDescription.ValueString()
-	sp.RetainClassificationEnabled = plan.RetainClassificationEnabled.ValueBool()
+	if !plan.PermissionMenuVisible.Equal(state.PermissionMenuVisible) {
+		if !plan.PermissionMenuVisible.IsUnknown() {
+			sp.PermissionMenuVisible = plan.PermissionMenuVisible.ValueBoolPointer()
+		}
+	}
+	if !plan.RecipientDescription.Equal(state.RecipientDescription) {
+		sp.RecipientDescription = plan.RecipientDescription.ValueString()
+	}
+	if !plan.RetainClassificationEnabled.Equal(state.RetainClassificationEnabled) {
+		if !plan.RetainClassificationEnabled.IsUnknown() {
+			sp.RetainClassificationEnabled = plan.RetainClassificationEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -169,7 +200,6 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"ClassificationID":     cfg.ClassificationID,
-		"DisplayPrecedence":    cfg.DisplayPrecedence,
 		"RecipientDescription": cfg.RecipientDescription,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
@@ -234,8 +264,8 @@ func readMessageClassification(ctx context.Context, obj map[string]any, m *messa
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.ClassificationID = types.StringValue(getString(obj, "ClassificationID"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
-	m.DisplayPrecedence = types.StringValue(getString(obj, "DisplayPrecedence"))
-	m.Locale = types.StringValue(getString(obj, "Locale"))
+	m.DisplayPrecedence = types.StringValue(getObjectJSON(obj, "DisplayPrecedence"))
+	m.Locale = types.StringValue(getObjectJSON(obj, "Locale"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.PermissionMenuVisible = types.BoolValue(getBool(obj, "PermissionMenuVisible"))
 	m.RecipientDescription = types.StringValue(getString(obj, "RecipientDescription"))

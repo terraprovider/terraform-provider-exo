@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -51,15 +52,15 @@ func (d *contactDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			"name":                  schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"notes":                 schema.StringAttribute{Computed: true, Description: "Maps to the -Notes parameter."},
 			"office":                schema.StringAttribute{Computed: true, Description: "Maps to the -Office parameter."},
-			"other_fax":             schema.StringAttribute{Computed: true, Description: "Maps to the -OtherFax parameter."},
-			"other_home_phone":      schema.StringAttribute{Computed: true, Description: "Maps to the -OtherHomePhone parameter."},
-			"other_telephone":       schema.StringAttribute{Computed: true, Description: "Maps to the -OtherTelephone parameter."},
+			"other_fax":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -OtherFax parameter."},
+			"other_home_phone":      schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -OtherHomePhone parameter."},
+			"other_telephone":       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -OtherTelephone parameter."},
 			"pager":                 schema.StringAttribute{Computed: true, Description: "Maps to the -Pager parameter."},
 			"phone":                 schema.StringAttribute{Computed: true, Description: "Maps to the -Phone parameter."},
 			"phonetic_display_name": schema.StringAttribute{Computed: true, Description: "Maps to the -PhoneticDisplayName parameter."},
-			"post_office_box":       schema.StringAttribute{Computed: true, Description: "Maps to the -PostOfficeBox parameter."},
+			"post_office_box":       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -PostOfficeBox parameter."},
 			"postal_code":           schema.StringAttribute{Computed: true, Description: "Maps to the -PostalCode parameter."},
-			"seniority_index":       schema.StringAttribute{Computed: true, Description: "Maps to the -SeniorityIndex parameter."},
+			"seniority_index":       schema.Int64Attribute{Computed: true, Description: "Maps to the -SeniorityIndex parameter."},
 			"simple_display_name":   schema.StringAttribute{Computed: true, Description: "Maps to the -SimpleDisplayName parameter."},
 			"state_or_province":     schema.StringAttribute{Computed: true, Description: "Maps to the -StateOrProvince parameter."},
 			"street_address":        schema.StringAttribute{Computed: true, Description: "Maps to the -StreetAddress parameter."},

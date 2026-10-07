@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &migrationUserResource{}
 	_ resource.ResourceWithConfigure   = &migrationUserResource{}
 	_ resource.ResourceWithImportState = &migrationUserResource{}
+	_ resource.ResourceWithModifyPlan  = &migrationUserResource{}
 )
 
 type migrationUserResource struct{ client *clients.Client }
@@ -74,19 +75,28 @@ func (r *migrationUserResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config migrationUserModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMigrationUserParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = v
+	if !config.ApproveSkippedItems.IsNull() {
+		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+	if v := config.CompleteAfter.ValueString(); v != "" {
+		sp.CompleteAfter = objectParam(v)
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = v
+	if v := config.Partition.ValueString(); v != "" {
+		sp.Partition = objectParam(v)
 	}
-	sp.SyncNow = plan.SyncNow.ValueBool()
+	if v := config.StartAfter.ValueString(); v != "" {
+		sp.StartAfter = objectParam(v)
+	}
+	if !config.SyncNow.IsNull() {
+		sp.SyncNow = plan.SyncNow.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -126,17 +136,21 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetMigrationUserParams{}
 	sp.Identity = id
-	sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
+		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+	}
 	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = v
+		sp.CompleteAfter = objectParam(v)
 	}
 	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+		sp.Partition = objectParam(v)
 	}
 	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = v
+		sp.StartAfter = objectParam(v)
 	}
-	sp.SyncNow = plan.SyncNow.ValueBool()
+	if !plan.SyncNow.Equal(state.SyncNow) {
+		sp.SyncNow = plan.SyncNow.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -145,11 +159,7 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"CompleteAfter": cfg.CompleteAfter,
-		"Partition":     cfg.Partition,
-		"StartAfter":    cfg.StartAfter,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -162,6 +172,53 @@ func (r *migrationUserResource) Delete(_ context.Context, _ resource.DeleteReque
 func (r *migrationUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *migrationUserResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan migrationUserModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMigrationUser(ctx, exo.GetMigrationUserParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur migrationUserModel
+	readMigrationUser(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.ApproveSkippedItems.IsUnknown() {
+		plan.ApproveSkippedItems = cur.ApproveSkippedItems
+	}
+	if plan.CompleteAfter.IsUnknown() {
+		plan.CompleteAfter = cur.CompleteAfter
+	}
+	if plan.Partition.IsUnknown() {
+		plan.Partition = cur.Partition
+	}
+	if plan.StartAfter.IsUnknown() {
+		plan.StartAfter = cur.StartAfter
+	}
+	if plan.SyncNow.IsUnknown() {
+		plan.SyncNow = cur.SyncNow
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *migrationUserResource) identityOf(m migrationUserModel) string {
@@ -201,9 +258,9 @@ func (r *migrationUserResource) refresh(ctx context.Context, identity string, m 
 func readMigrationUser(ctx context.Context, obj map[string]any, m *migrationUserModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.ApproveSkippedItems = types.BoolValue(getBool(obj, "ApproveSkippedItems"))
-	m.CompleteAfter = types.StringValue(getString(obj, "CompleteAfter"))
-	m.Partition = types.StringValue(getString(obj, "Partition"))
-	m.StartAfter = types.StringValue(getString(obj, "StartAfter"))
+	m.CompleteAfter = types.StringValue(getObjectJSON(obj, "CompleteAfter"))
+	m.Partition = types.StringValue(getObjectJSON(obj, "Partition"))
+	m.StartAfter = types.StringValue(getObjectJSON(obj, "StartAfter"))
 	m.SyncNow = types.BoolValue(getBool(obj, "SyncNow"))
 	_ = ctx
 }

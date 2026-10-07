@@ -22,23 +22,23 @@ Look up an existing Mailbox object. Set identity or name to select it.
 
 ### Read-Only
 
-- `accept_messages_only_from` (String) Maps to the -AcceptMessagesOnlyFrom parameter.
-- `accept_messages_only_from_dl_members` (String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
-- `accept_messages_only_from_senders_or_members` (String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
+- `accept_messages_only_from` (Set of String) Maps to the -AcceptMessagesOnlyFrom parameter.
+- `accept_messages_only_from_dl_members` (Set of String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
+- `accept_messages_only_from_senders_or_members` (Set of String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
 - `account_disabled` (Boolean) Maps to the -AccountDisabled parameter.
 - `active_sync_mailbox_policy` (String) Maps to the -ActiveSyncMailboxPolicy parameter.
 - `address_book_policy` (String) Maps to the -AddressBookPolicy parameter.
 - `alias_` (String) Maps to the -Alias parameter.
 - `apply_mandatory_properties` (Boolean) Maps to the -ApplyMandatoryProperties parameter.
 - `archive` (Boolean) Maps to the -Archive parameter.
-- `archive_name` (String) Maps to the -ArchiveName parameter.
-- `audit_admin` (String) Maps to the -AuditAdmin parameter.
-- `audit_delegate` (String) Maps to the -AuditDelegate parameter.
+- `archive_name` (Set of String) Maps to the -ArchiveName parameter.
+- `audit_admin` (Set of String) Maps to the -AuditAdmin parameter.
+- `audit_delegate` (Set of String) Maps to the -AuditDelegate parameter.
 - `audit_enabled` (Boolean) Maps to the -AuditEnabled parameter.
 - `audit_log_age_limit` (String) Maps to the -AuditLogAgeLimit parameter.
-- `audit_owner` (String) Maps to the -AuditOwner parameter.
+- `audit_owner` (Set of String) Maps to the -AuditOwner parameter.
 - `auto_archiving_enabled` (Boolean) Maps to the -AutoArchivingEnabled parameter.
-- `bypass_moderation_from_senders_or_members` (String) Maps to the -BypassModerationFromSendersOrMembers parameter.
+- `bypass_moderation_from_senders_or_members` (Set of String) Maps to the -BypassModerationFromSendersOrMembers parameter.
 - `calendar_repair_disabled` (Boolean) Maps to the -CalendarRepairDisabled parameter.
 - `calendar_version_store_disabled` (Boolean) Maps to the -CalendarVersionStoreDisabled parameter.
 - `clear_throttling_policy_assignment` (Boolean) Maps to the -ClearThrottlingPolicyAssignment parameter.
@@ -58,14 +58,14 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `custom_attribute8` (String) Maps to the -CustomAttribute8 parameter.
 - `custom_attribute9` (String) Maps to the -CustomAttribute9 parameter.
 - `data_encryption_policy` (String) Maps to the -DataEncryptionPolicy parameter.
-- `default_audit_set` (String) Maps to the -DefaultAuditSet parameter.
+- `default_audit_set` (Set of String) Maps to the -DefaultAuditSet parameter.
 - `default_public_folder_mailbox` (String) Maps to the -DefaultPublicFolderMailbox parameter.
 - `deliver_to_mailbox_and_forward` (Boolean) Maps to the -DeliverToMailboxAndForward parameter.
 - `discovery` (Boolean) Maps to the -Discovery parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `elc_processing_disabled` (Boolean) Maps to the -ElcProcessingDisabled parameter.
-- `email_address_display_names` (String) Maps to the -EmailAddressDisplayNames parameter.
-- `email_addresses` (String) Maps to the -EmailAddresses parameter.
+- `email_address_display_names` (Set of String) Maps to the -EmailAddressDisplayNames parameter.
+- `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
 - `enable_room_mailbox_account` (Boolean) Maps to the -EnableRoomMailboxAccount parameter.
 - `end_date_for_retention_hold` (String) Maps to the -EndDateForRetentionHold parameter.
 - `enforced_timestamps` (String) Maps to the -EnforcedTimestamps parameter.
@@ -73,17 +73,17 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `exclude_from_all_holds` (Boolean) Maps to the -ExcludeFromAllHolds parameter.
 - `exclude_from_all_org_holds` (Boolean) Maps to the -ExcludeFromAllOrgHolds parameter.
 - `exclude_from_org_holds` (Set of String) Maps to the -ExcludeFromOrgHolds parameter.
-- `extension_custom_attribute1` (String) Maps to the -ExtensionCustomAttribute1 parameter.
-- `extension_custom_attribute2` (String) Maps to the -ExtensionCustomAttribute2 parameter.
-- `extension_custom_attribute3` (String) Maps to the -ExtensionCustomAttribute3 parameter.
-- `extension_custom_attribute4` (String) Maps to the -ExtensionCustomAttribute4 parameter.
-- `extension_custom_attribute5` (String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `extension_custom_attribute1` (Set of String) Maps to the -ExtensionCustomAttribute1 parameter.
+- `extension_custom_attribute2` (Set of String) Maps to the -ExtensionCustomAttribute2 parameter.
+- `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
+- `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
+- `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `external_oof_options` (String) Maps to the -ExternalOofOptions parameter.
 - `federated_identity` (String) Maps to the -FederatedIdentity parameter.
 - `first_name` (String) Maps to the -FirstName parameter.
 - `forwarding_address` (String) Maps to the -ForwardingAddress parameter.
 - `forwarding_smtp_address` (String) Maps to the -ForwardingSmtpAddress parameter.
-- `grant_send_on_behalf_to` (String) Maps to the -GrantSendOnBehalfTo parameter.
+- `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `group_mailbox` (Boolean) Maps to the -GroupMailbox parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `hold_for_migration` (Boolean) Maps to the -HoldForMigration parameter.
@@ -95,14 +95,14 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `is_excluded_from_serving_hierarchy` (Boolean) Maps to the -IsExcludedFromServingHierarchy parameter.
 - `issue_warning_quota` (String) Maps to the -IssueWarningQuota parameter.
 - `journal_archive_address` (String) Maps to the -JournalArchiveAddress parameter.
-- `languages` (String) Maps to the -Languages parameter.
+- `languages` (Set of String) Maps to the -Languages parameter.
 - `last_name` (String) Maps to the -LastName parameter.
 - `litigation_hold_date` (String) Maps to the -LitigationHoldDate parameter.
 - `litigation_hold_duration` (String) Maps to the -LitigationHoldDuration parameter.
 - `litigation_hold_enabled` (Boolean) Maps to the -LitigationHoldEnabled parameter.
 - `litigation_hold_owner` (String) Maps to the -LitigationHoldOwner parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
-- `mail_tip_translations` (String) Maps to the -MailTipTranslations parameter.
+- `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `mailbox_plan` (String) Maps to the -MailboxPlan parameter.
 - `mailbox_region` (String) Maps to the -MailboxRegion parameter.
 - `max_receive_size` (String) Maps to the -MaxReceiveSize parameter.
@@ -113,9 +113,9 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `message_tracking_read_status_enabled` (Boolean) Maps to the -MessageTrackingReadStatusEnabled parameter.
 - `microsoft_online_services_id` (String) Maps to the -MicrosoftOnlineServicesID parameter.
 - `migration` (Boolean) Maps to the -Migration parameter.
-- `moderated_by` (String) Maps to the -ModeratedBy parameter.
+- `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
-- `non_compliant_devices` (String) Maps to the -NonCompliantDevices parameter.
+- `non_compliant_devices` (Set of String) Maps to the -NonCompliantDevices parameter.
 - `office` (String) Maps to the -Office parameter.
 - `organizational_unit` (String) Maps to the -OrganizationalUnit parameter.
 - `password` (String, Sensitive) Maps to the -Password parameter.
@@ -129,9 +129,9 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `public_folder` (Boolean) Maps to the -PublicFolder parameter.
 - `recalculate_inactive_mailbox` (Boolean) Maps to the -RecalculateInactiveMailbox parameter.
 - `recipient_limits` (String) Maps to the -RecipientLimits parameter.
-- `reject_messages_from` (String) Maps to the -RejectMessagesFrom parameter.
-- `reject_messages_from_dl_members` (String) Maps to the -RejectMessagesFromDLMembers parameter.
-- `reject_messages_from_senders_or_members` (String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
+- `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
+- `reject_messages_from_dl_members` (Set of String) Maps to the -RejectMessagesFromDLMembers parameter.
+- `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
 - `remote_power_shell_enabled` (Boolean) Maps to the -RemotePowerShellEnabled parameter.
 - `remove_compliance_tag_hold_applied` (Boolean) Maps to the -RemoveComplianceTagHoldApplied parameter.
 - `remove_delay_hold_applied` (Boolean) Maps to the -RemoveDelayHoldApplied parameter.
@@ -142,8 +142,8 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `removed_mailbox` (String) Maps to the -RemovedMailbox parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.
 - `reset_password_on_next_logon` (Boolean, Sensitive) Maps to the -ResetPasswordOnNextLogon parameter.
-- `resource_capacity` (String) Maps to the -ResourceCapacity parameter.
-- `resource_custom` (String) Maps to the -ResourceCustom parameter.
+- `resource_capacity` (Number) Maps to the -ResourceCapacity parameter.
+- `resource_custom` (Set of String) Maps to the -ResourceCustom parameter.
 - `retain_deleted_items_for` (String) Maps to the -RetainDeletedItemsFor parameter.
 - `retention_comment` (String) Maps to the -RetentionComment parameter.
 - `retention_hold_enabled` (Boolean) Maps to the -RetentionHoldEnabled parameter.
@@ -166,8 +166,8 @@ Look up an existing Mailbox object. Set identity or name to select it.
 - `unique_recipients_count_limit_level` (String) Maps to the -UniqueRecipientsCountLimitLevel parameter.
 - `unique_unrestricted_groups_limit_enabled` (Boolean) Maps to the -UniqueUnrestrictedGroupsLimitEnabled parameter.
 - `update_enforced_timestamp` (Boolean) Maps to the -UpdateEnforcedTimestamp parameter.
-- `use_database_quota_defaults` (String) Maps to the -UseDatabaseQuotaDefaults parameter.
+- `use_database_quota_defaults` (Boolean) Maps to the -UseDatabaseQuotaDefaults parameter.
 - `use_database_retention_defaults` (Boolean) Maps to the -UseDatabaseRetentionDefaults parameter.
-- `user_certificate` (String) Maps to the -UserCertificate parameter.
-- `user_s_mime_certificate` (String) Maps to the -UserSMimeCertificate parameter.
+- `user_certificate` (Set of String) Maps to the -UserCertificate parameter.
+- `user_s_mime_certificate` (Set of String) Maps to the -UserSMimeCertificate parameter.
 - `windows_email_address` (String) Maps to the -WindowsEmailAddress parameter.

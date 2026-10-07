@@ -23,6 +23,6 @@ Look up an existing SharingPolicy object. Set identity or name to select it.
 ### Read-Only
 
 - `default` (Boolean) Maps to the -Default parameter.
-- `domains` (String) Maps to the -Domains parameter.
+- `domains` (Set of String) Maps to the -Domains parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `id` (String) Object identifier (GUID).

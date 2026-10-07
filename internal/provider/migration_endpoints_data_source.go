@@ -60,6 +60,7 @@ func (d *migrationEndpointListDataSource) Schema(_ context.Context, _ datasource
 				"nspi_server":                      schema.StringAttribute{Computed: true, Description: "Maps to the -NspiServer parameter."},
 				"o_auth_code":                      schema.StringAttribute{Computed: true, Description: "Maps to the -OAuthCode parameter."},
 				"partition":                        schema.StringAttribute{Computed: true, Description: "Maps to the -Partition parameter."},
+				"port":                             schema.Int64Attribute{Computed: true, Description: "Maps to the -Port parameter."},
 				"public_folder":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -PublicFolder parameter."},
 				"public_folder_database_server_legacy_dn": schema.StringAttribute{Computed: true, Description: "Maps to the -PublicFolderDatabaseServerLegacyDN parameter."},
 				"public_folder_to_unified_group":          schema.BoolAttribute{Computed: true, Description: "Maps to the -PublicFolderToUnifiedGroup parameter."},

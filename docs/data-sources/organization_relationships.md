@@ -26,7 +26,7 @@ Read-Only:
 
 - `archive_access_enabled` (Boolean) Maps to the -ArchiveAccessEnabled parameter.
 - `delivery_report_enabled` (Boolean) Maps to the -DeliveryReportEnabled parameter.
-- `domain_names` (String) Maps to the -DomainNames parameter.
+- `domain_names` (Set of String) Maps to the -DomainNames parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `free_busy_access_enabled` (Boolean) Maps to the -FreeBusyAccessEnabled parameter.
 - `free_busy_access_level` (String) Maps to the -FreeBusyAccessLevel parameter.
@@ -38,7 +38,7 @@ Read-Only:
 - `mail_tips_access_scope` (String) Maps to the -MailTipsAccessScope parameter.
 - `mailbox_move_capability` (String) Maps to the -MailboxMoveCapability parameter.
 - `mailbox_move_enabled` (Boolean) Maps to the -MailboxMoveEnabled parameter.
-- `mailbox_move_published_scopes` (String) Maps to the -MailboxMovePublishedScopes parameter.
+- `mailbox_move_published_scopes` (Set of String) Maps to the -MailboxMovePublishedScopes parameter.
 - `name` (String) Maps to the -Name parameter.
 - `o_auth_application_id` (String) Maps to the -OAuthApplicationId parameter.
 - `organization_contact` (String) Maps to the -OrganizationContact parameter.

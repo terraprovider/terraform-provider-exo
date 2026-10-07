@@ -48,7 +48,7 @@ func (r *exoSecOpsOverrideRuleResource) Schema(_ context.Context, _ resource.Sch
 		Description: "Manages the ExoSecOpsOverrideRule object via New-ExoSecOpsOverrideRule / Get-ExoSecOpsOverrideRule / Set-ExoSecOpsOverrideRule / Remove-ExoSecOpsOverrideRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"policy":   schema.StringAttribute{Required: true, Description: "Maps to the -Policy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -70,12 +70,21 @@ func (r *exoSecOpsOverrideRuleResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	p := exo.NewExoSecOpsOverrideRuleParams{
-		Comment: plan.Comment.ValueString(),
-		Name:    plan.Name.ValueString(),
+	var config exoSecOpsOverrideRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Policy.ValueString(); v != "" {
-		p.Policy = v
+
+	p := exo.NewExoSecOpsOverrideRuleParams{}
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Policy.ValueString(); v != "" {
+		p.Policy = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -127,7 +136,9 @@ func (r *exoSecOpsOverrideRuleResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetExoSecOpsOverrideRuleParams{}
 	sp.Identity = id
-	sp.Comment = plan.Comment.ValueString()
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -201,7 +212,7 @@ func readExoSecOpsOverrideRule(ctx context.Context, obj map[string]any, m *exoSe
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Policy = types.StringValue(getString(obj, "Policy"))
+	m.Policy = types.StringValue(getObjectJSON(obj, "Policy"))
 	_ = ctx
 }
 

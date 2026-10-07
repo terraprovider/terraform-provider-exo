@@ -21,7 +21,7 @@ Manages the PerimeterConfig configuration via Set-PerimeterConfig.
 
 ### Optional
 
-- `gateway_ip_addresses` (String) Maps to the -GatewayIPAddresses parameter.
+- `gateway_ip_addresses` (Set of String) Maps to the -GatewayIPAddresses parameter.
 
 ### Read-Only
 

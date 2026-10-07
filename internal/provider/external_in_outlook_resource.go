@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -24,6 +26,7 @@ var (
 	_ resource.Resource                = &externalInOutlookResource{}
 	_ resource.ResourceWithConfigure   = &externalInOutlookResource{}
 	_ resource.ResourceWithImportState = &externalInOutlookResource{}
+	_ resource.ResourceWithModifyPlan  = &externalInOutlookResource{}
 )
 
 type externalInOutlookResource struct{ client *clients.Client }
@@ -34,8 +37,8 @@ func NewExternalInOutlookResource() resource.Resource { return &externalInOutloo
 type externalInOutlookModel struct {
 	ID        types.String `tfsdk:"id"`
 	Identity  types.String `tfsdk:"identity"`
-	AllowList types.String `tfsdk:"allow_list"`
-	Enabled   types.String `tfsdk:"enabled"`
+	AllowList types.Set    `tfsdk:"allow_list"`
+	Enabled   types.Bool   `tfsdk:"enabled"`
 }
 
 func (r *externalInOutlookResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -48,8 +51,8 @@ func (r *externalInOutlookResource) Schema(_ context.Context, _ resource.SchemaR
 		Attributes: map[string]schema.Attribute{
 			"id":         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":   schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"allow_list": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"allow_list": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"enabled":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -67,13 +70,22 @@ func (r *externalInOutlookResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config externalInOutlookModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetExternalInOutlookParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AllowList.ValueString(); v != "" {
-		sp.AllowList = v
+	if !config.AllowList.IsNull() {
+		if !plan.AllowList.IsNull() && !plan.AllowList.IsUnknown() {
+			sp.AllowList = append([]string{}, toStringSlice(ctx, plan.AllowList, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.Enabled.ValueString(); v != "" {
-		sp.Enabled = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -114,11 +126,15 @@ func (r *externalInOutlookResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetExternalInOutlookParams{}
 	sp.Identity = id
-	if v := plan.AllowList.ValueString(); v != "" {
-		sp.AllowList = v
+	if !plan.AllowList.Equal(state.AllowList) {
+		if !plan.AllowList.IsNull() && !plan.AllowList.IsUnknown() {
+			sp.AllowList = append([]string{}, toStringSlice(ctx, plan.AllowList, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.Enabled.ValueString(); v != "" {
-		sp.Enabled = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -128,10 +144,7 @@ func (r *externalInOutlookResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AllowList": cfg.AllowList,
-		"Enabled":   cfg.Enabled,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -144,6 +157,44 @@ func (r *externalInOutlookResource) Delete(_ context.Context, _ resource.DeleteR
 func (r *externalInOutlookResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *externalInOutlookResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan externalInOutlookModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetExternalInOutlook(ctx, exo.GetExternalInOutlookParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur externalInOutlookModel
+	readExternalInOutlook(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AllowList.IsUnknown() {
+		plan.AllowList = cur.AllowList
+	}
+	if plan.Enabled.IsUnknown() {
+		plan.Enabled = cur.Enabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *externalInOutlookResource) identityOf(m externalInOutlookModel) string {
@@ -182,12 +233,12 @@ func (r *externalInOutlookResource) refresh(ctx context.Context, identity string
 
 func readExternalInOutlook(ctx context.Context, obj map[string]any, m *externalInOutlookModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AllowList = types.StringValue(getString(obj, "AllowList"))
-	m.Enabled = types.StringValue(getString(obj, "Enabled"))
+	m.AllowList = stringSetValue(ctx, getStringSlice(obj, "AllowList"))
+	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	_ = ctx
 }
 
 func (r *externalInOutlookResource) reconcileState(cfg, read *externalInOutlookModel) {
-	read.AllowList = reconcile.KeepStr(cfg.AllowList, read.AllowList)
-	read.Enabled = reconcile.KeepStr(cfg.Enabled, read.Enabled)
+	read.AllowList = reconcile.KeepSet(cfg.AllowList, read.AllowList)
+	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 }

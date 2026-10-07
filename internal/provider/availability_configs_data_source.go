@@ -40,7 +40,7 @@ func (d *availabilityConfigListDataSource) Schema(_ context.Context, _ datasourc
 			"availability_configs": schema.ListNestedAttribute{Computed: true, Description: "All AvailabilityConfig objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"allowed_tenant_ids": schema.StringAttribute{Computed: true, Description: "Maps to the -AllowedTenantIds parameter."},
+				"allowed_tenant_ids": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AllowedTenantIds parameter."},
 				"org_wide_account":   schema.StringAttribute{Computed: true, Description: "Maps to the -OrgWideAccount parameter."},
 			}}},
 		},

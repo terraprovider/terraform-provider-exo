@@ -49,7 +49,7 @@ func (r *phishSimOverridePolicyResource) Schema(_ context.Context, _ resource.Sc
 		Description: "Manages the PhishSimOverridePolicy object via New-PhishSimOverridePolicy / Get-PhishSimOverridePolicy / Set-PhishSimOverridePolicy / Remove-PhishSimOverridePolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -71,10 +71,23 @@ func (r *phishSimOverridePolicyResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	p := exo.NewPhishSimOverridePolicyParams{
-		Comment: plan.Comment.ValueString(),
-		Enabled: plan.Enabled.ValueBool(),
-		Name:    plan.Name.ValueString(),
+	var config phishSimOverridePolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewPhishSimOverridePolicyParams{}
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -126,8 +139,14 @@ func (r *phishSimOverridePolicyResource) Update(ctx context.Context, req resourc
 	id := r.identityOf(state)
 	sp := exo.SetPhishSimOverridePolicyParams{}
 	sp.Identity = id
-	sp.Comment = plan.Comment.ValueString()
-	sp.Enabled = plan.Enabled.ValueBool()
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

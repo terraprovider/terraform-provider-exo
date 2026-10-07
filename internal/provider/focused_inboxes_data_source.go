@@ -38,7 +38,7 @@ func (d *focusedInboxListDataSource) Schema(_ context.Context, _ datasource.Sche
 			"focused_inboxes": schema.ListNestedAttribute{Computed: true, Description: "All FocusedInbox objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"focused_inbox_on":   schema.StringAttribute{Computed: true, Description: "Maps to the -FocusedInboxOn parameter."},
+				"focused_inbox_on":   schema.BoolAttribute{Computed: true, Description: "Maps to the -FocusedInboxOn parameter."},
 				"use_custom_routing": schema.BoolAttribute{Computed: true, Description: "Maps to the -UseCustomRouting parameter."},
 			}}},
 		},

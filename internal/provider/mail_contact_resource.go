@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,11 +36,11 @@ func NewMailContactResource() resource.Resource { return &mailContactResource{} 
 type mailContactModel struct {
 	ID                                     types.String `tfsdk:"id"`
 	Identity                               types.String `tfsdk:"identity"`
-	AcceptMessagesOnlyFrom                 types.String `tfsdk:"accept_messages_only_from"`
-	AcceptMessagesOnlyFromDLMembers        types.String `tfsdk:"accept_messages_only_from_dl_members"`
-	AcceptMessagesOnlyFromSendersOrMembers types.String `tfsdk:"accept_messages_only_from_senders_or_members"`
+	AcceptMessagesOnlyFrom                 types.Set    `tfsdk:"accept_messages_only_from"`
+	AcceptMessagesOnlyFromDLMembers        types.Set    `tfsdk:"accept_messages_only_from_dl_members"`
+	AcceptMessagesOnlyFromSendersOrMembers types.Set    `tfsdk:"accept_messages_only_from_senders_or_members"`
 	Alias                                  types.String `tfsdk:"alias_"`
-	BypassModerationFromSendersOrMembers   types.String `tfsdk:"bypass_moderation_from_senders_or_members"`
+	BypassModerationFromSendersOrMembers   types.Set    `tfsdk:"bypass_moderation_from_senders_or_members"`
 	CustomAttribute1                       types.String `tfsdk:"custom_attribute1"`
 	CustomAttribute10                      types.String `tfsdk:"custom_attribute10"`
 	CustomAttribute11                      types.String `tfsdk:"custom_attribute11"`
@@ -56,38 +57,38 @@ type mailContactModel struct {
 	CustomAttribute8                       types.String `tfsdk:"custom_attribute8"`
 	CustomAttribute9                       types.String `tfsdk:"custom_attribute9"`
 	DisplayName                            types.String `tfsdk:"display_name"`
-	EmailAddresses                         types.String `tfsdk:"email_addresses"`
-	ExtensionCustomAttribute1              types.String `tfsdk:"extension_custom_attribute1"`
-	ExtensionCustomAttribute2              types.String `tfsdk:"extension_custom_attribute2"`
-	ExtensionCustomAttribute3              types.String `tfsdk:"extension_custom_attribute3"`
-	ExtensionCustomAttribute4              types.String `tfsdk:"extension_custom_attribute4"`
-	ExtensionCustomAttribute5              types.String `tfsdk:"extension_custom_attribute5"`
+	EmailAddresses                         types.Set    `tfsdk:"email_addresses"`
+	ExtensionCustomAttribute1              types.Set    `tfsdk:"extension_custom_attribute1"`
+	ExtensionCustomAttribute2              types.Set    `tfsdk:"extension_custom_attribute2"`
+	ExtensionCustomAttribute3              types.Set    `tfsdk:"extension_custom_attribute3"`
+	ExtensionCustomAttribute4              types.Set    `tfsdk:"extension_custom_attribute4"`
+	ExtensionCustomAttribute5              types.Set    `tfsdk:"extension_custom_attribute5"`
 	ExternalEmailAddress                   types.String `tfsdk:"external_email_address"`
 	FirstName                              types.String `tfsdk:"first_name"`
 	ForceUpgrade                           types.Bool   `tfsdk:"force_upgrade"`
-	GrantSendOnBehalfTo                    types.String `tfsdk:"grant_send_on_behalf_to"`
+	GrantSendOnBehalfTo                    types.Set    `tfsdk:"grant_send_on_behalf_to"`
 	HiddenFromAddressListsEnabled          types.Bool   `tfsdk:"hidden_from_address_lists_enabled"`
 	Initials                               types.String `tfsdk:"initials"`
 	LastName                               types.String `tfsdk:"last_name"`
 	MacAttachmentFormat                    types.String `tfsdk:"mac_attachment_format"`
 	MailTip                                types.String `tfsdk:"mail_tip"`
-	MailTipTranslations                    types.String `tfsdk:"mail_tip_translations"`
+	MailTipTranslations                    types.Set    `tfsdk:"mail_tip_translations"`
 	MessageBodyFormat                      types.String `tfsdk:"message_body_format"`
 	MessageFormat                          types.String `tfsdk:"message_format"`
-	ModeratedBy                            types.String `tfsdk:"moderated_by"`
+	ModeratedBy                            types.Set    `tfsdk:"moderated_by"`
 	ModerationEnabled                      types.Bool   `tfsdk:"moderation_enabled"`
 	Name                                   types.String `tfsdk:"name"`
 	OrganizationalUnit                     types.String `tfsdk:"organizational_unit"`
-	RejectMessagesFrom                     types.String `tfsdk:"reject_messages_from"`
-	RejectMessagesFromDLMembers            types.String `tfsdk:"reject_messages_from_dl_members"`
-	RejectMessagesFromSendersOrMembers     types.String `tfsdk:"reject_messages_from_senders_or_members"`
+	RejectMessagesFrom                     types.Set    `tfsdk:"reject_messages_from"`
+	RejectMessagesFromDLMembers            types.Set    `tfsdk:"reject_messages_from_dl_members"`
+	RejectMessagesFromSendersOrMembers     types.Set    `tfsdk:"reject_messages_from_senders_or_members"`
 	RequireSenderAuthenticationEnabled     types.Bool   `tfsdk:"require_sender_authentication_enabled"`
 	SendModerationNotifications            types.String `tfsdk:"send_moderation_notifications"`
 	SimpleDisplayName                      types.String `tfsdk:"simple_display_name"`
 	UseMapiRichTextFormat                  types.String `tfsdk:"use_mapi_rich_text_format"`
 	UsePreferMessageFormat                 types.Bool   `tfsdk:"use_prefer_message_format"`
-	UserCertificate                        types.String `tfsdk:"user_certificate"`
-	UserSMimeCertificate                   types.String `tfsdk:"user_s_mime_certificate"`
+	UserCertificate                        types.Set    `tfsdk:"user_certificate"`
+	UserSMimeCertificate                   types.Set    `tfsdk:"user_s_mime_certificate"`
 	WindowsEmailAddress                    types.String `tfsdk:"windows_email_address"`
 }
 
@@ -100,12 +101,12 @@ func (r *mailContactResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Manages the MailContact object via New-MailContact / Get-MailContact / Set-MailContact / Remove-MailContact.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"accept_messages_only_from":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_dl_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_dl_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"alias_": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"bypass_moderation_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bypass_moderation_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"custom_attribute1":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute10":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute10 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute11":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute11 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -122,38 +123,38 @@ func (r *mailContactResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"custom_attribute8":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute8 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute9":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute9 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"display_name":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"email_addresses":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute1":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute2":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute3":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute4":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute5":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"email_addresses":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute1":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute2":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute3":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute4":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute5":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"external_email_address":                    schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"first_name":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"grant_send_on_behalf_to":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"grant_send_on_behalf_to":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"initials":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Initials parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"last_name":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LastName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"mac_attachment_format":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MacAttachmentFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mail_tip":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_tip_translations":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tip_translations":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"message_body_format":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageBodyFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_format":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"moderated_by":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"moderated_by":                              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                      schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organizational_unit":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_dl_members":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_senders_or_members":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_dl_members":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_senders_or_members":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"require_sender_authentication_enabled":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSenderAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_moderation_notifications":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendModerationNotifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"simple_display_name":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"use_mapi_rich_text_format":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UseMapiRichTextFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"use_prefer_message_format":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UsePreferMessageFormat parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"user_certificate":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"user_s_mime_certificate":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"user_certificate":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"user_s_mime_certificate":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserSMimeCertificate parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"windows_email_address":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WindowsEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -173,36 +174,63 @@ func (r *mailContactResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	p := exo.NewMailContactParams{
-		Alias:                  plan.Alias.ValueString(),
-		DisplayName:            plan.DisplayName.ValueString(),
-		FirstName:              plan.FirstName.ValueString(),
-		Initials:               plan.Initials.ValueString(),
-		LastName:               plan.LastName.ValueString(),
-		ModerationEnabled:      plan.ModerationEnabled.ValueBool(),
-		Name:                   plan.Name.ValueString(),
-		UsePreferMessageFormat: plan.UsePreferMessageFormat.ValueBool(),
+	var config mailContactModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ExternalEmailAddress.ValueString(); v != "" {
-		p.ExternalEmailAddress = v
+
+	p := exo.NewMailContactParams{}
+	if !config.Alias.IsNull() {
+		p.Alias = plan.Alias.ValueString()
 	}
-	if v := plan.MacAttachmentFormat.ValueString(); v != "" {
-		p.MacAttachmentFormat = v
+	if !config.DisplayName.IsNull() {
+		p.DisplayName = plan.DisplayName.ValueString()
 	}
-	if v := plan.MessageBodyFormat.ValueString(); v != "" {
-		p.MessageBodyFormat = v
+	if v := config.ExternalEmailAddress.ValueString(); v != "" {
+		p.ExternalEmailAddress = objectParam(v)
 	}
-	if v := plan.MessageFormat.ValueString(); v != "" {
-		p.MessageFormat = v
+	if !config.FirstName.IsNull() {
+		p.FirstName = plan.FirstName.ValueString()
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		p.ModeratedBy = v
+	if !config.Initials.IsNull() {
+		p.Initials = plan.Initials.ValueString()
 	}
-	if v := plan.OrganizationalUnit.ValueString(); v != "" {
-		p.OrganizationalUnit = v
+	if !config.LastName.IsNull() {
+		p.LastName = plan.LastName.ValueString()
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		p.SendModerationNotifications = v
+	if v := config.MacAttachmentFormat.ValueString(); v != "" {
+		p.MacAttachmentFormat = objectParam(v)
+	}
+	if v := config.MessageBodyFormat.ValueString(); v != "" {
+		p.MessageBodyFormat = objectParam(v)
+	}
+	if v := config.MessageFormat.ValueString(); v != "" {
+		p.MessageFormat = objectParam(v)
+	}
+	if !config.ModeratedBy.IsNull() {
+		if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+			p.ModeratedBy = v
+		}
+	}
+	if !config.ModerationEnabled.IsNull() {
+		if !plan.ModerationEnabled.IsUnknown() {
+			p.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.OrganizationalUnit.ValueString(); v != "" {
+		p.OrganizationalUnit = objectParam(v)
+	}
+	if v := config.SendModerationNotifications.ValueString(); v != "" {
+		p.SendModerationNotifications = objectParam(v)
+	}
+	if !config.UsePreferMessageFormat.IsNull() {
+		if !plan.UsePreferMessageFormat.IsUnknown() {
+			p.UsePreferMessageFormat = plan.UsePreferMessageFormat.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -254,101 +282,193 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetMailContactParams{}
 	sp.Identity = id
-	if v := plan.AcceptMessagesOnlyFrom.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFrom = v
+	if !plan.AcceptMessagesOnlyFrom.Equal(state.AcceptMessagesOnlyFrom) {
+		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
+			sp.AcceptMessagesOnlyFrom = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AcceptMessagesOnlyFromDLMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromDLMembers = v
+	if !plan.AcceptMessagesOnlyFromDLMembers.Equal(state.AcceptMessagesOnlyFromDLMembers) {
+		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
+			sp.AcceptMessagesOnlyFromDLMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
+	if !plan.AcceptMessagesOnlyFromSendersOrMembers.Equal(state.AcceptMessagesOnlyFromSendersOrMembers) {
+		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
+			sp.AcceptMessagesOnlyFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)...)
+		}
 	}
-	sp.Alias = plan.Alias.ValueString()
-	if v := plan.BypassModerationFromSendersOrMembers.ValueString(); v != "" {
-		sp.BypassModerationFromSendersOrMembers = v
+	if !plan.Alias.Equal(state.Alias) {
+		sp.Alias = plan.Alias.ValueString()
 	}
-	sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
-	sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
-	sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
-	sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
-	sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
-	sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
-	sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
-	sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
-	sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
-	sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
-	sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
-	sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
-	sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
-	sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
-	sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
+	if !plan.BypassModerationFromSendersOrMembers.Equal(state.BypassModerationFromSendersOrMembers) {
+		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
+			sp.BypassModerationFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
+	if !plan.CustomAttribute1.Equal(state.CustomAttribute1) {
+		sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
+	if !plan.CustomAttribute10.Equal(state.CustomAttribute10) {
+		sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
+	if !plan.CustomAttribute11.Equal(state.CustomAttribute11) {
+		sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
+	if !plan.CustomAttribute12.Equal(state.CustomAttribute12) {
+		sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
+	if !plan.CustomAttribute13.Equal(state.CustomAttribute13) {
+		sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
 	}
-	sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
+	if !plan.CustomAttribute14.Equal(state.CustomAttribute14) {
+		sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
 	}
-	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
+	if !plan.CustomAttribute15.Equal(state.CustomAttribute15) {
+		sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
+	}
+	if !plan.CustomAttribute2.Equal(state.CustomAttribute2) {
+		sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
+	}
+	if !plan.CustomAttribute3.Equal(state.CustomAttribute3) {
+		sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
+	}
+	if !plan.CustomAttribute4.Equal(state.CustomAttribute4) {
+		sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
+	}
+	if !plan.CustomAttribute5.Equal(state.CustomAttribute5) {
+		sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
+	}
+	if !plan.CustomAttribute6.Equal(state.CustomAttribute6) {
+		sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
+	}
+	if !plan.CustomAttribute7.Equal(state.CustomAttribute7) {
+		sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
+	}
+	if !plan.CustomAttribute8.Equal(state.CustomAttribute8) {
+		sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
+	}
+	if !plan.CustomAttribute9.Equal(state.CustomAttribute9) {
+		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
+	}
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !plan.EmailAddresses.Equal(state.EmailAddresses) {
+		if !plan.EmailAddresses.IsNull() && !plan.EmailAddresses.IsUnknown() {
+			sp.EmailAddresses = append([]string{}, toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExtensionCustomAttribute1.Equal(state.ExtensionCustomAttribute1) {
+		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
+			sp.ExtensionCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExtensionCustomAttribute2.Equal(state.ExtensionCustomAttribute2) {
+		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
+			sp.ExtensionCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExtensionCustomAttribute3.Equal(state.ExtensionCustomAttribute3) {
+		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
+			sp.ExtensionCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExtensionCustomAttribute4.Equal(state.ExtensionCustomAttribute4) {
+		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
+			sp.ExtensionCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExtensionCustomAttribute5.Equal(state.ExtensionCustomAttribute5) {
+		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
+			sp.ExtensionCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
+		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+	}
+	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
+		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
+			sp.GrantSendOnBehalfTo = append([]string{}, toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
+			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
+		}
+	}
 	if v := plan.MacAttachmentFormat.ValueString(); v != "" {
-		sp.MacAttachmentFormat = v
+		sp.MacAttachmentFormat = objectParam(v)
 	}
-	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
+	if !plan.MailTip.Equal(state.MailTip) {
+		sp.MailTip = plan.MailTip.ValueString()
+	}
+	if !plan.MailTipTranslations.Equal(state.MailTipTranslations) {
+		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
+			sp.MailTipTranslations = append([]string{}, toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.MessageBodyFormat.ValueString(); v != "" {
-		sp.MessageBodyFormat = v
+		sp.MessageBodyFormat = objectParam(v)
 	}
 	if v := plan.MessageFormat.ValueString(); v != "" {
-		sp.MessageFormat = v
+		sp.MessageFormat = objectParam(v)
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
+	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
+		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
+			sp.ModeratedBy = append([]string{}, toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)...)
+		}
 	}
-	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
-	if v := plan.RejectMessagesFrom.ValueString(); v != "" {
-		sp.RejectMessagesFrom = v
+	if !plan.ModerationEnabled.Equal(state.ModerationEnabled) {
+		if !plan.ModerationEnabled.IsUnknown() {
+			sp.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RejectMessagesFromDLMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromDLMembers = v
+	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
+		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
+			sp.RejectMessagesFrom = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
+	if !plan.RejectMessagesFromDLMembers.Equal(state.RejectMessagesFromDLMembers) {
+		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
+			sp.RejectMessagesFromDLMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)...)
+		}
 	}
-	sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBool()
+	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
+		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
+			sp.RejectMessagesFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		if !plan.RequireSenderAuthenticationEnabled.IsUnknown() {
+			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
+		}
+	}
 	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = v
+		sp.SendModerationNotifications = objectParam(v)
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
 	if v := plan.UseMapiRichTextFormat.ValueString(); v != "" {
-		sp.UseMapiRichTextFormat = v
+		sp.UseMapiRichTextFormat = objectParam(v)
 	}
-	sp.UsePreferMessageFormat = plan.UsePreferMessageFormat.ValueBool()
-	if v := plan.UserCertificate.ValueString(); v != "" {
-		sp.UserCertificate = v
+	if !plan.UsePreferMessageFormat.Equal(state.UsePreferMessageFormat) {
+		if !plan.UsePreferMessageFormat.IsUnknown() {
+			sp.UsePreferMessageFormat = plan.UsePreferMessageFormat.ValueBoolPointer()
+		}
 	}
-	if v := plan.UserSMimeCertificate.ValueString(); v != "" {
-		sp.UserSMimeCertificate = v
+	if !plan.UserCertificate.Equal(state.UserCertificate) {
+		if !plan.UserCertificate.IsNull() && !plan.UserCertificate.IsUnknown() {
+			sp.UserCertificate = append([]string{}, toStringSlice(ctx, plan.UserCertificate, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.UserSMimeCertificate.Equal(state.UserSMimeCertificate) {
+		if !plan.UserSMimeCertificate.IsNull() && !plan.UserSMimeCertificate.IsUnknown() {
+			sp.UserSMimeCertificate = append([]string{}, toStringSlice(ctx, plan.UserSMimeCertificate, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -359,49 +479,25 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AcceptMessagesOnlyFrom":                 cfg.AcceptMessagesOnlyFrom,
-		"AcceptMessagesOnlyFromDLMembers":        cfg.AcceptMessagesOnlyFromDLMembers,
-		"AcceptMessagesOnlyFromSendersOrMembers": cfg.AcceptMessagesOnlyFromSendersOrMembers,
-		"Alias":                                  cfg.Alias,
-		"BypassModerationFromSendersOrMembers":   cfg.BypassModerationFromSendersOrMembers,
-		"CustomAttribute1":                       cfg.CustomAttribute1,
-		"CustomAttribute10":                      cfg.CustomAttribute10,
-		"CustomAttribute11":                      cfg.CustomAttribute11,
-		"CustomAttribute12":                      cfg.CustomAttribute12,
-		"CustomAttribute13":                      cfg.CustomAttribute13,
-		"CustomAttribute14":                      cfg.CustomAttribute14,
-		"CustomAttribute15":                      cfg.CustomAttribute15,
-		"CustomAttribute2":                       cfg.CustomAttribute2,
-		"CustomAttribute3":                       cfg.CustomAttribute3,
-		"CustomAttribute4":                       cfg.CustomAttribute4,
-		"CustomAttribute5":                       cfg.CustomAttribute5,
-		"CustomAttribute6":                       cfg.CustomAttribute6,
-		"CustomAttribute7":                       cfg.CustomAttribute7,
-		"CustomAttribute8":                       cfg.CustomAttribute8,
-		"CustomAttribute9":                       cfg.CustomAttribute9,
-		"DisplayName":                            cfg.DisplayName,
-		"EmailAddresses":                         cfg.EmailAddresses,
-		"ExtensionCustomAttribute1":              cfg.ExtensionCustomAttribute1,
-		"ExtensionCustomAttribute2":              cfg.ExtensionCustomAttribute2,
-		"ExtensionCustomAttribute3":              cfg.ExtensionCustomAttribute3,
-		"ExtensionCustomAttribute4":              cfg.ExtensionCustomAttribute4,
-		"ExtensionCustomAttribute5":              cfg.ExtensionCustomAttribute5,
-		"GrantSendOnBehalfTo":                    cfg.GrantSendOnBehalfTo,
-		"MacAttachmentFormat":                    cfg.MacAttachmentFormat,
-		"MailTip":                                cfg.MailTip,
-		"MailTipTranslations":                    cfg.MailTipTranslations,
-		"MessageBodyFormat":                      cfg.MessageBodyFormat,
-		"MessageFormat":                          cfg.MessageFormat,
-		"ModeratedBy":                            cfg.ModeratedBy,
-		"RejectMessagesFrom":                     cfg.RejectMessagesFrom,
-		"RejectMessagesFromDLMembers":            cfg.RejectMessagesFromDLMembers,
-		"RejectMessagesFromSendersOrMembers":     cfg.RejectMessagesFromSendersOrMembers,
-		"SendModerationNotifications":            cfg.SendModerationNotifications,
-		"SimpleDisplayName":                      cfg.SimpleDisplayName,
-		"UseMapiRichTextFormat":                  cfg.UseMapiRichTextFormat,
-		"UserCertificate":                        cfg.UserCertificate,
-		"UserSMimeCertificate":                   cfg.UserSMimeCertificate,
-		"WindowsEmailAddress":                    cfg.WindowsEmailAddress,
+		"Alias":             cfg.Alias,
+		"CustomAttribute1":  cfg.CustomAttribute1,
+		"CustomAttribute10": cfg.CustomAttribute10,
+		"CustomAttribute11": cfg.CustomAttribute11,
+		"CustomAttribute12": cfg.CustomAttribute12,
+		"CustomAttribute13": cfg.CustomAttribute13,
+		"CustomAttribute14": cfg.CustomAttribute14,
+		"CustomAttribute15": cfg.CustomAttribute15,
+		"CustomAttribute2":  cfg.CustomAttribute2,
+		"CustomAttribute3":  cfg.CustomAttribute3,
+		"CustomAttribute4":  cfg.CustomAttribute4,
+		"CustomAttribute5":  cfg.CustomAttribute5,
+		"CustomAttribute6":  cfg.CustomAttribute6,
+		"CustomAttribute7":  cfg.CustomAttribute7,
+		"CustomAttribute8":  cfg.CustomAttribute8,
+		"CustomAttribute9":  cfg.CustomAttribute9,
+		"DisplayName":       cfg.DisplayName,
+		"MailTip":           cfg.MailTip,
+		"SimpleDisplayName": cfg.SimpleDisplayName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -463,11 +559,11 @@ func (r *mailContactResource) refresh(ctx context.Context, identity string, m *m
 func readMailContact(ctx context.Context, obj map[string]any, m *mailContactModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AcceptMessagesOnlyFrom = types.StringValue(getString(obj, "AcceptMessagesOnlyFrom"))
-	m.AcceptMessagesOnlyFromDLMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromDLMembers"))
-	m.AcceptMessagesOnlyFromSendersOrMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
+	m.AcceptMessagesOnlyFrom = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFrom"))
+	m.AcceptMessagesOnlyFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromDLMembers"))
+	m.AcceptMessagesOnlyFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
 	m.Alias = types.StringValue(getString(obj, "Alias"))
-	m.BypassModerationFromSendersOrMembers = types.StringValue(getString(obj, "BypassModerationFromSendersOrMembers"))
+	m.BypassModerationFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "BypassModerationFromSendersOrMembers"))
 	m.CustomAttribute1 = types.StringValue(getString(obj, "CustomAttribute1"))
 	m.CustomAttribute10 = types.StringValue(getString(obj, "CustomAttribute10"))
 	m.CustomAttribute11 = types.StringValue(getString(obj, "CustomAttribute11"))
@@ -484,48 +580,48 @@ func readMailContact(ctx context.Context, obj map[string]any, m *mailContactMode
 	m.CustomAttribute8 = types.StringValue(getString(obj, "CustomAttribute8"))
 	m.CustomAttribute9 = types.StringValue(getString(obj, "CustomAttribute9"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
-	m.EmailAddresses = types.StringValue(getString(obj, "EmailAddresses"))
-	m.ExtensionCustomAttribute1 = types.StringValue(getString(obj, "ExtensionCustomAttribute1"))
-	m.ExtensionCustomAttribute2 = types.StringValue(getString(obj, "ExtensionCustomAttribute2"))
-	m.ExtensionCustomAttribute3 = types.StringValue(getString(obj, "ExtensionCustomAttribute3"))
-	m.ExtensionCustomAttribute4 = types.StringValue(getString(obj, "ExtensionCustomAttribute4"))
-	m.ExtensionCustomAttribute5 = types.StringValue(getString(obj, "ExtensionCustomAttribute5"))
-	m.ExternalEmailAddress = types.StringValue(getString(obj, "ExternalEmailAddress"))
+	m.EmailAddresses = stringSetValue(ctx, getStringSlice(obj, "EmailAddresses"))
+	m.ExtensionCustomAttribute1 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute1"))
+	m.ExtensionCustomAttribute2 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute2"))
+	m.ExtensionCustomAttribute3 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute3"))
+	m.ExtensionCustomAttribute4 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute4"))
+	m.ExtensionCustomAttribute5 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute5"))
+	m.ExternalEmailAddress = types.StringValue(getObjectJSON(obj, "ExternalEmailAddress"))
 	m.FirstName = types.StringValue(getString(obj, "FirstName"))
 	m.ForceUpgrade = types.BoolValue(getBool(obj, "ForceUpgrade"))
-	m.GrantSendOnBehalfTo = types.StringValue(getString(obj, "GrantSendOnBehalfTo"))
+	m.GrantSendOnBehalfTo = stringSetValue(ctx, getStringSlice(obj, "GrantSendOnBehalfTo"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
 	m.Initials = types.StringValue(getString(obj, "Initials"))
 	m.LastName = types.StringValue(getString(obj, "LastName"))
-	m.MacAttachmentFormat = types.StringValue(getString(obj, "MacAttachmentFormat"))
+	m.MacAttachmentFormat = types.StringValue(getObjectJSON(obj, "MacAttachmentFormat"))
 	m.MailTip = types.StringValue(getString(obj, "MailTip"))
-	m.MailTipTranslations = types.StringValue(getString(obj, "MailTipTranslations"))
-	m.MessageBodyFormat = types.StringValue(getString(obj, "MessageBodyFormat"))
-	m.MessageFormat = types.StringValue(getString(obj, "MessageFormat"))
-	m.ModeratedBy = types.StringValue(getString(obj, "ModeratedBy"))
+	m.MailTipTranslations = stringSetValue(ctx, getStringSlice(obj, "MailTipTranslations"))
+	m.MessageBodyFormat = types.StringValue(getObjectJSON(obj, "MessageBodyFormat"))
+	m.MessageFormat = types.StringValue(getObjectJSON(obj, "MessageFormat"))
+	m.ModeratedBy = stringSetValue(ctx, getStringSlice(obj, "ModeratedBy"))
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.OrganizationalUnit = types.StringValue(getString(obj, "OrganizationalUnit"))
-	m.RejectMessagesFrom = types.StringValue(getString(obj, "RejectMessagesFrom"))
-	m.RejectMessagesFromDLMembers = types.StringValue(getString(obj, "RejectMessagesFromDLMembers"))
-	m.RejectMessagesFromSendersOrMembers = types.StringValue(getString(obj, "RejectMessagesFromSendersOrMembers"))
+	m.OrganizationalUnit = types.StringValue(getObjectJSON(obj, "OrganizationalUnit"))
+	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
+	m.RejectMessagesFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromDLMembers"))
+	m.RejectMessagesFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromSendersOrMembers"))
 	m.RequireSenderAuthenticationEnabled = types.BoolValue(getBool(obj, "RequireSenderAuthenticationEnabled"))
-	m.SendModerationNotifications = types.StringValue(getString(obj, "SendModerationNotifications"))
+	m.SendModerationNotifications = types.StringValue(getObjectJSON(obj, "SendModerationNotifications"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
-	m.UseMapiRichTextFormat = types.StringValue(getString(obj, "UseMapiRichTextFormat"))
+	m.UseMapiRichTextFormat = types.StringValue(getObjectJSON(obj, "UseMapiRichTextFormat"))
 	m.UsePreferMessageFormat = types.BoolValue(getBool(obj, "UsePreferMessageFormat"))
-	m.UserCertificate = types.StringValue(getString(obj, "UserCertificate"))
-	m.UserSMimeCertificate = types.StringValue(getString(obj, "UserSMimeCertificate"))
-	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
+	m.UserCertificate = stringSetValue(ctx, getStringSlice(obj, "UserCertificate"))
+	m.UserSMimeCertificate = stringSetValue(ctx, getStringSlice(obj, "UserSMimeCertificate"))
+	m.WindowsEmailAddress = types.StringValue(getObjectJSON(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
 func (r *mailContactResource) reconcileState(cfg, read *mailContactModel) {
-	read.AcceptMessagesOnlyFrom = reconcile.KeepStr(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
-	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
-	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
+	read.AcceptMessagesOnlyFrom = reconcile.KeepSet(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
+	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
+	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
 	read.Alias = reconcile.KeepStr(cfg.Alias, read.Alias)
-	read.BypassModerationFromSendersOrMembers = reconcile.KeepStr(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
+	read.BypassModerationFromSendersOrMembers = reconcile.KeepSet(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
 	read.CustomAttribute1 = reconcile.KeepStr(cfg.CustomAttribute1, read.CustomAttribute1)
 	read.CustomAttribute10 = reconcile.KeepStr(cfg.CustomAttribute10, read.CustomAttribute10)
 	read.CustomAttribute11 = reconcile.KeepStr(cfg.CustomAttribute11, read.CustomAttribute11)
@@ -542,37 +638,37 @@ func (r *mailContactResource) reconcileState(cfg, read *mailContactModel) {
 	read.CustomAttribute8 = reconcile.KeepStr(cfg.CustomAttribute8, read.CustomAttribute8)
 	read.CustomAttribute9 = reconcile.KeepStr(cfg.CustomAttribute9, read.CustomAttribute9)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
-	read.EmailAddresses = reconcile.KeepStr(cfg.EmailAddresses, read.EmailAddresses)
-	read.ExtensionCustomAttribute1 = reconcile.KeepStr(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
-	read.ExtensionCustomAttribute2 = reconcile.KeepStr(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
-	read.ExtensionCustomAttribute3 = reconcile.KeepStr(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
-	read.ExtensionCustomAttribute4 = reconcile.KeepStr(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
-	read.ExtensionCustomAttribute5 = reconcile.KeepStr(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
+	read.EmailAddresses = reconcile.KeepSet(cfg.EmailAddresses, read.EmailAddresses)
+	read.ExtensionCustomAttribute1 = reconcile.KeepSet(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
+	read.ExtensionCustomAttribute2 = reconcile.KeepSet(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
+	read.ExtensionCustomAttribute3 = reconcile.KeepSet(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
+	read.ExtensionCustomAttribute4 = reconcile.KeepSet(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
+	read.ExtensionCustomAttribute5 = reconcile.KeepSet(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
 	read.ExternalEmailAddress = reconcile.KeepStr(cfg.ExternalEmailAddress, read.ExternalEmailAddress)
 	read.FirstName = reconcile.KeepStr(cfg.FirstName, read.FirstName)
 	read.ForceUpgrade = reconcile.KeepBool(cfg.ForceUpgrade, read.ForceUpgrade)
-	read.GrantSendOnBehalfTo = reconcile.KeepStr(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
+	read.GrantSendOnBehalfTo = reconcile.KeepSet(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
 	read.HiddenFromAddressListsEnabled = reconcile.KeepBool(cfg.HiddenFromAddressListsEnabled, read.HiddenFromAddressListsEnabled)
 	read.Initials = reconcile.KeepStr(cfg.Initials, read.Initials)
 	read.LastName = reconcile.KeepStr(cfg.LastName, read.LastName)
 	read.MacAttachmentFormat = reconcile.KeepStr(cfg.MacAttachmentFormat, read.MacAttachmentFormat)
 	read.MailTip = reconcile.KeepStr(cfg.MailTip, read.MailTip)
-	read.MailTipTranslations = reconcile.KeepStr(cfg.MailTipTranslations, read.MailTipTranslations)
+	read.MailTipTranslations = reconcile.KeepSet(cfg.MailTipTranslations, read.MailTipTranslations)
 	read.MessageBodyFormat = reconcile.KeepStr(cfg.MessageBodyFormat, read.MessageBodyFormat)
 	read.MessageFormat = reconcile.KeepStr(cfg.MessageFormat, read.MessageFormat)
-	read.ModeratedBy = reconcile.KeepStr(cfg.ModeratedBy, read.ModeratedBy)
+	read.ModeratedBy = reconcile.KeepSet(cfg.ModeratedBy, read.ModeratedBy)
 	read.ModerationEnabled = reconcile.KeepBool(cfg.ModerationEnabled, read.ModerationEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationalUnit = reconcile.KeepStr(cfg.OrganizationalUnit, read.OrganizationalUnit)
-	read.RejectMessagesFrom = reconcile.KeepStr(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
-	read.RejectMessagesFromDLMembers = reconcile.KeepStr(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
-	read.RejectMessagesFromSendersOrMembers = reconcile.KeepStr(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
+	read.RejectMessagesFrom = reconcile.KeepSet(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
+	read.RejectMessagesFromDLMembers = reconcile.KeepSet(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
+	read.RejectMessagesFromSendersOrMembers = reconcile.KeepSet(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
 	read.RequireSenderAuthenticationEnabled = reconcile.KeepBool(cfg.RequireSenderAuthenticationEnabled, read.RequireSenderAuthenticationEnabled)
 	read.SendModerationNotifications = reconcile.KeepStr(cfg.SendModerationNotifications, read.SendModerationNotifications)
 	read.SimpleDisplayName = reconcile.KeepStr(cfg.SimpleDisplayName, read.SimpleDisplayName)
 	read.UseMapiRichTextFormat = reconcile.KeepStr(cfg.UseMapiRichTextFormat, read.UseMapiRichTextFormat)
 	read.UsePreferMessageFormat = reconcile.KeepBool(cfg.UsePreferMessageFormat, read.UsePreferMessageFormat)
-	read.UserCertificate = reconcile.KeepStr(cfg.UserCertificate, read.UserCertificate)
-	read.UserSMimeCertificate = reconcile.KeepStr(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
+	read.UserCertificate = reconcile.KeepSet(cfg.UserCertificate, read.UserCertificate)
+	read.UserSMimeCertificate = reconcile.KeepSet(cfg.UserSMimeCertificate, read.UserSMimeCertificate)
 	read.WindowsEmailAddress = reconcile.KeepStr(cfg.WindowsEmailAddress, read.WindowsEmailAddress)
 }

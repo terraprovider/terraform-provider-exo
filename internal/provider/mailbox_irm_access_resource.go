@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &mailboxIRMAccessResource{}
 	_ resource.ResourceWithConfigure   = &mailboxIRMAccessResource{}
 	_ resource.ResourceWithImportState = &mailboxIRMAccessResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxIRMAccessResource{}
 )
 
 type mailboxIRMAccessResource struct{ client *clients.Client }
@@ -67,13 +68,18 @@ func (r *mailboxIRMAccessResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxIRMAccessModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxIRMAccessParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AccessLevel.ValueString(); v != "" {
-		sp.AccessLevel = v
+	if v := config.AccessLevel.ValueString(); v != "" {
+		sp.AccessLevel = objectParam(v)
 	}
-	if v := plan.User.ValueString(); v != "" {
-		sp.User = v
+	if v := config.User.ValueString(); v != "" {
+		sp.User = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -115,10 +121,10 @@ func (r *mailboxIRMAccessResource) Update(ctx context.Context, req resource.Upda
 	sp := exo.SetMailboxIRMAccessParams{}
 	sp.Identity = id
 	if v := plan.AccessLevel.ValueString(); v != "" {
-		sp.AccessLevel = v
+		sp.AccessLevel = objectParam(v)
 	}
 	if v := plan.User.ValueString(); v != "" {
-		sp.User = v
+		sp.User = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -128,10 +134,7 @@ func (r *mailboxIRMAccessResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AccessLevel": cfg.AccessLevel,
-		"User":        cfg.User,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -144,6 +147,44 @@ func (r *mailboxIRMAccessResource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *mailboxIRMAccessResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxIRMAccessResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxIRMAccessModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxIRMAccess(ctx, exo.GetMailboxIRMAccessParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxIRMAccessModel
+	readMailboxIRMAccess(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AccessLevel.IsUnknown() {
+		plan.AccessLevel = cur.AccessLevel
+	}
+	if plan.User.IsUnknown() {
+		plan.User = cur.User
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxIRMAccessResource) identityOf(m mailboxIRMAccessModel) string {
@@ -182,8 +223,8 @@ func (r *mailboxIRMAccessResource) refresh(ctx context.Context, identity string,
 
 func readMailboxIRMAccess(ctx context.Context, obj map[string]any, m *mailboxIRMAccessModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AccessLevel = types.StringValue(getString(obj, "AccessLevel"))
-	m.User = types.StringValue(getString(obj, "User"))
+	m.AccessLevel = types.StringValue(getObjectJSON(obj, "AccessLevel"))
+	m.User = types.StringValue(getObjectJSON(obj, "User"))
 	_ = ctx
 }
 

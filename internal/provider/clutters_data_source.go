@@ -38,7 +38,7 @@ func (d *clutterListDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"clutters": schema.ListNestedAttribute{Computed: true, Description: "All Clutter objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"enable":             schema.StringAttribute{Computed: true, Description: "Maps to the -Enable parameter."},
+				"enable":             schema.BoolAttribute{Computed: true, Description: "Maps to the -Enable parameter."},
 				"use_custom_routing": schema.BoolAttribute{Computed: true, Description: "Maps to the -UseCustomRouting parameter."},
 			}}},
 		},

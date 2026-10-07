@@ -29,7 +29,7 @@ Read-Only:
 - `enable_safe_list` (Boolean) Maps to the -EnableSafeList parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
-- `ip_allow_list` (String) Maps to the -IPAllowList parameter.
-- `ip_block_list` (String) Maps to the -IPBlockList parameter.
+- `ip_allow_list` (Set of String) Maps to the -IPAllowList parameter.
+- `ip_block_list` (Set of String) Maps to the -IPBlockList parameter.
 - `make_default` (Boolean) Maps to the -MakeDefault parameter.
 - `name` (String) Maps to the -Name parameter.

@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &rMSTemplateResource{}
 	_ resource.ResourceWithConfigure   = &rMSTemplateResource{}
 	_ resource.ResourceWithImportState = &rMSTemplateResource{}
+	_ resource.ResourceWithModifyPlan  = &rMSTemplateResource{}
 )
 
 type rMSTemplateResource struct{ client *clients.Client }
@@ -65,10 +66,15 @@ func (r *rMSTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config rMSTemplateModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetRMSTemplateParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.Type.ValueString(); v != "" {
-		sp.Type = v
+	if v := config.Type.ValueString(); v != "" {
+		sp.Type = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,7 +116,7 @@ func (r *rMSTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	sp := exo.SetRMSTemplateParams{}
 	sp.Identity = id
 	if v := plan.Type.ValueString(); v != "" {
-		sp.Type = v
+		sp.Type = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,9 +126,7 @@ func (r *rMSTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Type": cfg.Type,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -135,6 +139,41 @@ func (r *rMSTemplateResource) Delete(_ context.Context, _ resource.DeleteRequest
 func (r *rMSTemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *rMSTemplateResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan rMSTemplateModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetRMSTemplate(ctx, exo.GetRMSTemplateParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur rMSTemplateModel
+	readRMSTemplate(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Type.IsUnknown() {
+		plan.Type = cur.Type
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *rMSTemplateResource) identityOf(m rMSTemplateModel) string {
@@ -173,7 +212,7 @@ func (r *rMSTemplateResource) refresh(ctx context.Context, identity string, m *r
 
 func readRMSTemplate(ctx context.Context, obj map[string]any, m *rMSTemplateModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.Type = types.StringValue(getString(obj, "Type"))
+	m.Type = types.StringValue(getObjectJSON(obj, "Type"))
 	_ = ctx
 }
 

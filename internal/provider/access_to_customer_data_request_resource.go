@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &accessToCustomerDataRequestResource{}
 	_ resource.ResourceWithConfigure   = &accessToCustomerDataRequestResource{}
 	_ resource.ResourceWithImportState = &accessToCustomerDataRequestResource{}
+	_ resource.ResourceWithModifyPlan  = &accessToCustomerDataRequestResource{}
 )
 
 type accessToCustomerDataRequestResource struct{ client *clients.Client }
@@ -51,7 +52,7 @@ func (r *accessToCustomerDataRequestResource) Schema(_ context.Context, _ resour
 		Description: "Manages the AccessToCustomerDataRequest configuration via Set-AccessToCustomerDataRequest.",
 		Attributes: map[string]schema.Attribute{
 			"id":                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"approval_decision": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApprovalDecision parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"request_id":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RequestId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -73,14 +74,23 @@ func (r *accessToCustomerDataRequestResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	sp := exo.SetAccessToCustomerDataRequestParams{}
-	if v := plan.ApprovalDecision.ValueString(); v != "" {
-		sp.ApprovalDecision = v
+	var config accessToCustomerDataRequestModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	sp.Comment = plan.Comment.ValueString()
-	sp.RequestId = plan.RequestId.ValueString()
-	if v := plan.ServiceName.ValueString(); v != "" {
-		sp.ServiceName = v
+	sp := exo.SetAccessToCustomerDataRequestParams{}
+	if v := config.ApprovalDecision.ValueString(); v != "" {
+		sp.ApprovalDecision = objectParam(v)
+	}
+	if !config.Comment.IsNull() {
+		sp.Comment = plan.Comment.ValueString()
+	}
+	if !config.RequestId.IsNull() {
+		sp.RequestId = plan.RequestId.ValueString()
+	}
+	if v := config.ServiceName.ValueString(); v != "" {
+		sp.ServiceName = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -121,12 +131,16 @@ func (r *accessToCustomerDataRequestResource) Update(ctx context.Context, req re
 	id := r.identityOf(state)
 	sp := exo.SetAccessToCustomerDataRequestParams{}
 	if v := plan.ApprovalDecision.ValueString(); v != "" {
-		sp.ApprovalDecision = v
+		sp.ApprovalDecision = objectParam(v)
 	}
-	sp.Comment = plan.Comment.ValueString()
-	sp.RequestId = plan.RequestId.ValueString()
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
+	if !plan.RequestId.Equal(state.RequestId) {
+		sp.RequestId = plan.RequestId.ValueString()
+	}
 	if v := plan.ServiceName.ValueString(); v != "" {
-		sp.ServiceName = v
+		sp.ServiceName = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -137,10 +151,8 @@ func (r *accessToCustomerDataRequestResource) Update(ctx context.Context, req re
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ApprovalDecision": cfg.ApprovalDecision,
-		"Comment":          cfg.Comment,
-		"RequestId":        cfg.RequestId,
-		"ServiceName":      cfg.ServiceName,
+		"Comment":   cfg.Comment,
+		"RequestId": cfg.RequestId,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -154,6 +166,46 @@ func (r *accessToCustomerDataRequestResource) Delete(_ context.Context, _ resour
 func (r *accessToCustomerDataRequestResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *accessToCustomerDataRequestResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan accessToCustomerDataRequestModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetAccessToCustomerDataRequest(ctx, exo.GetAccessToCustomerDataRequestParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur accessToCustomerDataRequestModel
+	readAccessToCustomerDataRequest(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.ApprovalDecision.IsUnknown() {
+		plan.ApprovalDecision = cur.ApprovalDecision
+	}
+	if plan.Comment.IsUnknown() {
+		plan.Comment = cur.Comment
+	}
+	if plan.RequestId.IsUnknown() {
+		plan.RequestId = cur.RequestId
+	}
+	if plan.ServiceName.IsUnknown() {
+		plan.ServiceName = cur.ServiceName
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *accessToCustomerDataRequestResource) identityOf(m accessToCustomerDataRequestModel) string {
@@ -194,10 +246,10 @@ func (r *accessToCustomerDataRequestResource) refresh(ctx context.Context, ident
 func readAccessToCustomerDataRequest(ctx context.Context, obj map[string]any, m *accessToCustomerDataRequestModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.ApprovalDecision = types.StringValue(getString(obj, "ApprovalDecision"))
+	m.ApprovalDecision = types.StringValue(getObjectJSON(obj, "ApprovalDecision"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
 	m.RequestId = types.StringValue(getString(obj, "RequestId"))
-	m.ServiceName = types.StringValue(getString(obj, "ServiceName"))
+	m.ServiceName = types.StringValue(getObjectJSON(obj, "ServiceName"))
 	_ = ctx
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -38,7 +39,7 @@ func (d *organizationRelationshipDataSource) Schema(_ context.Context, _ datasou
 			"identity":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
 			"archive_access_enabled":        schema.BoolAttribute{Computed: true, Description: "Maps to the -ArchiveAccessEnabled parameter."},
 			"delivery_report_enabled":       schema.BoolAttribute{Computed: true, Description: "Maps to the -DeliveryReportEnabled parameter."},
-			"domain_names":                  schema.StringAttribute{Computed: true, Description: "Maps to the -DomainNames parameter."},
+			"domain_names":                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -DomainNames parameter."},
 			"enabled":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"free_busy_access_enabled":      schema.BoolAttribute{Computed: true, Description: "Maps to the -FreeBusyAccessEnabled parameter."},
 			"free_busy_access_level":        schema.StringAttribute{Computed: true, Description: "Maps to the -FreeBusyAccessLevel parameter."},
@@ -48,7 +49,7 @@ func (d *organizationRelationshipDataSource) Schema(_ context.Context, _ datasou
 			"mail_tips_access_scope":        schema.StringAttribute{Computed: true, Description: "Maps to the -MailTipsAccessScope parameter."},
 			"mailbox_move_capability":       schema.StringAttribute{Computed: true, Description: "Maps to the -MailboxMoveCapability parameter."},
 			"mailbox_move_enabled":          schema.BoolAttribute{Computed: true, Description: "Maps to the -MailboxMoveEnabled parameter."},
-			"mailbox_move_published_scopes": schema.StringAttribute{Computed: true, Description: "Maps to the -MailboxMovePublishedScopes parameter."},
+			"mailbox_move_published_scopes": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MailboxMovePublishedScopes parameter."},
 			"name":                          schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"o_auth_application_id":         schema.StringAttribute{Computed: true, Description: "Maps to the -OAuthApplicationId parameter."},
 			"organization_contact":          schema.StringAttribute{Computed: true, Description: "Maps to the -OrganizationContact parameter."},

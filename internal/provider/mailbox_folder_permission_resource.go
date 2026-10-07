@@ -26,6 +26,7 @@ var (
 	_ resource.Resource                = &mailboxFolderPermissionResource{}
 	_ resource.ResourceWithConfigure   = &mailboxFolderPermissionResource{}
 	_ resource.ResourceWithImportState = &mailboxFolderPermissionResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxFolderPermissionResource{}
 )
 
 type mailboxFolderPermissionResource struct{ client *clients.Client }
@@ -75,15 +76,28 @@ func (r *mailboxFolderPermissionResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxFolderPermissionModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxFolderPermissionParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AccessRights = toStringSlice(ctx, plan.AccessRights, &resp.Diagnostics)
-	sp.SendNotificationToUser = plan.SendNotificationToUser.ValueBool()
-	if v := plan.SharingPermissionFlags.ValueString(); v != "" {
-		sp.SharingPermissionFlags = v
+	if !config.AccessRights.IsNull() {
+		if !plan.AccessRights.IsNull() && !plan.AccessRights.IsUnknown() {
+			sp.AccessRights = append([]string{}, toStringSlice(ctx, plan.AccessRights, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.User.ValueString(); v != "" {
-		sp.User = v
+	if !config.SendNotificationToUser.IsNull() {
+		if !plan.SendNotificationToUser.IsUnknown() {
+			sp.SendNotificationToUser = plan.SendNotificationToUser.ValueBoolPointer()
+		}
+	}
+	if v := config.SharingPermissionFlags.ValueString(); v != "" {
+		sp.SharingPermissionFlags = objectParam(v)
+	}
+	if v := config.User.ValueString(); v != "" {
+		sp.User = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -124,13 +138,21 @@ func (r *mailboxFolderPermissionResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetMailboxFolderPermissionParams{}
 	sp.Identity = id
-	sp.AccessRights = toStringSlice(ctx, plan.AccessRights, &resp.Diagnostics)
-	sp.SendNotificationToUser = plan.SendNotificationToUser.ValueBool()
+	if !plan.AccessRights.Equal(state.AccessRights) {
+		if !plan.AccessRights.IsNull() && !plan.AccessRights.IsUnknown() {
+			sp.AccessRights = append([]string{}, toStringSlice(ctx, plan.AccessRights, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SendNotificationToUser.Equal(state.SendNotificationToUser) {
+		if !plan.SendNotificationToUser.IsUnknown() {
+			sp.SendNotificationToUser = plan.SendNotificationToUser.ValueBoolPointer()
+		}
+	}
 	if v := plan.SharingPermissionFlags.ValueString(); v != "" {
-		sp.SharingPermissionFlags = v
+		sp.SharingPermissionFlags = objectParam(v)
 	}
 	if v := plan.User.ValueString(); v != "" {
-		sp.User = v
+		sp.User = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,10 +162,7 @@ func (r *mailboxFolderPermissionResource) Update(ctx context.Context, req resour
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"SharingPermissionFlags": cfg.SharingPermissionFlags,
-		"User":                   cfg.User,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -156,6 +175,50 @@ func (r *mailboxFolderPermissionResource) Delete(_ context.Context, _ resource.D
 func (r *mailboxFolderPermissionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxFolderPermissionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxFolderPermissionModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxFolderPermission(ctx, exo.GetMailboxFolderPermissionParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxFolderPermissionModel
+	readMailboxFolderPermission(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AccessRights.IsUnknown() {
+		plan.AccessRights = cur.AccessRights
+	}
+	if plan.SendNotificationToUser.IsUnknown() {
+		plan.SendNotificationToUser = cur.SendNotificationToUser
+	}
+	if plan.SharingPermissionFlags.IsUnknown() {
+		plan.SharingPermissionFlags = cur.SharingPermissionFlags
+	}
+	if plan.User.IsUnknown() {
+		plan.User = cur.User
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxFolderPermissionResource) identityOf(m mailboxFolderPermissionModel) string {
@@ -196,8 +259,8 @@ func readMailboxFolderPermission(ctx context.Context, obj map[string]any, m *mai
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.AccessRights = stringSetValue(ctx, getStringSlice(obj, "AccessRights"))
 	m.SendNotificationToUser = types.BoolValue(getBool(obj, "SendNotificationToUser"))
-	m.SharingPermissionFlags = types.StringValue(getString(obj, "SharingPermissionFlags"))
-	m.User = types.StringValue(getString(obj, "User"))
+	m.SharingPermissionFlags = types.StringValue(getObjectJSON(obj, "SharingPermissionFlags"))
+	m.User = types.StringValue(getObjectJSON(obj, "User"))
 	_ = ctx
 }
 

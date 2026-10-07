@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &mailboxRegionalConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxRegionalConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxRegionalConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxRegionalConfigurationResource{}
 )
 
 type mailboxRegionalConfigurationResource struct{ client *clients.Client }
@@ -82,22 +83,37 @@ func (r *mailboxRegionalConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxRegionalConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxRegionalConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.Archive = plan.Archive.ValueBool()
-	sp.DateFormat = plan.DateFormat.ValueString()
-	if v := plan.Language.ValueString(); v != "" {
-		sp.Language = v
+	if !config.Archive.IsNull() {
+		sp.Archive = plan.Archive.ValueBool()
 	}
-	sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
-	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = v
+	if !config.DateFormat.IsNull() {
+		sp.DateFormat = plan.DateFormat.ValueString()
 	}
-	sp.TimeFormat = plan.TimeFormat.ValueString()
-	if v := plan.TimeZone.ValueString(); v != "" {
-		sp.TimeZone = v
+	if v := config.Language.ValueString(); v != "" {
+		sp.Language = objectParam(v)
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !config.LocalizeDefaultFolderName.IsNull() {
+		sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
+	}
+	if v := config.MailboxLocation.ValueString(); v != "" {
+		sp.MailboxLocation = objectParam(v)
+	}
+	if !config.TimeFormat.IsNull() {
+		sp.TimeFormat = plan.TimeFormat.ValueString()
+	}
+	if v := config.TimeZone.ValueString(); v != "" {
+		sp.TimeZone = objectParam(v)
+	}
+	if !config.UseCustomRouting.IsNull() {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -137,20 +153,30 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetMailboxRegionalConfigurationParams{}
 	sp.Identity = id
-	sp.Archive = plan.Archive.ValueBool()
-	sp.DateFormat = plan.DateFormat.ValueString()
+	if !plan.Archive.Equal(state.Archive) {
+		sp.Archive = plan.Archive.ValueBool()
+	}
+	if !plan.DateFormat.Equal(state.DateFormat) {
+		sp.DateFormat = plan.DateFormat.ValueString()
+	}
 	if v := plan.Language.ValueString(); v != "" {
-		sp.Language = v
+		sp.Language = objectParam(v)
 	}
-	sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
+	if !plan.LocalizeDefaultFolderName.Equal(state.LocalizeDefaultFolderName) {
+		sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
+	}
 	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = v
+		sp.MailboxLocation = objectParam(v)
 	}
-	sp.TimeFormat = plan.TimeFormat.ValueString()
+	if !plan.TimeFormat.Equal(state.TimeFormat) {
+		sp.TimeFormat = plan.TimeFormat.ValueString()
+	}
 	if v := plan.TimeZone.ValueString(); v != "" {
-		sp.TimeZone = v
+		sp.TimeZone = objectParam(v)
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -160,11 +186,8 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DateFormat":      cfg.DateFormat,
-		"Language":        cfg.Language,
-		"MailboxLocation": cfg.MailboxLocation,
-		"TimeFormat":      cfg.TimeFormat,
-		"TimeZone":        cfg.TimeZone,
+		"DateFormat": cfg.DateFormat,
+		"TimeFormat": cfg.TimeFormat,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -178,6 +201,62 @@ func (r *mailboxRegionalConfigurationResource) Delete(_ context.Context, _ resou
 func (r *mailboxRegionalConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxRegionalConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxRegionalConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxRegionalConfiguration(ctx, exo.GetMailboxRegionalConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxRegionalConfigurationModel
+	readMailboxRegionalConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Archive.IsUnknown() {
+		plan.Archive = cur.Archive
+	}
+	if plan.DateFormat.IsUnknown() {
+		plan.DateFormat = cur.DateFormat
+	}
+	if plan.Language.IsUnknown() {
+		plan.Language = cur.Language
+	}
+	if plan.LocalizeDefaultFolderName.IsUnknown() {
+		plan.LocalizeDefaultFolderName = cur.LocalizeDefaultFolderName
+	}
+	if plan.MailboxLocation.IsUnknown() {
+		plan.MailboxLocation = cur.MailboxLocation
+	}
+	if plan.TimeFormat.IsUnknown() {
+		plan.TimeFormat = cur.TimeFormat
+	}
+	if plan.TimeZone.IsUnknown() {
+		plan.TimeZone = cur.TimeZone
+	}
+	if plan.UseCustomRouting.IsUnknown() {
+		plan.UseCustomRouting = cur.UseCustomRouting
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxRegionalConfigurationResource) identityOf(m mailboxRegionalConfigurationModel) string {
@@ -218,11 +297,11 @@ func readMailboxRegionalConfiguration(ctx context.Context, obj map[string]any, m
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Archive = types.BoolValue(getBool(obj, "Archive"))
 	m.DateFormat = types.StringValue(getString(obj, "DateFormat"))
-	m.Language = types.StringValue(getString(obj, "Language"))
+	m.Language = types.StringValue(getObjectJSON(obj, "Language"))
 	m.LocalizeDefaultFolderName = types.BoolValue(getBool(obj, "LocalizeDefaultFolderName"))
-	m.MailboxLocation = types.StringValue(getString(obj, "MailboxLocation"))
+	m.MailboxLocation = types.StringValue(getObjectJSON(obj, "MailboxLocation"))
 	m.TimeFormat = types.StringValue(getString(obj, "TimeFormat"))
-	m.TimeZone = types.StringValue(getString(obj, "TimeZone"))
+	m.TimeZone = types.StringValue(getObjectJSON(obj, "TimeZone"))
 	m.UseCustomRouting = types.BoolValue(getBool(obj, "UseCustomRouting"))
 	_ = ctx
 }

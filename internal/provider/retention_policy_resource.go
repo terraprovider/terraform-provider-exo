@@ -52,7 +52,7 @@ func (r *retentionPolicyResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the RetentionPolicy object via New-RetentionPolicy / Get-RetentionPolicy / Set-RetentionPolicy / Remove-RetentionPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_default":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_default_arbitration_mailbox": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefaultArbitrationMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                           schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -76,14 +76,29 @@ func (r *retentionPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	p := exo.NewRetentionPolicyParams{
-		IsDefault:                   plan.IsDefault.ValueBool(),
-		IsDefaultArbitrationMailbox: plan.IsDefaultArbitrationMailbox.ValueBool(),
-		Name:                        plan.Name.ValueString(),
-		RetentionPolicyTagLinks:     toStringSlice(ctx, plan.RetentionPolicyTagLinks, &resp.Diagnostics),
+	var config retentionPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.RetentionId.ValueString(); v != "" {
-		p.RetentionId = v
+
+	p := exo.NewRetentionPolicyParams{}
+	if !config.IsDefault.IsNull() {
+		p.IsDefault = plan.IsDefault.ValueBool()
+	}
+	if !config.IsDefaultArbitrationMailbox.IsNull() {
+		p.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.RetentionId.IsNull() {
+		p.RetentionId = plan.RetentionId.ValueString()
+	}
+	if !config.RetentionPolicyTagLinks.IsNull() {
+		if v := toStringSlice(ctx, plan.RetentionPolicyTagLinks, &resp.Diagnostics); len(v) > 0 {
+			p.RetentionPolicyTagLinks = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -135,12 +150,20 @@ func (r *retentionPolicyResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetRetentionPolicyParams{}
 	sp.Identity = id
-	sp.IsDefault = plan.IsDefault.ValueBool()
-	sp.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBool()
-	if v := plan.RetentionId.ValueString(); v != "" {
-		sp.RetentionId = v
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		sp.IsDefault = plan.IsDefault.ValueBool()
 	}
-	sp.RetentionPolicyTagLinks = toStringSlice(ctx, plan.RetentionPolicyTagLinks, &resp.Diagnostics)
+	if !plan.IsDefaultArbitrationMailbox.Equal(state.IsDefaultArbitrationMailbox) {
+		sp.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBool()
+	}
+	if !plan.RetentionId.Equal(state.RetentionId) {
+		sp.RetentionId = plan.RetentionId.ValueString()
+	}
+	if !plan.RetentionPolicyTagLinks.Equal(state.RetentionPolicyTagLinks) {
+		if !plan.RetentionPolicyTagLinks.IsNull() && !plan.RetentionPolicyTagLinks.IsUnknown() {
+			sp.RetentionPolicyTagLinks = append([]string{}, toStringSlice(ctx, plan.RetentionPolicyTagLinks, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,8 +38,8 @@ type sweepRuleModel struct {
 	Identity          types.String `tfsdk:"identity"`
 	DestinationFolder types.String `tfsdk:"destination_folder"`
 	Enabled           types.Bool   `tfsdk:"enabled"`
-	KeepForDays       types.String `tfsdk:"keep_for_days"`
-	KeepLatest        types.String `tfsdk:"keep_latest"`
+	KeepForDays       types.Int64  `tfsdk:"keep_for_days"`
+	KeepLatest        types.Int64  `tfsdk:"keep_latest"`
 	Mailbox           types.String `tfsdk:"mailbox"`
 	Name              types.String `tfsdk:"name"`
 	Provider          types.String `tfsdk:"provider_"`
@@ -56,11 +57,11 @@ func (r *sweepRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 		Description: "Manages the SweepRule object via New-SweepRule / Get-SweepRule / Set-SweepRule / Remove-SweepRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_folder": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DestinationFolder parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"keep_for_days":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -KeepForDays parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"keep_latest":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -KeepLatest parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"keep_for_days":      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -KeepForDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"keep_latest":        schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -KeepLatest parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"mailbox":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":               schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"provider_":          schema.StringAttribute{Required: true, Description: "Maps to the -Provider parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -85,31 +86,48 @@ func (r *sweepRuleResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	p := exo.NewSweepRuleParams{
-		Enabled:  plan.Enabled.ValueBool(),
-		Name:     plan.Name.ValueString(),
-		Provider: plan.Provider.ValueString(),
+	var config sweepRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.DestinationFolder.ValueString(); v != "" {
-		p.DestinationFolder = v
+
+	p := exo.NewSweepRuleParams{}
+	if v := config.DestinationFolder.ValueString(); v != "" {
+		p.DestinationFolder = objectParam(v)
 	}
-	if v := plan.KeepForDays.ValueString(); v != "" {
-		p.KeepForDays = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.KeepLatest.ValueString(); v != "" {
-		p.KeepLatest = v
+	if !config.KeepForDays.IsNull() {
+		if !plan.KeepForDays.IsUnknown() {
+			p.KeepForDays = plan.KeepForDays.ValueInt64Pointer()
+		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		p.Mailbox = v
+	if !config.KeepLatest.IsNull() {
+		if !plan.KeepLatest.IsUnknown() {
+			p.KeepLatest = plan.KeepLatest.ValueInt64Pointer()
+		}
 	}
-	if v := plan.Sender.ValueString(); v != "" {
-		p.Sender = v
+	if v := config.Mailbox.ValueString(); v != "" {
+		p.Mailbox = objectParam(v)
 	}
-	if v := plan.SourceFolder.ValueString(); v != "" {
-		p.SourceFolder = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
-	if v := plan.SystemCategory.ValueString(); v != "" {
-		p.SystemCategory = v
+	if !config.Provider.IsNull() {
+		p.Provider = plan.Provider.ValueString()
+	}
+	if v := config.Sender.ValueString(); v != "" {
+		p.Sender = objectParam(v)
+	}
+	if v := config.SourceFolder.ValueString(); v != "" {
+		p.SourceFolder = objectParam(v)
+	}
+	if v := config.SystemCategory.ValueString(); v != "" {
+		p.SystemCategory = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -162,26 +180,34 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	sp := exo.SetSweepRuleParams{}
 	sp.Identity = id
 	if v := plan.DestinationFolder.ValueString(); v != "" {
-		sp.DestinationFolder = v
+		sp.DestinationFolder = objectParam(v)
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.KeepForDays.ValueString(); v != "" {
-		sp.KeepForDays = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.KeepLatest.ValueString(); v != "" {
-		sp.KeepLatest = v
+	if !plan.KeepForDays.Equal(state.KeepForDays) {
+		if !plan.KeepForDays.IsUnknown() {
+			sp.KeepForDays = plan.KeepForDays.ValueInt64Pointer()
+		}
+	}
+	if !plan.KeepLatest.Equal(state.KeepLatest) {
+		if !plan.KeepLatest.IsUnknown() {
+			sp.KeepLatest = plan.KeepLatest.ValueInt64Pointer()
+		}
 	}
 	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = v
+		sp.Mailbox = objectParam(v)
 	}
 	if v := plan.Sender.ValueString(); v != "" {
-		sp.Sender = v
+		sp.Sender = objectParam(v)
 	}
 	if v := plan.SourceFolder.ValueString(); v != "" {
-		sp.SourceFolder = v
+		sp.SourceFolder = objectParam(v)
 	}
 	if v := plan.SystemCategory.ValueString(); v != "" {
-		sp.SystemCategory = v
+		sp.SystemCategory = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -191,15 +217,7 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DestinationFolder": cfg.DestinationFolder,
-		"KeepForDays":       cfg.KeepForDays,
-		"KeepLatest":        cfg.KeepLatest,
-		"Mailbox":           cfg.Mailbox,
-		"Sender":            cfg.Sender,
-		"SourceFolder":      cfg.SourceFolder,
-		"SystemCategory":    cfg.SystemCategory,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -260,24 +278,24 @@ func (r *sweepRuleResource) refresh(ctx context.Context, identity string, m *swe
 func readSweepRule(ctx context.Context, obj map[string]any, m *sweepRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.DestinationFolder = types.StringValue(getString(obj, "DestinationFolder"))
+	m.DestinationFolder = types.StringValue(getObjectJSON(obj, "DestinationFolder"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.KeepForDays = types.StringValue(getString(obj, "KeepForDays"))
-	m.KeepLatest = types.StringValue(getString(obj, "KeepLatest"))
-	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
+	m.KeepForDays = types.Int64Value(getInt(obj, "KeepForDays"))
+	m.KeepLatest = types.Int64Value(getInt(obj, "KeepLatest"))
+	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Provider = types.StringValue(getString(obj, "Provider"))
-	m.Sender = types.StringValue(getString(obj, "Sender"))
-	m.SourceFolder = types.StringValue(getString(obj, "SourceFolder"))
-	m.SystemCategory = types.StringValue(getString(obj, "SystemCategory"))
+	m.Sender = types.StringValue(getObjectJSON(obj, "Sender"))
+	m.SourceFolder = types.StringValue(getObjectJSON(obj, "SourceFolder"))
+	m.SystemCategory = types.StringValue(getObjectJSON(obj, "SystemCategory"))
 	_ = ctx
 }
 
 func (r *sweepRuleResource) reconcileState(cfg, read *sweepRuleModel) {
 	read.DestinationFolder = reconcile.KeepStr(cfg.DestinationFolder, read.DestinationFolder)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
-	read.KeepForDays = reconcile.KeepStr(cfg.KeepForDays, read.KeepForDays)
-	read.KeepLatest = reconcile.KeepStr(cfg.KeepLatest, read.KeepLatest)
+	read.KeepForDays = reconcile.KeepInt64(cfg.KeepForDays, read.KeepForDays)
+	read.KeepLatest = reconcile.KeepInt64(cfg.KeepLatest, read.KeepLatest)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Provider = reconcile.KeepStr(cfg.Provider, read.Provider)

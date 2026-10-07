@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -26,6 +27,7 @@ var (
 	_ resource.Resource                = &groupResource{}
 	_ resource.ResourceWithConfigure   = &groupResource{}
 	_ resource.ResourceWithImportState = &groupResource{}
+	_ resource.ResourceWithModifyPlan  = &groupResource{}
 )
 
 type groupResource struct{ client *clients.Client }
@@ -36,14 +38,14 @@ func NewGroupResource() resource.Resource { return &groupResource{} }
 type groupModel struct {
 	ID                  types.String `tfsdk:"id"`
 	Identity            types.String `tfsdk:"identity"`
-	Description         types.String `tfsdk:"description"`
+	Description         types.Set    `tfsdk:"description"`
 	DisplayName         types.String `tfsdk:"display_name"`
 	IsHierarchicalGroup types.Bool   `tfsdk:"is_hierarchical_group"`
 	ManagedBy           types.Set    `tfsdk:"managed_by"`
 	Name                types.String `tfsdk:"name"`
 	Notes               types.String `tfsdk:"notes"`
 	PhoneticDisplayName types.String `tfsdk:"phonetic_display_name"`
-	SeniorityIndex      types.String `tfsdk:"seniority_index"`
+	SeniorityIndex      types.Int64  `tfsdk:"seniority_index"`
 	SimpleDisplayName   types.String `tfsdk:"simple_display_name"`
 	Universal           types.Bool   `tfsdk:"universal"`
 	WindowsEmailAddress types.String `tfsdk:"windows_email_address"`
@@ -59,14 +61,14 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":              schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"description":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"description":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"display_name":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_hierarchical_group": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsHierarchicalGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"managed_by":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"notes":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Notes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phonetic_display_name": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"seniority_index":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"seniority_index":       schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"simple_display_name":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"universal":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Universal parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"windows_email_address": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WindowsEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -87,24 +89,53 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config groupModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetGroupParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.Description.ValueString(); v != "" {
-		sp.Description = v
+	if !config.Description.IsNull() {
+		if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+			sp.Description = append([]string{}, toStringSlice(ctx, plan.Description, &resp.Diagnostics)...)
+		}
 	}
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBool()
-	sp.ManagedBy = toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !config.DisplayName.IsNull() {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.Universal = plan.Universal.ValueBool()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !config.IsHierarchicalGroup.IsNull() {
+		if !plan.IsHierarchicalGroup.IsUnknown() {
+			sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBoolPointer()
+		}
+	}
+	if !config.ManagedBy.IsNull() {
+		if !plan.ManagedBy.IsNull() && !plan.ManagedBy.IsUnknown() {
+			sp.ManagedBy = append([]string{}, toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)...)
+		}
+	}
+	if !config.Name.IsNull() {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !config.Notes.IsNull() {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !config.PhoneticDisplayName.IsNull() {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !config.SeniorityIndex.IsNull() {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !config.SimpleDisplayName.IsNull() {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !config.Universal.IsNull() {
+		sp.Universal = plan.Universal.ValueBool()
+	}
+	if v := config.WindowsEmailAddress.ValueString(); v != "" {
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -145,22 +176,46 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	id := r.identityOf(state)
 	sp := exo.SetGroupParams{}
 	sp.Identity = id
-	if v := plan.Description.ValueString(); v != "" {
-		sp.Description = v
+	if !plan.Description.Equal(state.Description) {
+		if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+			sp.Description = append([]string{}, toStringSlice(ctx, plan.Description, &resp.Diagnostics)...)
+		}
 	}
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBool()
-	sp.ManagedBy = toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.Universal = plan.Universal.ValueBool()
+	if !plan.IsHierarchicalGroup.Equal(state.IsHierarchicalGroup) {
+		if !plan.IsHierarchicalGroup.IsUnknown() {
+			sp.IsHierarchicalGroup = plan.IsHierarchicalGroup.ValueBoolPointer()
+		}
+	}
+	if !plan.ManagedBy.Equal(state.ManagedBy) {
+		if !plan.ManagedBy.IsNull() && !plan.ManagedBy.IsUnknown() {
+			sp.ManagedBy = append([]string{}, toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.Notes.Equal(state.Notes) {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !plan.SeniorityIndex.Equal(state.SeniorityIndex) {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !plan.Universal.Equal(state.Universal) {
+		sp.Universal = plan.Universal.ValueBool()
+	}
 	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -171,14 +226,11 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Description":         cfg.Description,
 		"DisplayName":         cfg.DisplayName,
 		"Name":                cfg.Name,
 		"Notes":               cfg.Notes,
 		"PhoneticDisplayName": cfg.PhoneticDisplayName,
-		"SeniorityIndex":      cfg.SeniorityIndex,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
-		"WindowsEmailAddress": cfg.WindowsEmailAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -192,6 +244,71 @@ func (r *groupResource) Delete(_ context.Context, _ resource.DeleteRequest, resp
 func (r *groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *groupResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan groupModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetGroup(ctx, exo.GetGroupParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur groupModel
+	readGroup(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Description.IsUnknown() {
+		plan.Description = cur.Description
+	}
+	if plan.DisplayName.IsUnknown() {
+		plan.DisplayName = cur.DisplayName
+	}
+	if plan.IsHierarchicalGroup.IsUnknown() {
+		plan.IsHierarchicalGroup = cur.IsHierarchicalGroup
+	}
+	if plan.ManagedBy.IsUnknown() {
+		plan.ManagedBy = cur.ManagedBy
+	}
+	if plan.Name.IsUnknown() {
+		plan.Name = cur.Name
+	}
+	if plan.Notes.IsUnknown() {
+		plan.Notes = cur.Notes
+	}
+	if plan.PhoneticDisplayName.IsUnknown() {
+		plan.PhoneticDisplayName = cur.PhoneticDisplayName
+	}
+	if plan.SeniorityIndex.IsUnknown() {
+		plan.SeniorityIndex = cur.SeniorityIndex
+	}
+	if plan.SimpleDisplayName.IsUnknown() {
+		plan.SimpleDisplayName = cur.SimpleDisplayName
+	}
+	if plan.Universal.IsUnknown() {
+		plan.Universal = cur.Universal
+	}
+	if plan.WindowsEmailAddress.IsUnknown() {
+		plan.WindowsEmailAddress = cur.WindowsEmailAddress
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *groupResource) identityOf(m groupModel) string {
@@ -230,29 +347,29 @@ func (r *groupResource) refresh(ctx context.Context, identity string, m *groupMo
 
 func readGroup(ctx context.Context, obj map[string]any, m *groupModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.Description = types.StringValue(getString(obj, "Description"))
+	m.Description = stringSetValue(ctx, getStringSlice(obj, "Description"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.IsHierarchicalGroup = types.BoolValue(getBool(obj, "IsHierarchicalGroup"))
 	m.ManagedBy = stringSetValue(ctx, getStringSlice(obj, "ManagedBy"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Notes = types.StringValue(getString(obj, "Notes"))
 	m.PhoneticDisplayName = types.StringValue(getString(obj, "PhoneticDisplayName"))
-	m.SeniorityIndex = types.StringValue(getString(obj, "SeniorityIndex"))
+	m.SeniorityIndex = types.Int64Value(getInt(obj, "SeniorityIndex"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
 	m.Universal = types.BoolValue(getBool(obj, "Universal"))
-	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
+	m.WindowsEmailAddress = types.StringValue(getObjectJSON(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
 func (r *groupResource) reconcileState(cfg, read *groupModel) {
-	read.Description = reconcile.KeepStr(cfg.Description, read.Description)
+	read.Description = reconcile.KeepSet(cfg.Description, read.Description)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
 	read.IsHierarchicalGroup = reconcile.KeepBool(cfg.IsHierarchicalGroup, read.IsHierarchicalGroup)
 	read.ManagedBy = reconcile.KeepSet(cfg.ManagedBy, read.ManagedBy)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Notes = reconcile.KeepStr(cfg.Notes, read.Notes)
 	read.PhoneticDisplayName = reconcile.KeepStr(cfg.PhoneticDisplayName, read.PhoneticDisplayName)
-	read.SeniorityIndex = reconcile.KeepStr(cfg.SeniorityIndex, read.SeniorityIndex)
+	read.SeniorityIndex = reconcile.KeepInt64(cfg.SeniorityIndex, read.SeniorityIndex)
 	read.SimpleDisplayName = reconcile.KeepStr(cfg.SimpleDisplayName, read.SimpleDisplayName)
 	read.Universal = reconcile.KeepBool(cfg.Universal, read.Universal)
 	read.WindowsEmailAddress = reconcile.KeepStr(cfg.WindowsEmailAddress, read.WindowsEmailAddress)

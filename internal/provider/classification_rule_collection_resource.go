@@ -49,7 +49,7 @@ func (r *classificationRuleCollectionResource) Schema(_ context.Context, _ resou
 		Description: "Manages the ClassificationRuleCollection object via New-ClassificationRuleCollection / Get-ClassificationRuleCollection / Set-ClassificationRuleCollection / Remove-ClassificationRuleCollection.",
 		Attributes: map[string]schema.Attribute{
 			"id":        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"file_data": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 		},
 	}
@@ -69,8 +69,17 @@ func (r *classificationRuleCollectionResource) Create(ctx context.Context, req r
 		return
 	}
 
-	p := exo.NewClassificationRuleCollectionParams{
-		FileData: toStringSlice(ctx, plan.FileData, &resp.Diagnostics),
+	var config classificationRuleCollectionModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewClassificationRuleCollectionParams{}
+	if !config.FileData.IsNull() {
+		if v := toStringSlice(ctx, plan.FileData, &resp.Diagnostics); len(v) > 0 {
+			p.FileData = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

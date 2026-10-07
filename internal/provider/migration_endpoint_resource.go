@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -56,6 +57,7 @@ type migrationEndpointModel struct {
 	NspiServer                         types.String `tfsdk:"nspi_server"`
 	OAuthCode                          types.String `tfsdk:"o_auth_code"`
 	Partition                          types.String `tfsdk:"partition"`
+	Port                               types.Int64  `tfsdk:"port"`
 	PublicFolder                       types.Bool   `tfsdk:"public_folder"`
 	PublicFolderDatabaseServerLegacyDN types.String `tfsdk:"public_folder_database_server_legacy_dn"`
 	PublicFolderToUnifiedGroup         types.Bool   `tfsdk:"public_folder_to_unified_group"`
@@ -79,8 +81,8 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 		Description: "Manages the MigrationEndpoint object via New-MigrationEndpoint / Get-MigrationEndpoint / Set-MigrationEndpoint / Remove-MigrationEndpoint.",
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"accept_untrusted_certificates":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptUntrustedCertificates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_untrusted_certificates":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptUntrustedCertificates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"app_secret_key_vault_url":         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -AppSecretKeyVaultUrl parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"application_id":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApplicationId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"authentication":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Authentication parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -100,6 +102,7 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"nspi_server":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NspiServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"o_auth_code":                      schema.StringAttribute{Required: true, Description: "Maps to the -OAuthCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"partition":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"port":                             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_folder":                    schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"public_folder_database_server_legacy_dn": schema.StringAttribute{Required: true, Description: "Maps to the -PublicFolderDatabaseServerLegacyDN parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"public_folder_to_unified_group":          schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolderToUnifiedGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -130,63 +133,115 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	p := exo.NewMigrationEndpointParams{
-		AcceptUntrustedCertificates:        plan.AcceptUntrustedCertificates.ValueBool(),
-		AppSecretKeyVaultUrl:               plan.AppSecretKeyVaultUrl.ValueString(),
-		ApplicationId:                      plan.ApplicationId.ValueString(),
-		Autodiscover:                       plan.Autodiscover.ValueBool(),
-		Compliance:                         plan.Compliance.ValueBool(),
-		ExchangeOutlookAnywhere:            plan.ExchangeOutlookAnywhere.ValueBool(),
-		ExchangeRemoteMove:                 plan.ExchangeRemoteMove.ValueBool(),
-		ExchangeServer:                     plan.ExchangeServer.ValueString(),
-		Gmail:                              plan.Gmail.ValueBool(),
-		IMAP:                               plan.IMAP.ValueBool(),
-		Name:                               plan.Name.ValueString(),
-		NspiServer:                         plan.NspiServer.ValueString(),
-		PublicFolder:                       plan.PublicFolder.ValueBool(),
-		PublicFolderDatabaseServerLegacyDN: plan.PublicFolderDatabaseServerLegacyDN.ValueString(),
-		PublicFolderToUnifiedGroup:         plan.PublicFolderToUnifiedGroup.ValueBool(),
-		RedirectUri:                        plan.RedirectUri.ValueString(),
-		RemoteTenant:                       plan.RemoteTenant.ValueString(),
-		ServiceAccountKeyFileData:          toStringSlice(ctx, plan.ServiceAccountKeyFileData, &resp.Diagnostics),
-		SkipVerification:                   plan.SkipVerification.ValueBool(),
-		SourceMailboxLegacyDN:              plan.SourceMailboxLegacyDN.ValueString(),
+	var config migrationEndpointModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Authentication.ValueString(); v != "" {
-		p.Authentication = v
+
+	p := exo.NewMigrationEndpointParams{}
+	if !config.AcceptUntrustedCertificates.IsNull() {
+		p.AcceptUntrustedCertificates = plan.AcceptUntrustedCertificates.ValueBool()
 	}
-	if v := plan.Credentials.ValueString(); v != "" {
-		p.Credentials = v
+	if !config.AppSecretKeyVaultUrl.IsNull() {
+		p.AppSecretKeyVaultUrl = plan.AppSecretKeyVaultUrl.ValueString()
 	}
-	if v := plan.EmailAddress.ValueString(); v != "" {
-		p.EmailAddress = v
+	if !config.ApplicationId.IsNull() {
+		p.ApplicationId = plan.ApplicationId.ValueString()
 	}
-	if v := plan.MailboxPermission.ValueString(); v != "" {
-		p.MailboxPermission = v
+	if v := config.Authentication.ValueString(); v != "" {
+		p.Authentication = objectParam(v)
 	}
-	if v := plan.MaxConcurrentIncrementalSyncs.ValueString(); v != "" {
-		p.MaxConcurrentIncrementalSyncs = v
+	if !config.Autodiscover.IsNull() {
+		p.Autodiscover = plan.Autodiscover.ValueBool()
 	}
-	if v := plan.MaxConcurrentMigrations.ValueString(); v != "" {
-		p.MaxConcurrentMigrations = v
+	if !config.Compliance.IsNull() {
+		p.Compliance = plan.Compliance.ValueBool()
 	}
-	if v := plan.OAuthCode.ValueString(); v != "" {
-		p.OAuthCode = v
+	if v := config.Credentials.ValueString(); v != "" {
+		p.Credentials = objectParam(v)
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		p.Partition = v
+	if v := config.EmailAddress.ValueString(); v != "" {
+		p.EmailAddress = objectParam(v)
 	}
-	if v := plan.RPCProxyServer.ValueString(); v != "" {
-		p.RPCProxyServer = v
+	if !config.ExchangeOutlookAnywhere.IsNull() {
+		p.ExchangeOutlookAnywhere = plan.ExchangeOutlookAnywhere.ValueBool()
 	}
-	if v := plan.RemoteServer.ValueString(); v != "" {
-		p.RemoteServer = v
+	if !config.ExchangeRemoteMove.IsNull() {
+		p.ExchangeRemoteMove = plan.ExchangeRemoteMove.ValueBool()
 	}
-	if v := plan.Security.ValueString(); v != "" {
-		p.Security = v
+	if !config.ExchangeServer.IsNull() {
+		p.ExchangeServer = plan.ExchangeServer.ValueString()
 	}
-	if v := plan.TestMailbox.ValueString(); v != "" {
-		p.TestMailbox = v
+	if !config.Gmail.IsNull() {
+		p.Gmail = plan.Gmail.ValueBool()
+	}
+	if !config.IMAP.IsNull() {
+		p.IMAP = plan.IMAP.ValueBool()
+	}
+	if v := config.MailboxPermission.ValueString(); v != "" {
+		p.MailboxPermission = objectParam(v)
+	}
+	if v := config.MaxConcurrentIncrementalSyncs.ValueString(); v != "" {
+		p.MaxConcurrentIncrementalSyncs = objectParam(v)
+	}
+	if v := config.MaxConcurrentMigrations.ValueString(); v != "" {
+		p.MaxConcurrentMigrations = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.NspiServer.IsNull() {
+		p.NspiServer = plan.NspiServer.ValueString()
+	}
+	if v := config.OAuthCode.ValueString(); v != "" {
+		p.OAuthCode = objectParam(v)
+	}
+	if v := config.Partition.ValueString(); v != "" {
+		p.Partition = objectParam(v)
+	}
+	if !config.Port.IsNull() {
+		if !plan.Port.IsUnknown() {
+			p.Port = plan.Port.ValueInt64Pointer()
+		}
+	}
+	if !config.PublicFolder.IsNull() {
+		p.PublicFolder = plan.PublicFolder.ValueBool()
+	}
+	if !config.PublicFolderDatabaseServerLegacyDN.IsNull() {
+		p.PublicFolderDatabaseServerLegacyDN = plan.PublicFolderDatabaseServerLegacyDN.ValueString()
+	}
+	if !config.PublicFolderToUnifiedGroup.IsNull() {
+		p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBool()
+	}
+	if v := config.RPCProxyServer.ValueString(); v != "" {
+		p.RPCProxyServer = objectParam(v)
+	}
+	if !config.RedirectUri.IsNull() {
+		p.RedirectUri = plan.RedirectUri.ValueString()
+	}
+	if v := config.RemoteServer.ValueString(); v != "" {
+		p.RemoteServer = objectParam(v)
+	}
+	if !config.RemoteTenant.IsNull() {
+		p.RemoteTenant = plan.RemoteTenant.ValueString()
+	}
+	if v := config.Security.ValueString(); v != "" {
+		p.Security = objectParam(v)
+	}
+	if !config.ServiceAccountKeyFileData.IsNull() {
+		if v := toStringSlice(ctx, plan.ServiceAccountKeyFileData, &resp.Diagnostics); len(v) > 0 {
+			p.ServiceAccountKeyFileData = v
+		}
+	}
+	if !config.SkipVerification.IsNull() {
+		p.SkipVerification = plan.SkipVerification.ValueBool()
+	}
+	if !config.SourceMailboxLegacyDN.IsNull() {
+		p.SourceMailboxLegacyDN = plan.SourceMailboxLegacyDN.ValueString()
+	}
+	if v := config.TestMailbox.ValueString(); v != "" {
+		p.TestMailbox = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -238,32 +293,46 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetMigrationEndpointParams{}
 	sp.Identity = id
-	sp.AcceptUntrustedCertificates = plan.AcceptUntrustedCertificates.ValueBool()
-	sp.AppSecretKeyVaultUrl = plan.AppSecretKeyVaultUrl.ValueString()
-	sp.ApplicationId = plan.ApplicationId.ValueString()
-	if v := plan.Authentication.ValueString(); v != "" {
-		sp.Authentication = v
+	if !plan.AppSecretKeyVaultUrl.Equal(state.AppSecretKeyVaultUrl) {
+		sp.AppSecretKeyVaultUrl = plan.AppSecretKeyVaultUrl.ValueString()
 	}
-	sp.ExchangeServer = plan.ExchangeServer.ValueString()
+	if !plan.ApplicationId.Equal(state.ApplicationId) {
+		sp.ApplicationId = plan.ApplicationId.ValueString()
+	}
+	if v := plan.Authentication.ValueString(); v != "" {
+		sp.Authentication = objectParam(v)
+	}
+	if !plan.ExchangeServer.Equal(state.ExchangeServer) {
+		sp.ExchangeServer = plan.ExchangeServer.ValueString()
+	}
 	if v := plan.MailboxPermission.ValueString(); v != "" {
-		sp.MailboxPermission = v
+		sp.MailboxPermission = objectParam(v)
 	}
 	if v := plan.MaxConcurrentIncrementalSyncs.ValueString(); v != "" {
-		sp.MaxConcurrentIncrementalSyncs = v
+		sp.MaxConcurrentIncrementalSyncs = objectParam(v)
 	}
 	if v := plan.MaxConcurrentMigrations.ValueString(); v != "" {
-		sp.MaxConcurrentMigrations = v
+		sp.MaxConcurrentMigrations = objectParam(v)
 	}
-	sp.NspiServer = plan.NspiServer.ValueString()
+	if !plan.NspiServer.Equal(state.NspiServer) {
+		sp.NspiServer = plan.NspiServer.ValueString()
+	}
 	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+		sp.Partition = objectParam(v)
+	}
+	if !plan.Port.Equal(state.Port) {
+		if !plan.Port.IsUnknown() {
+			sp.Port = plan.Port.ValueInt64Pointer()
+		}
 	}
 	if v := plan.Security.ValueString(); v != "" {
-		sp.Security = v
+		sp.Security = objectParam(v)
 	}
-	sp.SkipVerification = plan.SkipVerification.ValueBool()
+	if !plan.SkipVerification.Equal(state.SkipVerification) {
+		sp.SkipVerification = plan.SkipVerification.ValueBool()
+	}
 	if v := plan.TestMailbox.ValueString(); v != "" {
-		sp.TestMailbox = v
+		sp.TestMailbox = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -274,17 +343,10 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AppSecretKeyVaultUrl":          cfg.AppSecretKeyVaultUrl,
-		"ApplicationId":                 cfg.ApplicationId,
-		"Authentication":                cfg.Authentication,
-		"ExchangeServer":                cfg.ExchangeServer,
-		"MailboxPermission":             cfg.MailboxPermission,
-		"MaxConcurrentIncrementalSyncs": cfg.MaxConcurrentIncrementalSyncs,
-		"MaxConcurrentMigrations":       cfg.MaxConcurrentMigrations,
-		"NspiServer":                    cfg.NspiServer,
-		"Partition":                     cfg.Partition,
-		"Security":                      cfg.Security,
-		"TestMailbox":                   cfg.TestMailbox,
+		"AppSecretKeyVaultUrl": cfg.AppSecretKeyVaultUrl,
+		"ApplicationId":        cfg.ApplicationId,
+		"ExchangeServer":       cfg.ExchangeServer,
+		"NspiServer":           cfg.NspiServer,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -349,35 +411,36 @@ func readMigrationEndpoint(ctx context.Context, obj map[string]any, m *migration
 	m.AcceptUntrustedCertificates = types.BoolValue(getBool(obj, "AcceptUntrustedCertificates"))
 	m.AppSecretKeyVaultUrl = types.StringValue(getString(obj, "AppSecretKeyVaultUrl"))
 	m.ApplicationId = types.StringValue(getString(obj, "ApplicationId"))
-	m.Authentication = types.StringValue(getString(obj, "Authentication"))
+	m.Authentication = types.StringValue(getObjectJSON(obj, "Authentication"))
 	m.Autodiscover = types.BoolValue(getBool(obj, "Autodiscover"))
 	m.Compliance = types.BoolValue(getBool(obj, "Compliance"))
-	m.Credentials = types.StringValue(getString(obj, "Credentials"))
-	m.EmailAddress = types.StringValue(getString(obj, "EmailAddress"))
+	m.Credentials = types.StringValue(getObjectJSON(obj, "Credentials"))
+	m.EmailAddress = types.StringValue(getObjectJSON(obj, "EmailAddress"))
 	m.ExchangeOutlookAnywhere = types.BoolValue(getBool(obj, "ExchangeOutlookAnywhere"))
 	m.ExchangeRemoteMove = types.BoolValue(getBool(obj, "ExchangeRemoteMove"))
 	m.ExchangeServer = types.StringValue(getString(obj, "ExchangeServer"))
 	m.Gmail = types.BoolValue(getBool(obj, "Gmail"))
 	m.IMAP = types.BoolValue(getBool(obj, "IMAP"))
-	m.MailboxPermission = types.StringValue(getString(obj, "MailboxPermission"))
-	m.MaxConcurrentIncrementalSyncs = types.StringValue(getString(obj, "MaxConcurrentIncrementalSyncs"))
-	m.MaxConcurrentMigrations = types.StringValue(getString(obj, "MaxConcurrentMigrations"))
+	m.MailboxPermission = types.StringValue(getObjectJSON(obj, "MailboxPermission"))
+	m.MaxConcurrentIncrementalSyncs = types.StringValue(getObjectJSON(obj, "MaxConcurrentIncrementalSyncs"))
+	m.MaxConcurrentMigrations = types.StringValue(getObjectJSON(obj, "MaxConcurrentMigrations"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NspiServer = types.StringValue(getString(obj, "NspiServer"))
-	m.OAuthCode = types.StringValue(getString(obj, "OAuthCode"))
-	m.Partition = types.StringValue(getString(obj, "Partition"))
+	m.OAuthCode = types.StringValue(getObjectJSON(obj, "OAuthCode"))
+	m.Partition = types.StringValue(getObjectJSON(obj, "Partition"))
+	m.Port = types.Int64Value(getInt(obj, "Port"))
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
 	m.PublicFolderDatabaseServerLegacyDN = types.StringValue(getString(obj, "PublicFolderDatabaseServerLegacyDN"))
 	m.PublicFolderToUnifiedGroup = types.BoolValue(getBool(obj, "PublicFolderToUnifiedGroup"))
-	m.RPCProxyServer = types.StringValue(getString(obj, "RPCProxyServer"))
+	m.RPCProxyServer = types.StringValue(getObjectJSON(obj, "RPCProxyServer"))
 	m.RedirectUri = types.StringValue(getString(obj, "RedirectUri"))
-	m.RemoteServer = types.StringValue(getString(obj, "RemoteServer"))
+	m.RemoteServer = types.StringValue(getObjectJSON(obj, "RemoteServer"))
 	m.RemoteTenant = types.StringValue(getString(obj, "RemoteTenant"))
-	m.Security = types.StringValue(getString(obj, "Security"))
+	m.Security = types.StringValue(getObjectJSON(obj, "Security"))
 	m.ServiceAccountKeyFileData = stringSetValue(ctx, getStringSlice(obj, "ServiceAccountKeyFileData"))
 	m.SkipVerification = types.BoolValue(getBool(obj, "SkipVerification"))
 	m.SourceMailboxLegacyDN = types.StringValue(getString(obj, "SourceMailboxLegacyDN"))
-	m.TestMailbox = types.StringValue(getString(obj, "TestMailbox"))
+	m.TestMailbox = types.StringValue(getObjectJSON(obj, "TestMailbox"))
 	_ = ctx
 }
 
@@ -402,6 +465,7 @@ func (r *migrationEndpointResource) reconcileState(cfg, read *migrationEndpointM
 	read.NspiServer = reconcile.KeepStr(cfg.NspiServer, read.NspiServer)
 	read.OAuthCode = reconcile.KeepStr(cfg.OAuthCode, read.OAuthCode)
 	read.Partition = reconcile.KeepStr(cfg.Partition, read.Partition)
+	read.Port = reconcile.KeepInt64(cfg.Port, read.Port)
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)
 	read.PublicFolderDatabaseServerLegacyDN = reconcile.KeepStr(cfg.PublicFolderDatabaseServerLegacyDN, read.PublicFolderDatabaseServerLegacyDN)
 	read.PublicFolderToUnifiedGroup = reconcile.KeepBool(cfg.PublicFolderToUnifiedGroup, read.PublicFolderToUnifiedGroup)

@@ -39,8 +39,8 @@ func (d *ldapDirectoryDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"id_":          schema.StringAttribute{Computed: true, Description: "Maps to the -Id parameter."},
 			"no_ssl":       schema.BoolAttribute{Computed: true, Description: "Maps to the -NoSsl parameter."},
 			"organization": schema.StringAttribute{Computed: true, Description: "Maps to the -Organization parameter."},
-			"port":         schema.StringAttribute{Computed: true, Description: "Maps to the -Port parameter."},
-			"timeout_sec":  schema.StringAttribute{Computed: true, Description: "Maps to the -TimeoutSec parameter."},
+			"port":         schema.Int64Attribute{Computed: true, Description: "Maps to the -Port parameter."},
+			"timeout_sec":  schema.Int64Attribute{Computed: true, Description: "Maps to the -TimeoutSec parameter."},
 			"use_ssl":      schema.BoolAttribute{Computed: true, Description: "Maps to the -UseSsl parameter."},
 		},
 	}

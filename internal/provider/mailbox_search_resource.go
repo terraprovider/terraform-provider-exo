@@ -53,7 +53,7 @@ func (r *mailboxSearchResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Manages the MailboxSearch object via New-MailboxSearch / Get-MailboxSearch / Set-MailboxSearch / Remove-MailboxSearch.",
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"description":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"in_place_hold_enabled":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InPlaceHoldEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"in_place_hold_identity": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InPlaceHoldIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -78,15 +78,34 @@ func (r *mailboxSearchResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	p := exo.NewMailboxSearchParams{
-		Description:         plan.Description.ValueString(),
-		InPlaceHoldEnabled:  plan.InPlaceHoldEnabled.ValueBool(),
-		InPlaceHoldIdentity: plan.InPlaceHoldIdentity.ValueString(),
-		Name:                plan.Name.ValueString(),
-		SourceMailboxes:     toStringSlice(ctx, plan.SourceMailboxes, &resp.Diagnostics),
+	var config mailboxSearchModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ItemHoldPeriod.ValueString(); v != "" {
-		p.ItemHoldPeriod = v
+
+	p := exo.NewMailboxSearchParams{}
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
+	}
+	if !config.InPlaceHoldEnabled.IsNull() {
+		if !plan.InPlaceHoldEnabled.IsUnknown() {
+			p.InPlaceHoldEnabled = plan.InPlaceHoldEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.InPlaceHoldIdentity.IsNull() {
+		p.InPlaceHoldIdentity = plan.InPlaceHoldIdentity.ValueString()
+	}
+	if v := config.ItemHoldPeriod.ValueString(); v != "" {
+		p.ItemHoldPeriod = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.SourceMailboxes.IsNull() {
+		if v := toStringSlice(ctx, plan.SourceMailboxes, &resp.Diagnostics); len(v) > 0 {
+			p.SourceMailboxes = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -138,12 +157,22 @@ func (r *mailboxSearchResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetMailboxSearchParams{}
 	sp.Identity = id
-	sp.Description = plan.Description.ValueString()
-	sp.InPlaceHoldEnabled = plan.InPlaceHoldEnabled.ValueBool()
-	if v := plan.ItemHoldPeriod.ValueString(); v != "" {
-		sp.ItemHoldPeriod = v
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
 	}
-	sp.SourceMailboxes = toStringSlice(ctx, plan.SourceMailboxes, &resp.Diagnostics)
+	if !plan.InPlaceHoldEnabled.Equal(state.InPlaceHoldEnabled) {
+		if !plan.InPlaceHoldEnabled.IsUnknown() {
+			sp.InPlaceHoldEnabled = plan.InPlaceHoldEnabled.ValueBoolPointer()
+		}
+	}
+	if v := plan.ItemHoldPeriod.ValueString(); v != "" {
+		sp.ItemHoldPeriod = objectParam(v)
+	}
+	if !plan.SourceMailboxes.Equal(state.SourceMailboxes) {
+		if !plan.SourceMailboxes.IsNull() && !plan.SourceMailboxes.IsUnknown() {
+			sp.SourceMailboxes = append([]string{}, toStringSlice(ctx, plan.SourceMailboxes, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -153,8 +182,7 @@ func (r *mailboxSearchResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Description":    cfg.Description,
-		"ItemHoldPeriod": cfg.ItemHoldPeriod,
+		"Description": cfg.Description,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -219,7 +247,7 @@ func readMailboxSearch(ctx context.Context, obj map[string]any, m *mailboxSearch
 	m.Description = types.StringValue(getString(obj, "Description"))
 	m.InPlaceHoldEnabled = types.BoolValue(getBool(obj, "InPlaceHoldEnabled"))
 	m.InPlaceHoldIdentity = types.StringValue(getString(obj, "InPlaceHoldIdentity"))
-	m.ItemHoldPeriod = types.StringValue(getString(obj, "ItemHoldPeriod"))
+	m.ItemHoldPeriod = types.StringValue(getObjectJSON(obj, "ItemHoldPeriod"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.SourceMailboxes = stringSetValue(ctx, getStringSlice(obj, "SourceMailboxes"))
 	_ = ctx

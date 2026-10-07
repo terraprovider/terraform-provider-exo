@@ -22,18 +22,19 @@ Manages the ClientAccessRule configuration via Set-ClientAccessRule.
 ### Optional
 
 - `action` (String) Maps to the -Action parameter.
-- `any_of_authentication_types` (String) Maps to the -AnyOfAuthenticationTypes parameter.
-- `any_of_client_ip_addresses_or_ranges` (String) Maps to the -AnyOfClientIPAddressesOrRanges parameter.
-- `any_of_protocols` (String) Maps to the -AnyOfProtocols parameter.
+- `any_of_authentication_types` (Set of String) Maps to the -AnyOfAuthenticationTypes parameter.
+- `any_of_client_ip_addresses_or_ranges` (Set of String) Maps to the -AnyOfClientIPAddressesOrRanges parameter.
+- `any_of_protocols` (Set of String) Maps to the -AnyOfProtocols parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
-- `except_any_of_authentication_types` (String) Maps to the -ExceptAnyOfAuthenticationTypes parameter.
-- `except_any_of_client_ip_addresses_or_ranges` (String) Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter.
-- `except_any_of_protocols` (String) Maps to the -ExceptAnyOfProtocols parameter.
-- `except_username_matches_any_of_patterns` (String) Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter.
+- `except_any_of_authentication_types` (Set of String) Maps to the -ExceptAnyOfAuthenticationTypes parameter.
+- `except_any_of_client_ip_addresses_or_ranges` (Set of String) Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter.
+- `except_any_of_protocols` (Set of String) Maps to the -ExceptAnyOfProtocols parameter.
+- `except_username_matches_any_of_patterns` (Set of String) Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter.
 - `name` (String) Maps to the -Name parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `scope` (String) Maps to the -Scope parameter.
 - `user_recipient_filter` (String) Maps to the -UserRecipientFilter parameter.
-- `username_matches_any_of_patterns` (String) Maps to the -UsernameMatchesAnyOfPatterns parameter.
+- `username_matches_any_of_patterns` (Set of String) Maps to the -UsernameMatchesAnyOfPatterns parameter.
 
 ### Read-Only
 

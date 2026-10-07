@@ -44,5 +44,5 @@ Look up an existing App object. Set identity to select it.
 - `provided_to` (String) Maps to the -ProvidedTo parameter.
 - `update_app_state` (Boolean) Maps to the -UpdateAppState parameter.
 - `url` (String) Maps to the -Url parameter.
-- `user_list` (String) Maps to the -UserList parameter.
+- `user_list` (Set of String) Maps to the -UserList parameter.
 - `version` (String) Maps to the -Version parameter.

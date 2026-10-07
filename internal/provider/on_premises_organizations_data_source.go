@@ -41,7 +41,7 @@ func (d *onPremisesOrganizationListDataSource) Schema(_ context.Context, _ datas
 				"id":                        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":                  schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
 				"comment":                   schema.StringAttribute{Computed: true, Description: "Maps to the -Comment parameter."},
-				"hybrid_domains":            schema.StringAttribute{Computed: true, Description: "Maps to the -HybridDomains parameter."},
+				"hybrid_domains":            schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -HybridDomains parameter."},
 				"inbound_connector":         schema.StringAttribute{Computed: true, Description: "Maps to the -InboundConnector parameter."},
 				"name":                      schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
 				"organization_guid":         schema.StringAttribute{Computed: true, Description: "Maps to the -OrganizationGuid parameter."},

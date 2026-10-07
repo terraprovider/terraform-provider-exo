@@ -22,7 +22,7 @@ Look up an existing UnifiedGroup object. Set identity or name to select it.
 
 ### Read-Only
 
-- `accept_messages_only_from_senders_or_members` (String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
+- `accept_messages_only_from_senders_or_members` (Set of String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
 - `access_type` (String) Maps to the -AccessType parameter.
 - `alias_` (String) Maps to the -Alias parameter.
 - `always_subscribe_members_to_calendar_events` (Boolean) Maps to the -AlwaysSubscribeMembersToCalendarEvents parameter.
@@ -51,36 +51,36 @@ Look up an existing UnifiedGroup object. Set identity or name to select it.
 - `delete_dl_after_migration` (Boolean) Maps to the -DeleteDlAfterMigration parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `dl_identity` (String) Maps to the -DlIdentity parameter.
-- `email_addresses` (String) Maps to the -EmailAddresses parameter.
+- `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
 - `executing_user` (String) Maps to the -ExecutingUser parameter.
 - `exo_error_as_warning` (Boolean) Maps to the -ExoErrorAsWarning parameter.
-- `extension_custom_attribute1` (String) Maps to the -ExtensionCustomAttribute1 parameter.
-- `extension_custom_attribute2` (String) Maps to the -ExtensionCustomAttribute2 parameter.
-- `extension_custom_attribute3` (String) Maps to the -ExtensionCustomAttribute3 parameter.
-- `extension_custom_attribute4` (String) Maps to the -ExtensionCustomAttribute4 parameter.
-- `extension_custom_attribute5` (String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `extension_custom_attribute1` (Set of String) Maps to the -ExtensionCustomAttribute1 parameter.
+- `extension_custom_attribute2` (Set of String) Maps to the -ExtensionCustomAttribute2 parameter.
+- `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
+- `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
+- `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
-- `grant_send_on_behalf_to` (String) Maps to the -GrantSendOnBehalfTo parameter.
+- `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `hidden_from_exchange_clients_enabled` (Boolean) Maps to the -HiddenFromExchangeClientsEnabled parameter.
 - `hidden_group_membership_enabled` (Boolean) Maps to the -HiddenGroupMembershipEnabled parameter.
 - `id` (String) Object identifier (GUID).
 - `information_barrier_mode` (String) Maps to the -InformationBarrierMode parameter.
-- `is_member_allowed_to_edit_content` (String) Maps to the -IsMemberAllowedToEditContent parameter.
+- `is_member_allowed_to_edit_content` (Boolean) Maps to the -IsMemberAllowedToEditContent parameter.
 - `language` (String) Maps to the -Language parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
-- `mail_tip_translations` (String) Maps to the -MailTipTranslations parameter.
+- `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `mailbox_region` (String) Maps to the -MailboxRegion parameter.
 - `managed_by` (Set of String) Maps to the -ManagedBy parameter.
 - `max_receive_size` (String) Maps to the -MaxReceiveSize parameter.
 - `max_send_size` (String) Maps to the -MaxSendSize parameter.
 - `members` (Set of String) Maps to the -Members parameter.
-- `moderated_by` (String) Maps to the -ModeratedBy parameter.
+- `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `notes` (String) Maps to the -Notes parameter.
 - `owner` (String) Maps to the -Owner parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
-- `reject_messages_from_senders_or_members` (String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
+- `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.
 - `sensitivity_label_id` (String) Maps to the -SensitivityLabelId parameter.
 - `subscription_enabled` (Boolean) Maps to the -SubscriptionEnabled parameter.

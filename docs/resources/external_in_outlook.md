@@ -21,8 +21,8 @@ Manages the ExternalInOutlook configuration via Set-ExternalInOutlook.
 
 ### Optional
 
-- `allow_list` (String) Maps to the -AllowList parameter.
-- `enabled` (String) Maps to the -Enabled parameter.
+- `allow_list` (Set of String) Maps to the -AllowList parameter.
+- `enabled` (Boolean) Maps to the -Enabled parameter.
 
 ### Read-Only
 

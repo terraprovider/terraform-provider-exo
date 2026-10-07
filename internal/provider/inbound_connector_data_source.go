@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -34,28 +35,28 @@ func (d *inboundConnectorDataSource) Schema(_ context.Context, _ datasource.Sche
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"associated_accepted_domains":      schema.StringAttribute{Computed: true, Description: "Maps to the -AssociatedAcceptedDomains parameter."},
-			"client_host_names":                schema.StringAttribute{Computed: true, Description: "Maps to the -ClientHostNames parameter."},
+			"associated_accepted_domains":      schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AssociatedAcceptedDomains parameter."},
+			"client_host_names":                schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ClientHostNames parameter."},
 			"cloud_services_mail_enabled":      schema.BoolAttribute{Computed: true, Description: "Maps to the -CloudServicesMailEnabled parameter."},
 			"comment":                          schema.StringAttribute{Computed: true, Description: "Maps to the -Comment parameter."},
 			"connector_source":                 schema.StringAttribute{Computed: true, Description: "Maps to the -ConnectorSource parameter."},
 			"connector_type":                   schema.StringAttribute{Computed: true, Description: "Maps to the -ConnectorType parameter."},
-			"ef_skip_i_ps":                     schema.StringAttribute{Computed: true, Description: "Maps to the -EFSkipIPs parameter."},
+			"ef_skip_i_ps":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EFSkipIPs parameter."},
 			"ef_skip_last_ip":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -EFSkipLastIP parameter."},
-			"ef_skip_mail_gateway":             schema.StringAttribute{Computed: true, Description: "Maps to the -EFSkipMailGateway parameter."},
+			"ef_skip_mail_gateway":             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EFSkipMailGateway parameter."},
 			"ef_test_mode":                     schema.BoolAttribute{Computed: true, Description: "Maps to the -EFTestMode parameter."},
-			"ef_users":                         schema.StringAttribute{Computed: true, Description: "Maps to the -EFUsers parameter."},
+			"ef_users":                         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EFUsers parameter."},
 			"enabled":                          schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"name":                             schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"require_tls":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -RequireTls parameter."},
 			"restrict_domains_to_certificate":  schema.BoolAttribute{Computed: true, Description: "Maps to the -RestrictDomainsToCertificate parameter."},
 			"restrict_domains_to_ip_addresses": schema.BoolAttribute{Computed: true, Description: "Maps to the -RestrictDomainsToIPAddresses parameter."},
-			"scan_and_drop_recipients":         schema.StringAttribute{Computed: true, Description: "Maps to the -ScanAndDropRecipients parameter."},
-			"sender_domains":                   schema.StringAttribute{Computed: true, Description: "Maps to the -SenderDomains parameter."},
-			"sender_ip_addresses":              schema.StringAttribute{Computed: true, Description: "Maps to the -SenderIPAddresses parameter."},
+			"scan_and_drop_recipients":         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ScanAndDropRecipients parameter."},
+			"sender_domains":                   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SenderDomains parameter."},
+			"sender_ip_addresses":              schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SenderIPAddresses parameter."},
 			"tls_sender_certificate_name":      schema.StringAttribute{Computed: true, Description: "Maps to the -TlsSenderCertificateName parameter."},
 			"treat_messages_as_internal":       schema.BoolAttribute{Computed: true, Description: "Maps to the -TreatMessagesAsInternal parameter."},
-			"trusted_organizations":            schema.StringAttribute{Computed: true, Description: "Maps to the -TrustedOrganizations parameter."},
+			"trusted_organizations":            schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TrustedOrganizations parameter."},
 		},
 	}
 }

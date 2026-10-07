@@ -115,7 +115,7 @@ Read-Only:
 - `except_if_sender_ad_attribute_matches_patterns` (Set of String) Maps to the -ExceptIfSenderADAttributeMatchesPatterns parameter.
 - `except_if_sender_domain_is` (Set of String) Maps to the -ExceptIfSenderDomainIs parameter.
 - `except_if_sender_in_recipient_list` (Set of String) Maps to the -ExceptIfSenderInRecipientList parameter.
-- `except_if_sender_ip_ranges` (String) Maps to the -ExceptIfSenderIpRanges parameter.
+- `except_if_sender_ip_ranges` (Set of String) Maps to the -ExceptIfSenderIpRanges parameter.
 - `except_if_sender_management_relationship` (String) Maps to the -ExceptIfSenderManagementRelationship parameter.
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
 - `except_if_sent_to_member_of` (Set of String) Maps to the -ExceptIfSentToMemberOf parameter.
@@ -155,6 +155,7 @@ Read-Only:
 - `name` (String) Maps to the -Name parameter.
 - `notify_sender` (String) Maps to the -NotifySender parameter.
 - `prepend_subject` (String) Maps to the -PrependSubject parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `quarantine` (Boolean) Maps to the -Quarantine parameter.
 - `recipient_ad_attribute_contains_words` (Set of String) Maps to the -RecipientADAttributeContainsWords parameter.
 - `recipient_ad_attribute_matches_patterns` (Set of String) Maps to the -RecipientADAttributeMatchesPatterns parameter.
@@ -180,7 +181,7 @@ Read-Only:
 - `sender_address_location` (String) Maps to the -SenderAddressLocation parameter.
 - `sender_domain_is` (Set of String) Maps to the -SenderDomainIs parameter.
 - `sender_in_recipient_list` (Set of String) Maps to the -SenderInRecipientList parameter.
-- `sender_ip_ranges` (String) Maps to the -SenderIpRanges parameter.
+- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.
 - `sender_management_relationship` (String) Maps to the -SenderManagementRelationship parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.

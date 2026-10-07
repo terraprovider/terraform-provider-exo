@@ -22,8 +22,8 @@ Manages the LdapDirectory configuration via Set-LdapDirectory.
 - `id_` (String) Maps to the -Id parameter.
 - `no_ssl` (Boolean) Maps to the -NoSsl parameter.
 - `organization` (String) Maps to the -Organization parameter.
-- `port` (String) Maps to the -Port parameter.
-- `timeout_sec` (String) Maps to the -TimeoutSec parameter.
+- `port` (Number) Maps to the -Port parameter.
+- `timeout_sec` (Number) Maps to the -TimeoutSec parameter.
 - `use_ssl` (Boolean) Maps to the -UseSsl parameter.
 
 ### Read-Only

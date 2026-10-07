@@ -42,7 +42,7 @@ func (d *dataClassificationListDataSource) Schema(_ context.Context, _ datasourc
 				"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
 				"classification_rule_collection_identity": schema.StringAttribute{Computed: true, Description: "Maps to the -ClassificationRuleCollectionIdentity parameter."},
 				"description":  schema.StringAttribute{Computed: true, Description: "Maps to the -Description parameter."},
-				"fingerprints": schema.StringAttribute{Computed: true, Description: "Maps to the -Fingerprints parameter."},
+				"fingerprints": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Fingerprints parameter."},
 				"is_default":   schema.BoolAttribute{Computed: true, Description: "Maps to the -IsDefault parameter."},
 				"locale":       schema.StringAttribute{Computed: true, Description: "Maps to the -Locale parameter."},
 				"name":         schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},

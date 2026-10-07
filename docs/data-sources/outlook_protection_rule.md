@@ -26,6 +26,7 @@ Look up an existing OutlookProtectionRule object. Set identity or name to select
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `from_department` (Set of String) Maps to the -FromDepartment parameter.
 - `id` (String) Object identifier (GUID).
+- `priority` (Number) Maps to the -Priority parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_scope` (String) Maps to the -SentToScope parameter.
 - `user_can_override` (Boolean) Maps to the -UserCanOverride parameter.

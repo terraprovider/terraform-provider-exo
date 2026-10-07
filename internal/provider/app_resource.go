@@ -58,7 +58,7 @@ type appModel struct {
 	ProvidedTo                 types.String `tfsdk:"provided_to"`
 	UpdateAppState             types.Bool   `tfsdk:"update_app_state"`
 	Url                        types.String `tfsdk:"url"`
-	UserList                   types.String `tfsdk:"user_list"`
+	UserList                   types.Set    `tfsdk:"user_list"`
 	Version                    types.String `tfsdk:"version"`
 }
 
@@ -71,7 +71,7 @@ func (r *appResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 		Description: "Manages the App object via New-App / Get-App / Set-App / Remove-App.",
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"add_in_overrides":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddInOverrides parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"allow_read_write_mailbox":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowReadWriteMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"allow_setting":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowSetting parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -94,7 +94,7 @@ func (r *appResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"provided_to":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvidedTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"update_app_state":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UpdateAppState parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"url":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Url parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"user_list":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"user_list":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UserList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"version":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Version parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -114,47 +114,90 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	p := exo.NewAppParams{
-		AllowReadWriteMailbox:      plan.AllowReadWriteMailbox.ValueBool(),
-		AppState:                   plan.AppState.ValueString(),
-		AppType:                    plan.AppType.ValueString(),
-		DownloadOnly:               plan.DownloadOnly.ValueBool(),
-		Enabled:                    plan.Enabled.ValueBool(),
-		Etoken:                     plan.Etoken.ValueString(),
-		FileData:                   toStringSlice(ctx, plan.FileData, &resp.Diagnostics),
-		MarketplaceAssetID:         plan.MarketplaceAssetID.ValueString(),
-		MarketplaceCorrelationID:   plan.MarketplaceCorrelationID.ValueString(),
-		MarketplaceQueryMarket:     plan.MarketplaceQueryMarket.ValueString(),
-		MarketplaceServicesUrl:     plan.MarketplaceServicesUrl.ValueString(),
-		MarketplaceUserProfileType: plan.MarketplaceUserProfileType.ValueString(),
-		OrganizationApp:            plan.OrganizationApp.ValueBool(),
-		PrivateCatalog:             plan.PrivateCatalog.ValueBool(),
-		UpdateAppState:             plan.UpdateAppState.ValueBool(),
-		Version:                    plan.Version.ValueString(),
+	var config appModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AddInOverrides.ValueString(); v != "" {
-		p.AddInOverrides = v
+
+	p := exo.NewAppParams{}
+	if v := config.AddInOverrides.ValueString(); v != "" {
+		p.AddInOverrides = objectParam(v)
 	}
-	if v := plan.AllowSetting.ValueString(); v != "" {
-		p.AllowSetting = v
+	if !config.AllowReadWriteMailbox.IsNull() {
+		p.AllowReadWriteMailbox = plan.AllowReadWriteMailbox.ValueBool()
 	}
-	if v := plan.DefaultStateForUser.ValueString(); v != "" {
-		p.DefaultStateForUser = v
+	if v := config.AllowSetting.ValueString(); v != "" {
+		p.AllowSetting = objectParam(v)
 	}
-	if v := plan.FileStream.ValueString(); v != "" {
-		p.FileStream = v
+	if !config.AppState.IsNull() {
+		p.AppState = plan.AppState.ValueString()
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		p.Mailbox = v
+	if !config.AppType.IsNull() {
+		p.AppType = plan.AppType.ValueString()
 	}
-	if v := plan.ProvidedTo.ValueString(); v != "" {
-		p.ProvidedTo = v
+	if v := config.DefaultStateForUser.ValueString(); v != "" {
+		p.DefaultStateForUser = objectParam(v)
 	}
-	if v := plan.Url.ValueString(); v != "" {
-		p.Url = v
+	if !config.DownloadOnly.IsNull() {
+		p.DownloadOnly = plan.DownloadOnly.ValueBool()
 	}
-	if v := plan.UserList.ValueString(); v != "" {
-		p.UserList = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.Etoken.IsNull() {
+		p.Etoken = plan.Etoken.ValueString()
+	}
+	if !config.FileData.IsNull() {
+		if v := toStringSlice(ctx, plan.FileData, &resp.Diagnostics); len(v) > 0 {
+			p.FileData = v
+		}
+	}
+	if v := config.FileStream.ValueString(); v != "" {
+		p.FileStream = objectParam(v)
+	}
+	if v := config.Mailbox.ValueString(); v != "" {
+		p.Mailbox = objectParam(v)
+	}
+	if !config.MarketplaceAssetID.IsNull() {
+		p.MarketplaceAssetID = plan.MarketplaceAssetID.ValueString()
+	}
+	if !config.MarketplaceCorrelationID.IsNull() {
+		p.MarketplaceCorrelationID = plan.MarketplaceCorrelationID.ValueString()
+	}
+	if !config.MarketplaceQueryMarket.IsNull() {
+		p.MarketplaceQueryMarket = plan.MarketplaceQueryMarket.ValueString()
+	}
+	if !config.MarketplaceServicesUrl.IsNull() {
+		p.MarketplaceServicesUrl = plan.MarketplaceServicesUrl.ValueString()
+	}
+	if !config.MarketplaceUserProfileType.IsNull() {
+		p.MarketplaceUserProfileType = plan.MarketplaceUserProfileType.ValueString()
+	}
+	if !config.OrganizationApp.IsNull() {
+		p.OrganizationApp = plan.OrganizationApp.ValueBool()
+	}
+	if !config.PrivateCatalog.IsNull() {
+		p.PrivateCatalog = plan.PrivateCatalog.ValueBool()
+	}
+	if v := config.ProvidedTo.ValueString(); v != "" {
+		p.ProvidedTo = objectParam(v)
+	}
+	if !config.UpdateAppState.IsNull() {
+		p.UpdateAppState = plan.UpdateAppState.ValueBool()
+	}
+	if v := config.Url.ValueString(); v != "" {
+		p.Url = objectParam(v)
+	}
+	if !config.UserList.IsNull() {
+		if v := toStringSlice(ctx, plan.UserList, &resp.Diagnostics); len(v) > 0 {
+			p.UserList = v
+		}
+	}
+	if !config.Version.IsNull() {
+		p.Version = plan.Version.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -207,16 +250,26 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	sp := exo.SetAppParams{}
 	sp.Identity = id
 	if v := plan.DefaultStateForUser.ValueString(); v != "" {
-		sp.DefaultStateForUser = v
+		sp.DefaultStateForUser = objectParam(v)
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.OrganizationApp = plan.OrganizationApp.ValueBool()
-	sp.PrivateCatalog = plan.PrivateCatalog.ValueBool()
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OrganizationApp.Equal(state.OrganizationApp) {
+		sp.OrganizationApp = plan.OrganizationApp.ValueBool()
+	}
+	if !plan.PrivateCatalog.Equal(state.PrivateCatalog) {
+		sp.PrivateCatalog = plan.PrivateCatalog.ValueBool()
+	}
 	if v := plan.ProvidedTo.ValueString(); v != "" {
-		sp.ProvidedTo = v
+		sp.ProvidedTo = objectParam(v)
 	}
-	if v := plan.UserList.ValueString(); v != "" {
-		sp.UserList = v
+	if !plan.UserList.Equal(state.UserList) {
+		if !plan.UserList.IsNull() && !plan.UserList.IsUnknown() {
+			sp.UserList = append([]string{}, toStringSlice(ctx, plan.UserList, &resp.Diagnostics)...)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -226,11 +279,7 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DefaultStateForUser": cfg.DefaultStateForUser,
-		"ProvidedTo":          cfg.ProvidedTo,
-		"UserList":            cfg.UserList,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -291,18 +340,18 @@ func (r *appResource) refresh(ctx context.Context, identity string, m *appModel,
 func readApp(ctx context.Context, obj map[string]any, m *appModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AddInOverrides = types.StringValue(getString(obj, "AddInOverrides"))
+	m.AddInOverrides = types.StringValue(getObjectJSON(obj, "AddInOverrides"))
 	m.AllowReadWriteMailbox = types.BoolValue(getBool(obj, "AllowReadWriteMailbox"))
-	m.AllowSetting = types.StringValue(getString(obj, "AllowSetting"))
+	m.AllowSetting = types.StringValue(getObjectJSON(obj, "AllowSetting"))
 	m.AppState = types.StringValue(getString(obj, "AppState"))
 	m.AppType = types.StringValue(getString(obj, "AppType"))
-	m.DefaultStateForUser = types.StringValue(getString(obj, "DefaultStateForUser"))
+	m.DefaultStateForUser = types.StringValue(getObjectJSON(obj, "DefaultStateForUser"))
 	m.DownloadOnly = types.BoolValue(getBool(obj, "DownloadOnly"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Etoken = types.StringValue(getString(obj, "Etoken"))
 	m.FileData = stringSetValue(ctx, getStringSlice(obj, "FileData"))
-	m.FileStream = types.StringValue(getString(obj, "FileStream"))
-	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
+	m.FileStream = types.StringValue(getObjectJSON(obj, "FileStream"))
+	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
 	m.MarketplaceAssetID = types.StringValue(getString(obj, "MarketplaceAssetID"))
 	m.MarketplaceCorrelationID = types.StringValue(getString(obj, "MarketplaceCorrelationID"))
 	m.MarketplaceQueryMarket = types.StringValue(getString(obj, "MarketplaceQueryMarket"))
@@ -310,10 +359,10 @@ func readApp(ctx context.Context, obj map[string]any, m *appModel) {
 	m.MarketplaceUserProfileType = types.StringValue(getString(obj, "MarketplaceUserProfileType"))
 	m.OrganizationApp = types.BoolValue(getBool(obj, "OrganizationApp"))
 	m.PrivateCatalog = types.BoolValue(getBool(obj, "PrivateCatalog"))
-	m.ProvidedTo = types.StringValue(getString(obj, "ProvidedTo"))
+	m.ProvidedTo = types.StringValue(getObjectJSON(obj, "ProvidedTo"))
 	m.UpdateAppState = types.BoolValue(getBool(obj, "UpdateAppState"))
-	m.Url = types.StringValue(getString(obj, "Url"))
-	m.UserList = types.StringValue(getString(obj, "UserList"))
+	m.Url = types.StringValue(getObjectJSON(obj, "Url"))
+	m.UserList = stringSetValue(ctx, getStringSlice(obj, "UserList"))
 	m.Version = types.StringValue(getString(obj, "Version"))
 	_ = ctx
 }
@@ -341,6 +390,6 @@ func (r *appResource) reconcileState(cfg, read *appModel) {
 	read.ProvidedTo = reconcile.KeepStr(cfg.ProvidedTo, read.ProvidedTo)
 	read.UpdateAppState = reconcile.KeepBool(cfg.UpdateAppState, read.UpdateAppState)
 	read.Url = reconcile.KeepStr(cfg.Url, read.Url)
-	read.UserList = reconcile.KeepStr(cfg.UserList, read.UserList)
+	read.UserList = reconcile.KeepSet(cfg.UserList, read.UserList)
 	read.Version = reconcile.KeepStr(cfg.Version, read.Version)
 }

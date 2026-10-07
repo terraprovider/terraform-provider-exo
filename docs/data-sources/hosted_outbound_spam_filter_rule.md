@@ -31,4 +31,5 @@ Look up an existing HostedOutboundSpamFilterRule object. Set identity or name to
 - `from_member_of` (Set of String) Maps to the -FromMemberOf parameter.
 - `hosted_outbound_spam_filter_policy` (String) Maps to the -HostedOutboundSpamFilterPolicy parameter.
 - `id` (String) Object identifier (GUID).
+- `priority` (Number) Maps to the -Priority parameter.
 - `sender_domain_is` (Set of String) Maps to the -SenderDomainIs parameter.

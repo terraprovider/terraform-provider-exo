@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -43,6 +44,7 @@ type antiPhishRuleModel struct {
 	ExceptIfSentTo            types.Set    `tfsdk:"except_if_sent_to"`
 	ExceptIfSentToMemberOf    types.Set    `tfsdk:"except_if_sent_to_member_of"`
 	Name                      types.String `tfsdk:"name"`
+	Priority                  types.Int64  `tfsdk:"priority"`
 	RecipientDomainIs         types.Set    `tfsdk:"recipient_domain_is"`
 	SentTo                    types.Set    `tfsdk:"sent_to"`
 	SentToMemberOf            types.Set    `tfsdk:"sent_to_member_of"`
@@ -57,7 +59,7 @@ func (r *antiPhishRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Manages the AntiPhishRule object via New-AntiPhishRule / Get-AntiPhishRule / Set-AntiPhishRule / Remove-AntiPhishRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"anti_phish_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -AntiPhishPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"comments":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -65,6 +67,7 @@ func (r *antiPhishRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_member_of":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -86,19 +89,61 @@ func (r *antiPhishRuleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	p := exo.NewAntiPhishRuleParams{
-		Comments:                  plan.Comments.ValueString(),
-		Enabled:                   plan.Enabled.ValueBool(),
-		ExceptIfRecipientDomainIs: toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics),
-		ExceptIfSentTo:            toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
-		ExceptIfSentToMemberOf:    toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics),
-		Name:                      plan.Name.ValueString(),
-		RecipientDomainIs:         toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics),
-		SentTo:                    toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
-		SentToMemberOf:            toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics),
+	var config antiPhishRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AntiPhishPolicy.ValueString(); v != "" {
-		p.AntiPhishPolicy = v
+
+	p := exo.NewAntiPhishRuleParams{}
+	if v := config.AntiPhishPolicy.ValueString(); v != "" {
+		p.AntiPhishPolicy = objectParam(v)
+	}
+	if !config.Comments.IsNull() {
+		p.Comments = plan.Comments.ValueString()
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.ExceptIfRecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientDomainIs = v
+		}
+	}
+	if !config.ExceptIfSentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentTo = v
+		}
+	}
+	if !config.ExceptIfSentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentToMemberOf = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.Priority.IsNull() {
+		if !plan.Priority.IsUnknown() {
+			p.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !config.RecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientDomainIs = v
+		}
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
+	}
+	if !config.SentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.SentToMemberOf = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,13 +195,44 @@ func (r *antiPhishRuleResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetAntiPhishRuleParams{}
 	sp.Identity = id
-	sp.Comments = plan.Comments.ValueString()
-	sp.ExceptIfRecipientDomainIs = toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)
-	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
-	sp.ExceptIfSentToMemberOf = toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)
-	sp.RecipientDomainIs = toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)
-	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
-	sp.SentToMemberOf = toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)
+	if !plan.Comments.Equal(state.Comments) {
+		sp.Comments = plan.Comments.ValueString()
+	}
+	if !plan.ExceptIfRecipientDomainIs.Equal(state.ExceptIfRecipientDomainIs) {
+		if !plan.ExceptIfRecipientDomainIs.IsNull() && !plan.ExceptIfRecipientDomainIs.IsUnknown() {
+			sp.ExceptIfRecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSentTo.Equal(state.ExceptIfSentTo) {
+		if !plan.ExceptIfSentTo.IsNull() && !plan.ExceptIfSentTo.IsUnknown() {
+			sp.ExceptIfSentTo = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSentToMemberOf.Equal(state.ExceptIfSentToMemberOf) {
+		if !plan.ExceptIfSentToMemberOf.IsNull() && !plan.ExceptIfSentToMemberOf.IsUnknown() {
+			sp.ExceptIfSentToMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Priority.Equal(state.Priority) {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
+		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
+			sp.RecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentTo.Equal(state.SentTo) {
+		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
+			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentToMemberOf.Equal(state.SentToMemberOf) {
+		if !plan.SentToMemberOf.IsNull() && !plan.SentToMemberOf.IsUnknown() {
+			sp.SentToMemberOf = append([]string{}, toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -228,13 +304,14 @@ func (r *antiPhishRuleResource) refresh(ctx context.Context, identity string, m 
 func readAntiPhishRule(ctx context.Context, obj map[string]any, m *antiPhishRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AntiPhishPolicy = types.StringValue(getString(obj, "AntiPhishPolicy"))
+	m.AntiPhishPolicy = types.StringValue(getObjectJSON(obj, "AntiPhishPolicy"))
 	m.Comments = types.StringValue(getString(obj, "Comments"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.ExceptIfRecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientDomainIs"))
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.RecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "RecipientDomainIs"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "SentToMemberOf"))
@@ -249,6 +326,7 @@ func (r *antiPhishRuleResource) reconcileState(cfg, read *antiPhishRuleModel) {
 	read.ExceptIfSentTo = reconcile.KeepSet(cfg.ExceptIfSentTo, read.ExceptIfSentTo)
 	read.ExceptIfSentToMemberOf = reconcile.KeepSet(cfg.ExceptIfSentToMemberOf, read.ExceptIfSentToMemberOf)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.RecipientDomainIs = reconcile.KeepSet(cfg.RecipientDomainIs, read.RecipientDomainIs)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 	read.SentToMemberOf = reconcile.KeepSet(cfg.SentToMemberOf, read.SentToMemberOf)

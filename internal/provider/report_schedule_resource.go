@@ -62,7 +62,7 @@ func (r *reportScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Description: "Manages the ReportSchedule object via New-ReportSchedule / Get-ReportSchedule / Set-ReportSchedule / Remove-ReportSchedule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"direction":           schema.StringAttribute{Required: true, Description: "Maps to the -Direction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"dlp_rule_id":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DlpRuleId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"encryption_template": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EncryptionTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -97,44 +97,57 @@ func (r *reportScheduleResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	p := exo.NewReportScheduleParams{
-		IncludeDLP:       plan.IncludeDLP.ValueBool(),
-		RecipientAddress: plan.RecipientAddress.ValueString(),
-		ScheduleName:     plan.ScheduleName.ValueString(),
-		SenderAddress:    plan.SenderAddress.ValueString(),
+	var config reportScheduleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Direction.ValueString(); v != "" {
-		p.Direction = v
+
+	p := exo.NewReportScheduleParams{}
+	if v := config.Direction.ValueString(); v != "" {
+		p.Direction = objectParam(v)
 	}
-	if v := plan.DlpRuleId.ValueString(); v != "" {
-		p.DlpRuleId = v
+	if v := config.DlpRuleId.ValueString(); v != "" {
+		p.DlpRuleId = objectParam(v)
 	}
-	if v := plan.EncryptionTemplate.ValueString(); v != "" {
-		p.EncryptionTemplate = v
+	if v := config.EncryptionTemplate.ValueString(); v != "" {
+		p.EncryptionTemplate = objectParam(v)
 	}
-	if v := plan.EncryptionType.ValueString(); v != "" {
-		p.EncryptionType = v
+	if v := config.EncryptionType.ValueString(); v != "" {
+		p.EncryptionType = objectParam(v)
 	}
-	if v := plan.ExpiryDate.ValueString(); v != "" {
-		p.ExpiryDate = v
+	if v := config.ExpiryDate.ValueString(); v != "" {
+		p.ExpiryDate = objectParam(v)
 	}
-	if v := plan.Locale.ValueString(); v != "" {
-		p.Locale = v
+	if !config.IncludeDLP.IsNull() {
+		p.IncludeDLP = plan.IncludeDLP.ValueBool()
 	}
-	if v := plan.NotificationEmail.ValueString(); v != "" {
-		p.NotificationEmail = v
+	if v := config.Locale.ValueString(); v != "" {
+		p.Locale = objectParam(v)
 	}
-	if v := plan.ReportFrequency.ValueString(); v != "" {
-		p.ReportFrequency = v
+	if v := config.NotificationEmail.ValueString(); v != "" {
+		p.NotificationEmail = objectParam(v)
 	}
-	if v := plan.ReportType.ValueString(); v != "" {
-		p.ReportType = v
+	if !config.RecipientAddress.IsNull() {
+		p.RecipientAddress = plan.RecipientAddress.ValueString()
 	}
-	if v := plan.StartDate.ValueString(); v != "" {
-		p.StartDate = v
+	if v := config.ReportFrequency.ValueString(); v != "" {
+		p.ReportFrequency = objectParam(v)
 	}
-	if v := plan.TransportRuleId.ValueString(); v != "" {
-		p.TransportRuleId = v
+	if v := config.ReportType.ValueString(); v != "" {
+		p.ReportType = objectParam(v)
+	}
+	if !config.ScheduleName.IsNull() {
+		p.ScheduleName = plan.ScheduleName.ValueString()
+	}
+	if !config.SenderAddress.IsNull() {
+		p.SenderAddress = plan.SenderAddress.ValueString()
+	}
+	if v := config.StartDate.ValueString(); v != "" {
+		p.StartDate = objectParam(v)
+	}
+	if v := config.TransportRuleId.ValueString(); v != "" {
+		p.TransportRuleId = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,25 +200,31 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 	sp := exo.SetReportScheduleParams{}
 	sp.Identity = id
 	if v := plan.DlpRuleId.ValueString(); v != "" {
-		sp.DlpRuleId = v
+		sp.DlpRuleId = objectParam(v)
 	}
 	if v := plan.EncryptionTemplate.ValueString(); v != "" {
-		sp.EncryptionTemplate = v
+		sp.EncryptionTemplate = objectParam(v)
 	}
 	if v := plan.EncryptionType.ValueString(); v != "" {
-		sp.EncryptionType = v
+		sp.EncryptionType = objectParam(v)
 	}
-	sp.IncludeDLP = plan.IncludeDLP.ValueBool()
-	sp.RecipientAddress = plan.RecipientAddress.ValueString()
+	if !plan.IncludeDLP.Equal(state.IncludeDLP) {
+		sp.IncludeDLP = plan.IncludeDLP.ValueBool()
+	}
+	if !plan.RecipientAddress.Equal(state.RecipientAddress) {
+		sp.RecipientAddress = plan.RecipientAddress.ValueString()
+	}
 	if v := plan.ScheduleID.ValueString(); v != "" {
-		sp.ScheduleID = v
+		sp.ScheduleID = objectParam(v)
 	}
-	sp.SenderAddress = plan.SenderAddress.ValueString()
+	if !plan.SenderAddress.Equal(state.SenderAddress) {
+		sp.SenderAddress = plan.SenderAddress.ValueString()
+	}
 	if v := plan.StartDate.ValueString(); v != "" {
-		sp.StartDate = v
+		sp.StartDate = objectParam(v)
 	}
 	if v := plan.TransportRuleId.ValueString(); v != "" {
-		sp.TransportRuleId = v
+		sp.TransportRuleId = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -216,14 +235,8 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DlpRuleId":          cfg.DlpRuleId,
-		"EncryptionTemplate": cfg.EncryptionTemplate,
-		"EncryptionType":     cfg.EncryptionType,
-		"RecipientAddress":   cfg.RecipientAddress,
-		"ScheduleID":         cfg.ScheduleID,
-		"SenderAddress":      cfg.SenderAddress,
-		"StartDate":          cfg.StartDate,
-		"TransportRuleId":    cfg.TransportRuleId,
+		"RecipientAddress": cfg.RecipientAddress,
+		"SenderAddress":    cfg.SenderAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -285,22 +298,22 @@ func (r *reportScheduleResource) refresh(ctx context.Context, identity string, m
 func readReportSchedule(ctx context.Context, obj map[string]any, m *reportScheduleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "ScheduleId"), getString(obj, "Name")))
-	m.Direction = types.StringValue(getString(obj, "Direction"))
-	m.DlpRuleId = types.StringValue(getString(obj, "DlpRuleId"))
-	m.EncryptionTemplate = types.StringValue(getString(obj, "EncryptionTemplate"))
-	m.EncryptionType = types.StringValue(getString(obj, "EncryptionType"))
-	m.ExpiryDate = types.StringValue(getString(obj, "ExpiryDate"))
+	m.Direction = types.StringValue(getObjectJSON(obj, "Direction"))
+	m.DlpRuleId = types.StringValue(getObjectJSON(obj, "DlpRuleId"))
+	m.EncryptionTemplate = types.StringValue(getObjectJSON(obj, "EncryptionTemplate"))
+	m.EncryptionType = types.StringValue(getObjectJSON(obj, "EncryptionType"))
+	m.ExpiryDate = types.StringValue(getObjectJSON(obj, "ExpiryDate"))
 	m.IncludeDLP = types.BoolValue(getBool(obj, "IncludeDLP"))
-	m.Locale = types.StringValue(getString(obj, "Locale"))
-	m.NotificationEmail = types.StringValue(getString(obj, "NotificationEmail"))
+	m.Locale = types.StringValue(getObjectJSON(obj, "Locale"))
+	m.NotificationEmail = types.StringValue(getObjectJSON(obj, "NotificationEmail"))
 	m.RecipientAddress = types.StringValue(getString(obj, "RecipientAddress"))
-	m.ReportFrequency = types.StringValue(getString(obj, "ReportFrequency"))
-	m.ReportType = types.StringValue(getString(obj, "ReportType"))
-	m.ScheduleID = types.StringValue(getString(obj, "ScheduleID"))
+	m.ReportFrequency = types.StringValue(getObjectJSON(obj, "ReportFrequency"))
+	m.ReportType = types.StringValue(getObjectJSON(obj, "ReportType"))
+	m.ScheduleID = types.StringValue(getObjectJSON(obj, "ScheduleID"))
 	m.ScheduleName = types.StringValue(getString(obj, "ScheduleName"))
 	m.SenderAddress = types.StringValue(getString(obj, "SenderAddress"))
-	m.StartDate = types.StringValue(getString(obj, "StartDate"))
-	m.TransportRuleId = types.StringValue(getString(obj, "TransportRuleId"))
+	m.StartDate = types.StringValue(getObjectJSON(obj, "StartDate"))
+	m.TransportRuleId = types.StringValue(getObjectJSON(obj, "TransportRuleId"))
 	_ = ctx
 }
 

@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &acceptedDomainResource{}
 	_ resource.ResourceWithConfigure   = &acceptedDomainResource{}
 	_ resource.ResourceWithImportState = &acceptedDomainResource{}
+	_ resource.ResourceWithModifyPlan  = &acceptedDomainResource{}
 )
 
 type acceptedDomainResource struct{ client *clients.Client }
@@ -80,18 +81,49 @@ func (r *acceptedDomainResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config acceptedDomainModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetAcceptedDomainParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBool()
-	if v := plan.DomainType.ValueString(); v != "" {
-		sp.DomainType = v
+	if !config.CanHaveCloudCache.IsNull() {
+		if !plan.CanHaveCloudCache.IsUnknown() {
+			sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBoolPointer()
+		}
 	}
-	sp.EnableNego2Authentication = plan.EnableNego2Authentication.ValueBool()
-	sp.MailFlowRegion = plan.MailFlowRegion.ValueString()
-	sp.MatchSubDomains = plan.MatchSubDomains.ValueBool()
-	sp.OutboundOnly = plan.OutboundOnly.ValueBool()
-	sp.SendingFromDomainDisabled = plan.SendingFromDomainDisabled.ValueBool()
-	sp.SendingToDomainDisabled = plan.SendingToDomainDisabled.ValueBool()
+	if v := config.DomainType.ValueString(); v != "" {
+		sp.DomainType = objectParam(v)
+	}
+	if !config.EnableNego2Authentication.IsNull() {
+		if !plan.EnableNego2Authentication.IsUnknown() {
+			sp.EnableNego2Authentication = plan.EnableNego2Authentication.ValueBoolPointer()
+		}
+	}
+	if !config.MailFlowRegion.IsNull() {
+		sp.MailFlowRegion = plan.MailFlowRegion.ValueString()
+	}
+	if !config.MatchSubDomains.IsNull() {
+		if !plan.MatchSubDomains.IsUnknown() {
+			sp.MatchSubDomains = plan.MatchSubDomains.ValueBoolPointer()
+		}
+	}
+	if !config.OutboundOnly.IsNull() {
+		if !plan.OutboundOnly.IsUnknown() {
+			sp.OutboundOnly = plan.OutboundOnly.ValueBoolPointer()
+		}
+	}
+	if !config.SendingFromDomainDisabled.IsNull() {
+		if !plan.SendingFromDomainDisabled.IsUnknown() {
+			sp.SendingFromDomainDisabled = plan.SendingFromDomainDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.SendingToDomainDisabled.IsNull() {
+		if !plan.SendingToDomainDisabled.IsUnknown() {
+			sp.SendingToDomainDisabled = plan.SendingToDomainDisabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -131,16 +163,42 @@ func (r *acceptedDomainResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetAcceptedDomainParams{}
 	sp.Identity = id
-	sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBool()
-	if v := plan.DomainType.ValueString(); v != "" {
-		sp.DomainType = v
+	if !plan.CanHaveCloudCache.Equal(state.CanHaveCloudCache) {
+		if !plan.CanHaveCloudCache.IsUnknown() {
+			sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBoolPointer()
+		}
 	}
-	sp.EnableNego2Authentication = plan.EnableNego2Authentication.ValueBool()
-	sp.MailFlowRegion = plan.MailFlowRegion.ValueString()
-	sp.MatchSubDomains = plan.MatchSubDomains.ValueBool()
-	sp.OutboundOnly = plan.OutboundOnly.ValueBool()
-	sp.SendingFromDomainDisabled = plan.SendingFromDomainDisabled.ValueBool()
-	sp.SendingToDomainDisabled = plan.SendingToDomainDisabled.ValueBool()
+	if v := plan.DomainType.ValueString(); v != "" {
+		sp.DomainType = objectParam(v)
+	}
+	if !plan.EnableNego2Authentication.Equal(state.EnableNego2Authentication) {
+		if !plan.EnableNego2Authentication.IsUnknown() {
+			sp.EnableNego2Authentication = plan.EnableNego2Authentication.ValueBoolPointer()
+		}
+	}
+	if !plan.MailFlowRegion.Equal(state.MailFlowRegion) {
+		sp.MailFlowRegion = plan.MailFlowRegion.ValueString()
+	}
+	if !plan.MatchSubDomains.Equal(state.MatchSubDomains) {
+		if !plan.MatchSubDomains.IsUnknown() {
+			sp.MatchSubDomains = plan.MatchSubDomains.ValueBoolPointer()
+		}
+	}
+	if !plan.OutboundOnly.Equal(state.OutboundOnly) {
+		if !plan.OutboundOnly.IsUnknown() {
+			sp.OutboundOnly = plan.OutboundOnly.ValueBoolPointer()
+		}
+	}
+	if !plan.SendingFromDomainDisabled.Equal(state.SendingFromDomainDisabled) {
+		if !plan.SendingFromDomainDisabled.IsUnknown() {
+			sp.SendingFromDomainDisabled = plan.SendingFromDomainDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SendingToDomainDisabled.Equal(state.SendingToDomainDisabled) {
+		if !plan.SendingToDomainDisabled.IsUnknown() {
+			sp.SendingToDomainDisabled = plan.SendingToDomainDisabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -150,7 +208,6 @@ func (r *acceptedDomainResource) Update(ctx context.Context, req resource.Update
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DomainType":     cfg.DomainType,
 		"MailFlowRegion": cfg.MailFlowRegion,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
@@ -165,6 +222,62 @@ func (r *acceptedDomainResource) Delete(_ context.Context, _ resource.DeleteRequ
 func (r *acceptedDomainResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *acceptedDomainResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan acceptedDomainModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetAcceptedDomain(ctx, exo.GetAcceptedDomainParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur acceptedDomainModel
+	readAcceptedDomain(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.CanHaveCloudCache.IsUnknown() {
+		plan.CanHaveCloudCache = cur.CanHaveCloudCache
+	}
+	if plan.DomainType.IsUnknown() {
+		plan.DomainType = cur.DomainType
+	}
+	if plan.EnableNego2Authentication.IsUnknown() {
+		plan.EnableNego2Authentication = cur.EnableNego2Authentication
+	}
+	if plan.MailFlowRegion.IsUnknown() {
+		plan.MailFlowRegion = cur.MailFlowRegion
+	}
+	if plan.MatchSubDomains.IsUnknown() {
+		plan.MatchSubDomains = cur.MatchSubDomains
+	}
+	if plan.OutboundOnly.IsUnknown() {
+		plan.OutboundOnly = cur.OutboundOnly
+	}
+	if plan.SendingFromDomainDisabled.IsUnknown() {
+		plan.SendingFromDomainDisabled = cur.SendingFromDomainDisabled
+	}
+	if plan.SendingToDomainDisabled.IsUnknown() {
+		plan.SendingToDomainDisabled = cur.SendingToDomainDisabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *acceptedDomainResource) identityOf(m acceptedDomainModel) string {
@@ -204,7 +317,7 @@ func (r *acceptedDomainResource) refresh(ctx context.Context, identity string, m
 func readAcceptedDomain(ctx context.Context, obj map[string]any, m *acceptedDomainModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.CanHaveCloudCache = types.BoolValue(getBool(obj, "CanHaveCloudCache"))
-	m.DomainType = types.StringValue(getString(obj, "DomainType"))
+	m.DomainType = types.StringValue(getObjectJSON(obj, "DomainType"))
 	m.EnableNego2Authentication = types.BoolValue(getBool(obj, "EnableNego2Authentication"))
 	m.MailFlowRegion = types.StringValue(getString(obj, "MailFlowRegion"))
 	m.MatchSubDomains = types.BoolValue(getBool(obj, "MatchSubDomains"))

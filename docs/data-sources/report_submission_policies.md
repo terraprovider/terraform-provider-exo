@@ -35,30 +35,30 @@ Read-Only:
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `junk_review_result_message` (String) Maps to the -JunkReviewResultMessage parameter.
-- `multi_language_post_submit_message_button_link_for_junk` (String) Maps to the -MultiLanguagePostSubmitMessageButtonLinkForJunk parameter.
-- `multi_language_post_submit_message_button_link_for_phishing` (String) Maps to the -MultiLanguagePostSubmitMessageButtonLinkForPhishing parameter.
-- `multi_language_post_submit_message_button_text_for_junk` (String) Maps to the -MultiLanguagePostSubmitMessageButtonTextForJunk parameter.
-- `multi_language_post_submit_message_button_text_for_phishing` (String) Maps to the -MultiLanguagePostSubmitMessageButtonTextForPhishing parameter.
-- `multi_language_post_submit_message_for_junk` (String) Maps to the -MultiLanguagePostSubmitMessageForJunk parameter.
-- `multi_language_post_submit_message_for_phishing` (String) Maps to the -MultiLanguagePostSubmitMessageForPhishing parameter.
-- `multi_language_post_submit_message_title_for_junk` (String) Maps to the -MultiLanguagePostSubmitMessageTitleForJunk parameter.
-- `multi_language_post_submit_message_title_for_phishing` (String) Maps to the -MultiLanguagePostSubmitMessageTitleForPhishing parameter.
-- `multi_language_pre_submit_message_button_link_for_junk` (String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForJunk parameter.
-- `multi_language_pre_submit_message_button_link_for_not_junk` (String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForNotJunk parameter.
-- `multi_language_pre_submit_message_button_link_for_phishing` (String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForPhishing parameter.
-- `multi_language_pre_submit_message_button_text_for_junk` (String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForJunk parameter.
-- `multi_language_pre_submit_message_button_text_for_not_junk` (String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForNotJunk parameter.
-- `multi_language_pre_submit_message_button_text_for_phishing` (String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForPhishing parameter.
-- `multi_language_pre_submit_message_for_junk` (String) Maps to the -MultiLanguagePreSubmitMessageForJunk parameter.
-- `multi_language_pre_submit_message_for_not_junk` (String) Maps to the -MultiLanguagePreSubmitMessageForNotJunk parameter.
-- `multi_language_pre_submit_message_for_phishing` (String) Maps to the -MultiLanguagePreSubmitMessageForPhishing parameter.
-- `multi_language_pre_submit_message_title_for_junk` (String) Maps to the -MultiLanguagePreSubmitMessageTitleForJunk parameter.
-- `multi_language_pre_submit_message_title_for_not_junk` (String) Maps to the -MultiLanguagePreSubmitMessageTitleForNotJunk parameter.
-- `multi_language_pre_submit_message_title_for_phishing` (String) Maps to the -MultiLanguagePreSubmitMessageTitleForPhishing parameter.
-- `multi_language_setting` (String) Maps to the -MultiLanguageSetting parameter.
+- `multi_language_post_submit_message_button_link_for_junk` (Set of String) Maps to the -MultiLanguagePostSubmitMessageButtonLinkForJunk parameter.
+- `multi_language_post_submit_message_button_link_for_phishing` (Set of String) Maps to the -MultiLanguagePostSubmitMessageButtonLinkForPhishing parameter.
+- `multi_language_post_submit_message_button_text_for_junk` (Set of String) Maps to the -MultiLanguagePostSubmitMessageButtonTextForJunk parameter.
+- `multi_language_post_submit_message_button_text_for_phishing` (Set of String) Maps to the -MultiLanguagePostSubmitMessageButtonTextForPhishing parameter.
+- `multi_language_post_submit_message_for_junk` (Set of String) Maps to the -MultiLanguagePostSubmitMessageForJunk parameter.
+- `multi_language_post_submit_message_for_phishing` (Set of String) Maps to the -MultiLanguagePostSubmitMessageForPhishing parameter.
+- `multi_language_post_submit_message_title_for_junk` (Set of String) Maps to the -MultiLanguagePostSubmitMessageTitleForJunk parameter.
+- `multi_language_post_submit_message_title_for_phishing` (Set of String) Maps to the -MultiLanguagePostSubmitMessageTitleForPhishing parameter.
+- `multi_language_pre_submit_message_button_link_for_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForJunk parameter.
+- `multi_language_pre_submit_message_button_link_for_not_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForNotJunk parameter.
+- `multi_language_pre_submit_message_button_link_for_phishing` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonLinkForPhishing parameter.
+- `multi_language_pre_submit_message_button_text_for_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForJunk parameter.
+- `multi_language_pre_submit_message_button_text_for_not_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForNotJunk parameter.
+- `multi_language_pre_submit_message_button_text_for_phishing` (Set of String) Maps to the -MultiLanguagePreSubmitMessageButtonTextForPhishing parameter.
+- `multi_language_pre_submit_message_for_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageForJunk parameter.
+- `multi_language_pre_submit_message_for_not_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageForNotJunk parameter.
+- `multi_language_pre_submit_message_for_phishing` (Set of String) Maps to the -MultiLanguagePreSubmitMessageForPhishing parameter.
+- `multi_language_pre_submit_message_title_for_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageTitleForJunk parameter.
+- `multi_language_pre_submit_message_title_for_not_junk` (Set of String) Maps to the -MultiLanguagePreSubmitMessageTitleForNotJunk parameter.
+- `multi_language_pre_submit_message_title_for_phishing` (Set of String) Maps to the -MultiLanguagePreSubmitMessageTitleForPhishing parameter.
+- `multi_language_setting` (Set of String) Maps to the -MultiLanguageSetting parameter.
 - `not_junk_review_result_message` (String) Maps to the -NotJunkReviewResultMessage parameter.
 - `notification_footer_message` (String) Maps to the -NotificationFooterMessage parameter.
-- `notification_sender_address` (String) Maps to the -NotificationSenderAddress parameter.
+- `notification_sender_address` (Set of String) Maps to the -NotificationSenderAddress parameter.
 - `notifications_for_clean_submission_air_investigations_enabled` (Boolean) Maps to the -NotificationsForCleanSubmissionAirInvestigationsEnabled parameter.
 - `notifications_for_phish_malware_submission_air_investigations_enabled` (Boolean) Maps to the -NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled parameter.
 - `notifications_for_spam_submission_air_investigations_enabled` (Boolean) Maps to the -NotificationsForSpamSubmissionAirInvestigationsEnabled parameter.
@@ -85,11 +85,12 @@ Read-Only:
 - `pre_submit_message_title_for_phishing` (String) Maps to the -PreSubmitMessageTitleForPhishing parameter.
 - `report_chat_message_enabled` (Boolean) Maps to the -ReportChatMessageEnabled parameter.
 - `report_chat_message_to_customized_address_enabled` (Boolean) Maps to the -ReportChatMessageToCustomizedAddressEnabled parameter.
-- `report_junk_addresses` (String) Maps to the -ReportJunkAddresses parameter.
+- `report_junk_addresses` (Set of String) Maps to the -ReportJunkAddresses parameter.
 - `report_junk_to_customized_address` (Boolean) Maps to the -ReportJunkToCustomizedAddress parameter.
-- `report_not_junk_addresses` (String) Maps to the -ReportNotJunkAddresses parameter.
+- `report_not_junk_addresses` (Set of String) Maps to the -ReportNotJunkAddresses parameter.
 - `report_not_junk_to_customized_address` (Boolean) Maps to the -ReportNotJunkToCustomizedAddress parameter.
-- `report_phish_addresses` (String) Maps to the -ReportPhishAddresses parameter.
+- `report_phish_addresses` (Set of String) Maps to the -ReportPhishAddresses parameter.
 - `report_phish_to_customized_address` (Boolean) Maps to the -ReportPhishToCustomizedAddress parameter.
-- `third_party_report_addresses` (String) Maps to the -ThirdPartyReportAddresses parameter.
+- `third_party_report_addresses` (Set of String) Maps to the -ThirdPartyReportAddresses parameter.
+- `user_submission_options` (Number) Maps to the -UserSubmissionOptions parameter.
 - `user_submission_options_message` (String) Maps to the -UserSubmissionOptionsMessage parameter.

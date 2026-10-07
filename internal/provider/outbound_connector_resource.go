@@ -48,10 +48,10 @@ type outboundConnectorModel struct {
 	LinkForModifiedConnector      types.String `tfsdk:"link_for_modified_connector"`
 	MtaStsMode                    types.String `tfsdk:"mta_sts_mode"`
 	Name                          types.String `tfsdk:"name"`
-	RecipientDomains              types.String `tfsdk:"recipient_domains"`
+	RecipientDomains              types.Set    `tfsdk:"recipient_domains"`
 	RouteAllMessagesViaOnPremises types.Bool   `tfsdk:"route_all_messages_via_on_premises"`
 	SenderRewritingEnabled        types.Bool   `tfsdk:"sender_rewriting_enabled"`
-	SmartHosts                    types.String `tfsdk:"smart_hosts"`
+	SmartHosts                    types.Set    `tfsdk:"smart_hosts"`
 	SmtpDaneMode                  types.String `tfsdk:"smtp_dane_mode"`
 	TestMode                      types.Bool   `tfsdk:"test_mode"`
 	TlsDomain                     types.String `tfsdk:"tls_domain"`
@@ -69,7 +69,7 @@ func (r *outboundConnectorResource) Schema(_ context.Context, _ resource.SchemaR
 		Description: "Manages the OutboundConnector object via New-OutboundConnector / Get-OutboundConnector / Set-OutboundConnector / Remove-OutboundConnector.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"all_accepted_domains":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllAcceptedDomains parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"cloud_services_mail_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CloudServicesMailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"comment":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -82,10 +82,10 @@ func (r *outboundConnectorResource) Schema(_ context.Context, _ resource.SchemaR
 			"link_for_modified_connector":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkForModifiedConnector parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"mta_sts_mode":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MtaStsMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                               schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"recipient_domains":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"recipient_domains":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"route_all_messages_via_on_premises": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RouteAllMessagesViaOnPremises parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"sender_rewriting_enabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderRewritingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"smart_hosts":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SmartHosts parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"smart_hosts":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SmartHosts parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"smtp_dane_mode":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SmtpDaneMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"test_mode":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TestMode parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"tls_domain":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TlsDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -110,44 +110,89 @@ func (r *outboundConnectorResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	p := exo.NewOutboundConnectorParams{
-		AllAcceptedDomains:            plan.AllAcceptedDomains.ValueBool(),
-		CloudServicesMailEnabled:      plan.CloudServicesMailEnabled.ValueBool(),
-		Comment:                       plan.Comment.ValueString(),
-		Enabled:                       plan.Enabled.ValueBool(),
-		IsTransportRuleScoped:         plan.IsTransportRuleScoped.ValueBool(),
-		Name:                          plan.Name.ValueString(),
-		RouteAllMessagesViaOnPremises: plan.RouteAllMessagesViaOnPremises.ValueBool(),
-		SenderRewritingEnabled:        plan.SenderRewritingEnabled.ValueBool(),
-		TestMode:                      plan.TestMode.ValueBool(),
-		UseMXRecord:                   plan.UseMXRecord.ValueBool(),
+	var config outboundConnectorModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ConnectorSource.ValueString(); v != "" {
-		p.ConnectorSource = v
+
+	p := exo.NewOutboundConnectorParams{}
+	if !config.AllAcceptedDomains.IsNull() {
+		if !plan.AllAcceptedDomains.IsUnknown() {
+			p.AllAcceptedDomains = plan.AllAcceptedDomains.ValueBoolPointer()
+		}
 	}
-	if v := plan.ConnectorType.ValueString(); v != "" {
-		p.ConnectorType = v
+	if !config.CloudServicesMailEnabled.IsNull() {
+		if !plan.CloudServicesMailEnabled.IsUnknown() {
+			p.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.LinkForModifiedConnector.ValueString(); v != "" {
-		p.LinkForModifiedConnector = v
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.MtaStsMode.ValueString(); v != "" {
-		p.MtaStsMode = v
+	if v := config.ConnectorSource.ValueString(); v != "" {
+		p.ConnectorSource = objectParam(v)
 	}
-	if v := plan.RecipientDomains.ValueString(); v != "" {
-		p.RecipientDomains = v
+	if v := config.ConnectorType.ValueString(); v != "" {
+		p.ConnectorType = objectParam(v)
 	}
-	if v := plan.SmartHosts.ValueString(); v != "" {
-		p.SmartHosts = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.SmtpDaneMode.ValueString(); v != "" {
-		p.SmtpDaneMode = v
+	if !config.IsTransportRuleScoped.IsNull() {
+		if !plan.IsTransportRuleScoped.IsUnknown() {
+			p.IsTransportRuleScoped = plan.IsTransportRuleScoped.ValueBoolPointer()
+		}
 	}
-	if v := plan.TlsDomain.ValueString(); v != "" {
-		p.TlsDomain = v
+	if !config.LinkForModifiedConnector.IsNull() {
+		p.LinkForModifiedConnector = plan.LinkForModifiedConnector.ValueString()
 	}
-	if v := plan.TlsSettings.ValueString(); v != "" {
-		p.TlsSettings = v
+	if v := config.MtaStsMode.ValueString(); v != "" {
+		p.MtaStsMode = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.RecipientDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientDomains, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientDomains = v
+		}
+	}
+	if !config.RouteAllMessagesViaOnPremises.IsNull() {
+		if !plan.RouteAllMessagesViaOnPremises.IsUnknown() {
+			p.RouteAllMessagesViaOnPremises = plan.RouteAllMessagesViaOnPremises.ValueBoolPointer()
+		}
+	}
+	if !config.SenderRewritingEnabled.IsNull() {
+		if !plan.SenderRewritingEnabled.IsUnknown() {
+			p.SenderRewritingEnabled = plan.SenderRewritingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SmartHosts.IsNull() {
+		if v := toStringSlice(ctx, plan.SmartHosts, &resp.Diagnostics); len(v) > 0 {
+			p.SmartHosts = v
+		}
+	}
+	if v := config.SmtpDaneMode.ValueString(); v != "" {
+		p.SmtpDaneMode = objectParam(v)
+	}
+	if !config.TestMode.IsNull() {
+		if !plan.TestMode.IsUnknown() {
+			p.TestMode = plan.TestMode.ValueBoolPointer()
+		}
+	}
+	if v := config.TlsDomain.ValueString(); v != "" {
+		p.TlsDomain = objectParam(v)
+	}
+	if v := config.TlsSettings.ValueString(); v != "" {
+		p.TlsSettings = objectParam(v)
+	}
+	if !config.UseMXRecord.IsNull() {
+		if !plan.UseMXRecord.IsUnknown() {
+			p.UseMXRecord = plan.UseMXRecord.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -199,44 +244,90 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetOutboundConnectorParams{}
 	sp.Identity = id
-	sp.AllAcceptedDomains = plan.AllAcceptedDomains.ValueBool()
-	sp.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBool()
-	sp.Comment = plan.Comment.ValueString()
+	if !plan.AllAcceptedDomains.Equal(state.AllAcceptedDomains) {
+		if !plan.AllAcceptedDomains.IsUnknown() {
+			sp.AllAcceptedDomains = plan.AllAcceptedDomains.ValueBoolPointer()
+		}
+	}
+	if !plan.CloudServicesMailEnabled.Equal(state.CloudServicesMailEnabled) {
+		if !plan.CloudServicesMailEnabled.IsUnknown() {
+			sp.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
 	if v := plan.ConnectorSource.ValueString(); v != "" {
-		sp.ConnectorSource = v
+		sp.ConnectorSource = objectParam(v)
 	}
 	if v := plan.ConnectorType.ValueString(); v != "" {
-		sp.ConnectorType = v
+		sp.ConnectorType = objectParam(v)
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.IsTransportRuleScoped = plan.IsTransportRuleScoped.ValueBool()
-	sp.IsValidated = plan.IsValidated.ValueBool()
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsTransportRuleScoped.Equal(state.IsTransportRuleScoped) {
+		if !plan.IsTransportRuleScoped.IsUnknown() {
+			sp.IsTransportRuleScoped = plan.IsTransportRuleScoped.ValueBoolPointer()
+		}
+	}
+	if !plan.IsValidated.Equal(state.IsValidated) {
+		if !plan.IsValidated.IsUnknown() {
+			sp.IsValidated = plan.IsValidated.ValueBoolPointer()
+		}
+	}
 	if v := plan.LastValidationTimestamp.ValueString(); v != "" {
-		sp.LastValidationTimestamp = v
+		sp.LastValidationTimestamp = objectParam(v)
 	}
 	if v := plan.MtaStsMode.ValueString(); v != "" {
-		sp.MtaStsMode = v
+		sp.MtaStsMode = objectParam(v)
 	}
-	if v := plan.RecipientDomains.ValueString(); v != "" {
-		sp.RecipientDomains = v
+	if !plan.RecipientDomains.Equal(state.RecipientDomains) {
+		if !plan.RecipientDomains.IsNull() && !plan.RecipientDomains.IsUnknown() {
+			sp.RecipientDomains = append([]string{}, toStringSlice(ctx, plan.RecipientDomains, &resp.Diagnostics)...)
+		}
 	}
-	sp.RouteAllMessagesViaOnPremises = plan.RouteAllMessagesViaOnPremises.ValueBool()
-	sp.SenderRewritingEnabled = plan.SenderRewritingEnabled.ValueBool()
-	if v := plan.SmartHosts.ValueString(); v != "" {
-		sp.SmartHosts = v
+	if !plan.RouteAllMessagesViaOnPremises.Equal(state.RouteAllMessagesViaOnPremises) {
+		if !plan.RouteAllMessagesViaOnPremises.IsUnknown() {
+			sp.RouteAllMessagesViaOnPremises = plan.RouteAllMessagesViaOnPremises.ValueBoolPointer()
+		}
+	}
+	if !plan.SenderRewritingEnabled.Equal(state.SenderRewritingEnabled) {
+		if !plan.SenderRewritingEnabled.IsUnknown() {
+			sp.SenderRewritingEnabled = plan.SenderRewritingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SmartHosts.Equal(state.SmartHosts) {
+		if !plan.SmartHosts.IsNull() && !plan.SmartHosts.IsUnknown() {
+			sp.SmartHosts = append([]string{}, toStringSlice(ctx, plan.SmartHosts, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.SmtpDaneMode.ValueString(); v != "" {
-		sp.SmtpDaneMode = v
+		sp.SmtpDaneMode = objectParam(v)
 	}
-	sp.TestMode = plan.TestMode.ValueBool()
+	if !plan.TestMode.Equal(state.TestMode) {
+		if !plan.TestMode.IsUnknown() {
+			sp.TestMode = plan.TestMode.ValueBoolPointer()
+		}
+	}
 	if v := plan.TlsDomain.ValueString(); v != "" {
-		sp.TlsDomain = v
+		sp.TlsDomain = objectParam(v)
 	}
 	if v := plan.TlsSettings.ValueString(); v != "" {
-		sp.TlsSettings = v
+		sp.TlsSettings = objectParam(v)
 	}
-	sp.UseMXRecord = plan.UseMXRecord.ValueBool()
-	sp.ValidationRecipients = toStringSlice(ctx, plan.ValidationRecipients, &resp.Diagnostics)
+	if !plan.UseMXRecord.Equal(state.UseMXRecord) {
+		if !plan.UseMXRecord.IsUnknown() {
+			sp.UseMXRecord = plan.UseMXRecord.ValueBoolPointer()
+		}
+	}
+	if !plan.ValidationRecipients.Equal(state.ValidationRecipients) {
+		if !plan.ValidationRecipients.IsNull() && !plan.ValidationRecipients.IsUnknown() {
+			sp.ValidationRecipients = append([]string{}, toStringSlice(ctx, plan.ValidationRecipients, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -246,16 +337,7 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Comment":                 cfg.Comment,
-		"ConnectorSource":         cfg.ConnectorSource,
-		"ConnectorType":           cfg.ConnectorType,
-		"LastValidationTimestamp": cfg.LastValidationTimestamp,
-		"MtaStsMode":              cfg.MtaStsMode,
-		"RecipientDomains":        cfg.RecipientDomains,
-		"SmartHosts":              cfg.SmartHosts,
-		"SmtpDaneMode":            cfg.SmtpDaneMode,
-		"TlsDomain":               cfg.TlsDomain,
-		"TlsSettings":             cfg.TlsSettings,
+		"Comment": cfg.Comment,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -320,23 +402,23 @@ func readOutboundConnector(ctx context.Context, obj map[string]any, m *outboundC
 	m.AllAcceptedDomains = types.BoolValue(getBool(obj, "AllAcceptedDomains"))
 	m.CloudServicesMailEnabled = types.BoolValue(getBool(obj, "CloudServicesMailEnabled"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
-	m.ConnectorSource = types.StringValue(getString(obj, "ConnectorSource"))
-	m.ConnectorType = types.StringValue(getString(obj, "ConnectorType"))
+	m.ConnectorSource = types.StringValue(getObjectJSON(obj, "ConnectorSource"))
+	m.ConnectorType = types.StringValue(getObjectJSON(obj, "ConnectorType"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.IsTransportRuleScoped = types.BoolValue(getBool(obj, "IsTransportRuleScoped"))
 	m.IsValidated = types.BoolValue(getBool(obj, "IsValidated"))
-	m.LastValidationTimestamp = types.StringValue(getString(obj, "LastValidationTimestamp"))
+	m.LastValidationTimestamp = types.StringValue(getObjectJSON(obj, "LastValidationTimestamp"))
 	m.LinkForModifiedConnector = types.StringValue(getString(obj, "LinkForModifiedConnector"))
-	m.MtaStsMode = types.StringValue(getString(obj, "MtaStsMode"))
+	m.MtaStsMode = types.StringValue(getObjectJSON(obj, "MtaStsMode"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.RecipientDomains = types.StringValue(getString(obj, "RecipientDomains"))
+	m.RecipientDomains = stringSetValue(ctx, getStringSlice(obj, "RecipientDomains"))
 	m.RouteAllMessagesViaOnPremises = types.BoolValue(getBool(obj, "RouteAllMessagesViaOnPremises"))
 	m.SenderRewritingEnabled = types.BoolValue(getBool(obj, "SenderRewritingEnabled"))
-	m.SmartHosts = types.StringValue(getString(obj, "SmartHosts"))
-	m.SmtpDaneMode = types.StringValue(getString(obj, "SmtpDaneMode"))
+	m.SmartHosts = stringSetValue(ctx, getStringSlice(obj, "SmartHosts"))
+	m.SmtpDaneMode = types.StringValue(getObjectJSON(obj, "SmtpDaneMode"))
 	m.TestMode = types.BoolValue(getBool(obj, "TestMode"))
-	m.TlsDomain = types.StringValue(getString(obj, "TlsDomain"))
-	m.TlsSettings = types.StringValue(getString(obj, "TlsSettings"))
+	m.TlsDomain = types.StringValue(getObjectJSON(obj, "TlsDomain"))
+	m.TlsSettings = types.StringValue(getObjectJSON(obj, "TlsSettings"))
 	m.UseMXRecord = types.BoolValue(getBool(obj, "UseMXRecord"))
 	m.ValidationRecipients = stringSetValue(ctx, getStringSlice(obj, "ValidationRecipients"))
 	_ = ctx
@@ -355,10 +437,10 @@ func (r *outboundConnectorResource) reconcileState(cfg, read *outboundConnectorM
 	read.LinkForModifiedConnector = reconcile.KeepStr(cfg.LinkForModifiedConnector, read.LinkForModifiedConnector)
 	read.MtaStsMode = reconcile.KeepStr(cfg.MtaStsMode, read.MtaStsMode)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
-	read.RecipientDomains = reconcile.KeepStr(cfg.RecipientDomains, read.RecipientDomains)
+	read.RecipientDomains = reconcile.KeepSet(cfg.RecipientDomains, read.RecipientDomains)
 	read.RouteAllMessagesViaOnPremises = reconcile.KeepBool(cfg.RouteAllMessagesViaOnPremises, read.RouteAllMessagesViaOnPremises)
 	read.SenderRewritingEnabled = reconcile.KeepBool(cfg.SenderRewritingEnabled, read.SenderRewritingEnabled)
-	read.SmartHosts = reconcile.KeepStr(cfg.SmartHosts, read.SmartHosts)
+	read.SmartHosts = reconcile.KeepSet(cfg.SmartHosts, read.SmartHosts)
 	read.SmtpDaneMode = reconcile.KeepStr(cfg.SmtpDaneMode, read.SmtpDaneMode)
 	read.TestMode = reconcile.KeepBool(cfg.TestMode, read.TestMode)
 	read.TlsDomain = reconcile.KeepStr(cfg.TlsDomain, read.TlsDomain)

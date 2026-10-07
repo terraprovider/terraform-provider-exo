@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +27,7 @@ var (
 	_ resource.Resource                = &clientAccessRuleResource{}
 	_ resource.ResourceWithConfigure   = &clientAccessRuleResource{}
 	_ resource.ResourceWithImportState = &clientAccessRuleResource{}
+	_ resource.ResourceWithModifyPlan  = &clientAccessRuleResource{}
 )
 
 type clientAccessRuleResource struct{ client *clients.Client }
@@ -36,18 +39,19 @@ type clientAccessRuleModel struct {
 	ID                                   types.String `tfsdk:"id"`
 	Identity                             types.String `tfsdk:"identity"`
 	Action                               types.String `tfsdk:"action"`
-	AnyOfAuthenticationTypes             types.String `tfsdk:"any_of_authentication_types"`
-	AnyOfClientIPAddressesOrRanges       types.String `tfsdk:"any_of_client_ip_addresses_or_ranges"`
-	AnyOfProtocols                       types.String `tfsdk:"any_of_protocols"`
+	AnyOfAuthenticationTypes             types.Set    `tfsdk:"any_of_authentication_types"`
+	AnyOfClientIPAddressesOrRanges       types.Set    `tfsdk:"any_of_client_ip_addresses_or_ranges"`
+	AnyOfProtocols                       types.Set    `tfsdk:"any_of_protocols"`
 	Enabled                              types.Bool   `tfsdk:"enabled"`
-	ExceptAnyOfAuthenticationTypes       types.String `tfsdk:"except_any_of_authentication_types"`
-	ExceptAnyOfClientIPAddressesOrRanges types.String `tfsdk:"except_any_of_client_ip_addresses_or_ranges"`
-	ExceptAnyOfProtocols                 types.String `tfsdk:"except_any_of_protocols"`
-	ExceptUsernameMatchesAnyOfPatterns   types.String `tfsdk:"except_username_matches_any_of_patterns"`
+	ExceptAnyOfAuthenticationTypes       types.Set    `tfsdk:"except_any_of_authentication_types"`
+	ExceptAnyOfClientIPAddressesOrRanges types.Set    `tfsdk:"except_any_of_client_ip_addresses_or_ranges"`
+	ExceptAnyOfProtocols                 types.Set    `tfsdk:"except_any_of_protocols"`
+	ExceptUsernameMatchesAnyOfPatterns   types.Set    `tfsdk:"except_username_matches_any_of_patterns"`
 	Name                                 types.String `tfsdk:"name"`
+	Priority                             types.Int64  `tfsdk:"priority"`
 	Scope                                types.String `tfsdk:"scope"`
 	UserRecipientFilter                  types.String `tfsdk:"user_recipient_filter"`
-	UsernameMatchesAnyOfPatterns         types.String `tfsdk:"username_matches_any_of_patterns"`
+	UsernameMatchesAnyOfPatterns         types.Set    `tfsdk:"username_matches_any_of_patterns"`
 }
 
 func (r *clientAccessRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -61,18 +65,19 @@ func (r *clientAccessRuleResource) Schema(_ context.Context, _ resource.SchemaRe
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                             schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"action":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Action parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"any_of_authentication_types":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AnyOfAuthenticationTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"any_of_client_ip_addresses_or_ranges": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AnyOfClientIPAddressesOrRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"any_of_protocols":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AnyOfProtocols parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"any_of_authentication_types":          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AnyOfAuthenticationTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"any_of_client_ip_addresses_or_ranges": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AnyOfClientIPAddressesOrRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"any_of_protocols":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AnyOfProtocols parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"except_any_of_authentication_types":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfAuthenticationTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_any_of_client_ip_addresses_or_ranges": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_any_of_protocols":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_username_matches_any_of_patterns":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_any_of_authentication_types":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfAuthenticationTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_any_of_client_ip_addresses_or_ranges": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_any_of_protocols":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_username_matches_any_of_patterns":     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"scope":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Scope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"user_recipient_filter":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserRecipientFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"username_matches_any_of_patterns": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"username_matches_any_of_patterns": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -90,40 +95,74 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config clientAccessRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.Action.ValueString(); v != "" {
-		sp.Action = v
+	if v := config.Action.ValueString(); v != "" {
+		sp.Action = objectParam(v)
 	}
-	if v := plan.AnyOfAuthenticationTypes.ValueString(); v != "" {
-		sp.AnyOfAuthenticationTypes = v
+	if !config.AnyOfAuthenticationTypes.IsNull() {
+		if !plan.AnyOfAuthenticationTypes.IsNull() && !plan.AnyOfAuthenticationTypes.IsUnknown() {
+			sp.AnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AnyOfClientIPAddressesOrRanges.ValueString(); v != "" {
-		sp.AnyOfClientIPAddressesOrRanges = v
+	if !config.AnyOfClientIPAddressesOrRanges.IsNull() {
+		if !plan.AnyOfClientIPAddressesOrRanges.IsNull() && !plan.AnyOfClientIPAddressesOrRanges.IsUnknown() {
+			sp.AnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AnyOfProtocols.ValueString(); v != "" {
-		sp.AnyOfProtocols = v
+	if !config.AnyOfProtocols.IsNull() {
+		if !plan.AnyOfProtocols.IsNull() && !plan.AnyOfProtocols.IsUnknown() {
+			sp.AnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics)...)
+		}
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.ExceptAnyOfAuthenticationTypes.ValueString(); v != "" {
-		sp.ExceptAnyOfAuthenticationTypes = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptAnyOfClientIPAddressesOrRanges.ValueString(); v != "" {
-		sp.ExceptAnyOfClientIPAddressesOrRanges = v
+	if !config.ExceptAnyOfAuthenticationTypes.IsNull() {
+		if !plan.ExceptAnyOfAuthenticationTypes.IsNull() && !plan.ExceptAnyOfAuthenticationTypes.IsUnknown() {
+			sp.ExceptAnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExceptAnyOfProtocols.ValueString(); v != "" {
-		sp.ExceptAnyOfProtocols = v
+	if !config.ExceptAnyOfClientIPAddressesOrRanges.IsNull() {
+		if !plan.ExceptAnyOfClientIPAddressesOrRanges.IsNull() && !plan.ExceptAnyOfClientIPAddressesOrRanges.IsUnknown() {
+			sp.ExceptAnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExceptUsernameMatchesAnyOfPatterns.ValueString(); v != "" {
-		sp.ExceptUsernameMatchesAnyOfPatterns = v
+	if !config.ExceptAnyOfProtocols.IsNull() {
+		if !plan.ExceptAnyOfProtocols.IsNull() && !plan.ExceptAnyOfProtocols.IsUnknown() {
+			sp.ExceptAnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics)...)
+		}
 	}
-	sp.Name = plan.Name.ValueString()
-	if v := plan.Scope.ValueString(); v != "" {
-		sp.Scope = v
+	if !config.ExceptUsernameMatchesAnyOfPatterns.IsNull() {
+		if !plan.ExceptUsernameMatchesAnyOfPatterns.IsNull() && !plan.ExceptUsernameMatchesAnyOfPatterns.IsUnknown() {
+			sp.ExceptUsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+		}
 	}
-	sp.UserRecipientFilter = plan.UserRecipientFilter.ValueString()
-	if v := plan.UsernameMatchesAnyOfPatterns.ValueString(); v != "" {
-		sp.UsernameMatchesAnyOfPatterns = v
+	if !config.Name.IsNull() {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !config.Priority.IsNull() {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if v := config.Scope.ValueString(); v != "" {
+		sp.Scope = objectParam(v)
+	}
+	if !config.UserRecipientFilter.IsNull() {
+		sp.UserRecipientFilter = plan.UserRecipientFilter.ValueString()
+	}
+	if !config.UsernameMatchesAnyOfPatterns.IsNull() {
+		if !plan.UsernameMatchesAnyOfPatterns.IsNull() && !plan.UsernameMatchesAnyOfPatterns.IsUnknown() {
+			sp.UsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -165,37 +204,66 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = id
 	if v := plan.Action.ValueString(); v != "" {
-		sp.Action = v
+		sp.Action = objectParam(v)
 	}
-	if v := plan.AnyOfAuthenticationTypes.ValueString(); v != "" {
-		sp.AnyOfAuthenticationTypes = v
+	if !plan.AnyOfAuthenticationTypes.Equal(state.AnyOfAuthenticationTypes) {
+		if !plan.AnyOfAuthenticationTypes.IsNull() && !plan.AnyOfAuthenticationTypes.IsUnknown() {
+			sp.AnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AnyOfClientIPAddressesOrRanges.ValueString(); v != "" {
-		sp.AnyOfClientIPAddressesOrRanges = v
+	if !plan.AnyOfClientIPAddressesOrRanges.Equal(state.AnyOfClientIPAddressesOrRanges) {
+		if !plan.AnyOfClientIPAddressesOrRanges.IsNull() && !plan.AnyOfClientIPAddressesOrRanges.IsUnknown() {
+			sp.AnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.AnyOfProtocols.ValueString(); v != "" {
-		sp.AnyOfProtocols = v
+	if !plan.AnyOfProtocols.Equal(state.AnyOfProtocols) {
+		if !plan.AnyOfProtocols.IsNull() && !plan.AnyOfProtocols.IsUnknown() {
+			sp.AnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics)...)
+		}
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.ExceptAnyOfAuthenticationTypes.ValueString(); v != "" {
-		sp.ExceptAnyOfAuthenticationTypes = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptAnyOfClientIPAddressesOrRanges.ValueString(); v != "" {
-		sp.ExceptAnyOfClientIPAddressesOrRanges = v
+	if !plan.ExceptAnyOfAuthenticationTypes.Equal(state.ExceptAnyOfAuthenticationTypes) {
+		if !plan.ExceptAnyOfAuthenticationTypes.IsNull() && !plan.ExceptAnyOfAuthenticationTypes.IsUnknown() {
+			sp.ExceptAnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExceptAnyOfProtocols.ValueString(); v != "" {
-		sp.ExceptAnyOfProtocols = v
+	if !plan.ExceptAnyOfClientIPAddressesOrRanges.Equal(state.ExceptAnyOfClientIPAddressesOrRanges) {
+		if !plan.ExceptAnyOfClientIPAddressesOrRanges.IsNull() && !plan.ExceptAnyOfClientIPAddressesOrRanges.IsUnknown() {
+			sp.ExceptAnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExceptUsernameMatchesAnyOfPatterns.ValueString(); v != "" {
-		sp.ExceptUsernameMatchesAnyOfPatterns = v
+	if !plan.ExceptAnyOfProtocols.Equal(state.ExceptAnyOfProtocols) {
+		if !plan.ExceptAnyOfProtocols.IsNull() && !plan.ExceptAnyOfProtocols.IsUnknown() {
+			sp.ExceptAnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics)...)
+		}
 	}
-	sp.Name = plan.Name.ValueString()
+	if !plan.ExceptUsernameMatchesAnyOfPatterns.Equal(state.ExceptUsernameMatchesAnyOfPatterns) {
+		if !plan.ExceptUsernameMatchesAnyOfPatterns.IsNull() && !plan.ExceptUsernameMatchesAnyOfPatterns.IsUnknown() {
+			sp.ExceptUsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.Priority.Equal(state.Priority) {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
 	if v := plan.Scope.ValueString(); v != "" {
-		sp.Scope = v
+		sp.Scope = objectParam(v)
 	}
-	sp.UserRecipientFilter = plan.UserRecipientFilter.ValueString()
-	if v := plan.UsernameMatchesAnyOfPatterns.ValueString(); v != "" {
-		sp.UsernameMatchesAnyOfPatterns = v
+	if !plan.UserRecipientFilter.Equal(state.UserRecipientFilter) {
+		sp.UserRecipientFilter = plan.UserRecipientFilter.ValueString()
+	}
+	if !plan.UsernameMatchesAnyOfPatterns.Equal(state.UsernameMatchesAnyOfPatterns) {
+		if !plan.UsernameMatchesAnyOfPatterns.IsNull() && !plan.UsernameMatchesAnyOfPatterns.IsUnknown() {
+			sp.UsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -206,18 +274,8 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Action":                               cfg.Action,
-		"AnyOfAuthenticationTypes":             cfg.AnyOfAuthenticationTypes,
-		"AnyOfClientIPAddressesOrRanges":       cfg.AnyOfClientIPAddressesOrRanges,
-		"AnyOfProtocols":                       cfg.AnyOfProtocols,
-		"ExceptAnyOfAuthenticationTypes":       cfg.ExceptAnyOfAuthenticationTypes,
-		"ExceptAnyOfClientIPAddressesOrRanges": cfg.ExceptAnyOfClientIPAddressesOrRanges,
-		"ExceptAnyOfProtocols":                 cfg.ExceptAnyOfProtocols,
-		"ExceptUsernameMatchesAnyOfPatterns":   cfg.ExceptUsernameMatchesAnyOfPatterns,
-		"Name":                                 cfg.Name,
-		"Scope":                                cfg.Scope,
-		"UserRecipientFilter":                  cfg.UserRecipientFilter,
-		"UsernameMatchesAnyOfPatterns":         cfg.UsernameMatchesAnyOfPatterns,
+		"Name":                cfg.Name,
+		"UserRecipientFilter": cfg.UserRecipientFilter,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -231,6 +289,80 @@ func (r *clientAccessRuleResource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *clientAccessRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *clientAccessRuleResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan clientAccessRuleModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetClientAccessRule(ctx, exo.GetClientAccessRuleParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur clientAccessRuleModel
+	readClientAccessRule(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Action.IsUnknown() {
+		plan.Action = cur.Action
+	}
+	if plan.AnyOfAuthenticationTypes.IsUnknown() {
+		plan.AnyOfAuthenticationTypes = cur.AnyOfAuthenticationTypes
+	}
+	if plan.AnyOfClientIPAddressesOrRanges.IsUnknown() {
+		plan.AnyOfClientIPAddressesOrRanges = cur.AnyOfClientIPAddressesOrRanges
+	}
+	if plan.AnyOfProtocols.IsUnknown() {
+		plan.AnyOfProtocols = cur.AnyOfProtocols
+	}
+	if plan.Enabled.IsUnknown() {
+		plan.Enabled = cur.Enabled
+	}
+	if plan.ExceptAnyOfAuthenticationTypes.IsUnknown() {
+		plan.ExceptAnyOfAuthenticationTypes = cur.ExceptAnyOfAuthenticationTypes
+	}
+	if plan.ExceptAnyOfClientIPAddressesOrRanges.IsUnknown() {
+		plan.ExceptAnyOfClientIPAddressesOrRanges = cur.ExceptAnyOfClientIPAddressesOrRanges
+	}
+	if plan.ExceptAnyOfProtocols.IsUnknown() {
+		plan.ExceptAnyOfProtocols = cur.ExceptAnyOfProtocols
+	}
+	if plan.ExceptUsernameMatchesAnyOfPatterns.IsUnknown() {
+		plan.ExceptUsernameMatchesAnyOfPatterns = cur.ExceptUsernameMatchesAnyOfPatterns
+	}
+	if plan.Name.IsUnknown() {
+		plan.Name = cur.Name
+	}
+	if plan.Priority.IsUnknown() {
+		plan.Priority = cur.Priority
+	}
+	if plan.Scope.IsUnknown() {
+		plan.Scope = cur.Scope
+	}
+	if plan.UserRecipientFilter.IsUnknown() {
+		plan.UserRecipientFilter = cur.UserRecipientFilter
+	}
+	if plan.UsernameMatchesAnyOfPatterns.IsUnknown() {
+		plan.UsernameMatchesAnyOfPatterns = cur.UsernameMatchesAnyOfPatterns
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *clientAccessRuleResource) identityOf(m clientAccessRuleModel) string {
@@ -269,34 +401,36 @@ func (r *clientAccessRuleResource) refresh(ctx context.Context, identity string,
 
 func readClientAccessRule(ctx context.Context, obj map[string]any, m *clientAccessRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.Action = types.StringValue(getString(obj, "Action"))
-	m.AnyOfAuthenticationTypes = types.StringValue(getString(obj, "AnyOfAuthenticationTypes"))
-	m.AnyOfClientIPAddressesOrRanges = types.StringValue(getString(obj, "AnyOfClientIPAddressesOrRanges"))
-	m.AnyOfProtocols = types.StringValue(getString(obj, "AnyOfProtocols"))
+	m.Action = types.StringValue(getObjectJSON(obj, "Action"))
+	m.AnyOfAuthenticationTypes = stringSetValue(ctx, getStringSlice(obj, "AnyOfAuthenticationTypes"))
+	m.AnyOfClientIPAddressesOrRanges = stringSetValue(ctx, getStringSlice(obj, "AnyOfClientIPAddressesOrRanges"))
+	m.AnyOfProtocols = stringSetValue(ctx, getStringSlice(obj, "AnyOfProtocols"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.ExceptAnyOfAuthenticationTypes = types.StringValue(getString(obj, "ExceptAnyOfAuthenticationTypes"))
-	m.ExceptAnyOfClientIPAddressesOrRanges = types.StringValue(getString(obj, "ExceptAnyOfClientIPAddressesOrRanges"))
-	m.ExceptAnyOfProtocols = types.StringValue(getString(obj, "ExceptAnyOfProtocols"))
-	m.ExceptUsernameMatchesAnyOfPatterns = types.StringValue(getString(obj, "ExceptUsernameMatchesAnyOfPatterns"))
+	m.ExceptAnyOfAuthenticationTypes = stringSetValue(ctx, getStringSlice(obj, "ExceptAnyOfAuthenticationTypes"))
+	m.ExceptAnyOfClientIPAddressesOrRanges = stringSetValue(ctx, getStringSlice(obj, "ExceptAnyOfClientIPAddressesOrRanges"))
+	m.ExceptAnyOfProtocols = stringSetValue(ctx, getStringSlice(obj, "ExceptAnyOfProtocols"))
+	m.ExceptUsernameMatchesAnyOfPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptUsernameMatchesAnyOfPatterns"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Scope = types.StringValue(getString(obj, "Scope"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
+	m.Scope = types.StringValue(getObjectJSON(obj, "Scope"))
 	m.UserRecipientFilter = types.StringValue(getString(obj, "UserRecipientFilter"))
-	m.UsernameMatchesAnyOfPatterns = types.StringValue(getString(obj, "UsernameMatchesAnyOfPatterns"))
+	m.UsernameMatchesAnyOfPatterns = stringSetValue(ctx, getStringSlice(obj, "UsernameMatchesAnyOfPatterns"))
 	_ = ctx
 }
 
 func (r *clientAccessRuleResource) reconcileState(cfg, read *clientAccessRuleModel) {
 	read.Action = reconcile.KeepStr(cfg.Action, read.Action)
-	read.AnyOfAuthenticationTypes = reconcile.KeepStr(cfg.AnyOfAuthenticationTypes, read.AnyOfAuthenticationTypes)
-	read.AnyOfClientIPAddressesOrRanges = reconcile.KeepStr(cfg.AnyOfClientIPAddressesOrRanges, read.AnyOfClientIPAddressesOrRanges)
-	read.AnyOfProtocols = reconcile.KeepStr(cfg.AnyOfProtocols, read.AnyOfProtocols)
+	read.AnyOfAuthenticationTypes = reconcile.KeepSet(cfg.AnyOfAuthenticationTypes, read.AnyOfAuthenticationTypes)
+	read.AnyOfClientIPAddressesOrRanges = reconcile.KeepSet(cfg.AnyOfClientIPAddressesOrRanges, read.AnyOfClientIPAddressesOrRanges)
+	read.AnyOfProtocols = reconcile.KeepSet(cfg.AnyOfProtocols, read.AnyOfProtocols)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
-	read.ExceptAnyOfAuthenticationTypes = reconcile.KeepStr(cfg.ExceptAnyOfAuthenticationTypes, read.ExceptAnyOfAuthenticationTypes)
-	read.ExceptAnyOfClientIPAddressesOrRanges = reconcile.KeepStr(cfg.ExceptAnyOfClientIPAddressesOrRanges, read.ExceptAnyOfClientIPAddressesOrRanges)
-	read.ExceptAnyOfProtocols = reconcile.KeepStr(cfg.ExceptAnyOfProtocols, read.ExceptAnyOfProtocols)
-	read.ExceptUsernameMatchesAnyOfPatterns = reconcile.KeepStr(cfg.ExceptUsernameMatchesAnyOfPatterns, read.ExceptUsernameMatchesAnyOfPatterns)
+	read.ExceptAnyOfAuthenticationTypes = reconcile.KeepSet(cfg.ExceptAnyOfAuthenticationTypes, read.ExceptAnyOfAuthenticationTypes)
+	read.ExceptAnyOfClientIPAddressesOrRanges = reconcile.KeepSet(cfg.ExceptAnyOfClientIPAddressesOrRanges, read.ExceptAnyOfClientIPAddressesOrRanges)
+	read.ExceptAnyOfProtocols = reconcile.KeepSet(cfg.ExceptAnyOfProtocols, read.ExceptAnyOfProtocols)
+	read.ExceptUsernameMatchesAnyOfPatterns = reconcile.KeepSet(cfg.ExceptUsernameMatchesAnyOfPatterns, read.ExceptUsernameMatchesAnyOfPatterns)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.Scope = reconcile.KeepStr(cfg.Scope, read.Scope)
 	read.UserRecipientFilter = reconcile.KeepStr(cfg.UserRecipientFilter, read.UserRecipientFilter)
-	read.UsernameMatchesAnyOfPatterns = reconcile.KeepStr(cfg.UsernameMatchesAnyOfPatterns, read.UsernameMatchesAnyOfPatterns)
+	read.UsernameMatchesAnyOfPatterns = reconcile.KeepSet(cfg.UsernameMatchesAnyOfPatterns, read.UsernameMatchesAnyOfPatterns)
 }

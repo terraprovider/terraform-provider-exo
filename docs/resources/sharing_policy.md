@@ -17,7 +17,7 @@ Manages the SharingPolicy object via New-SharingPolicy / Get-SharingPolicy / Set
 
 ### Required
 
-- `domains` (String) Maps to the -Domains parameter.
+- `domains` (Set of String) Maps to the -Domains parameter.
 - `name` (String) Maps to the -Name parameter.
 
 ### Optional

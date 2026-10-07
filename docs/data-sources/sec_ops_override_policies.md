@@ -24,11 +24,11 @@ List every SecOpsOverridePolicy object (Get-SecOpsOverridePolicy).
 
 Read-Only:
 
-- `add_sent_to` (String) Maps to the -AddSentTo parameter.
+- `add_sent_to` (Set of String) Maps to the -AddSentTo parameter.
 - `comment` (String) Maps to the -Comment parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `name` (String) Maps to the -Name parameter.
-- `remove_sent_to` (String) Maps to the -RemoveSentTo parameter.
-- `sent_to` (String) Maps to the -SentTo parameter.
+- `remove_sent_to` (Set of String) Maps to the -RemoveSentTo parameter.
+- `sent_to` (Set of String) Maps to the -SentTo parameter.

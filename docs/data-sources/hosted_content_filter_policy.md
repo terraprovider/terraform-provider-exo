@@ -24,13 +24,14 @@ Look up an existing HostedContentFilterPolicy object. Set identity or name to se
 
 - `add_x_header_value` (String) Maps to the -AddXHeaderValue parameter.
 - `admin_display_name` (String) Maps to the -AdminDisplayName parameter.
-- `allowed_sender_domains` (String) Maps to the -AllowedSenderDomains parameter.
-- `allowed_senders` (String) Maps to the -AllowedSenders parameter.
-- `blocked_sender_domains` (String) Maps to the -BlockedSenderDomains parameter.
-- `blocked_senders` (String) Maps to the -BlockedSenders parameter.
+- `allowed_sender_domains` (Set of String) Maps to the -AllowedSenderDomains parameter.
+- `allowed_senders` (Set of String) Maps to the -AllowedSenders parameter.
+- `blocked_sender_domains` (Set of String) Maps to the -BlockedSenderDomains parameter.
+- `blocked_senders` (Set of String) Maps to the -BlockedSenders parameter.
 - `bulk_moves_enabled` (String) Maps to the -BulkMovesEnabled parameter.
 - `bulk_quarantine_tag` (String) Maps to the -BulkQuarantineTag parameter.
 - `bulk_spam_action` (String) Maps to the -BulkSpamAction parameter.
+- `bulk_threshold` (Number) Maps to the -BulkThreshold parameter.
 - `download_link` (Boolean) Maps to the -DownloadLink parameter.
 - `enable_end_user_spam_notifications` (Boolean) Maps to the -EnableEndUserSpamNotifications parameter.
 - `enable_language_block_list` (Boolean) Maps to the -EnableLanguageBlockList parameter.
@@ -38,7 +39,9 @@ Look up an existing HostedContentFilterPolicy object. Set identity or name to se
 - `end_user_spam_notification_custom_from_address` (String) Maps to the -EndUserSpamNotificationCustomFromAddress parameter.
 - `end_user_spam_notification_custom_from_name` (String) Maps to the -EndUserSpamNotificationCustomFromName parameter.
 - `end_user_spam_notification_custom_subject` (String) Maps to the -EndUserSpamNotificationCustomSubject parameter.
+- `end_user_spam_notification_frequency` (Number) Maps to the -EndUserSpamNotificationFrequency parameter.
 - `end_user_spam_notification_language` (String) Maps to the -EndUserSpamNotificationLanguage parameter.
+- `end_user_spam_notification_limit` (Number) Maps to the -EndUserSpamNotificationLimit parameter.
 - `high_confidence_phish_action` (String) Maps to the -HighConfidencePhishAction parameter.
 - `high_confidence_phish_quarantine_tag` (String) Maps to the -HighConfidencePhishQuarantineTag parameter.
 - `high_confidence_spam_action` (String) Maps to the -HighConfidenceSpamAction parameter.
@@ -50,7 +53,7 @@ Look up an existing HostedContentFilterPolicy object. Set identity or name to se
 - `increase_score_with_redirect_to_other_port` (String) Maps to the -IncreaseScoreWithRedirectToOtherPort parameter.
 - `inline_safety_tips_enabled` (Boolean) Maps to the -InlineSafetyTipsEnabled parameter.
 - `intra_org_filter_state` (String) Maps to the -IntraOrgFilterState parameter.
-- `language_block_list` (String) Maps to the -LanguageBlockList parameter.
+- `language_block_list` (Set of String) Maps to the -LanguageBlockList parameter.
 - `make_default` (Boolean) Maps to the -MakeDefault parameter.
 - `mark_as_spam_bulk_mail` (String) Maps to the -MarkAsSpamBulkMail parameter.
 - `mark_as_spam_embed_tags_in_html` (String) Maps to the -MarkAsSpamEmbedTagsInHtml parameter.
@@ -68,11 +71,12 @@ Look up an existing HostedContentFilterPolicy object. Set identity or name to se
 - `phish_quarantine_tag` (String) Maps to the -PhishQuarantineTag parameter.
 - `phish_spam_action` (String) Maps to the -PhishSpamAction parameter.
 - `phish_zap_enabled` (Boolean) Maps to the -PhishZapEnabled parameter.
+- `quarantine_retention_period` (Number) Maps to the -QuarantineRetentionPeriod parameter.
 - `recommended_policy_type` (String) Maps to the -RecommendedPolicyType parameter.
-- `redirect_to_recipients` (String) Maps to the -RedirectToRecipients parameter.
-- `region_block_list` (String) Maps to the -RegionBlockList parameter.
+- `redirect_to_recipients` (Set of String) Maps to the -RedirectToRecipients parameter.
+- `region_block_list` (Set of String) Maps to the -RegionBlockList parameter.
 - `spam_action` (String) Maps to the -SpamAction parameter.
 - `spam_quarantine_tag` (String) Maps to the -SpamQuarantineTag parameter.
 - `spam_zap_enabled` (Boolean) Maps to the -SpamZapEnabled parameter.
 - `test_mode_action` (String) Maps to the -TestModeAction parameter.
-- `test_mode_bcc_to_recipients` (String) Maps to the -TestModeBccToRecipients parameter.
+- `test_mode_bcc_to_recipients` (Set of String) Maps to the -TestModeBccToRecipients parameter.

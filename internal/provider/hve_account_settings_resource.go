@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &hVEAccountSettingsResource{}
 	_ resource.ResourceWithConfigure   = &hVEAccountSettingsResource{}
 	_ resource.ResourceWithImportState = &hVEAccountSettingsResource{}
+	_ resource.ResourceWithModifyPlan  = &hVEAccountSettingsResource{}
 )
 
 type hVEAccountSettingsResource struct{ client *clients.Client }
@@ -65,10 +66,15 @@ func (r *hVEAccountSettingsResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config hVEAccountSettingsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetHVEAccountSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.ReplyTo.ValueString(); v != "" {
-		sp.ReplyTo = v
+	if v := config.ReplyTo.ValueString(); v != "" {
+		sp.ReplyTo = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,7 +116,7 @@ func (r *hVEAccountSettingsResource) Update(ctx context.Context, req resource.Up
 	sp := exo.SetHVEAccountSettingsParams{}
 	sp.Identity = id
 	if v := plan.ReplyTo.ValueString(); v != "" {
-		sp.ReplyTo = v
+		sp.ReplyTo = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,9 +126,7 @@ func (r *hVEAccountSettingsResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ReplyTo": cfg.ReplyTo,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -135,6 +139,41 @@ func (r *hVEAccountSettingsResource) Delete(_ context.Context, _ resource.Delete
 func (r *hVEAccountSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *hVEAccountSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan hVEAccountSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetHVEAccountSettings(ctx, exo.GetHVEAccountSettingsParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur hVEAccountSettingsModel
+	readHVEAccountSettings(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.ReplyTo.IsUnknown() {
+		plan.ReplyTo = cur.ReplyTo
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *hVEAccountSettingsResource) identityOf(m hVEAccountSettingsModel) string {
@@ -173,7 +212,7 @@ func (r *hVEAccountSettingsResource) refresh(ctx context.Context, identity strin
 
 func readHVEAccountSettings(ctx context.Context, obj map[string]any, m *hVEAccountSettingsModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.ReplyTo = types.StringValue(getString(obj, "ReplyTo"))
+	m.ReplyTo = types.StringValue(getObjectJSON(obj, "ReplyTo"))
 	_ = ctx
 }
 

@@ -50,7 +50,7 @@ func (r *managementScopeResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the ManagementScope object via New-ManagementScope / Get-ManagementScope / Set-ManagementScope / Remove-ManagementScope.",
 		Attributes: map[string]schema.Attribute{
 			"id":                           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"exclusive":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Exclusive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"recipient_restriction_filter": schema.StringAttribute{Required: true, Description: "Maps to the -RecipientRestrictionFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -73,13 +73,24 @@ func (r *managementScopeResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	p := exo.NewManagementScopeParams{
-		Exclusive:                  plan.Exclusive.ValueBool(),
-		Name:                       plan.Name.ValueString(),
-		RecipientRestrictionFilter: plan.RecipientRestrictionFilter.ValueString(),
+	var config managementScopeModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.RecipientRoot.ValueString(); v != "" {
-		p.RecipientRoot = v
+
+	p := exo.NewManagementScopeParams{}
+	if !config.Exclusive.IsNull() {
+		p.Exclusive = plan.Exclusive.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.RecipientRestrictionFilter.IsNull() {
+		p.RecipientRestrictionFilter = plan.RecipientRestrictionFilter.ValueString()
+	}
+	if v := config.RecipientRoot.ValueString(); v != "" {
+		p.RecipientRoot = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -132,7 +143,7 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 	sp := exo.SetManagementScopeParams{}
 	sp.Identity = id
 	if v := plan.RecipientRoot.ValueString(); v != "" {
-		sp.RecipientRoot = v
+		sp.RecipientRoot = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -142,9 +153,7 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"RecipientRoot": cfg.RecipientRoot,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -208,7 +217,7 @@ func readManagementScope(ctx context.Context, obj map[string]any, m *managementS
 	m.Exclusive = types.BoolValue(getBool(obj, "Exclusive"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.RecipientRestrictionFilter = types.StringValue(getString(obj, "RecipientRestrictionFilter"))
-	m.RecipientRoot = types.StringValue(getString(obj, "RecipientRoot"))
+	m.RecipientRoot = types.StringValue(getObjectJSON(obj, "RecipientRoot"))
 	_ = ctx
 }
 

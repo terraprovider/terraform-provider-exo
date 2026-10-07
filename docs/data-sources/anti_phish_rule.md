@@ -29,6 +29,7 @@ Look up an existing AntiPhishRule object. Set identity or name to select it.
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
 - `except_if_sent_to_member_of` (Set of String) Maps to the -ExceptIfSentToMemberOf parameter.
 - `id` (String) Object identifier (GUID).
+- `priority` (Number) Maps to the -Priority parameter.
 - `recipient_domain_is` (Set of String) Maps to the -RecipientDomainIs parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = &iRMConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &iRMConfigurationResource{}
 	_ resource.ResourceWithImportState = &iRMConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &iRMConfigurationResource{}
 )
 
 type iRMConfigurationResource struct{ client *clients.Client }
@@ -43,7 +45,7 @@ type iRMConfigurationModel struct {
 	EnablePortalTrackingLogs                   types.Bool   `tfsdk:"enable_portal_tracking_logs"`
 	InternalLicensingEnabled                   types.Bool   `tfsdk:"internal_licensing_enabled"`
 	JournalReportDecryptionEnabled             types.Bool   `tfsdk:"journal_report_decryption_enabled"`
-	LicensingLocation                          types.String `tfsdk:"licensing_location"`
+	LicensingLocation                          types.Set    `tfsdk:"licensing_location"`
 	RMSOnlineKeySharingLocation                types.String `tfsdk:"rms_online_key_sharing_location"`
 	RejectIfRecipientHasNoRights               types.Bool   `tfsdk:"reject_if_recipient_has_no_rights"`
 	SearchEnabled                              types.Bool   `tfsdk:"search_enabled"`
@@ -62,7 +64,7 @@ func (r *iRMConfigurationResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Manages the IRMConfiguration configuration via Set-IRMConfiguration.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"automatic_service_update_enabled":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutomaticServiceUpdateEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"azure_rms_licensing_enabled":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AzureRMSLicensingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"decrypt_attachment_for_encrypt_only":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DecryptAttachmentForEncryptOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -71,7 +73,7 @@ func (r *iRMConfigurationResource) Schema(_ context.Context, _ resource.SchemaRe
 			"enable_portal_tracking_logs":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnablePortalTrackingLogs parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"internal_licensing_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalLicensingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"journal_report_decryption_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalReportDecryptionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"licensing_location":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LicensingLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"licensing_location":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LicensingLocation parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"rms_online_key_sharing_location":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RMSOnlineKeySharingLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"reject_if_recipient_has_no_rights":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectIfRecipientHasNoRights parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"search_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SearchEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -96,28 +98,87 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config iRMConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetIRMConfigurationParams{}
-	sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBool()
-	sp.AzureRMSLicensingEnabled = plan.AzureRMSLicensingEnabled.ValueBool()
-	sp.DecryptAttachmentForEncryptOnly = plan.DecryptAttachmentForEncryptOnly.ValueBool()
-	sp.EDiscoverySuperUserEnabled = plan.EDiscoverySuperUserEnabled.ValueBool()
-	sp.EnablePdfEncryption = plan.EnablePdfEncryption.ValueBool()
-	sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBool()
-	sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBool()
-	sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBool()
-	if v := plan.LicensingLocation.ValueString(); v != "" {
-		sp.LicensingLocation = v
+	if !config.AutomaticServiceUpdateEnabled.IsNull() {
+		if !plan.AutomaticServiceUpdateEnabled.IsUnknown() {
+			sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
-		sp.RMSOnlineKeySharingLocation = v
+	if !config.AzureRMSLicensingEnabled.IsNull() {
+		if !plan.AzureRMSLicensingEnabled.IsUnknown() {
+			sp.AzureRMSLicensingEnabled = plan.AzureRMSLicensingEnabled.ValueBoolPointer()
+		}
 	}
-	sp.RejectIfRecipientHasNoRights = plan.RejectIfRecipientHasNoRights.ValueBool()
-	sp.SearchEnabled = plan.SearchEnabled.ValueBool()
-	sp.SimplifiedClientAccessDoNotForwardDisabled = plan.SimplifiedClientAccessDoNotForwardDisabled.ValueBool()
-	sp.SimplifiedClientAccessEnabled = plan.SimplifiedClientAccessEnabled.ValueBool()
-	sp.SimplifiedClientAccessEncryptOnlyDisabled = plan.SimplifiedClientAccessEncryptOnlyDisabled.ValueBool()
-	if v := plan.TransportDecryptionSetting.ValueString(); v != "" {
-		sp.TransportDecryptionSetting = v
+	if !config.DecryptAttachmentForEncryptOnly.IsNull() {
+		if !plan.DecryptAttachmentForEncryptOnly.IsUnknown() {
+			sp.DecryptAttachmentForEncryptOnly = plan.DecryptAttachmentForEncryptOnly.ValueBoolPointer()
+		}
+	}
+	if !config.EDiscoverySuperUserEnabled.IsNull() {
+		if !plan.EDiscoverySuperUserEnabled.IsUnknown() {
+			sp.EDiscoverySuperUserEnabled = plan.EDiscoverySuperUserEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.EnablePdfEncryption.IsNull() {
+		if !plan.EnablePdfEncryption.IsUnknown() {
+			sp.EnablePdfEncryption = plan.EnablePdfEncryption.ValueBoolPointer()
+		}
+	}
+	if !config.EnablePortalTrackingLogs.IsNull() {
+		if !plan.EnablePortalTrackingLogs.IsUnknown() {
+			sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBoolPointer()
+		}
+	}
+	if !config.InternalLicensingEnabled.IsNull() {
+		if !plan.InternalLicensingEnabled.IsUnknown() {
+			sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.JournalReportDecryptionEnabled.IsNull() {
+		if !plan.JournalReportDecryptionEnabled.IsUnknown() {
+			sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.LicensingLocation.IsNull() {
+		if !plan.LicensingLocation.IsNull() && !plan.LicensingLocation.IsUnknown() {
+			sp.LicensingLocation = append([]string{}, toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)...)
+		}
+	}
+	if v := config.RMSOnlineKeySharingLocation.ValueString(); v != "" {
+		sp.RMSOnlineKeySharingLocation = objectParam(v)
+	}
+	if !config.RejectIfRecipientHasNoRights.IsNull() {
+		if !plan.RejectIfRecipientHasNoRights.IsUnknown() {
+			sp.RejectIfRecipientHasNoRights = plan.RejectIfRecipientHasNoRights.ValueBoolPointer()
+		}
+	}
+	if !config.SearchEnabled.IsNull() {
+		if !plan.SearchEnabled.IsUnknown() {
+			sp.SearchEnabled = plan.SearchEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SimplifiedClientAccessDoNotForwardDisabled.IsNull() {
+		if !plan.SimplifiedClientAccessDoNotForwardDisabled.IsUnknown() {
+			sp.SimplifiedClientAccessDoNotForwardDisabled = plan.SimplifiedClientAccessDoNotForwardDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.SimplifiedClientAccessEnabled.IsNull() {
+		if !plan.SimplifiedClientAccessEnabled.IsUnknown() {
+			sp.SimplifiedClientAccessEnabled = plan.SimplifiedClientAccessEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SimplifiedClientAccessEncryptOnlyDisabled.IsNull() {
+		if !plan.SimplifiedClientAccessEncryptOnlyDisabled.IsUnknown() {
+			sp.SimplifiedClientAccessEncryptOnlyDisabled = plan.SimplifiedClientAccessEncryptOnlyDisabled.ValueBoolPointer()
+		}
+	}
+	if v := config.TransportDecryptionSetting.ValueString(); v != "" {
+		sp.TransportDecryptionSetting = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -157,27 +218,81 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	id := r.identityOf(state)
 	sp := exo.SetIRMConfigurationParams{}
-	sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBool()
-	sp.AzureRMSLicensingEnabled = plan.AzureRMSLicensingEnabled.ValueBool()
-	sp.DecryptAttachmentForEncryptOnly = plan.DecryptAttachmentForEncryptOnly.ValueBool()
-	sp.EDiscoverySuperUserEnabled = plan.EDiscoverySuperUserEnabled.ValueBool()
-	sp.EnablePdfEncryption = plan.EnablePdfEncryption.ValueBool()
-	sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBool()
-	sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBool()
-	sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBool()
-	if v := plan.LicensingLocation.ValueString(); v != "" {
-		sp.LicensingLocation = v
+	if !plan.AutomaticServiceUpdateEnabled.Equal(state.AutomaticServiceUpdateEnabled) {
+		if !plan.AutomaticServiceUpdateEnabled.IsUnknown() {
+			sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.AzureRMSLicensingEnabled.Equal(state.AzureRMSLicensingEnabled) {
+		if !plan.AzureRMSLicensingEnabled.IsUnknown() {
+			sp.AzureRMSLicensingEnabled = plan.AzureRMSLicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DecryptAttachmentForEncryptOnly.Equal(state.DecryptAttachmentForEncryptOnly) {
+		if !plan.DecryptAttachmentForEncryptOnly.IsUnknown() {
+			sp.DecryptAttachmentForEncryptOnly = plan.DecryptAttachmentForEncryptOnly.ValueBoolPointer()
+		}
+	}
+	if !plan.EDiscoverySuperUserEnabled.Equal(state.EDiscoverySuperUserEnabled) {
+		if !plan.EDiscoverySuperUserEnabled.IsUnknown() {
+			sp.EDiscoverySuperUserEnabled = plan.EDiscoverySuperUserEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EnablePdfEncryption.Equal(state.EnablePdfEncryption) {
+		if !plan.EnablePdfEncryption.IsUnknown() {
+			sp.EnablePdfEncryption = plan.EnablePdfEncryption.ValueBoolPointer()
+		}
+	}
+	if !plan.EnablePortalTrackingLogs.Equal(state.EnablePortalTrackingLogs) {
+		if !plan.EnablePortalTrackingLogs.IsUnknown() {
+			sp.EnablePortalTrackingLogs = plan.EnablePortalTrackingLogs.ValueBoolPointer()
+		}
+	}
+	if !plan.InternalLicensingEnabled.Equal(state.InternalLicensingEnabled) {
+		if !plan.InternalLicensingEnabled.IsUnknown() {
+			sp.InternalLicensingEnabled = plan.InternalLicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.JournalReportDecryptionEnabled.Equal(state.JournalReportDecryptionEnabled) {
+		if !plan.JournalReportDecryptionEnabled.IsUnknown() {
+			sp.JournalReportDecryptionEnabled = plan.JournalReportDecryptionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LicensingLocation.Equal(state.LicensingLocation) {
+		if !plan.LicensingLocation.IsNull() && !plan.LicensingLocation.IsUnknown() {
+			sp.LicensingLocation = append([]string{}, toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
-		sp.RMSOnlineKeySharingLocation = v
+		sp.RMSOnlineKeySharingLocation = objectParam(v)
 	}
-	sp.RejectIfRecipientHasNoRights = plan.RejectIfRecipientHasNoRights.ValueBool()
-	sp.SearchEnabled = plan.SearchEnabled.ValueBool()
-	sp.SimplifiedClientAccessDoNotForwardDisabled = plan.SimplifiedClientAccessDoNotForwardDisabled.ValueBool()
-	sp.SimplifiedClientAccessEnabled = plan.SimplifiedClientAccessEnabled.ValueBool()
-	sp.SimplifiedClientAccessEncryptOnlyDisabled = plan.SimplifiedClientAccessEncryptOnlyDisabled.ValueBool()
+	if !plan.RejectIfRecipientHasNoRights.Equal(state.RejectIfRecipientHasNoRights) {
+		if !plan.RejectIfRecipientHasNoRights.IsUnknown() {
+			sp.RejectIfRecipientHasNoRights = plan.RejectIfRecipientHasNoRights.ValueBoolPointer()
+		}
+	}
+	if !plan.SearchEnabled.Equal(state.SearchEnabled) {
+		if !plan.SearchEnabled.IsUnknown() {
+			sp.SearchEnabled = plan.SearchEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SimplifiedClientAccessDoNotForwardDisabled.Equal(state.SimplifiedClientAccessDoNotForwardDisabled) {
+		if !plan.SimplifiedClientAccessDoNotForwardDisabled.IsUnknown() {
+			sp.SimplifiedClientAccessDoNotForwardDisabled = plan.SimplifiedClientAccessDoNotForwardDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SimplifiedClientAccessEnabled.Equal(state.SimplifiedClientAccessEnabled) {
+		if !plan.SimplifiedClientAccessEnabled.IsUnknown() {
+			sp.SimplifiedClientAccessEnabled = plan.SimplifiedClientAccessEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SimplifiedClientAccessEncryptOnlyDisabled.Equal(state.SimplifiedClientAccessEncryptOnlyDisabled) {
+		if !plan.SimplifiedClientAccessEncryptOnlyDisabled.IsUnknown() {
+			sp.SimplifiedClientAccessEncryptOnlyDisabled = plan.SimplifiedClientAccessEncryptOnlyDisabled.ValueBoolPointer()
+		}
+	}
 	if v := plan.TransportDecryptionSetting.ValueString(); v != "" {
-		sp.TransportDecryptionSetting = v
+		sp.TransportDecryptionSetting = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,11 +302,7 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"LicensingLocation":           cfg.LicensingLocation,
-		"RMSOnlineKeySharingLocation": cfg.RMSOnlineKeySharingLocation,
-		"TransportDecryptionSetting":  cfg.TransportDecryptionSetting,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -204,6 +315,82 @@ func (r *iRMConfigurationResource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *iRMConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *iRMConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan iRMConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetIRMConfiguration(ctx, exo.GetIRMConfigurationParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur iRMConfigurationModel
+	readIRMConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AutomaticServiceUpdateEnabled.IsUnknown() {
+		plan.AutomaticServiceUpdateEnabled = cur.AutomaticServiceUpdateEnabled
+	}
+	if plan.AzureRMSLicensingEnabled.IsUnknown() {
+		plan.AzureRMSLicensingEnabled = cur.AzureRMSLicensingEnabled
+	}
+	if plan.DecryptAttachmentForEncryptOnly.IsUnknown() {
+		plan.DecryptAttachmentForEncryptOnly = cur.DecryptAttachmentForEncryptOnly
+	}
+	if plan.EDiscoverySuperUserEnabled.IsUnknown() {
+		plan.EDiscoverySuperUserEnabled = cur.EDiscoverySuperUserEnabled
+	}
+	if plan.EnablePdfEncryption.IsUnknown() {
+		plan.EnablePdfEncryption = cur.EnablePdfEncryption
+	}
+	if plan.EnablePortalTrackingLogs.IsUnknown() {
+		plan.EnablePortalTrackingLogs = cur.EnablePortalTrackingLogs
+	}
+	if plan.InternalLicensingEnabled.IsUnknown() {
+		plan.InternalLicensingEnabled = cur.InternalLicensingEnabled
+	}
+	if plan.JournalReportDecryptionEnabled.IsUnknown() {
+		plan.JournalReportDecryptionEnabled = cur.JournalReportDecryptionEnabled
+	}
+	if plan.LicensingLocation.IsUnknown() {
+		plan.LicensingLocation = cur.LicensingLocation
+	}
+	if plan.RMSOnlineKeySharingLocation.IsUnknown() {
+		plan.RMSOnlineKeySharingLocation = cur.RMSOnlineKeySharingLocation
+	}
+	if plan.RejectIfRecipientHasNoRights.IsUnknown() {
+		plan.RejectIfRecipientHasNoRights = cur.RejectIfRecipientHasNoRights
+	}
+	if plan.SearchEnabled.IsUnknown() {
+		plan.SearchEnabled = cur.SearchEnabled
+	}
+	if plan.SimplifiedClientAccessDoNotForwardDisabled.IsUnknown() {
+		plan.SimplifiedClientAccessDoNotForwardDisabled = cur.SimplifiedClientAccessDoNotForwardDisabled
+	}
+	if plan.SimplifiedClientAccessEnabled.IsUnknown() {
+		plan.SimplifiedClientAccessEnabled = cur.SimplifiedClientAccessEnabled
+	}
+	if plan.SimplifiedClientAccessEncryptOnlyDisabled.IsUnknown() {
+		plan.SimplifiedClientAccessEncryptOnlyDisabled = cur.SimplifiedClientAccessEncryptOnlyDisabled
+	}
+	if plan.TransportDecryptionSetting.IsUnknown() {
+		plan.TransportDecryptionSetting = cur.TransportDecryptionSetting
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *iRMConfigurationResource) identityOf(m iRMConfigurationModel) string {
@@ -252,14 +439,14 @@ func readIRMConfiguration(ctx context.Context, obj map[string]any, m *iRMConfigu
 	m.EnablePortalTrackingLogs = types.BoolValue(getBool(obj, "EnablePortalTrackingLogs"))
 	m.InternalLicensingEnabled = types.BoolValue(getBool(obj, "InternalLicensingEnabled"))
 	m.JournalReportDecryptionEnabled = types.BoolValue(getBool(obj, "JournalReportDecryptionEnabled"))
-	m.LicensingLocation = types.StringValue(getString(obj, "LicensingLocation"))
-	m.RMSOnlineKeySharingLocation = types.StringValue(getString(obj, "RMSOnlineKeySharingLocation"))
+	m.LicensingLocation = stringSetValue(ctx, getStringSlice(obj, "LicensingLocation"))
+	m.RMSOnlineKeySharingLocation = types.StringValue(getObjectJSON(obj, "RMSOnlineKeySharingLocation"))
 	m.RejectIfRecipientHasNoRights = types.BoolValue(getBool(obj, "RejectIfRecipientHasNoRights"))
 	m.SearchEnabled = types.BoolValue(getBool(obj, "SearchEnabled"))
 	m.SimplifiedClientAccessDoNotForwardDisabled = types.BoolValue(getBool(obj, "SimplifiedClientAccessDoNotForwardDisabled"))
 	m.SimplifiedClientAccessEnabled = types.BoolValue(getBool(obj, "SimplifiedClientAccessEnabled"))
 	m.SimplifiedClientAccessEncryptOnlyDisabled = types.BoolValue(getBool(obj, "SimplifiedClientAccessEncryptOnlyDisabled"))
-	m.TransportDecryptionSetting = types.StringValue(getString(obj, "TransportDecryptionSetting"))
+	m.TransportDecryptionSetting = types.StringValue(getObjectJSON(obj, "TransportDecryptionSetting"))
 	_ = ctx
 }
 
@@ -272,7 +459,7 @@ func (r *iRMConfigurationResource) reconcileState(cfg, read *iRMConfigurationMod
 	read.EnablePortalTrackingLogs = reconcile.KeepBool(cfg.EnablePortalTrackingLogs, read.EnablePortalTrackingLogs)
 	read.InternalLicensingEnabled = reconcile.KeepBool(cfg.InternalLicensingEnabled, read.InternalLicensingEnabled)
 	read.JournalReportDecryptionEnabled = reconcile.KeepBool(cfg.JournalReportDecryptionEnabled, read.JournalReportDecryptionEnabled)
-	read.LicensingLocation = reconcile.KeepStr(cfg.LicensingLocation, read.LicensingLocation)
+	read.LicensingLocation = reconcile.KeepSet(cfg.LicensingLocation, read.LicensingLocation)
 	read.RMSOnlineKeySharingLocation = reconcile.KeepStr(cfg.RMSOnlineKeySharingLocation, read.RMSOnlineKeySharingLocation)
 	read.RejectIfRecipientHasNoRights = reconcile.KeepBool(cfg.RejectIfRecipientHasNoRights, read.RejectIfRecipientHasNoRights)
 	read.SearchEnabled = reconcile.KeepBool(cfg.SearchEnabled, read.SearchEnabled)

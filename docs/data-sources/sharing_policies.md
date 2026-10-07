@@ -25,7 +25,7 @@ List every SharingPolicy object (Get-SharingPolicy).
 Read-Only:
 
 - `default` (Boolean) Maps to the -Default parameter.
-- `domains` (String) Maps to the -Domains parameter.
+- `domains` (Set of String) Maps to the -Domains parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.

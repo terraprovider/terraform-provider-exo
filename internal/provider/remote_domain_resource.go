@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -52,8 +53,8 @@ type remoteDomainModel struct {
 	Name                                 types.String `tfsdk:"name"`
 	NonMimeCharacterSet                  types.String `tfsdk:"non_mime_character_set"`
 	PreferredInternetCodePageForShiftJis types.String `tfsdk:"preferred_internet_code_page_for_shift_jis"`
-	RequiredCharsetCoverage              types.String `tfsdk:"required_charset_coverage"`
-	TNEFEnabled                          types.String `tfsdk:"tnef_enabled"`
+	RequiredCharsetCoverage              types.Int64  `tfsdk:"required_charset_coverage"`
+	TNEFEnabled                          types.Bool   `tfsdk:"tnef_enabled"`
 	TargetDeliveryDomain                 types.Bool   `tfsdk:"target_delivery_domain"`
 	TrustedMailInboundEnabled            types.Bool   `tfsdk:"trusted_mail_inbound_enabled"`
 	TrustedMailOutboundEnabled           types.Bool   `tfsdk:"trusted_mail_outbound_enabled"`
@@ -69,7 +70,7 @@ func (r *remoteDomainResource) Schema(_ context.Context, _ resource.SchemaReques
 		Description: "Manages the RemoteDomain object via New-RemoteDomain / Get-RemoteDomain / Set-RemoteDomain / Remove-RemoteDomain.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allowed_oof_type":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedOOFType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"auto_forward_enabled":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoForwardEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"auto_reply_enabled":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoReplyEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -87,8 +88,8 @@ func (r *remoteDomainResource) Schema(_ context.Context, _ resource.SchemaReques
 			"name":                                 schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"non_mime_character_set":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NonMimeCharacterSet parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"preferred_internet_code_page_for_shift_jis": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PreferredInternetCodePageForShiftJis parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"required_charset_coverage":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RequiredCharsetCoverage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"tnef_enabled":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TNEFEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"required_charset_coverage":                  schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RequiredCharsetCoverage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"tnef_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TNEFEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"target_delivery_domain":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetDeliveryDomain parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"trusted_mail_inbound_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedMailInboundEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"trusted_mail_outbound_enabled":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedMailOutboundEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -111,11 +112,18 @@ func (r *remoteDomainResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	p := exo.NewRemoteDomainParams{
-		Name: plan.Name.ValueString(),
+	var config remoteDomainModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.DomainName.ValueString(); v != "" {
-		p.DomainName = v
+
+	p := exo.NewRemoteDomainParams{}
+	if v := config.DomainName.ValueString(); v != "" {
+		p.DomainName = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -168,40 +176,96 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 	sp := exo.SetRemoteDomainParams{}
 	sp.Identity = id
 	if v := plan.AllowedOOFType.ValueString(); v != "" {
-		sp.AllowedOOFType = v
+		sp.AllowedOOFType = objectParam(v)
 	}
-	sp.AutoForwardEnabled = plan.AutoForwardEnabled.ValueBool()
-	sp.AutoReplyEnabled = plan.AutoReplyEnabled.ValueBool()
+	if !plan.AutoForwardEnabled.Equal(state.AutoForwardEnabled) {
+		if !plan.AutoForwardEnabled.IsUnknown() {
+			sp.AutoForwardEnabled = plan.AutoForwardEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.AutoReplyEnabled.Equal(state.AutoReplyEnabled) {
+		if !plan.AutoReplyEnabled.IsUnknown() {
+			sp.AutoReplyEnabled = plan.AutoReplyEnabled.ValueBoolPointer()
+		}
+	}
 	if v := plan.ByteEncoderTypeFor7BitCharsets.ValueString(); v != "" {
-		sp.ByteEncoderTypeFor7BitCharsets = v
+		sp.ByteEncoderTypeFor7BitCharsets = objectParam(v)
 	}
-	sp.CharacterSet = plan.CharacterSet.ValueString()
+	if !plan.CharacterSet.Equal(state.CharacterSet) {
+		sp.CharacterSet = plan.CharacterSet.ValueString()
+	}
 	if v := plan.ContentType.ValueString(); v != "" {
-		sp.ContentType = v
+		sp.ContentType = objectParam(v)
 	}
-	sp.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBool()
-	sp.DisplaySenderName = plan.DisplaySenderName.ValueBool()
-	sp.IsInternal = plan.IsInternal.ValueBool()
+	if !plan.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
+		if !plan.DeliveryReportEnabled.IsUnknown() {
+			sp.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DisplaySenderName.Equal(state.DisplaySenderName) {
+		if !plan.DisplaySenderName.IsUnknown() {
+			sp.DisplaySenderName = plan.DisplaySenderName.ValueBoolPointer()
+		}
+	}
+	if !plan.IsInternal.Equal(state.IsInternal) {
+		if !plan.IsInternal.IsUnknown() {
+			sp.IsInternal = plan.IsInternal.ValueBoolPointer()
+		}
+	}
 	if v := plan.LineWrapSize.ValueString(); v != "" {
-		sp.LineWrapSize = v
+		sp.LineWrapSize = objectParam(v)
 	}
-	sp.MeetingForwardNotificationEnabled = plan.MeetingForwardNotificationEnabled.ValueBool()
-	sp.NDRDiagnosticInfoEnabled = plan.NDRDiagnosticInfoEnabled.ValueBool()
-	sp.NDREnabled = plan.NDREnabled.ValueBool()
-	sp.NonMimeCharacterSet = plan.NonMimeCharacterSet.ValueString()
+	if !plan.MeetingForwardNotificationEnabled.Equal(state.MeetingForwardNotificationEnabled) {
+		if !plan.MeetingForwardNotificationEnabled.IsUnknown() {
+			sp.MeetingForwardNotificationEnabled = plan.MeetingForwardNotificationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NDRDiagnosticInfoEnabled.Equal(state.NDRDiagnosticInfoEnabled) {
+		if !plan.NDRDiagnosticInfoEnabled.IsUnknown() {
+			sp.NDRDiagnosticInfoEnabled = plan.NDRDiagnosticInfoEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NDREnabled.Equal(state.NDREnabled) {
+		if !plan.NDREnabled.IsUnknown() {
+			sp.NDREnabled = plan.NDREnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NonMimeCharacterSet.Equal(state.NonMimeCharacterSet) {
+		sp.NonMimeCharacterSet = plan.NonMimeCharacterSet.ValueString()
+	}
 	if v := plan.PreferredInternetCodePageForShiftJis.ValueString(); v != "" {
-		sp.PreferredInternetCodePageForShiftJis = v
+		sp.PreferredInternetCodePageForShiftJis = objectParam(v)
 	}
-	if v := plan.RequiredCharsetCoverage.ValueString(); v != "" {
-		sp.RequiredCharsetCoverage = v
+	if !plan.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {
+		if !plan.RequiredCharsetCoverage.IsUnknown() {
+			sp.RequiredCharsetCoverage = plan.RequiredCharsetCoverage.ValueInt64Pointer()
+		}
 	}
-	if v := plan.TNEFEnabled.ValueString(); v != "" {
-		sp.TNEFEnabled = v
+	if !plan.TNEFEnabled.Equal(state.TNEFEnabled) {
+		if !plan.TNEFEnabled.IsUnknown() {
+			sp.TNEFEnabled = plan.TNEFEnabled.ValueBoolPointer()
+		}
 	}
-	sp.TargetDeliveryDomain = plan.TargetDeliveryDomain.ValueBool()
-	sp.TrustedMailInboundEnabled = plan.TrustedMailInboundEnabled.ValueBool()
-	sp.TrustedMailOutboundEnabled = plan.TrustedMailOutboundEnabled.ValueBool()
-	sp.UseSimpleDisplayName = plan.UseSimpleDisplayName.ValueBool()
+	if !plan.TargetDeliveryDomain.Equal(state.TargetDeliveryDomain) {
+		if !plan.TargetDeliveryDomain.IsUnknown() {
+			sp.TargetDeliveryDomain = plan.TargetDeliveryDomain.ValueBoolPointer()
+		}
+	}
+	if !plan.TrustedMailInboundEnabled.Equal(state.TrustedMailInboundEnabled) {
+		if !plan.TrustedMailInboundEnabled.IsUnknown() {
+			sp.TrustedMailInboundEnabled = plan.TrustedMailInboundEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TrustedMailOutboundEnabled.Equal(state.TrustedMailOutboundEnabled) {
+		if !plan.TrustedMailOutboundEnabled.IsUnknown() {
+			sp.TrustedMailOutboundEnabled = plan.TrustedMailOutboundEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.UseSimpleDisplayName.Equal(state.UseSimpleDisplayName) {
+		if !plan.UseSimpleDisplayName.IsUnknown() {
+			sp.UseSimpleDisplayName = plan.UseSimpleDisplayName.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -211,15 +275,8 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AllowedOOFType":                       cfg.AllowedOOFType,
-		"ByteEncoderTypeFor7BitCharsets":       cfg.ByteEncoderTypeFor7BitCharsets,
-		"CharacterSet":                         cfg.CharacterSet,
-		"ContentType":                          cfg.ContentType,
-		"LineWrapSize":                         cfg.LineWrapSize,
-		"NonMimeCharacterSet":                  cfg.NonMimeCharacterSet,
-		"PreferredInternetCodePageForShiftJis": cfg.PreferredInternetCodePageForShiftJis,
-		"RequiredCharsetCoverage":              cfg.RequiredCharsetCoverage,
-		"TNEFEnabled":                          cfg.TNEFEnabled,
+		"CharacterSet":        cfg.CharacterSet,
+		"NonMimeCharacterSet": cfg.NonMimeCharacterSet,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -281,25 +338,25 @@ func (r *remoteDomainResource) refresh(ctx context.Context, identity string, m *
 func readRemoteDomain(ctx context.Context, obj map[string]any, m *remoteDomainModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AllowedOOFType = types.StringValue(getString(obj, "AllowedOOFType"))
+	m.AllowedOOFType = types.StringValue(getObjectJSON(obj, "AllowedOOFType"))
 	m.AutoForwardEnabled = types.BoolValue(getBool(obj, "AutoForwardEnabled"))
 	m.AutoReplyEnabled = types.BoolValue(getBool(obj, "AutoReplyEnabled"))
-	m.ByteEncoderTypeFor7BitCharsets = types.StringValue(getString(obj, "ByteEncoderTypeFor7BitCharsets"))
+	m.ByteEncoderTypeFor7BitCharsets = types.StringValue(getObjectJSON(obj, "ByteEncoderTypeFor7BitCharsets"))
 	m.CharacterSet = types.StringValue(getString(obj, "CharacterSet"))
-	m.ContentType = types.StringValue(getString(obj, "ContentType"))
+	m.ContentType = types.StringValue(getObjectJSON(obj, "ContentType"))
 	m.DeliveryReportEnabled = types.BoolValue(getBool(obj, "DeliveryReportEnabled"))
 	m.DisplaySenderName = types.BoolValue(getBool(obj, "DisplaySenderName"))
-	m.DomainName = types.StringValue(getString(obj, "DomainName"))
+	m.DomainName = types.StringValue(getObjectJSON(obj, "DomainName"))
 	m.IsInternal = types.BoolValue(getBool(obj, "IsInternal"))
-	m.LineWrapSize = types.StringValue(getString(obj, "LineWrapSize"))
+	m.LineWrapSize = types.StringValue(getObjectJSON(obj, "LineWrapSize"))
 	m.MeetingForwardNotificationEnabled = types.BoolValue(getBool(obj, "MeetingForwardNotificationEnabled"))
 	m.NDRDiagnosticInfoEnabled = types.BoolValue(getBool(obj, "NDRDiagnosticInfoEnabled"))
 	m.NDREnabled = types.BoolValue(getBool(obj, "NDREnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NonMimeCharacterSet = types.StringValue(getString(obj, "NonMimeCharacterSet"))
-	m.PreferredInternetCodePageForShiftJis = types.StringValue(getString(obj, "PreferredInternetCodePageForShiftJis"))
-	m.RequiredCharsetCoverage = types.StringValue(getString(obj, "RequiredCharsetCoverage"))
-	m.TNEFEnabled = types.StringValue(getString(obj, "TNEFEnabled"))
+	m.PreferredInternetCodePageForShiftJis = types.StringValue(getObjectJSON(obj, "PreferredInternetCodePageForShiftJis"))
+	m.RequiredCharsetCoverage = types.Int64Value(getInt(obj, "RequiredCharsetCoverage"))
+	m.TNEFEnabled = types.BoolValue(getBool(obj, "TNEFEnabled"))
 	m.TargetDeliveryDomain = types.BoolValue(getBool(obj, "TargetDeliveryDomain"))
 	m.TrustedMailInboundEnabled = types.BoolValue(getBool(obj, "TrustedMailInboundEnabled"))
 	m.TrustedMailOutboundEnabled = types.BoolValue(getBool(obj, "TrustedMailOutboundEnabled"))
@@ -325,8 +382,8 @@ func (r *remoteDomainResource) reconcileState(cfg, read *remoteDomainModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NonMimeCharacterSet = reconcile.KeepStr(cfg.NonMimeCharacterSet, read.NonMimeCharacterSet)
 	read.PreferredInternetCodePageForShiftJis = reconcile.KeepStr(cfg.PreferredInternetCodePageForShiftJis, read.PreferredInternetCodePageForShiftJis)
-	read.RequiredCharsetCoverage = reconcile.KeepStr(cfg.RequiredCharsetCoverage, read.RequiredCharsetCoverage)
-	read.TNEFEnabled = reconcile.KeepStr(cfg.TNEFEnabled, read.TNEFEnabled)
+	read.RequiredCharsetCoverage = reconcile.KeepInt64(cfg.RequiredCharsetCoverage, read.RequiredCharsetCoverage)
+	read.TNEFEnabled = reconcile.KeepBool(cfg.TNEFEnabled, read.TNEFEnabled)
 	read.TargetDeliveryDomain = reconcile.KeepBool(cfg.TargetDeliveryDomain, read.TargetDeliveryDomain)
 	read.TrustedMailInboundEnabled = reconcile.KeepBool(cfg.TrustedMailInboundEnabled, read.TrustedMailInboundEnabled)
 	read.TrustedMailOutboundEnabled = reconcile.KeepBool(cfg.TrustedMailOutboundEnabled, read.TrustedMailOutboundEnabled)

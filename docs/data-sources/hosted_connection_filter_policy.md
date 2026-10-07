@@ -26,6 +26,6 @@ Look up an existing HostedConnectionFilterPolicy object. Set identity or name to
 - `configuration_xml_raw` (String) Maps to the -ConfigurationXmlRaw parameter.
 - `enable_safe_list` (Boolean) Maps to the -EnableSafeList parameter.
 - `id` (String) Object identifier (GUID).
-- `ip_allow_list` (String) Maps to the -IPAllowList parameter.
-- `ip_block_list` (String) Maps to the -IPBlockList parameter.
+- `ip_allow_list` (Set of String) Maps to the -IPAllowList parameter.
+- `ip_block_list` (Set of String) Maps to the -IPBlockList parameter.
 - `make_default` (Boolean) Maps to the -MakeDefault parameter.

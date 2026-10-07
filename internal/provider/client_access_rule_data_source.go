@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -35,18 +36,19 @@ func (d *clientAccessRuleDataSource) Schema(_ context.Context, _ datasource.Sche
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
 			"action":                               schema.StringAttribute{Computed: true, Description: "Maps to the -Action parameter."},
-			"any_of_authentication_types":          schema.StringAttribute{Computed: true, Description: "Maps to the -AnyOfAuthenticationTypes parameter."},
-			"any_of_client_ip_addresses_or_ranges": schema.StringAttribute{Computed: true, Description: "Maps to the -AnyOfClientIPAddressesOrRanges parameter."},
-			"any_of_protocols":                     schema.StringAttribute{Computed: true, Description: "Maps to the -AnyOfProtocols parameter."},
+			"any_of_authentication_types":          schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AnyOfAuthenticationTypes parameter."},
+			"any_of_client_ip_addresses_or_ranges": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AnyOfClientIPAddressesOrRanges parameter."},
+			"any_of_protocols":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AnyOfProtocols parameter."},
 			"enabled":                              schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
-			"except_any_of_authentication_types":   schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptAnyOfAuthenticationTypes parameter."},
-			"except_any_of_client_ip_addresses_or_ranges": schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter."},
-			"except_any_of_protocols":                     schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter."},
-			"except_username_matches_any_of_patterns":     schema.StringAttribute{Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter."},
+			"except_any_of_authentication_types":   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptAnyOfAuthenticationTypes parameter."},
+			"except_any_of_client_ip_addresses_or_ranges": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptAnyOfClientIPAddressesOrRanges parameter."},
+			"except_any_of_protocols":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptAnyOfProtocols parameter."},
+			"except_username_matches_any_of_patterns":     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ExceptUsernameMatchesAnyOfPatterns parameter."},
 			"name":                             schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
+			"priority":                         schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 			"scope":                            schema.StringAttribute{Computed: true, Description: "Maps to the -Scope parameter."},
 			"user_recipient_filter":            schema.StringAttribute{Computed: true, Description: "Maps to the -UserRecipientFilter parameter."},
-			"username_matches_any_of_patterns": schema.StringAttribute{Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter."},
+			"username_matches_any_of_patterns": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -UsernameMatchesAnyOfPatterns parameter."},
 		},
 	}
 }

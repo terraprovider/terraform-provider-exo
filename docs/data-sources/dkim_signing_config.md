@@ -27,5 +27,5 @@ Look up an existing DkimSigningConfig object. Set identity to select it.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `header_canonicalization` (String) Maps to the -HeaderCanonicalization parameter.
 - `id` (String) Object identifier (GUID).
-- `key_size` (String) Maps to the -KeySize parameter. Allowed values: 1024, 2048.
+- `key_size` (Number) Maps to the -KeySize parameter. Allowed values: 1024, 2048.
 - `publish_txt_records` (Boolean) Maps to the -PublishTxtRecords parameter.

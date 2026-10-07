@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -34,7 +35,7 @@ func NewAvailabilityConfigResource() resource.Resource { return &availabilityCon
 type availabilityConfigModel struct {
 	ID               types.String `tfsdk:"id"`
 	Identity         types.String `tfsdk:"identity"`
-	AllowedTenantIds types.String `tfsdk:"allowed_tenant_ids"`
+	AllowedTenantIds types.Set    `tfsdk:"allowed_tenant_ids"`
 	OrgWideAccount   types.String `tfsdk:"org_wide_account"`
 }
 
@@ -47,8 +48,8 @@ func (r *availabilityConfigResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the AvailabilityConfig object via New-AvailabilityConfig / Get-AvailabilityConfig / Set-AvailabilityConfig / Remove-AvailabilityConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"allowed_tenant_ids": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedTenantIds parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"allowed_tenant_ids": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedTenantIds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"org_wide_account":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrgWideAccount parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -68,12 +69,20 @@ func (r *availabilityConfigResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	p := exo.NewAvailabilityConfigParams{}
-	if v := plan.AllowedTenantIds.ValueString(); v != "" {
-		p.AllowedTenantIds = v
+	var config availabilityConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.OrgWideAccount.ValueString(); v != "" {
-		p.OrgWideAccount = v
+
+	p := exo.NewAvailabilityConfigParams{}
+	if !config.AllowedTenantIds.IsNull() {
+		if v := toStringSlice(ctx, plan.AllowedTenantIds, &resp.Diagnostics); len(v) > 0 {
+			p.AllowedTenantIds = v
+		}
+	}
+	if v := config.OrgWideAccount.ValueString(); v != "" {
+		p.OrgWideAccount = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -124,11 +133,13 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	id := r.identityOf(state)
 	sp := exo.SetAvailabilityConfigParams{}
-	if v := plan.AllowedTenantIds.ValueString(); v != "" {
-		sp.AllowedTenantIds = v
+	if !plan.AllowedTenantIds.Equal(state.AllowedTenantIds) {
+		if !plan.AllowedTenantIds.IsNull() && !plan.AllowedTenantIds.IsUnknown() {
+			sp.AllowedTenantIds = append([]string{}, toStringSlice(ctx, plan.AllowedTenantIds, &resp.Diagnostics)...)
+		}
 	}
 	if v := plan.OrgWideAccount.ValueString(); v != "" {
-		sp.OrgWideAccount = v
+		sp.OrgWideAccount = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -138,10 +149,7 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AllowedTenantIds": cfg.AllowedTenantIds,
-		"OrgWideAccount":   cfg.OrgWideAccount,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -202,12 +210,12 @@ func (r *availabilityConfigResource) refresh(ctx context.Context, identity strin
 func readAvailabilityConfig(ctx context.Context, obj map[string]any, m *availabilityConfigModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AllowedTenantIds = types.StringValue(getString(obj, "AllowedTenantIds"))
-	m.OrgWideAccount = types.StringValue(getString(obj, "OrgWideAccount"))
+	m.AllowedTenantIds = stringSetValue(ctx, getStringSlice(obj, "AllowedTenantIds"))
+	m.OrgWideAccount = types.StringValue(getObjectJSON(obj, "OrgWideAccount"))
 	_ = ctx
 }
 
 func (r *availabilityConfigResource) reconcileState(cfg, read *availabilityConfigModel) {
-	read.AllowedTenantIds = reconcile.KeepStr(cfg.AllowedTenantIds, read.AllowedTenantIds)
+	read.AllowedTenantIds = reconcile.KeepSet(cfg.AllowedTenantIds, read.AllowedTenantIds)
 	read.OrgWideAccount = reconcile.KeepStr(cfg.OrgWideAccount, read.OrgWideAccount)
 }

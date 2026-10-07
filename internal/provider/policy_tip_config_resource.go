@@ -47,7 +47,7 @@ func (r *policyTipConfigResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the PolicyTipConfig object via New-PolicyTipConfig / Get-PolicyTipConfig / Set-PolicyTipConfig / Remove-PolicyTipConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"value":    schema.StringAttribute{Required: true, Description: "Maps to the -Value parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -68,9 +68,18 @@ func (r *policyTipConfigResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	p := exo.NewPolicyTipConfigParams{
-		Name:  plan.Name.ValueString(),
-		Value: plan.Value.ValueString(),
+	var config policyTipConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewPolicyTipConfigParams{}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.Value.IsNull() {
+		p.Value = plan.Value.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return

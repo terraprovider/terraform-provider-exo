@@ -33,6 +33,7 @@ Read-Only:
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `name` (String) Maps to the -Name parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `recipient_domain_is` (Set of String) Maps to the -RecipientDomainIs parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.
