@@ -52,9 +52,26 @@ acc:
 generate:
     go run ./cmd/gen-tf
 
-# Regenerate docs (tfplugindocs) from the schema + examples; needs terraform on PATH.
+# Regenerate docs (tfplugindocs) from the schema + examples; needs terraform on PATH (or use docs-tofu).
 docs:
     cd tools && go generate ./...
+
+# Regenerate docs with OpenTofu instead of terraform. tfplugindocs would run
+# `init` for hashicorp/exo, which tofu resolves against its own registry, so
+# export the schema via a dev override and hand it to tfplugindocs instead.
+docs-tofu:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+    mkdir -p "$tmp/bin" "$tmp/cfg"
+    go build -o "$tmp/bin/terraform-provider-exo" .
+    printf 'provider_installation {\n  dev_overrides { "registry.opentofu.org/terraprovider/exo" = "%s" }\n  direct {}\n}\n' "$tmp/bin" > "$tmp/tofurc"
+    printf 'terraform {\n  required_providers {\n    exo = { source = "terraprovider/exo" }\n  }\n}\n' > "$tmp/cfg/main.tf"
+    (cd "$tmp/cfg" && TF_CLI_CONFIG_FILE="$tmp/tofurc" tofu providers schema -json) \
+        | sed 's#registry.opentofu.org/terraprovider/exo#registry.terraform.io/hashicorp/exo#' > "$tmp/schema.json"
+    tofu fmt -recursive examples/
+    cd tools && go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate \
+        --provider-dir .. --provider-name exo --providers-schema "$tmp/schema.json"
 
 # Regenerate everything (code, then docs).
 gen: generate docs
