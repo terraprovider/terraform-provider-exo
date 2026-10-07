@@ -166,7 +166,13 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		// the rule-pack ID inside Set-ClassificationRuleCollection -FileData).
 		selector := required && firstParam(name, newCmd).Kind() == spec.KindSwitch
 		inPlace := inU && setKey != "" && !namingParam[name] && !selector
-		replace := (required && !inPlace) || (inC && !inU) || kindConflict
+		// A bool that only New takes may still be switched in place by
+		// Enable-/Disable-<Noun> (e.g. a rule's -Enabled).
+		var toggle *genframework.Toggle
+		if inC && !inU && !required && attrType(p) == genframework.TypeBool {
+			toggle = toggleFor(name, noun, verbs)
+		}
+		replace := (required && !inPlace) || (inC && !inU && toggle == nil) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}
@@ -185,6 +191,8 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			Object:       p.Kind() == spec.KindAny,
 			PointerParam: isPointer(p),
 			Delta:        at == genframework.TypeStringSet && inU && firstParam(name, setCmd).DeltaCapable(), // clear via Remove delta
+			Toggle:       toggle,
+			StateField:   stateField(toggle),
 		})
 	}
 	if !hasCreateAttr(attrs) {
@@ -209,6 +217,53 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		Plural:            true, // also expose a list-all data source
 		SparseWrite:       true, // see sparseWrite
 	}, true, ""
+}
+
+// toggleFor returns the Enable-/Disable-<Noun> pair that switches the bool
+// param name in place, or nil. Only -Enabled qualifies, and only when both
+// cmdlets target the object by -Identity and need nothing else (e.g.
+// Enable-SafeLinksRule; Enable-TransportRule's optional -Mode is ignored).
+func toggleFor(name, noun string, verbs map[string]spec.Cmdlet) *genframework.Toggle {
+	if name != "Enabled" {
+		return nil
+	}
+	en, okE := verbs["Enable"]
+	dis, okD := verbs["Disable"]
+	if !okE || !okD || !identityOnly(en) || !identityOnly(dis) {
+		return nil
+	}
+	e, d := goName(en.Cmdlet), goName(dis.Cmdlet)
+	return &genframework.Toggle{
+		EnableMethod: e, EnableParams: e + "Params",
+		DisableMethod: d, DisableParams: d + "Params",
+		IdentityField: "Identity",
+	}
+}
+
+// identityOnly reports whether c takes -Identity and has no other mandatory
+// (non-plumbing) parameter.
+func identityOnly(c spec.Cmdlet) bool {
+	hasID := false
+	for _, p := range c.Parameters {
+		switch {
+		case p.Name == "Identity":
+			hasID = true
+		case p.Mandatory() && !skipParam(p.Name):
+			return false
+		}
+	}
+	return hasID
+}
+
+// stateField is the read-back property for a toggled attribute: Exchange rule
+// objects report State ("Enabled"/"Disabled") rather than a bool Enabled. The
+// generated read falls back to Enabled for objects without State (e.g. journal
+// rules).
+func stateField(t *genframework.Toggle) string {
+	if t == nil {
+		return ""
+	}
+	return "State"
 }
 
 // memberCollection detects a <Noun>Member companion family with a Get (to read)

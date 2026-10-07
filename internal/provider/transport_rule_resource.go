@@ -261,7 +261,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"delete_message":                                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteMessage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disconnect":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Disconnect parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"dlp_policy":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DlpPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled":                                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"enabled":                                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_ad_comparison_attribute":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfAdComparisonAttribute parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_ad_comparison_operator":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfAdComparisonOperator parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_any_of_cc_header":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfAnyOfCcHeader parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -2086,6 +2086,19 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 		resp.Diagnostics.AddError("Set-TransportRule failed", err.Error())
 		return
 	}
+	if !plan.Enabled.IsUnknown() && !plan.Enabled.IsNull() && !plan.Enabled.Equal(state.Enabled) {
+		if plan.Enabled.ValueBool() {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.EnableTransportRule, exo.EnableTransportRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Enable-TransportRule failed", err.Error())
+				return
+			}
+		} else {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.DisableTransportRule, exo.DisableTransportRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Disable-TransportRule failed", err.Error())
+				return
+			}
+		}
+	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"ApplyClassification":       cfg.ApplyClassification,
@@ -2095,6 +2108,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 		"HasClassification":         cfg.HasClassification,
 		"SetAuditSeverity":          cfg.SetAuditSeverity,
 	}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
@@ -2197,7 +2214,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.DeleteMessage = types.BoolValue(getBool(obj, "DeleteMessage"))
 	m.Disconnect = types.BoolValue(getBool(obj, "Disconnect"))
 	m.DlpPolicy = types.StringValue(getString(obj, "DlpPolicy"))
-	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
+	m.Enabled = types.BoolValue(getStateBool(obj, "State", "Enabled"))
 	m.ExceptIfAdComparisonAttribute = types.StringValue(getObjectJSON(obj, "ExceptIfAdComparisonAttribute"))
 	m.ExceptIfAdComparisonOperator = types.StringValue(getObjectJSON(obj, "ExceptIfAdComparisonOperator"))
 	m.ExceptIfAnyOfCcHeader = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAnyOfCcHeader"))

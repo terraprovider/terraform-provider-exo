@@ -52,7 +52,7 @@ func (r *journalRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"journal_email_address": schema.StringAttribute{Required: true, Description: "Maps to the -JournalEmailAddress parameter."},
 			"name":                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"recipient":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Recipient parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -171,8 +171,25 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError("Set-JournalRule failed", err.Error())
 		return
 	}
+	if !plan.Enabled.IsUnknown() && !plan.Enabled.IsNull() && !plan.Enabled.Equal(state.Enabled) {
+		if plan.Enabled.ValueBool() {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.EnableJournalRule, exo.EnableJournalRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Enable-JournalRule failed", err.Error())
+				return
+			}
+		} else {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.DisableJournalRule, exo.DisableJournalRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Disable-JournalRule failed", err.Error())
+				return
+			}
+		}
+	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
@@ -236,7 +253,7 @@ func (r *journalRuleResource) refresh(ctx context.Context, identity string, m *j
 func readJournalRule(ctx context.Context, obj map[string]any, m *journalRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
+	m.Enabled = types.BoolValue(getStateBool(obj, "State", "Enabled"))
 	m.JournalEmailAddress = types.StringValue(getObjectJSON(obj, "JournalEmailAddress"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Recipient = types.StringValue(getObjectJSON(obj, "Recipient"))

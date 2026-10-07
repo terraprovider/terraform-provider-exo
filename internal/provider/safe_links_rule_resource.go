@@ -61,7 +61,7 @@ func (r *safeLinksRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comments":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_recipient_domain_is": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -245,10 +245,27 @@ func (r *safeLinksRuleResource) Update(ctx context.Context, req resource.UpdateR
 		resp.Diagnostics.AddError("Set-SafeLinksRule failed", err.Error())
 		return
 	}
+	if !plan.Enabled.IsUnknown() && !plan.Enabled.IsNull() && !plan.Enabled.Equal(state.Enabled) {
+		if plan.Enabled.ValueBool() {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.EnableSafeLinksRule, exo.EnableSafeLinksRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Enable-SafeLinksRule failed", err.Error())
+				return
+			}
+		} else {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.DisableSafeLinksRule, exo.DisableSafeLinksRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Disable-SafeLinksRule failed", err.Error())
+				return
+			}
+		}
+	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Comments": cfg.Comments,
 	}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
@@ -313,7 +330,7 @@ func readSafeLinksRule(ctx context.Context, obj map[string]any, m *safeLinksRule
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Comments = types.StringValue(getString(obj, "Comments"))
-	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
+	m.Enabled = types.BoolValue(getStateBool(obj, "State", "Enabled"))
 	m.ExceptIfRecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientDomainIs"))
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))

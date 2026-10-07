@@ -97,6 +97,18 @@ func getBool(m map[string]any, key string) bool {
 	return false
 }
 
+// getStateBool reads a bool that the object reports as a state string, e.g. a
+// rule's State ("Enabled"/"Disabled"). Objects without that property (journal
+// rules report a bool Enabled instead) fall back to getBool(m, boolKey).
+func getStateBool(m map[string]any, stateKey, boolKey string) bool {
+	if v, ok := m[stateKey]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			return strings.EqualFold(s, "Enabled")
+		}
+	}
+	return getBool(m, boolKey)
+}
+
 // getStringSlice returns a multi-value property as a slice. Empty entries are
 // dropped (the Admin API returns an empty list as [""], which would otherwise
 // read back as a one-element set and diff against []), and a scalar string is

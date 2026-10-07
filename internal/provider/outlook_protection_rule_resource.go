@@ -58,7 +58,7 @@ func (r *outlookProtectionRuleResource) Schema(_ context.Context, _ resource.Sch
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"apply_rights_protection_template": schema.StringAttribute{Required: true, Description: "Maps to the -ApplyRightsProtectionTemplate parameter."},
-			"enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"from_department":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromDepartment parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
@@ -233,8 +233,25 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 		resp.Diagnostics.AddError("Set-OutlookProtectionRule failed", err.Error())
 		return
 	}
+	if !plan.Enabled.IsUnknown() && !plan.Enabled.IsNull() && !plan.Enabled.Equal(state.Enabled) {
+		if plan.Enabled.ValueBool() {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.EnableOutlookProtectionRule, exo.EnableOutlookProtectionRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Enable-OutlookProtectionRule failed", err.Error())
+				return
+			}
+		} else {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.DisableOutlookProtectionRule, exo.DisableOutlookProtectionRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Disable-OutlookProtectionRule failed", err.Error())
+				return
+			}
+		}
+	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
@@ -299,7 +316,7 @@ func readOutlookProtectionRule(ctx context.Context, obj map[string]any, m *outlo
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.ApplyRightsProtectionTemplate = types.StringValue(getObjectJSON(obj, "ApplyRightsProtectionTemplate"))
-	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
+	m.Enabled = types.BoolValue(getStateBool(obj, "State", "Enabled"))
 	m.FromDepartment = stringSetValue(ctx, getStringSlice(obj, "FromDepartment"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Priority = types.Int64Value(getInt(obj, "Priority"))

@@ -116,3 +116,24 @@ func TestListRemoveDelta(t *testing.T) {
 		t.Errorf("listRemoveDelta = %#v", d)
 	}
 }
+
+func TestGetStateBoolPrefersStateOverBool(t *testing.T) {
+	cases := []struct {
+		name string
+		obj  map[string]any
+		want bool
+	}{
+		{"state enabled", map[string]any{"State": "Enabled"}, true},
+		{"state disabled", map[string]any{"State": "Disabled"}, false},
+		{"state case-insensitive", map[string]any{"State": "enabled"}, true},
+		{"state wins over bool", map[string]any{"State": "Disabled", "Enabled": true}, false},
+		{"bool fallback", map[string]any{"Enabled": true}, true},
+		{"nil state falls back", map[string]any{"State": nil, "Enabled": true}, true},
+		{"neither", map[string]any{}, false},
+	}
+	for _, c := range cases {
+		if got := getStateBool(c.obj, "State", "Enabled"); got != c.want {
+			t.Errorf("%s: getStateBool = %v, want %v", c.name, got, c.want)
+		}
+	}
+}
