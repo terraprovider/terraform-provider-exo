@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &atpPolicyForO365Resource{}
 	_ resource.ResourceWithConfigure   = &atpPolicyForO365Resource{}
 	_ resource.ResourceWithImportState = &atpPolicyForO365Resource{}
+	_ resource.ResourceWithModifyPlan  = &atpPolicyForO365Resource{}
 )
 
 type atpPolicyForO365Resource struct{ client *clients.Client }
@@ -70,11 +71,28 @@ func (r *atpPolicyForO365Resource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config atpPolicyForO365Model
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetAtpPolicyForO365Params{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AllowSafeDocsOpen = plan.AllowSafeDocsOpen.ValueBool()
-	sp.EnableATPForSPOTeamsODB = plan.EnableATPForSPOTeamsODB.ValueBool()
-	sp.EnableSafeDocs = plan.EnableSafeDocs.ValueBool()
+	if !config.AllowSafeDocsOpen.IsNull() {
+		if !plan.AllowSafeDocsOpen.IsUnknown() {
+			sp.AllowSafeDocsOpen = plan.AllowSafeDocsOpen.ValueBoolPointer()
+		}
+	}
+	if !config.EnableATPForSPOTeamsODB.IsNull() {
+		if !plan.EnableATPForSPOTeamsODB.IsUnknown() {
+			sp.EnableATPForSPOTeamsODB = plan.EnableATPForSPOTeamsODB.ValueBoolPointer()
+		}
+	}
+	if !config.EnableSafeDocs.IsNull() {
+		if !plan.EnableSafeDocs.IsUnknown() {
+			sp.EnableSafeDocs = plan.EnableSafeDocs.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -114,9 +132,21 @@ func (r *atpPolicyForO365Resource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetAtpPolicyForO365Params{}
 	sp.Identity = id
-	sp.AllowSafeDocsOpen = plan.AllowSafeDocsOpen.ValueBool()
-	sp.EnableATPForSPOTeamsODB = plan.EnableATPForSPOTeamsODB.ValueBool()
-	sp.EnableSafeDocs = plan.EnableSafeDocs.ValueBool()
+	if !plan.AllowSafeDocsOpen.Equal(state.AllowSafeDocsOpen) {
+		if !plan.AllowSafeDocsOpen.IsUnknown() {
+			sp.AllowSafeDocsOpen = plan.AllowSafeDocsOpen.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableATPForSPOTeamsODB.Equal(state.EnableATPForSPOTeamsODB) {
+		if !plan.EnableATPForSPOTeamsODB.IsUnknown() {
+			sp.EnableATPForSPOTeamsODB = plan.EnableATPForSPOTeamsODB.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableSafeDocs.Equal(state.EnableSafeDocs) {
+		if !plan.EnableSafeDocs.IsUnknown() {
+			sp.EnableSafeDocs = plan.EnableSafeDocs.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -138,6 +168,47 @@ func (r *atpPolicyForO365Resource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *atpPolicyForO365Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *atpPolicyForO365Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan atpPolicyForO365Model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetAtpPolicyForO365(ctx, exo.GetAtpPolicyForO365Params{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur atpPolicyForO365Model
+	readAtpPolicyForO365(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AllowSafeDocsOpen.IsUnknown() {
+		plan.AllowSafeDocsOpen = cur.AllowSafeDocsOpen
+	}
+	if plan.EnableATPForSPOTeamsODB.IsUnknown() {
+		plan.EnableATPForSPOTeamsODB = cur.EnableATPForSPOTeamsODB
+	}
+	if plan.EnableSafeDocs.IsUnknown() {
+		plan.EnableSafeDocs = cur.EnableSafeDocs
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *atpPolicyForO365Resource) identityOf(m atpPolicyForO365Model) string {

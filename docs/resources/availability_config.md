@@ -17,7 +17,7 @@ Manages the AvailabilityConfig object via New-AvailabilityConfig / Get-Availabil
 
 ### Optional
 
-- `allowed_tenant_ids` (String) Maps to the -AllowedTenantIds parameter.
+- `allowed_tenant_ids` (Set of String) Maps to the -AllowedTenantIds parameter.
 - `org_wide_account` (String) Maps to the -OrgWideAccount parameter.
 
 ### Read-Only

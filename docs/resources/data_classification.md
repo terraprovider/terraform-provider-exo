@@ -18,7 +18,7 @@ Manages the DataClassification object via New-DataClassification / Get-DataClass
 ### Required
 
 - `description` (String) Maps to the -Description parameter.
-- `fingerprints` (String) Maps to the -Fingerprints parameter.
+- `fingerprints` (Set of String) Maps to the -Fingerprints parameter.
 - `name` (String) Maps to the -Name parameter.
 
 ### Optional

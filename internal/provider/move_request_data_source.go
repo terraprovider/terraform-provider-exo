@@ -43,7 +43,7 @@ func (d *moveRequestDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"completed_request_age_limit":    schema.StringAttribute{Computed: true, Description: "Maps to the -CompletedRequestAgeLimit parameter."},
 			"force_offline":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -ForceOffline parameter."},
 			"incremental_sync_interval":      schema.StringAttribute{Computed: true, Description: "Maps to the -IncrementalSyncInterval parameter."},
-			"move_options":                   schema.StringAttribute{Computed: true, Description: "Maps to the -MoveOptions parameter."},
+			"move_options":                   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MoveOptions parameter."},
 			"outbound":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -Outbound parameter."},
 			"prevent_completion":             schema.BoolAttribute{Computed: true, Description: "Maps to the -PreventCompletion parameter."},
 			"primary_only":                   schema.BoolAttribute{Computed: true, Description: "Maps to the -PrimaryOnly parameter."},

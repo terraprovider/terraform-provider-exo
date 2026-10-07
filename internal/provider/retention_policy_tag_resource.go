@@ -41,8 +41,8 @@ type retentionPolicyTagModel struct {
 	IsDefaultAutoGroupPolicyTag           types.Bool   `tfsdk:"is_default_auto_group_policy_tag"`
 	IsDefaultModeratedRecipientsPolicyTag types.Bool   `tfsdk:"is_default_moderated_recipients_policy_tag"`
 	LegacyManagedFolder                   types.String `tfsdk:"legacy_managed_folder"`
-	LocalizedComment                      types.String `tfsdk:"localized_comment"`
-	LocalizedRetentionPolicyTagName       types.String `tfsdk:"localized_retention_policy_tag_name"`
+	LocalizedComment                      types.Set    `tfsdk:"localized_comment"`
+	LocalizedRetentionPolicyTagName       types.Set    `tfsdk:"localized_retention_policy_tag_name"`
 	Mailbox                               types.String `tfsdk:"mailbox"`
 	MessageClass                          types.String `tfsdk:"message_class"`
 	MustDisplayCommentEnabled             types.Bool   `tfsdk:"must_display_comment_enabled"`
@@ -64,14 +64,14 @@ func (r *retentionPolicyTagResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the RetentionPolicyTag object via New-RetentionPolicyTag / Get-RetentionPolicyTag / Set-RetentionPolicyTag / Remove-RetentionPolicyTag.",
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"age_limit_for_retention":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AgeLimitForRetention parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_default_auto_group_policy_tag": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefaultAutoGroupPolicyTag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"is_default_moderated_recipients_policy_tag": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefaultModeratedRecipientsPolicyTag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"legacy_managed_folder":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LegacyManagedFolder parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"localized_comment":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalizedComment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"localized_retention_policy_tag_name":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalizedRetentionPolicyTagName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"localized_comment":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LocalizedComment parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"localized_retention_policy_tag_name":        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LocalizedRetentionPolicyTagName parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"mailbox":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_class":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageClass parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"must_display_comment_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MustDisplayCommentEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -100,33 +100,64 @@ func (r *retentionPolicyTagResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	p := exo.NewRetentionPolicyTagParams{
-		Comment:                               plan.Comment.ValueString(),
-		IsDefaultAutoGroupPolicyTag:           plan.IsDefaultAutoGroupPolicyTag.ValueBool(),
-		IsDefaultModeratedRecipientsPolicyTag: plan.IsDefaultModeratedRecipientsPolicyTag.ValueBool(),
-		MessageClass:                          plan.MessageClass.ValueString(),
-		MustDisplayCommentEnabled:             plan.MustDisplayCommentEnabled.ValueBool(),
-		Name:                                  plan.Name.ValueString(),
-		RetentionEnabled:                      plan.RetentionEnabled.ValueBool(),
-		SystemTag:                             plan.SystemTag.ValueBool(),
+	var config retentionPolicyTagModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AgeLimitForRetention.ValueString(); v != "" {
-		p.AgeLimitForRetention = v
+
+	p := exo.NewRetentionPolicyTagParams{}
+	if v := config.AgeLimitForRetention.ValueString(); v != "" {
+		p.AgeLimitForRetention = objectParam(v)
 	}
-	if v := plan.LocalizedComment.ValueString(); v != "" {
-		p.LocalizedComment = v
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.LocalizedRetentionPolicyTagName.ValueString(); v != "" {
-		p.LocalizedRetentionPolicyTagName = v
+	if !config.IsDefaultAutoGroupPolicyTag.IsNull() {
+		p.IsDefaultAutoGroupPolicyTag = plan.IsDefaultAutoGroupPolicyTag.ValueBool()
 	}
-	if v := plan.RetentionAction.ValueString(); v != "" {
-		p.RetentionAction = v
+	if !config.IsDefaultModeratedRecipientsPolicyTag.IsNull() {
+		p.IsDefaultModeratedRecipientsPolicyTag = plan.IsDefaultModeratedRecipientsPolicyTag.ValueBool()
 	}
-	if v := plan.RetentionId.ValueString(); v != "" {
-		p.RetentionId = v
+	if !config.LocalizedComment.IsNull() {
+		if v := toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics); len(v) > 0 {
+			p.LocalizedComment = v
+		}
 	}
-	if v := plan.Type.ValueString(); v != "" {
-		p.Type = v
+	if !config.LocalizedRetentionPolicyTagName.IsNull() {
+		if v := toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics); len(v) > 0 {
+			p.LocalizedRetentionPolicyTagName = v
+		}
+	}
+	if !config.MessageClass.IsNull() {
+		p.MessageClass = plan.MessageClass.ValueString()
+	}
+	if !config.MustDisplayCommentEnabled.IsNull() {
+		if !plan.MustDisplayCommentEnabled.IsUnknown() {
+			p.MustDisplayCommentEnabled = plan.MustDisplayCommentEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.RetentionAction.ValueString(); v != "" {
+		p.RetentionAction = objectParam(v)
+	}
+	if !config.RetentionEnabled.IsNull() {
+		if !plan.RetentionEnabled.IsUnknown() {
+			p.RetentionEnabled = plan.RetentionEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RetentionId.IsNull() {
+		p.RetentionId = plan.RetentionId.ValueString()
+	}
+	if !config.SystemTag.IsNull() {
+		if !plan.SystemTag.IsUnknown() {
+			p.SystemTag = plan.SystemTag.ValueBoolPointer()
+		}
+	}
+	if v := config.Type.ValueString(); v != "" {
+		p.Type = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -178,33 +209,95 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetRetentionPolicyTagParams{}
 	sp.Identity = id
-	if v := plan.AgeLimitForRetention.ValueString(); v != "" {
-		sp.AgeLimitForRetention = v
+	var cur *retentionPolicyTagModel
+	curRead := false
+	current := func() *retentionPolicyTagModel {
+		if !curRead {
+			curRead = true
+			var m retentionPolicyTagModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-RetentionPolicyTag failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.Comment = plan.Comment.ValueString()
-	if v := plan.LegacyManagedFolder.ValueString(); v != "" {
-		sp.LegacyManagedFolder = v
+	if !plan.AgeLimitForRetention.Equal(state.AgeLimitForRetention) {
+		if v := plan.AgeLimitForRetention.ValueString(); v != "" {
+			sp.AgeLimitForRetention = objectParam(v)
+		}
 	}
-	if v := plan.LocalizedComment.ValueString(); v != "" {
-		sp.LocalizedComment = v
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.LocalizedRetentionPolicyTagName.ValueString(); v != "" {
-		sp.LocalizedRetentionPolicyTagName = v
+	if !plan.LegacyManagedFolder.Equal(state.LegacyManagedFolder) {
+		if v := plan.LegacyManagedFolder.ValueString(); v != "" {
+			sp.LegacyManagedFolder = objectParam(v)
+		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = v
+	if !plan.LocalizedComment.Equal(state.LocalizedComment) {
+		if !plan.LocalizedComment.IsNull() && !plan.LocalizedComment.IsUnknown() {
+			if v := toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics); len(v) > 0 {
+				sp.LocalizedComment = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LocalizedComment, &resp.Diagnostics); len(rm) > 0 {
+						sp.LocalizedCommentDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.MessageClass = plan.MessageClass.ValueString()
-	sp.MustDisplayCommentEnabled = plan.MustDisplayCommentEnabled.ValueBool()
-	sp.OptionalInMailbox = toStringSlice(ctx, plan.OptionalInMailbox, &resp.Diagnostics)
-	if v := plan.RetentionAction.ValueString(); v != "" {
-		sp.RetentionAction = v
+	if !plan.LocalizedRetentionPolicyTagName.Equal(state.LocalizedRetentionPolicyTagName) {
+		if !plan.LocalizedRetentionPolicyTagName.IsNull() && !plan.LocalizedRetentionPolicyTagName.IsUnknown() {
+			if v := toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics); len(v) > 0 {
+				sp.LocalizedRetentionPolicyTagName = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LocalizedRetentionPolicyTagName, &resp.Diagnostics); len(rm) > 0 {
+						sp.LocalizedRetentionPolicyTagNameDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.RetentionEnabled = plan.RetentionEnabled.ValueBool()
-	if v := plan.RetentionId.ValueString(); v != "" {
-		sp.RetentionId = v
+	if !plan.Mailbox.Equal(state.Mailbox) {
+		if v := plan.Mailbox.ValueString(); v != "" {
+			sp.Mailbox = objectParam(v)
+		}
 	}
-	sp.SystemTag = plan.SystemTag.ValueBool()
+	if !plan.MessageClass.Equal(state.MessageClass) {
+		sp.MessageClass = plan.MessageClass.ValueString()
+	}
+	if !plan.MustDisplayCommentEnabled.Equal(state.MustDisplayCommentEnabled) {
+		if !plan.MustDisplayCommentEnabled.IsUnknown() {
+			sp.MustDisplayCommentEnabled = plan.MustDisplayCommentEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OptionalInMailbox.Equal(state.OptionalInMailbox) {
+		if !plan.OptionalInMailbox.IsNull() && !plan.OptionalInMailbox.IsUnknown() {
+			sp.OptionalInMailbox = append([]string{}, toStringSlice(ctx, plan.OptionalInMailbox, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RetentionAction.Equal(state.RetentionAction) {
+		if v := plan.RetentionAction.ValueString(); v != "" {
+			sp.RetentionAction = objectParam(v)
+		}
+	}
+	if !plan.RetentionEnabled.Equal(state.RetentionEnabled) {
+		if !plan.RetentionEnabled.IsUnknown() {
+			sp.RetentionEnabled = plan.RetentionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RetentionId.Equal(state.RetentionId) {
+		sp.RetentionId = plan.RetentionId.ValueString()
+	}
+	if !plan.SystemTag.Equal(state.SystemTag) {
+		if !plan.SystemTag.IsUnknown() {
+			sp.SystemTag = plan.SystemTag.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -214,15 +307,9 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AgeLimitForRetention":            cfg.AgeLimitForRetention,
-		"Comment":                         cfg.Comment,
-		"LegacyManagedFolder":             cfg.LegacyManagedFolder,
-		"LocalizedComment":                cfg.LocalizedComment,
-		"LocalizedRetentionPolicyTagName": cfg.LocalizedRetentionPolicyTagName,
-		"Mailbox":                         cfg.Mailbox,
-		"MessageClass":                    cfg.MessageClass,
-		"RetentionAction":                 cfg.RetentionAction,
-		"RetentionId":                     cfg.RetentionId,
+		"Comment":      cfg.Comment,
+		"MessageClass": cfg.MessageClass,
+		"RetentionId":  cfg.RetentionId,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -284,23 +371,23 @@ func (r *retentionPolicyTagResource) refresh(ctx context.Context, identity strin
 func readRetentionPolicyTag(ctx context.Context, obj map[string]any, m *retentionPolicyTagModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AgeLimitForRetention = types.StringValue(getString(obj, "AgeLimitForRetention"))
+	m.AgeLimitForRetention = types.StringValue(getObjectJSON(obj, "AgeLimitForRetention"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
 	m.IsDefaultAutoGroupPolicyTag = types.BoolValue(getBool(obj, "IsDefaultAutoGroupPolicyTag"))
 	m.IsDefaultModeratedRecipientsPolicyTag = types.BoolValue(getBool(obj, "IsDefaultModeratedRecipientsPolicyTag"))
-	m.LegacyManagedFolder = types.StringValue(getString(obj, "LegacyManagedFolder"))
-	m.LocalizedComment = types.StringValue(getString(obj, "LocalizedComment"))
-	m.LocalizedRetentionPolicyTagName = types.StringValue(getString(obj, "LocalizedRetentionPolicyTagName"))
-	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
+	m.LegacyManagedFolder = types.StringValue(getObjectJSON(obj, "LegacyManagedFolder"))
+	m.LocalizedComment = stringSetValue(ctx, getStringSlice(obj, "LocalizedComment"))
+	m.LocalizedRetentionPolicyTagName = stringSetValue(ctx, getStringSlice(obj, "LocalizedRetentionPolicyTagName"))
+	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
 	m.MessageClass = types.StringValue(getString(obj, "MessageClass"))
 	m.MustDisplayCommentEnabled = types.BoolValue(getBool(obj, "MustDisplayCommentEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OptionalInMailbox = stringSetValue(ctx, getStringSlice(obj, "OptionalInMailbox"))
-	m.RetentionAction = types.StringValue(getString(obj, "RetentionAction"))
+	m.RetentionAction = types.StringValue(getObjectJSON(obj, "RetentionAction"))
 	m.RetentionEnabled = types.BoolValue(getBool(obj, "RetentionEnabled"))
 	m.RetentionId = types.StringValue(getString(obj, "RetentionId"))
 	m.SystemTag = types.BoolValue(getBool(obj, "SystemTag"))
-	m.Type = types.StringValue(getString(obj, "Type"))
+	m.Type = types.StringValue(getObjectJSON(obj, "Type"))
 	_ = ctx
 }
 
@@ -310,8 +397,8 @@ func (r *retentionPolicyTagResource) reconcileState(cfg, read *retentionPolicyTa
 	read.IsDefaultAutoGroupPolicyTag = reconcile.KeepBool(cfg.IsDefaultAutoGroupPolicyTag, read.IsDefaultAutoGroupPolicyTag)
 	read.IsDefaultModeratedRecipientsPolicyTag = reconcile.KeepBool(cfg.IsDefaultModeratedRecipientsPolicyTag, read.IsDefaultModeratedRecipientsPolicyTag)
 	read.LegacyManagedFolder = reconcile.KeepStr(cfg.LegacyManagedFolder, read.LegacyManagedFolder)
-	read.LocalizedComment = reconcile.KeepStr(cfg.LocalizedComment, read.LocalizedComment)
-	read.LocalizedRetentionPolicyTagName = reconcile.KeepStr(cfg.LocalizedRetentionPolicyTagName, read.LocalizedRetentionPolicyTagName)
+	read.LocalizedComment = reconcile.KeepSet(cfg.LocalizedComment, read.LocalizedComment)
+	read.LocalizedRetentionPolicyTagName = reconcile.KeepSet(cfg.LocalizedRetentionPolicyTagName, read.LocalizedRetentionPolicyTagName)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
 	read.MessageClass = reconcile.KeepStr(cfg.MessageClass, read.MessageClass)
 	read.MustDisplayCommentEnabled = reconcile.KeepBool(cfg.MustDisplayCommentEnabled, read.MustDisplayCommentEnabled)

@@ -40,7 +40,7 @@ func (d *classificationRuleCollectionListDataSource) Schema(_ context.Context, _
 			"classification_rule_collections": schema.ListNestedAttribute{Computed: true, Description: "All ClassificationRuleCollection objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"file_data": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -FileData parameter."},
+				"file_data": schema.StringAttribute{Computed: true, Description: "Maps to the -FileData parameter."},
 			}}},
 		},
 	}

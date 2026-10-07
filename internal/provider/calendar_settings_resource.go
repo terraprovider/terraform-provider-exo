@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &calendarSettingsResource{}
 	_ resource.ResourceWithConfigure   = &calendarSettingsResource{}
 	_ resource.ResourceWithImportState = &calendarSettingsResource{}
+	_ resource.ResourceWithModifyPlan  = &calendarSettingsResource{}
 )
 
 type calendarSettingsResource struct{ client *clients.Client }
@@ -65,10 +66,15 @@ func (r *calendarSettingsResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config calendarSettingsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetCalendarSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
-		sp.EnablePreserveDeclinedMeetings = v
+	if v := config.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
+		sp.EnablePreserveDeclinedMeetings = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -109,8 +115,10 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetCalendarSettingsParams{}
 	sp.Identity = id
-	if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
-		sp.EnablePreserveDeclinedMeetings = v
+	if !plan.EnablePreserveDeclinedMeetings.Equal(state.EnablePreserveDeclinedMeetings) {
+		if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
+			sp.EnablePreserveDeclinedMeetings = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,9 +128,7 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"EnablePreserveDeclinedMeetings": cfg.EnablePreserveDeclinedMeetings,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -135,6 +141,41 @@ func (r *calendarSettingsResource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *calendarSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *calendarSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan calendarSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetCalendarSettings(ctx, exo.GetCalendarSettingsParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur calendarSettingsModel
+	readCalendarSettings(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.EnablePreserveDeclinedMeetings.IsUnknown() {
+		plan.EnablePreserveDeclinedMeetings = cur.EnablePreserveDeclinedMeetings
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *calendarSettingsResource) identityOf(m calendarSettingsModel) string {
@@ -173,7 +214,7 @@ func (r *calendarSettingsResource) refresh(ctx context.Context, identity string,
 
 func readCalendarSettings(ctx context.Context, obj map[string]any, m *calendarSettingsModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.EnablePreserveDeclinedMeetings = types.StringValue(getString(obj, "EnablePreserveDeclinedMeetings"))
+	m.EnablePreserveDeclinedMeetings = types.StringValue(getObjectJSON(obj, "EnablePreserveDeclinedMeetings"))
 	_ = ctx
 }
 

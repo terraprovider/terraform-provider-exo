@@ -54,7 +54,7 @@ func (r *partnerApplicationResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the PartnerApplication object via New-PartnerApplication / Get-PartnerApplication / Set-PartnerApplication / Remove-PartnerApplication.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"accept_security_identifier_information": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptSecurityIdentifierInformation parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"account_type":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AccountType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"act_as_permissions":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ActAsPermissions parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -80,17 +80,34 @@ func (r *partnerApplicationResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	p := exo.NewPartnerApplicationParams{
-		AcceptSecurityIdentifierInformation: plan.AcceptSecurityIdentifierInformation.ValueBool(),
-		ApplicationIdentifier:               plan.ApplicationIdentifier.ValueString(),
-		Enabled:                             plan.Enabled.ValueBool(),
-		Name:                                plan.Name.ValueString(),
+	var config partnerApplicationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AccountType.ValueString(); v != "" {
-		p.AccountType = v
+
+	p := exo.NewPartnerApplicationParams{}
+	if !config.AcceptSecurityIdentifierInformation.IsNull() {
+		if !plan.AcceptSecurityIdentifierInformation.IsUnknown() {
+			p.AcceptSecurityIdentifierInformation = plan.AcceptSecurityIdentifierInformation.ValueBoolPointer()
+		}
 	}
-	if v := plan.LinkedAccount.ValueString(); v != "" {
-		p.LinkedAccount = v
+	if v := config.AccountType.ValueString(); v != "" {
+		p.AccountType = objectParam(v)
+	}
+	if !config.ApplicationIdentifier.IsNull() {
+		p.ApplicationIdentifier = plan.ApplicationIdentifier.ValueString()
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if v := config.LinkedAccount.ValueString(); v != "" {
+		p.LinkedAccount = objectParam(v)
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -142,14 +159,30 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetPartnerApplicationParams{}
 	sp.Identity = id
-	sp.AcceptSecurityIdentifierInformation = plan.AcceptSecurityIdentifierInformation.ValueBool()
-	if v := plan.AccountType.ValueString(); v != "" {
-		sp.AccountType = v
+	if !plan.AcceptSecurityIdentifierInformation.Equal(state.AcceptSecurityIdentifierInformation) {
+		if !plan.AcceptSecurityIdentifierInformation.IsUnknown() {
+			sp.AcceptSecurityIdentifierInformation = plan.AcceptSecurityIdentifierInformation.ValueBoolPointer()
+		}
 	}
-	sp.ActAsPermissions = toStringSlice(ctx, plan.ActAsPermissions, &resp.Diagnostics)
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.LinkedAccount.ValueString(); v != "" {
-		sp.LinkedAccount = v
+	if !plan.AccountType.Equal(state.AccountType) {
+		if v := plan.AccountType.ValueString(); v != "" {
+			sp.AccountType = objectParam(v)
+		}
+	}
+	if !plan.ActAsPermissions.Equal(state.ActAsPermissions) {
+		if !plan.ActAsPermissions.IsNull() && !plan.ActAsPermissions.IsUnknown() {
+			sp.ActAsPermissions = append([]string{}, toStringSlice(ctx, plan.ActAsPermissions, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LinkedAccount.Equal(state.LinkedAccount) {
+		if v := plan.LinkedAccount.ValueString(); v != "" {
+			sp.LinkedAccount = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -159,10 +192,7 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AccountType":   cfg.AccountType,
-		"LinkedAccount": cfg.LinkedAccount,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -224,11 +254,11 @@ func readPartnerApplication(ctx context.Context, obj map[string]any, m *partnerA
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AcceptSecurityIdentifierInformation = types.BoolValue(getBool(obj, "AcceptSecurityIdentifierInformation"))
-	m.AccountType = types.StringValue(getString(obj, "AccountType"))
+	m.AccountType = types.StringValue(getObjectJSON(obj, "AccountType"))
 	m.ActAsPermissions = stringSetValue(ctx, getStringSlice(obj, "ActAsPermissions"))
 	m.ApplicationIdentifier = types.StringValue(getString(obj, "ApplicationIdentifier"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.LinkedAccount = types.StringValue(getString(obj, "LinkedAccount"))
+	m.LinkedAccount = types.StringValue(getObjectJSON(obj, "LinkedAccount"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	_ = ctx
 }

@@ -49,6 +49,7 @@ func (d *hostedOutboundSpamFilterRuleListDataSource) Schema(_ context.Context, _
 				"from_member_of":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -FromMemberOf parameter."},
 				"hosted_outbound_spam_filter_policy": schema.StringAttribute{Computed: true, Description: "Maps to the -HostedOutboundSpamFilterPolicy parameter."},
 				"name":                               schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
+				"priority":                           schema.Int64Attribute{Computed: true, Description: "Maps to the -Priority parameter."},
 				"sender_domain_is":                   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SenderDomainIs parameter."},
 			}}},
 		},

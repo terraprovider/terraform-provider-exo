@@ -25,7 +25,7 @@ Manages the DkimSigningConfig object via New-DkimSigningConfig / Get-DkimSigning
 - `admin_display_name` (String) Maps to the -AdminDisplayName parameter.
 - `body_canonicalization` (String) Maps to the -BodyCanonicalization parameter.
 - `header_canonicalization` (String) Maps to the -HeaderCanonicalization parameter.
-- `key_size` (String) Maps to the -KeySize parameter. Allowed values: 1024, 2048.
+- `key_size` (Number) Maps to the -KeySize parameter. Allowed values: 1024, 2048.
 - `publish_txt_records` (Boolean) Maps to the -PublishTxtRecords parameter.
 
 ### Read-Only

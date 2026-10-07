@@ -50,7 +50,7 @@ func (r *activeSyncDeviceAccessRuleResource) Schema(_ context.Context, _ resourc
 		Description: "Manages the ActiveSyncDeviceAccessRule object via New-ActiveSyncDeviceAccessRule / Get-ActiveSyncDeviceAccessRule / Set-ActiveSyncDeviceAccessRule / Remove-ActiveSyncDeviceAccessRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"access_level":   schema.StringAttribute{Required: true, Description: "Maps to the -AccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"characteristic": schema.StringAttribute{Required: true, Description: "Maps to the -Characteristic parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"query_string":   schema.StringAttribute{Required: true, Description: "Maps to the -QueryString parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -72,14 +72,21 @@ func (r *activeSyncDeviceAccessRuleResource) Create(ctx context.Context, req res
 		return
 	}
 
-	p := exo.NewActiveSyncDeviceAccessRuleParams{
-		QueryString: plan.QueryString.ValueString(),
+	var config activeSyncDeviceAccessRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AccessLevel.ValueString(); v != "" {
-		p.AccessLevel = v
+
+	p := exo.NewActiveSyncDeviceAccessRuleParams{}
+	if v := config.AccessLevel.ValueString(); v != "" {
+		p.AccessLevel = objectParam(v)
 	}
-	if v := plan.Characteristic.ValueString(); v != "" {
-		p.Characteristic = v
+	if v := config.Characteristic.ValueString(); v != "" {
+		p.Characteristic = objectParam(v)
+	}
+	if !config.QueryString.IsNull() {
+		p.QueryString = plan.QueryString.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -200,8 +207,8 @@ func (r *activeSyncDeviceAccessRuleResource) refresh(ctx context.Context, identi
 func readActiveSyncDeviceAccessRule(ctx context.Context, obj map[string]any, m *activeSyncDeviceAccessRuleModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AccessLevel = types.StringValue(getString(obj, "AccessLevel"))
-	m.Characteristic = types.StringValue(getString(obj, "Characteristic"))
+	m.AccessLevel = types.StringValue(getObjectJSON(obj, "AccessLevel"))
+	m.Characteristic = types.StringValue(getObjectJSON(obj, "Characteristic"))
 	m.QueryString = types.StringValue(getString(obj, "QueryString"))
 	_ = ctx
 }

@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -62,7 +64,7 @@ type mobileDeviceMailboxPolicyModel struct {
 	AllowUnsignedInstallationPackages        types.Bool   `tfsdk:"allow_unsigned_installation_packages"`
 	AllowWiFi                                types.Bool   `tfsdk:"allow_wi_fi"`
 	AlphanumericPasswordRequired             types.Bool   `tfsdk:"alphanumeric_password_required"`
-	ApprovedApplicationList                  types.String `tfsdk:"approved_application_list"`
+	ApprovedApplicationList                  types.Set    `tfsdk:"approved_application_list"`
 	AttachmentsEnabled                       types.Bool   `tfsdk:"attachments_enabled"`
 	DeviceEncryptionEnabled                  types.Bool   `tfsdk:"device_encryption_enabled"`
 	DevicePolicyRefreshInterval              types.String `tfsdk:"device_policy_refresh_interval"`
@@ -75,10 +77,12 @@ type mobileDeviceMailboxPolicyModel struct {
 	MaxEmailHTMLBodyTruncationSize           types.String `tfsdk:"max_email_html_body_truncation_size"`
 	MaxInactivityTimeLock                    types.String `tfsdk:"max_inactivity_time_lock"`
 	MaxPasswordFailedAttempts                types.String `tfsdk:"max_password_failed_attempts"`
-	MinPasswordLength                        types.String `tfsdk:"min_password_length"`
+	MinPasswordComplexCharacters             types.Int64  `tfsdk:"min_password_complex_characters"`
+	MinPasswordLength                        types.Int64  `tfsdk:"min_password_length"`
 	Name                                     types.String `tfsdk:"name"`
 	PasswordEnabled                          types.Bool   `tfsdk:"password_enabled"`
 	PasswordExpiration                       types.String `tfsdk:"password_expiration"`
+	PasswordHistory                          types.Int64  `tfsdk:"password_history"`
 	PasswordRecoveryEnabled                  types.Bool   `tfsdk:"password_recovery_enabled"`
 	RequireDeviceEncryption                  types.Bool   `tfsdk:"require_device_encryption"`
 	RequireEncryptedSMIMEMessages            types.Bool   `tfsdk:"require_encrypted_smime_messages"`
@@ -88,7 +92,7 @@ type mobileDeviceMailboxPolicyModel struct {
 	RequireSignedSMIMEMessages               types.Bool   `tfsdk:"require_signed_smime_messages"`
 	RequireStorageCardEncryption             types.Bool   `tfsdk:"require_storage_card_encryption"`
 	UNCAccessEnabled                         types.Bool   `tfsdk:"unc_access_enabled"`
-	UnapprovedInROMApplicationList           types.String `tfsdk:"unapproved_in_rom_application_list"`
+	UnapprovedInROMApplicationList           types.Set    `tfsdk:"unapproved_in_rom_application_list"`
 	WSSAccessEnabled                         types.Bool   `tfsdk:"wss_access_enabled"`
 }
 
@@ -101,7 +105,7 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 		Description: "Manages the MobileDeviceMailboxPolicy object via New-MobileDeviceMailboxPolicy / Get-MobileDeviceMailboxPolicy / Set-MobileDeviceMailboxPolicy / Remove-MobileDeviceMailboxPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allow_apple_push_notifications":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowApplePushNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_bluetooth":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowBluetooth parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allow_browser":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowBrowser parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -127,7 +131,7 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"allow_unsigned_installation_packages":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowUnsignedInstallationPackages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_wi_fi":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowWiFi parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"alphanumeric_password_required":               schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -AlphanumericPasswordRequired parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"approved_application_list":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApprovedApplicationList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"approved_application_list":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ApprovedApplicationList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"attachments_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AttachmentsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"device_encryption_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeviceEncryptionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"device_policy_refresh_interval":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DevicePolicyRefreshInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -140,10 +144,12 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"max_email_html_body_truncation_size":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxEmailHTMLBodyTruncationSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_inactivity_time_lock":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxInactivityTimeLock parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_password_failed_attempts":                 schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MaxPasswordFailedAttempts parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"min_password_length":                          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordLength parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"min_password_complex_characters":              schema.Int64Attribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordComplexCharacters parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"min_password_length":                          schema.Int64Attribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -MinPasswordLength parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"name":                                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"password_enabled":                             schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"password_expiration":                          schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordExpiration parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"password_history":                             schema.Int64Attribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordHistory parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"password_recovery_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -PasswordRecoveryEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_device_encryption":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireDeviceEncryption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_encrypted_smime_messages":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireEncryptedSMIMEMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -153,7 +159,7 @@ func (r *mobileDeviceMailboxPolicyResource) Schema(_ context.Context, _ resource
 			"require_signed_smime_messages":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSignedSMIMEMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"require_storage_card_encryption":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireStorageCardEncryption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"unc_access_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UNCAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"unapproved_in_rom_application_list":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"unapproved_in_rom_application_list":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -UnapprovedInROMApplicationList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"wss_access_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -WSSAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -173,92 +179,259 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 		return
 	}
 
-	p := exo.NewMobileDeviceMailboxPolicyParams{
-		AllowApplePushNotifications:       plan.AllowApplePushNotifications.ValueBool(),
-		AllowBrowser:                      plan.AllowBrowser.ValueBool(),
-		AllowCamera:                       plan.AllowCamera.ValueBool(),
-		AllowConsumerEmail:                plan.AllowConsumerEmail.ValueBool(),
-		AllowDesktopSync:                  plan.AllowDesktopSync.ValueBool(),
-		AllowExternalDeviceManagement:     plan.AllowExternalDeviceManagement.ValueBool(),
-		AllowGooglePushNotifications:      plan.AllowGooglePushNotifications.ValueBool(),
-		AllowHTMLEmail:                    plan.AllowHTMLEmail.ValueBool(),
-		AllowInternetSharing:              plan.AllowInternetSharing.ValueBool(),
-		AllowIrDA:                         plan.AllowIrDA.ValueBool(),
-		AllowMicrosoftPushNotifications:   plan.AllowMicrosoftPushNotifications.ValueBool(),
-		AllowMobileOTAUpdate:              plan.AllowMobileOTAUpdate.ValueBool(),
-		AllowNonProvisionableDevices:      plan.AllowNonProvisionableDevices.ValueBool(),
-		AllowPOPIMAPEmail:                 plan.AllowPOPIMAPEmail.ValueBool(),
-		AllowRemoteDesktop:                plan.AllowRemoteDesktop.ValueBool(),
-		AllowSMIMESoftCerts:               plan.AllowSMIMESoftCerts.ValueBool(),
-		AllowSimplePassword:               plan.AllowSimplePassword.ValueBool(),
-		AllowStorageCard:                  plan.AllowStorageCard.ValueBool(),
-		AllowTextMessaging:                plan.AllowTextMessaging.ValueBool(),
-		AllowUnsignedApplications:         plan.AllowUnsignedApplications.ValueBool(),
-		AllowUnsignedInstallationPackages: plan.AllowUnsignedInstallationPackages.ValueBool(),
-		AllowWiFi:                         plan.AllowWiFi.ValueBool(),
-		AlphanumericPasswordRequired:      plan.AlphanumericPasswordRequired.ValueBool(),
-		AttachmentsEnabled:                plan.AttachmentsEnabled.ValueBool(),
-		DeviceEncryptionEnabled:           plan.DeviceEncryptionEnabled.ValueBool(),
-		IrmEnabled:                        plan.IrmEnabled.ValueBool(),
-		IsDefault:                         plan.IsDefault.ValueBool(),
-		Name:                              plan.Name.ValueString(),
-		PasswordEnabled:                   plan.PasswordEnabled.ValueBool(),
-		PasswordRecoveryEnabled:           plan.PasswordRecoveryEnabled.ValueBool(),
-		RequireDeviceEncryption:           plan.RequireDeviceEncryption.ValueBool(),
-		RequireEncryptedSMIMEMessages:     plan.RequireEncryptedSMIMEMessages.ValueBool(),
-		RequireManualSyncWhenRoaming:      plan.RequireManualSyncWhenRoaming.ValueBool(),
-		RequireSignedSMIMEMessages:        plan.RequireSignedSMIMEMessages.ValueBool(),
-		RequireStorageCardEncryption:      plan.RequireStorageCardEncryption.ValueBool(),
-		UNCAccessEnabled:                  plan.UNCAccessEnabled.ValueBool(),
-		WSSAccessEnabled:                  plan.WSSAccessEnabled.ValueBool(),
+	var config mobileDeviceMailboxPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AllowBluetooth.ValueString(); v != "" {
-		p.AllowBluetooth = v
+
+	p := exo.NewMobileDeviceMailboxPolicyParams{}
+	if !config.AllowApplePushNotifications.IsNull() {
+		if !plan.AllowApplePushNotifications.IsUnknown() {
+			p.AllowApplePushNotifications = plan.AllowApplePushNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
-		p.AllowSMIMEEncryptionAlgorithmNegotiation = v
+	if v := config.AllowBluetooth.ValueString(); v != "" {
+		p.AllowBluetooth = objectParam(v)
 	}
-	if v := plan.ApprovedApplicationList.ValueString(); v != "" {
-		p.ApprovedApplicationList = v
+	if !config.AllowBrowser.IsNull() {
+		if !plan.AllowBrowser.IsUnknown() {
+			p.AllowBrowser = plan.AllowBrowser.ValueBoolPointer()
+		}
 	}
-	if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
-		p.DevicePolicyRefreshInterval = v
+	if !config.AllowCamera.IsNull() {
+		if !plan.AllowCamera.IsUnknown() {
+			p.AllowCamera = plan.AllowCamera.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxAttachmentSize.ValueString(); v != "" {
-		p.MaxAttachmentSize = v
+	if !config.AllowConsumerEmail.IsNull() {
+		if !plan.AllowConsumerEmail.IsUnknown() {
+			p.AllowConsumerEmail = plan.AllowConsumerEmail.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxCalendarAgeFilter.ValueString(); v != "" {
-		p.MaxCalendarAgeFilter = v
+	if !config.AllowDesktopSync.IsNull() {
+		if !plan.AllowDesktopSync.IsUnknown() {
+			p.AllowDesktopSync = plan.AllowDesktopSync.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailAgeFilter.ValueString(); v != "" {
-		p.MaxEmailAgeFilter = v
+	if !config.AllowExternalDeviceManagement.IsNull() {
+		if !plan.AllowExternalDeviceManagement.IsUnknown() {
+			p.AllowExternalDeviceManagement = plan.AllowExternalDeviceManagement.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailBodyTruncationSize.ValueString(); v != "" {
-		p.MaxEmailBodyTruncationSize = v
+	if !config.AllowGooglePushNotifications.IsNull() {
+		if !plan.AllowGooglePushNotifications.IsUnknown() {
+			p.AllowGooglePushNotifications = plan.AllowGooglePushNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
-		p.MaxEmailHTMLBodyTruncationSize = v
+	if !config.AllowHTMLEmail.IsNull() {
+		if !plan.AllowHTMLEmail.IsUnknown() {
+			p.AllowHTMLEmail = plan.AllowHTMLEmail.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxInactivityTimeLock.ValueString(); v != "" {
-		p.MaxInactivityTimeLock = v
+	if !config.AllowInternetSharing.IsNull() {
+		if !plan.AllowInternetSharing.IsUnknown() {
+			p.AllowInternetSharing = plan.AllowInternetSharing.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxPasswordFailedAttempts.ValueString(); v != "" {
-		p.MaxPasswordFailedAttempts = v
+	if !config.AllowIrDA.IsNull() {
+		if !plan.AllowIrDA.IsUnknown() {
+			p.AllowIrDA = plan.AllowIrDA.ValueBoolPointer()
+		}
 	}
-	if v := plan.MinPasswordLength.ValueString(); v != "" {
-		p.MinPasswordLength = v
+	if !config.AllowMicrosoftPushNotifications.IsNull() {
+		if !plan.AllowMicrosoftPushNotifications.IsUnknown() {
+			p.AllowMicrosoftPushNotifications = plan.AllowMicrosoftPushNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.PasswordExpiration.ValueString(); v != "" {
-		p.PasswordExpiration = v
+	if !config.AllowMobileOTAUpdate.IsNull() {
+		if !plan.AllowMobileOTAUpdate.IsUnknown() {
+			p.AllowMobileOTAUpdate = plan.AllowMobileOTAUpdate.ValueBoolPointer()
+		}
 	}
-	if v := plan.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
-		p.RequireEncryptionSMIMEAlgorithm = v
+	if !config.AllowNonProvisionableDevices.IsNull() {
+		if !plan.AllowNonProvisionableDevices.IsUnknown() {
+			p.AllowNonProvisionableDevices = plan.AllowNonProvisionableDevices.ValueBoolPointer()
+		}
 	}
-	if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
-		p.RequireSignedSMIMEAlgorithm = v
+	if !config.AllowPOPIMAPEmail.IsNull() {
+		if !plan.AllowPOPIMAPEmail.IsUnknown() {
+			p.AllowPOPIMAPEmail = plan.AllowPOPIMAPEmail.ValueBoolPointer()
+		}
 	}
-	if v := plan.UnapprovedInROMApplicationList.ValueString(); v != "" {
-		p.UnapprovedInROMApplicationList = v
+	if !config.AllowRemoteDesktop.IsNull() {
+		if !plan.AllowRemoteDesktop.IsUnknown() {
+			p.AllowRemoteDesktop = plan.AllowRemoteDesktop.ValueBoolPointer()
+		}
+	}
+	if v := config.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
+		p.AllowSMIMEEncryptionAlgorithmNegotiation = objectParam(v)
+	}
+	if !config.AllowSMIMESoftCerts.IsNull() {
+		if !plan.AllowSMIMESoftCerts.IsUnknown() {
+			p.AllowSMIMESoftCerts = plan.AllowSMIMESoftCerts.ValueBoolPointer()
+		}
+	}
+	if !config.AllowSimplePassword.IsNull() {
+		if !plan.AllowSimplePassword.IsUnknown() {
+			p.AllowSimplePassword = plan.AllowSimplePassword.ValueBoolPointer()
+		}
+	}
+	if !config.AllowStorageCard.IsNull() {
+		if !plan.AllowStorageCard.IsUnknown() {
+			p.AllowStorageCard = plan.AllowStorageCard.ValueBoolPointer()
+		}
+	}
+	if !config.AllowTextMessaging.IsNull() {
+		if !plan.AllowTextMessaging.IsUnknown() {
+			p.AllowTextMessaging = plan.AllowTextMessaging.ValueBoolPointer()
+		}
+	}
+	if !config.AllowUnsignedApplications.IsNull() {
+		if !plan.AllowUnsignedApplications.IsUnknown() {
+			p.AllowUnsignedApplications = plan.AllowUnsignedApplications.ValueBoolPointer()
+		}
+	}
+	if !config.AllowUnsignedInstallationPackages.IsNull() {
+		if !plan.AllowUnsignedInstallationPackages.IsUnknown() {
+			p.AllowUnsignedInstallationPackages = plan.AllowUnsignedInstallationPackages.ValueBoolPointer()
+		}
+	}
+	if !config.AllowWiFi.IsNull() {
+		if !plan.AllowWiFi.IsUnknown() {
+			p.AllowWiFi = plan.AllowWiFi.ValueBoolPointer()
+		}
+	}
+	if !config.AlphanumericPasswordRequired.IsNull() {
+		if !plan.AlphanumericPasswordRequired.IsUnknown() {
+			p.AlphanumericPasswordRequired = plan.AlphanumericPasswordRequired.ValueBoolPointer()
+		}
+	}
+	if !config.ApprovedApplicationList.IsNull() {
+		if v := toStringSlice(ctx, plan.ApprovedApplicationList, &resp.Diagnostics); len(v) > 0 {
+			p.ApprovedApplicationList = v
+		}
+	}
+	if !config.AttachmentsEnabled.IsNull() {
+		if !plan.AttachmentsEnabled.IsUnknown() {
+			p.AttachmentsEnabled = plan.AttachmentsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DeviceEncryptionEnabled.IsNull() {
+		if !plan.DeviceEncryptionEnabled.IsUnknown() {
+			p.DeviceEncryptionEnabled = plan.DeviceEncryptionEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.DevicePolicyRefreshInterval.ValueString(); v != "" {
+		p.DevicePolicyRefreshInterval = objectParam(v)
+	}
+	if !config.IrmEnabled.IsNull() {
+		if !plan.IrmEnabled.IsUnknown() {
+			p.IrmEnabled = plan.IrmEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IsDefault.IsNull() {
+		if !plan.IsDefault.IsUnknown() {
+			p.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
+	}
+	if v := config.MaxAttachmentSize.ValueString(); v != "" {
+		p.MaxAttachmentSize = objectParam(v)
+	}
+	if v := config.MaxCalendarAgeFilter.ValueString(); v != "" {
+		p.MaxCalendarAgeFilter = objectParam(v)
+	}
+	if v := config.MaxEmailAgeFilter.ValueString(); v != "" {
+		p.MaxEmailAgeFilter = objectParam(v)
+	}
+	if v := config.MaxEmailBodyTruncationSize.ValueString(); v != "" {
+		p.MaxEmailBodyTruncationSize = objectParam(v)
+	}
+	if v := config.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
+		p.MaxEmailHTMLBodyTruncationSize = objectParam(v)
+	}
+	if v := config.MaxInactivityTimeLock.ValueString(); v != "" {
+		p.MaxInactivityTimeLock = objectParam(v)
+	}
+	if v := config.MaxPasswordFailedAttempts.ValueString(); v != "" {
+		p.MaxPasswordFailedAttempts = objectParam(v)
+	}
+	if !config.MinPasswordComplexCharacters.IsNull() {
+		if !plan.MinPasswordComplexCharacters.IsUnknown() {
+			p.MinPasswordComplexCharacters = plan.MinPasswordComplexCharacters.ValueInt64Pointer()
+		}
+	}
+	if !config.MinPasswordLength.IsNull() {
+		if !plan.MinPasswordLength.IsUnknown() {
+			p.MinPasswordLength = plan.MinPasswordLength.ValueInt64Pointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.PasswordEnabled.IsNull() {
+		if !plan.PasswordEnabled.IsUnknown() {
+			p.PasswordEnabled = plan.PasswordEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.PasswordExpiration.ValueString(); v != "" {
+		p.PasswordExpiration = objectParam(v)
+	}
+	if !config.PasswordHistory.IsNull() {
+		if !plan.PasswordHistory.IsUnknown() {
+			p.PasswordHistory = plan.PasswordHistory.ValueInt64Pointer()
+		}
+	}
+	if !config.PasswordRecoveryEnabled.IsNull() {
+		if !plan.PasswordRecoveryEnabled.IsUnknown() {
+			p.PasswordRecoveryEnabled = plan.PasswordRecoveryEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RequireDeviceEncryption.IsNull() {
+		if !plan.RequireDeviceEncryption.IsUnknown() {
+			p.RequireDeviceEncryption = plan.RequireDeviceEncryption.ValueBoolPointer()
+		}
+	}
+	if !config.RequireEncryptedSMIMEMessages.IsNull() {
+		if !plan.RequireEncryptedSMIMEMessages.IsUnknown() {
+			p.RequireEncryptedSMIMEMessages = plan.RequireEncryptedSMIMEMessages.ValueBoolPointer()
+		}
+	}
+	if v := config.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
+		p.RequireEncryptionSMIMEAlgorithm = objectParam(v)
+	}
+	if !config.RequireManualSyncWhenRoaming.IsNull() {
+		if !plan.RequireManualSyncWhenRoaming.IsUnknown() {
+			p.RequireManualSyncWhenRoaming = plan.RequireManualSyncWhenRoaming.ValueBoolPointer()
+		}
+	}
+	if v := config.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
+		p.RequireSignedSMIMEAlgorithm = objectParam(v)
+	}
+	if !config.RequireSignedSMIMEMessages.IsNull() {
+		if !plan.RequireSignedSMIMEMessages.IsUnknown() {
+			p.RequireSignedSMIMEMessages = plan.RequireSignedSMIMEMessages.ValueBoolPointer()
+		}
+	}
+	if !config.RequireStorageCardEncryption.IsNull() {
+		if !plan.RequireStorageCardEncryption.IsUnknown() {
+			p.RequireStorageCardEncryption = plan.RequireStorageCardEncryption.ValueBoolPointer()
+		}
+	}
+	if !config.UNCAccessEnabled.IsNull() {
+		if !plan.UNCAccessEnabled.IsUnknown() {
+			p.UNCAccessEnabled = plan.UNCAccessEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.UnapprovedInROMApplicationList.IsNull() {
+		if v := toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics); len(v) > 0 {
+			p.UnapprovedInROMApplicationList = v
+		}
+	}
+	if !config.WSSAccessEnabled.IsNull() {
+		if !plan.WSSAccessEnabled.IsUnknown() {
+			p.WSSAccessEnabled = plan.WSSAccessEnabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -310,90 +483,298 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	id := r.identityOf(state)
 	sp := exo.SetMobileDeviceMailboxPolicyParams{}
 	sp.Identity = id
-	sp.AllowApplePushNotifications = plan.AllowApplePushNotifications.ValueBool()
-	if v := plan.AllowBluetooth.ValueString(); v != "" {
-		sp.AllowBluetooth = v
+	var cur *mobileDeviceMailboxPolicyModel
+	curRead := false
+	current := func() *mobileDeviceMailboxPolicyModel {
+		if !curRead {
+			curRead = true
+			var m mobileDeviceMailboxPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MobileDeviceMailboxPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.AllowBrowser = plan.AllowBrowser.ValueBool()
-	sp.AllowCamera = plan.AllowCamera.ValueBool()
-	sp.AllowConsumerEmail = plan.AllowConsumerEmail.ValueBool()
-	sp.AllowDesktopSync = plan.AllowDesktopSync.ValueBool()
-	sp.AllowExternalDeviceManagement = plan.AllowExternalDeviceManagement.ValueBool()
-	sp.AllowGooglePushNotifications = plan.AllowGooglePushNotifications.ValueBool()
-	sp.AllowHTMLEmail = plan.AllowHTMLEmail.ValueBool()
-	sp.AllowInternetSharing = plan.AllowInternetSharing.ValueBool()
-	sp.AllowIrDA = plan.AllowIrDA.ValueBool()
-	sp.AllowMicrosoftPushNotifications = plan.AllowMicrosoftPushNotifications.ValueBool()
-	sp.AllowMobileOTAUpdate = plan.AllowMobileOTAUpdate.ValueBool()
-	sp.AllowNonProvisionableDevices = plan.AllowNonProvisionableDevices.ValueBool()
-	sp.AllowPOPIMAPEmail = plan.AllowPOPIMAPEmail.ValueBool()
-	sp.AllowRemoteDesktop = plan.AllowRemoteDesktop.ValueBool()
-	if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
-		sp.AllowSMIMEEncryptionAlgorithmNegotiation = v
+	if !plan.AllowApplePushNotifications.Equal(state.AllowApplePushNotifications) {
+		if !plan.AllowApplePushNotifications.IsUnknown() {
+			sp.AllowApplePushNotifications = plan.AllowApplePushNotifications.ValueBoolPointer()
+		}
 	}
-	sp.AllowSMIMESoftCerts = plan.AllowSMIMESoftCerts.ValueBool()
-	sp.AllowSimplePassword = plan.AllowSimplePassword.ValueBool()
-	sp.AllowStorageCard = plan.AllowStorageCard.ValueBool()
-	sp.AllowTextMessaging = plan.AllowTextMessaging.ValueBool()
-	sp.AllowUnsignedApplications = plan.AllowUnsignedApplications.ValueBool()
-	sp.AllowUnsignedInstallationPackages = plan.AllowUnsignedInstallationPackages.ValueBool()
-	sp.AllowWiFi = plan.AllowWiFi.ValueBool()
-	sp.AlphanumericPasswordRequired = plan.AlphanumericPasswordRequired.ValueBool()
-	if v := plan.ApprovedApplicationList.ValueString(); v != "" {
-		sp.ApprovedApplicationList = v
+	if !plan.AllowBluetooth.Equal(state.AllowBluetooth) {
+		if v := plan.AllowBluetooth.ValueString(); v != "" {
+			sp.AllowBluetooth = objectParam(v)
+		}
 	}
-	sp.AttachmentsEnabled = plan.AttachmentsEnabled.ValueBool()
-	sp.DeviceEncryptionEnabled = plan.DeviceEncryptionEnabled.ValueBool()
-	if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
-		sp.DevicePolicyRefreshInterval = v
+	if !plan.AllowBrowser.Equal(state.AllowBrowser) {
+		if !plan.AllowBrowser.IsUnknown() {
+			sp.AllowBrowser = plan.AllowBrowser.ValueBoolPointer()
+		}
 	}
-	sp.IrmEnabled = plan.IrmEnabled.ValueBool()
-	sp.IsDefault = plan.IsDefault.ValueBool()
-	if v := plan.MaxAttachmentSize.ValueString(); v != "" {
-		sp.MaxAttachmentSize = v
+	if !plan.AllowCamera.Equal(state.AllowCamera) {
+		if !plan.AllowCamera.IsUnknown() {
+			sp.AllowCamera = plan.AllowCamera.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxCalendarAgeFilter.ValueString(); v != "" {
-		sp.MaxCalendarAgeFilter = v
+	if !plan.AllowConsumerEmail.Equal(state.AllowConsumerEmail) {
+		if !plan.AllowConsumerEmail.IsUnknown() {
+			sp.AllowConsumerEmail = plan.AllowConsumerEmail.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailAgeFilter.ValueString(); v != "" {
-		sp.MaxEmailAgeFilter = v
+	if !plan.AllowDesktopSync.Equal(state.AllowDesktopSync) {
+		if !plan.AllowDesktopSync.IsUnknown() {
+			sp.AllowDesktopSync = plan.AllowDesktopSync.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailBodyTruncationSize.ValueString(); v != "" {
-		sp.MaxEmailBodyTruncationSize = v
+	if !plan.AllowExternalDeviceManagement.Equal(state.AllowExternalDeviceManagement) {
+		if !plan.AllowExternalDeviceManagement.IsUnknown() {
+			sp.AllowExternalDeviceManagement = plan.AllowExternalDeviceManagement.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
-		sp.MaxEmailHTMLBodyTruncationSize = v
+	if !plan.AllowGooglePushNotifications.Equal(state.AllowGooglePushNotifications) {
+		if !plan.AllowGooglePushNotifications.IsUnknown() {
+			sp.AllowGooglePushNotifications = plan.AllowGooglePushNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxInactivityTimeLock.ValueString(); v != "" {
-		sp.MaxInactivityTimeLock = v
+	if !plan.AllowHTMLEmail.Equal(state.AllowHTMLEmail) {
+		if !plan.AllowHTMLEmail.IsUnknown() {
+			sp.AllowHTMLEmail = plan.AllowHTMLEmail.ValueBoolPointer()
+		}
 	}
-	if v := plan.MaxPasswordFailedAttempts.ValueString(); v != "" {
-		sp.MaxPasswordFailedAttempts = v
+	if !plan.AllowInternetSharing.Equal(state.AllowInternetSharing) {
+		if !plan.AllowInternetSharing.IsUnknown() {
+			sp.AllowInternetSharing = plan.AllowInternetSharing.ValueBoolPointer()
+		}
 	}
-	if v := plan.MinPasswordLength.ValueString(); v != "" {
-		sp.MinPasswordLength = v
+	if !plan.AllowIrDA.Equal(state.AllowIrDA) {
+		if !plan.AllowIrDA.IsUnknown() {
+			sp.AllowIrDA = plan.AllowIrDA.ValueBoolPointer()
+		}
 	}
-	sp.PasswordEnabled = plan.PasswordEnabled.ValueBool()
-	if v := plan.PasswordExpiration.ValueString(); v != "" {
-		sp.PasswordExpiration = v
+	if !plan.AllowMicrosoftPushNotifications.Equal(state.AllowMicrosoftPushNotifications) {
+		if !plan.AllowMicrosoftPushNotifications.IsUnknown() {
+			sp.AllowMicrosoftPushNotifications = plan.AllowMicrosoftPushNotifications.ValueBoolPointer()
+		}
 	}
-	sp.PasswordRecoveryEnabled = plan.PasswordRecoveryEnabled.ValueBool()
-	sp.RequireDeviceEncryption = plan.RequireDeviceEncryption.ValueBool()
-	sp.RequireEncryptedSMIMEMessages = plan.RequireEncryptedSMIMEMessages.ValueBool()
-	if v := plan.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
-		sp.RequireEncryptionSMIMEAlgorithm = v
+	if !plan.AllowMobileOTAUpdate.Equal(state.AllowMobileOTAUpdate) {
+		if !plan.AllowMobileOTAUpdate.IsUnknown() {
+			sp.AllowMobileOTAUpdate = plan.AllowMobileOTAUpdate.ValueBoolPointer()
+		}
 	}
-	sp.RequireManualSyncWhenRoaming = plan.RequireManualSyncWhenRoaming.ValueBool()
-	if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
-		sp.RequireSignedSMIMEAlgorithm = v
+	if !plan.AllowNonProvisionableDevices.Equal(state.AllowNonProvisionableDevices) {
+		if !plan.AllowNonProvisionableDevices.IsUnknown() {
+			sp.AllowNonProvisionableDevices = plan.AllowNonProvisionableDevices.ValueBoolPointer()
+		}
 	}
-	sp.RequireSignedSMIMEMessages = plan.RequireSignedSMIMEMessages.ValueBool()
-	sp.RequireStorageCardEncryption = plan.RequireStorageCardEncryption.ValueBool()
-	sp.UNCAccessEnabled = plan.UNCAccessEnabled.ValueBool()
-	if v := plan.UnapprovedInROMApplicationList.ValueString(); v != "" {
-		sp.UnapprovedInROMApplicationList = v
+	if !plan.AllowPOPIMAPEmail.Equal(state.AllowPOPIMAPEmail) {
+		if !plan.AllowPOPIMAPEmail.IsUnknown() {
+			sp.AllowPOPIMAPEmail = plan.AllowPOPIMAPEmail.ValueBoolPointer()
+		}
 	}
-	sp.WSSAccessEnabled = plan.WSSAccessEnabled.ValueBool()
+	if !plan.AllowRemoteDesktop.Equal(state.AllowRemoteDesktop) {
+		if !plan.AllowRemoteDesktop.IsUnknown() {
+			sp.AllowRemoteDesktop = plan.AllowRemoteDesktop.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowSMIMEEncryptionAlgorithmNegotiation.Equal(state.AllowSMIMEEncryptionAlgorithmNegotiation) {
+		if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
+			sp.AllowSMIMEEncryptionAlgorithmNegotiation = objectParam(v)
+		}
+	}
+	if !plan.AllowSMIMESoftCerts.Equal(state.AllowSMIMESoftCerts) {
+		if !plan.AllowSMIMESoftCerts.IsUnknown() {
+			sp.AllowSMIMESoftCerts = plan.AllowSMIMESoftCerts.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowSimplePassword.Equal(state.AllowSimplePassword) {
+		if !plan.AllowSimplePassword.IsUnknown() {
+			sp.AllowSimplePassword = plan.AllowSimplePassword.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowStorageCard.Equal(state.AllowStorageCard) {
+		if !plan.AllowStorageCard.IsUnknown() {
+			sp.AllowStorageCard = plan.AllowStorageCard.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowTextMessaging.Equal(state.AllowTextMessaging) {
+		if !plan.AllowTextMessaging.IsUnknown() {
+			sp.AllowTextMessaging = plan.AllowTextMessaging.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowUnsignedApplications.Equal(state.AllowUnsignedApplications) {
+		if !plan.AllowUnsignedApplications.IsUnknown() {
+			sp.AllowUnsignedApplications = plan.AllowUnsignedApplications.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowUnsignedInstallationPackages.Equal(state.AllowUnsignedInstallationPackages) {
+		if !plan.AllowUnsignedInstallationPackages.IsUnknown() {
+			sp.AllowUnsignedInstallationPackages = plan.AllowUnsignedInstallationPackages.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowWiFi.Equal(state.AllowWiFi) {
+		if !plan.AllowWiFi.IsUnknown() {
+			sp.AllowWiFi = plan.AllowWiFi.ValueBoolPointer()
+		}
+	}
+	if !plan.AlphanumericPasswordRequired.Equal(state.AlphanumericPasswordRequired) {
+		if !plan.AlphanumericPasswordRequired.IsUnknown() {
+			sp.AlphanumericPasswordRequired = plan.AlphanumericPasswordRequired.ValueBoolPointer()
+		}
+	}
+	if !plan.ApprovedApplicationList.Equal(state.ApprovedApplicationList) {
+		if !plan.ApprovedApplicationList.IsNull() && !plan.ApprovedApplicationList.IsUnknown() {
+			sp.ApprovedApplicationList = append([]string{}, toStringSlice(ctx, plan.ApprovedApplicationList, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.AttachmentsEnabled.Equal(state.AttachmentsEnabled) {
+		if !plan.AttachmentsEnabled.IsUnknown() {
+			sp.AttachmentsEnabled = plan.AttachmentsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DeviceEncryptionEnabled.Equal(state.DeviceEncryptionEnabled) {
+		if !plan.DeviceEncryptionEnabled.IsUnknown() {
+			sp.DeviceEncryptionEnabled = plan.DeviceEncryptionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DevicePolicyRefreshInterval.Equal(state.DevicePolicyRefreshInterval) {
+		if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
+			sp.DevicePolicyRefreshInterval = objectParam(v)
+		}
+	}
+	if !plan.IrmEnabled.Equal(state.IrmEnabled) {
+		if !plan.IrmEnabled.IsUnknown() {
+			sp.IrmEnabled = plan.IrmEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		if !plan.IsDefault.IsUnknown() {
+			sp.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
+	}
+	if !plan.MaxAttachmentSize.Equal(state.MaxAttachmentSize) {
+		if v := plan.MaxAttachmentSize.ValueString(); v != "" {
+			sp.MaxAttachmentSize = objectParam(v)
+		}
+	}
+	if !plan.MaxCalendarAgeFilter.Equal(state.MaxCalendarAgeFilter) {
+		if v := plan.MaxCalendarAgeFilter.ValueString(); v != "" {
+			sp.MaxCalendarAgeFilter = objectParam(v)
+		}
+	}
+	if !plan.MaxEmailAgeFilter.Equal(state.MaxEmailAgeFilter) {
+		if v := plan.MaxEmailAgeFilter.ValueString(); v != "" {
+			sp.MaxEmailAgeFilter = objectParam(v)
+		}
+	}
+	if !plan.MaxEmailBodyTruncationSize.Equal(state.MaxEmailBodyTruncationSize) {
+		if v := plan.MaxEmailBodyTruncationSize.ValueString(); v != "" {
+			sp.MaxEmailBodyTruncationSize = objectParam(v)
+		}
+	}
+	if !plan.MaxEmailHTMLBodyTruncationSize.Equal(state.MaxEmailHTMLBodyTruncationSize) {
+		if v := plan.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
+			sp.MaxEmailHTMLBodyTruncationSize = objectParam(v)
+		}
+	}
+	if !plan.MaxInactivityTimeLock.Equal(state.MaxInactivityTimeLock) {
+		if v := plan.MaxInactivityTimeLock.ValueString(); v != "" {
+			sp.MaxInactivityTimeLock = objectParam(v)
+		}
+	}
+	if !plan.MaxPasswordFailedAttempts.Equal(state.MaxPasswordFailedAttempts) {
+		if v := plan.MaxPasswordFailedAttempts.ValueString(); v != "" {
+			sp.MaxPasswordFailedAttempts = objectParam(v)
+		}
+	}
+	if !plan.MinPasswordComplexCharacters.Equal(state.MinPasswordComplexCharacters) {
+		if !plan.MinPasswordComplexCharacters.IsUnknown() {
+			sp.MinPasswordComplexCharacters = plan.MinPasswordComplexCharacters.ValueInt64Pointer()
+		}
+	}
+	if !plan.MinPasswordLength.Equal(state.MinPasswordLength) {
+		if !plan.MinPasswordLength.IsUnknown() {
+			sp.MinPasswordLength = plan.MinPasswordLength.ValueInt64Pointer()
+		}
+	}
+	if !plan.PasswordEnabled.Equal(state.PasswordEnabled) {
+		if !plan.PasswordEnabled.IsUnknown() {
+			sp.PasswordEnabled = plan.PasswordEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PasswordExpiration.Equal(state.PasswordExpiration) {
+		if v := plan.PasswordExpiration.ValueString(); v != "" {
+			sp.PasswordExpiration = objectParam(v)
+		}
+	}
+	if !plan.PasswordHistory.Equal(state.PasswordHistory) {
+		if !plan.PasswordHistory.IsUnknown() {
+			sp.PasswordHistory = plan.PasswordHistory.ValueInt64Pointer()
+		}
+	}
+	if !plan.PasswordRecoveryEnabled.Equal(state.PasswordRecoveryEnabled) {
+		if !plan.PasswordRecoveryEnabled.IsUnknown() {
+			sp.PasswordRecoveryEnabled = plan.PasswordRecoveryEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireDeviceEncryption.Equal(state.RequireDeviceEncryption) {
+		if !plan.RequireDeviceEncryption.IsUnknown() {
+			sp.RequireDeviceEncryption = plan.RequireDeviceEncryption.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireEncryptedSMIMEMessages.Equal(state.RequireEncryptedSMIMEMessages) {
+		if !plan.RequireEncryptedSMIMEMessages.IsUnknown() {
+			sp.RequireEncryptedSMIMEMessages = plan.RequireEncryptedSMIMEMessages.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireEncryptionSMIMEAlgorithm.Equal(state.RequireEncryptionSMIMEAlgorithm) {
+		if v := plan.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
+			sp.RequireEncryptionSMIMEAlgorithm = objectParam(v)
+		}
+	}
+	if !plan.RequireManualSyncWhenRoaming.Equal(state.RequireManualSyncWhenRoaming) {
+		if !plan.RequireManualSyncWhenRoaming.IsUnknown() {
+			sp.RequireManualSyncWhenRoaming = plan.RequireManualSyncWhenRoaming.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireSignedSMIMEAlgorithm.Equal(state.RequireSignedSMIMEAlgorithm) {
+		if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
+			sp.RequireSignedSMIMEAlgorithm = objectParam(v)
+		}
+	}
+	if !plan.RequireSignedSMIMEMessages.Equal(state.RequireSignedSMIMEMessages) {
+		if !plan.RequireSignedSMIMEMessages.IsUnknown() {
+			sp.RequireSignedSMIMEMessages = plan.RequireSignedSMIMEMessages.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireStorageCardEncryption.Equal(state.RequireStorageCardEncryption) {
+		if !plan.RequireStorageCardEncryption.IsUnknown() {
+			sp.RequireStorageCardEncryption = plan.RequireStorageCardEncryption.ValueBoolPointer()
+		}
+	}
+	if !plan.UNCAccessEnabled.Equal(state.UNCAccessEnabled) {
+		if !plan.UNCAccessEnabled.IsUnknown() {
+			sp.UNCAccessEnabled = plan.UNCAccessEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.UnapprovedInROMApplicationList.Equal(state.UnapprovedInROMApplicationList) {
+		if !plan.UnapprovedInROMApplicationList.IsNull() && !plan.UnapprovedInROMApplicationList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics); len(v) > 0 {
+				sp.UnapprovedInROMApplicationList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UnapprovedInROMApplicationList, &resp.Diagnostics); len(rm) > 0 {
+						sp.UnapprovedInROMApplicationListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.WSSAccessEnabled.Equal(state.WSSAccessEnabled) {
+		if !plan.WSSAccessEnabled.IsUnknown() {
+			sp.WSSAccessEnabled = plan.WSSAccessEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -402,24 +783,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AllowBluetooth": cfg.AllowBluetooth,
-		"AllowSMIMEEncryptionAlgorithmNegotiation": cfg.AllowSMIMEEncryptionAlgorithmNegotiation,
-		"ApprovedApplicationList":                  cfg.ApprovedApplicationList,
-		"DevicePolicyRefreshInterval":              cfg.DevicePolicyRefreshInterval,
-		"MaxAttachmentSize":                        cfg.MaxAttachmentSize,
-		"MaxCalendarAgeFilter":                     cfg.MaxCalendarAgeFilter,
-		"MaxEmailAgeFilter":                        cfg.MaxEmailAgeFilter,
-		"MaxEmailBodyTruncationSize":               cfg.MaxEmailBodyTruncationSize,
-		"MaxEmailHTMLBodyTruncationSize":           cfg.MaxEmailHTMLBodyTruncationSize,
-		"MaxInactivityTimeLock":                    cfg.MaxInactivityTimeLock,
-		"MaxPasswordFailedAttempts":                cfg.MaxPasswordFailedAttempts,
-		"MinPasswordLength":                        cfg.MinPasswordLength,
-		"PasswordExpiration":                       cfg.PasswordExpiration,
-		"RequireEncryptionSMIMEAlgorithm":          cfg.RequireEncryptionSMIMEAlgorithm,
-		"RequireSignedSMIMEAlgorithm":              cfg.RequireSignedSMIMEAlgorithm,
-		"UnapprovedInROMApplicationList":           cfg.UnapprovedInROMApplicationList,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -481,7 +845,7 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AllowApplePushNotifications = types.BoolValue(getBool(obj, "AllowApplePushNotifications"))
-	m.AllowBluetooth = types.StringValue(getString(obj, "AllowBluetooth"))
+	m.AllowBluetooth = types.StringValue(getObjectJSON(obj, "AllowBluetooth"))
 	m.AllowBrowser = types.BoolValue(getBool(obj, "AllowBrowser"))
 	m.AllowCamera = types.BoolValue(getBool(obj, "AllowCamera"))
 	m.AllowConsumerEmail = types.BoolValue(getBool(obj, "AllowConsumerEmail"))
@@ -496,7 +860,7 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.AllowNonProvisionableDevices = types.BoolValue(getBool(obj, "AllowNonProvisionableDevices"))
 	m.AllowPOPIMAPEmail = types.BoolValue(getBool(obj, "AllowPOPIMAPEmail"))
 	m.AllowRemoteDesktop = types.BoolValue(getBool(obj, "AllowRemoteDesktop"))
-	m.AllowSMIMEEncryptionAlgorithmNegotiation = types.StringValue(getString(obj, "AllowSMIMEEncryptionAlgorithmNegotiation"))
+	m.AllowSMIMEEncryptionAlgorithmNegotiation = types.StringValue(getObjectJSON(obj, "AllowSMIMEEncryptionAlgorithmNegotiation"))
 	m.AllowSMIMESoftCerts = types.BoolValue(getBool(obj, "AllowSMIMESoftCerts"))
 	m.AllowSimplePassword = types.BoolValue(getBool(obj, "AllowSimplePassword"))
 	m.AllowStorageCard = types.BoolValue(getBool(obj, "AllowStorageCard"))
@@ -505,33 +869,35 @@ func readMobileDeviceMailboxPolicy(ctx context.Context, obj map[string]any, m *m
 	m.AllowUnsignedInstallationPackages = types.BoolValue(getBool(obj, "AllowUnsignedInstallationPackages"))
 	m.AllowWiFi = types.BoolValue(getBool(obj, "AllowWiFi"))
 	m.AlphanumericPasswordRequired = types.BoolValue(getBool(obj, "AlphanumericPasswordRequired"))
-	m.ApprovedApplicationList = types.StringValue(getString(obj, "ApprovedApplicationList"))
+	m.ApprovedApplicationList = stringSetValue(ctx, getStringSlice(obj, "ApprovedApplicationList"))
 	m.AttachmentsEnabled = types.BoolValue(getBool(obj, "AttachmentsEnabled"))
 	m.DeviceEncryptionEnabled = types.BoolValue(getBool(obj, "DeviceEncryptionEnabled"))
-	m.DevicePolicyRefreshInterval = types.StringValue(getString(obj, "DevicePolicyRefreshInterval"))
+	m.DevicePolicyRefreshInterval = types.StringValue(getObjectJSON(obj, "DevicePolicyRefreshInterval"))
 	m.IrmEnabled = types.BoolValue(getBool(obj, "IrmEnabled"))
 	m.IsDefault = types.BoolValue(getBool(obj, "IsDefault"))
-	m.MaxAttachmentSize = types.StringValue(getString(obj, "MaxAttachmentSize"))
-	m.MaxCalendarAgeFilter = types.StringValue(getString(obj, "MaxCalendarAgeFilter"))
-	m.MaxEmailAgeFilter = types.StringValue(getString(obj, "MaxEmailAgeFilter"))
-	m.MaxEmailBodyTruncationSize = types.StringValue(getString(obj, "MaxEmailBodyTruncationSize"))
-	m.MaxEmailHTMLBodyTruncationSize = types.StringValue(getString(obj, "MaxEmailHTMLBodyTruncationSize"))
-	m.MaxInactivityTimeLock = types.StringValue(getString(obj, "MaxInactivityTimeLock"))
-	m.MaxPasswordFailedAttempts = types.StringValue(getString(obj, "MaxPasswordFailedAttempts"))
-	m.MinPasswordLength = types.StringValue(getString(obj, "MinPasswordLength"))
+	m.MaxAttachmentSize = types.StringValue(getObjectJSON(obj, "MaxAttachmentSize"))
+	m.MaxCalendarAgeFilter = types.StringValue(getObjectJSON(obj, "MaxCalendarAgeFilter"))
+	m.MaxEmailAgeFilter = types.StringValue(getObjectJSON(obj, "MaxEmailAgeFilter"))
+	m.MaxEmailBodyTruncationSize = types.StringValue(getObjectJSON(obj, "MaxEmailBodyTruncationSize"))
+	m.MaxEmailHTMLBodyTruncationSize = types.StringValue(getObjectJSON(obj, "MaxEmailHTMLBodyTruncationSize"))
+	m.MaxInactivityTimeLock = types.StringValue(getObjectJSON(obj, "MaxInactivityTimeLock"))
+	m.MaxPasswordFailedAttempts = types.StringValue(getObjectJSON(obj, "MaxPasswordFailedAttempts"))
+	m.MinPasswordComplexCharacters = types.Int64Value(getInt(obj, "MinPasswordComplexCharacters"))
+	m.MinPasswordLength = types.Int64Value(getInt(obj, "MinPasswordLength"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.PasswordEnabled = types.BoolValue(getBool(obj, "PasswordEnabled"))
-	m.PasswordExpiration = types.StringValue(getString(obj, "PasswordExpiration"))
+	m.PasswordExpiration = types.StringValue(getObjectJSON(obj, "PasswordExpiration"))
+	m.PasswordHistory = types.Int64Value(getInt(obj, "PasswordHistory"))
 	m.PasswordRecoveryEnabled = types.BoolValue(getBool(obj, "PasswordRecoveryEnabled"))
 	m.RequireDeviceEncryption = types.BoolValue(getBool(obj, "RequireDeviceEncryption"))
 	m.RequireEncryptedSMIMEMessages = types.BoolValue(getBool(obj, "RequireEncryptedSMIMEMessages"))
-	m.RequireEncryptionSMIMEAlgorithm = types.StringValue(getString(obj, "RequireEncryptionSMIMEAlgorithm"))
+	m.RequireEncryptionSMIMEAlgorithm = types.StringValue(getObjectJSON(obj, "RequireEncryptionSMIMEAlgorithm"))
 	m.RequireManualSyncWhenRoaming = types.BoolValue(getBool(obj, "RequireManualSyncWhenRoaming"))
-	m.RequireSignedSMIMEAlgorithm = types.StringValue(getString(obj, "RequireSignedSMIMEAlgorithm"))
+	m.RequireSignedSMIMEAlgorithm = types.StringValue(getObjectJSON(obj, "RequireSignedSMIMEAlgorithm"))
 	m.RequireSignedSMIMEMessages = types.BoolValue(getBool(obj, "RequireSignedSMIMEMessages"))
 	m.RequireStorageCardEncryption = types.BoolValue(getBool(obj, "RequireStorageCardEncryption"))
 	m.UNCAccessEnabled = types.BoolValue(getBool(obj, "UNCAccessEnabled"))
-	m.UnapprovedInROMApplicationList = types.StringValue(getString(obj, "UnapprovedInROMApplicationList"))
+	m.UnapprovedInROMApplicationList = stringSetValue(ctx, getStringSlice(obj, "UnapprovedInROMApplicationList"))
 	m.WSSAccessEnabled = types.BoolValue(getBool(obj, "WSSAccessEnabled"))
 	_ = ctx
 }
@@ -562,7 +928,7 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.AllowUnsignedInstallationPackages = reconcile.KeepBool(cfg.AllowUnsignedInstallationPackages, read.AllowUnsignedInstallationPackages)
 	read.AllowWiFi = reconcile.KeepBool(cfg.AllowWiFi, read.AllowWiFi)
 	read.AlphanumericPasswordRequired = reconcile.KeepBool(cfg.AlphanumericPasswordRequired, read.AlphanumericPasswordRequired)
-	read.ApprovedApplicationList = reconcile.KeepStr(cfg.ApprovedApplicationList, read.ApprovedApplicationList)
+	read.ApprovedApplicationList = reconcile.KeepSet(cfg.ApprovedApplicationList, read.ApprovedApplicationList)
 	read.AttachmentsEnabled = reconcile.KeepBool(cfg.AttachmentsEnabled, read.AttachmentsEnabled)
 	read.DeviceEncryptionEnabled = reconcile.KeepBool(cfg.DeviceEncryptionEnabled, read.DeviceEncryptionEnabled)
 	read.DevicePolicyRefreshInterval = reconcile.KeepStr(cfg.DevicePolicyRefreshInterval, read.DevicePolicyRefreshInterval)
@@ -575,10 +941,12 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.MaxEmailHTMLBodyTruncationSize = reconcile.KeepStr(cfg.MaxEmailHTMLBodyTruncationSize, read.MaxEmailHTMLBodyTruncationSize)
 	read.MaxInactivityTimeLock = reconcile.KeepStr(cfg.MaxInactivityTimeLock, read.MaxInactivityTimeLock)
 	read.MaxPasswordFailedAttempts = reconcile.KeepStr(cfg.MaxPasswordFailedAttempts, read.MaxPasswordFailedAttempts)
-	read.MinPasswordLength = reconcile.KeepStr(cfg.MinPasswordLength, read.MinPasswordLength)
+	read.MinPasswordComplexCharacters = reconcile.KeepInt64(cfg.MinPasswordComplexCharacters, read.MinPasswordComplexCharacters)
+	read.MinPasswordLength = reconcile.KeepInt64(cfg.MinPasswordLength, read.MinPasswordLength)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.PasswordEnabled = reconcile.KeepBool(cfg.PasswordEnabled, read.PasswordEnabled)
 	read.PasswordExpiration = reconcile.KeepStr(cfg.PasswordExpiration, read.PasswordExpiration)
+	read.PasswordHistory = reconcile.KeepInt64(cfg.PasswordHistory, read.PasswordHistory)
 	read.PasswordRecoveryEnabled = reconcile.KeepBool(cfg.PasswordRecoveryEnabled, read.PasswordRecoveryEnabled)
 	read.RequireDeviceEncryption = reconcile.KeepBool(cfg.RequireDeviceEncryption, read.RequireDeviceEncryption)
 	read.RequireEncryptedSMIMEMessages = reconcile.KeepBool(cfg.RequireEncryptedSMIMEMessages, read.RequireEncryptedSMIMEMessages)
@@ -588,6 +956,6 @@ func (r *mobileDeviceMailboxPolicyResource) reconcileState(cfg, read *mobileDevi
 	read.RequireSignedSMIMEMessages = reconcile.KeepBool(cfg.RequireSignedSMIMEMessages, read.RequireSignedSMIMEMessages)
 	read.RequireStorageCardEncryption = reconcile.KeepBool(cfg.RequireStorageCardEncryption, read.RequireStorageCardEncryption)
 	read.UNCAccessEnabled = reconcile.KeepBool(cfg.UNCAccessEnabled, read.UNCAccessEnabled)
-	read.UnapprovedInROMApplicationList = reconcile.KeepStr(cfg.UnapprovedInROMApplicationList, read.UnapprovedInROMApplicationList)
+	read.UnapprovedInROMApplicationList = reconcile.KeepSet(cfg.UnapprovedInROMApplicationList, read.UnapprovedInROMApplicationList)
 	read.WSSAccessEnabled = reconcile.KeepBool(cfg.WSSAccessEnabled, read.WSSAccessEnabled)
 }

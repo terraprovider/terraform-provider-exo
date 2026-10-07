@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -34,7 +35,7 @@ func (d *availabilityConfigDataSource) Schema(_ context.Context, _ datasource.Sc
 		Attributes: map[string]schema.Attribute{
 			"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":           schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"allowed_tenant_ids": schema.StringAttribute{Computed: true, Description: "Maps to the -AllowedTenantIds parameter."},
+			"allowed_tenant_ids": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AllowedTenantIds parameter."},
 			"org_wide_account":   schema.StringAttribute{Computed: true, Description: "Maps to the -OrgWideAccount parameter."},
 		},
 	}

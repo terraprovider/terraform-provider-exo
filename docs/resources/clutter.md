@@ -21,7 +21,7 @@ Manages the Clutter configuration via Set-Clutter.
 
 ### Optional
 
-- `enable` (String) Maps to the -Enable parameter.
+- `enable` (Boolean) Maps to the -Enable parameter.
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.
 
 ### Read-Only

@@ -31,6 +31,7 @@ Look up an existing EOPProtectionPolicyRule object. Set identity or name to sele
 - `hosted_content_filter_policy` (String) Maps to the -HostedContentFilterPolicy parameter.
 - `id` (String) Object identifier (GUID).
 - `malware_filter_policy` (String) Maps to the -MalwareFilterPolicy parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `recipient_domain_is` (Set of String) Maps to the -RecipientDomainIs parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.

@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +27,7 @@ var (
 	_ resource.Resource                = &userResource{}
 	_ resource.ResourceWithConfigure   = &userResource{}
 	_ resource.ResourceWithImportState = &userResource{}
+	_ resource.ResourceWithModifyPlan  = &userResource{}
 )
 
 type userResource struct{ client *clients.Client }
@@ -62,20 +65,20 @@ type userModel struct {
 	Name                                types.String `tfsdk:"name"`
 	Notes                               types.String `tfsdk:"notes"`
 	Office                              types.String `tfsdk:"office"`
-	OtherFax                            types.String `tfsdk:"other_fax"`
-	OtherHomePhone                      types.String `tfsdk:"other_home_phone"`
-	OtherTelephone                      types.String `tfsdk:"other_telephone"`
+	OtherFax                            types.Set    `tfsdk:"other_fax"`
+	OtherHomePhone                      types.Set    `tfsdk:"other_home_phone"`
+	OtherTelephone                      types.Set    `tfsdk:"other_telephone"`
 	Pager                               types.String `tfsdk:"pager"`
 	PermanentlyClearPreviousMailboxInfo types.Bool   `tfsdk:"permanently_clear_previous_mailbox_info"`
 	Phone                               types.String `tfsdk:"phone"`
 	PhoneticDisplayName                 types.String `tfsdk:"phonetic_display_name"`
-	PostOfficeBox                       types.String `tfsdk:"post_office_box"`
+	PostOfficeBox                       types.Set    `tfsdk:"post_office_box"`
 	PostalCode                          types.String `tfsdk:"postal_code"`
 	PublicFolder                        types.Bool   `tfsdk:"public_folder"`
 	RemotePowerShellEnabled             types.Bool   `tfsdk:"remote_power_shell_enabled"`
 	RemoveMailboxProvisioningConstraint types.Bool   `tfsdk:"remove_mailbox_provisioning_constraint"`
 	ResetPasswordOnNextLogon            types.Bool   `tfsdk:"reset_password_on_next_logon"`
-	SeniorityIndex                      types.String `tfsdk:"seniority_index"`
+	SeniorityIndex                      types.Int64  `tfsdk:"seniority_index"`
 	SimpleDisplayName                   types.String `tfsdk:"simple_display_name"`
 	StateOrProvince                     types.String `tfsdk:"state_or_province"`
 	StreetAddress                       types.String `tfsdk:"street_address"`
@@ -123,20 +126,20 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"name":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"notes":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Notes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"office":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_fax":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_home_phone":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_telephone":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"other_fax":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_home_phone":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_telephone":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"pager":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Pager parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"permanently_clear_previous_mailbox_info": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PermanentlyClearPreviousMailboxInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"phone":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Phone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phonetic_display_name":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"post_office_box":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"post_office_box":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"postal_code":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostalCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"public_folder":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remote_power_shell_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePowerShellEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remove_mailbox_provisioning_constraint": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveMailboxProvisioningConstraint parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reset_password_on_next_logon":           schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -ResetPasswordOnNextLogon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"seniority_index":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"seniority_index":                        schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"simple_display_name":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"state_or_province":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StateOrProvince parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"street_address":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StreetAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -162,84 +165,229 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config userModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetUserParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AssistantName = plan.AssistantName.ValueString()
-	if v := plan.AuthenticationPolicy.ValueString(); v != "" {
-		sp.AuthenticationPolicy = v
+	var cur *userModel
+	curRead := false
+	current := func() *userModel {
+		if !curRead {
+			curRead = true
+			var m userModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-User failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.BlockCloudCache = plan.BlockCloudCache.ValueBool()
-	sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBool()
-	sp.City = plan.City.ValueString()
-	sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
-	sp.Company = plan.Company.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	if !config.AssistantName.IsNull() {
+		sp.AssistantName = plan.AssistantName.ValueString()
 	}
-	sp.Department = plan.Department.ValueString()
-	if v := plan.DesiredWorkloads.ValueString(); v != "" {
-		sp.DesiredWorkloads = v
+	if v := config.AuthenticationPolicy.ValueString(); v != "" {
+		sp.AuthenticationPolicy = objectParam(v)
 	}
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.EXOModuleEnabled = plan.EXOModuleEnabled.ValueBool()
-	sp.Fax = plan.Fax.ValueString()
-	sp.FirstName = plan.FirstName.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !config.BlockCloudCache.IsNull() {
+		if !plan.BlockCloudCache.IsUnknown() {
+			sp.BlockCloudCache = plan.BlockCloudCache.ValueBoolPointer()
+		}
 	}
-	sp.HomePhone = plan.HomePhone.ValueString()
-	sp.Initials = plan.Initials.ValueString()
-	sp.IsShadowMailbox = plan.IsShadowMailbox.ValueBool()
-	sp.LastName = plan.LastName.ValueString()
-	sp.MailboxRegion = plan.MailboxRegion.ValueString()
-	if v := plan.MailboxRegionSuffix.ValueString(); v != "" {
-		sp.MailboxRegionSuffix = v
+	if !config.CanHaveCloudCache.IsNull() {
+		if !plan.CanHaveCloudCache.IsUnknown() {
+			sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBoolPointer()
+		}
 	}
-	if v := plan.ManagedOnboardingType.ValueString(); v != "" {
-		sp.ManagedOnboardingType = v
+	if !config.City.IsNull() {
+		sp.City = plan.City.ValueString()
 	}
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = v
+	if !config.ClearDataEncryptionPolicy.IsNull() {
+		sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
 	}
-	sp.MobilePhone = plan.MobilePhone.ValueString()
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
+	if !config.Company.IsNull() {
+		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
+	if v := config.CountryOrRegion.ValueString(); v != "" {
+		sp.CountryOrRegion = objectParam(v)
 	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
+	if !config.Department.IsNull() {
+		sp.Department = plan.Department.ValueString()
 	}
-	sp.Pager = plan.Pager.ValueString()
-	sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
+	if v := config.DesiredWorkloads.ValueString(); v != "" {
+		sp.DesiredWorkloads = objectParam(v)
 	}
-	sp.PostalCode = plan.PostalCode.ValueString()
-	sp.PublicFolder = plan.PublicFolder.ValueBool()
-	sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBool()
-	sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
-	sp.ResetPasswordOnNextLogon = plan.ResetPasswordOnNextLogon.ValueBool()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !config.DisplayName.IsNull() {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.StateOrProvince = plan.StateOrProvince.ValueString()
-	sp.StreetAddress = plan.StreetAddress.ValueString()
-	if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
-		sp.StsRefreshTokensValidFrom = v
+	if !config.EXOModuleEnabled.IsNull() {
+		if !plan.EXOModuleEnabled.IsUnknown() {
+			sp.EXOModuleEnabled = plan.EXOModuleEnabled.ValueBoolPointer()
+		}
 	}
-	sp.Title = plan.Title.ValueString()
-	sp.VIP = plan.VIP.ValueBool()
-	sp.WebPage = plan.WebPage.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !config.Fax.IsNull() {
+		sp.Fax = plan.Fax.ValueString()
+	}
+	if !config.FirstName.IsNull() {
+		sp.FirstName = plan.FirstName.ValueString()
+	}
+	if v := config.GeoCoordinates.ValueString(); v != "" {
+		sp.GeoCoordinates = objectParam(v)
+	}
+	if !config.HomePhone.IsNull() {
+		sp.HomePhone = plan.HomePhone.ValueString()
+	}
+	if !config.Initials.IsNull() {
+		sp.Initials = plan.Initials.ValueString()
+	}
+	if !config.IsShadowMailbox.IsNull() {
+		if !plan.IsShadowMailbox.IsUnknown() {
+			sp.IsShadowMailbox = plan.IsShadowMailbox.ValueBoolPointer()
+		}
+	}
+	if !config.LastName.IsNull() {
+		sp.LastName = plan.LastName.ValueString()
+	}
+	if !config.MailboxRegion.IsNull() {
+		sp.MailboxRegion = plan.MailboxRegion.ValueString()
+	}
+	if v := config.MailboxRegionSuffix.ValueString(); v != "" {
+		sp.MailboxRegionSuffix = objectParam(v)
+	}
+	if v := config.ManagedOnboardingType.ValueString(); v != "" {
+		sp.ManagedOnboardingType = objectParam(v)
+	}
+	if v := config.Manager.ValueString(); v != "" {
+		sp.Manager = objectParam(v)
+	}
+	if !config.MobilePhone.IsNull() {
+		sp.MobilePhone = plan.MobilePhone.ValueString()
+	}
+	if !config.Name.IsNull() {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !config.Notes.IsNull() {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !config.Office.IsNull() {
+		sp.Office = plan.Office.ValueString()
+	}
+	if !config.OtherFax.IsNull() {
+		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.OtherHomePhone.IsNull() {
+		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.OtherTelephone.IsNull() {
+		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.Pager.IsNull() {
+		sp.Pager = plan.Pager.ValueString()
+	}
+	if !config.PermanentlyClearPreviousMailboxInfo.IsNull() {
+		sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
+	}
+	if !config.Phone.IsNull() {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !config.PhoneticDisplayName.IsNull() {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !config.PostOfficeBox.IsNull() {
+		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.PostalCode.IsNull() {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !config.PublicFolder.IsNull() {
+		sp.PublicFolder = plan.PublicFolder.ValueBool()
+	}
+	if !config.RemotePowerShellEnabled.IsNull() {
+		if !plan.RemotePowerShellEnabled.IsUnknown() {
+			sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveMailboxProvisioningConstraint.IsNull() {
+		sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
+	}
+	if !config.ResetPasswordOnNextLogon.IsNull() {
+		if !plan.ResetPasswordOnNextLogon.IsUnknown() {
+			sp.ResetPasswordOnNextLogon = plan.ResetPasswordOnNextLogon.ValueBoolPointer()
+		}
+	}
+	if !config.SeniorityIndex.IsNull() {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !config.SimpleDisplayName.IsNull() {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !config.StateOrProvince.IsNull() {
+		sp.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !config.StreetAddress.IsNull() {
+		sp.StreetAddress = plan.StreetAddress.ValueString()
+	}
+	if v := config.StsRefreshTokensValidFrom.ValueString(); v != "" {
+		sp.StsRefreshTokensValidFrom = objectParam(v)
+	}
+	if !config.Title.IsNull() {
+		sp.Title = plan.Title.ValueString()
+	}
+	if !config.VIP.IsNull() {
+		if !plan.VIP.IsUnknown() {
+			sp.VIP = plan.VIP.ValueBoolPointer()
+		}
+	}
+	if !config.WebPage.IsNull() {
+		sp.WebPage = plan.WebPage.ValueString()
+	}
+	if v := config.WindowsEmailAddress.ValueString(); v != "" {
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -280,82 +428,240 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	id := r.identityOf(state)
 	sp := exo.SetUserParams{}
 	sp.Identity = id
-	sp.AssistantName = plan.AssistantName.ValueString()
-	if v := plan.AuthenticationPolicy.ValueString(); v != "" {
-		sp.AuthenticationPolicy = v
+	var cur *userModel
+	curRead := false
+	current := func() *userModel {
+		if !curRead {
+			curRead = true
+			var m userModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-User failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.BlockCloudCache = plan.BlockCloudCache.ValueBool()
-	sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBool()
-	sp.City = plan.City.ValueString()
-	sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
-	sp.Company = plan.Company.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	if !plan.AssistantName.Equal(state.AssistantName) {
+		sp.AssistantName = plan.AssistantName.ValueString()
 	}
-	sp.Department = plan.Department.ValueString()
-	if v := plan.DesiredWorkloads.ValueString(); v != "" {
-		sp.DesiredWorkloads = v
+	if !plan.AuthenticationPolicy.Equal(state.AuthenticationPolicy) {
+		if v := plan.AuthenticationPolicy.ValueString(); v != "" {
+			sp.AuthenticationPolicy = objectParam(v)
+		}
 	}
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.EXOModuleEnabled = plan.EXOModuleEnabled.ValueBool()
-	sp.Fax = plan.Fax.ValueString()
-	sp.FirstName = plan.FirstName.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !plan.BlockCloudCache.Equal(state.BlockCloudCache) {
+		if !plan.BlockCloudCache.IsUnknown() {
+			sp.BlockCloudCache = plan.BlockCloudCache.ValueBoolPointer()
+		}
 	}
-	sp.HomePhone = plan.HomePhone.ValueString()
-	sp.Initials = plan.Initials.ValueString()
-	sp.IsShadowMailbox = plan.IsShadowMailbox.ValueBool()
-	sp.LastName = plan.LastName.ValueString()
-	sp.MailboxRegion = plan.MailboxRegion.ValueString()
-	if v := plan.MailboxRegionSuffix.ValueString(); v != "" {
-		sp.MailboxRegionSuffix = v
+	if !plan.CanHaveCloudCache.Equal(state.CanHaveCloudCache) {
+		if !plan.CanHaveCloudCache.IsUnknown() {
+			sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBoolPointer()
+		}
 	}
-	if v := plan.ManagedOnboardingType.ValueString(); v != "" {
-		sp.ManagedOnboardingType = v
+	if !plan.City.Equal(state.City) {
+		sp.City = plan.City.ValueString()
 	}
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = v
+	if !plan.ClearDataEncryptionPolicy.Equal(state.ClearDataEncryptionPolicy) {
+		sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
 	}
-	sp.MobilePhone = plan.MobilePhone.ValueString()
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
+	if !plan.Company.Equal(state.Company) {
+		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
+	if !plan.Department.Equal(state.Department) {
+		sp.Department = plan.Department.ValueString()
 	}
-	sp.Pager = plan.Pager.ValueString()
-	sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
+	if !plan.DesiredWorkloads.Equal(state.DesiredWorkloads) {
+		if v := plan.DesiredWorkloads.ValueString(); v != "" {
+			sp.DesiredWorkloads = objectParam(v)
+		}
 	}
-	sp.PostalCode = plan.PostalCode.ValueString()
-	sp.PublicFolder = plan.PublicFolder.ValueBool()
-	sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBool()
-	sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
-	sp.ResetPasswordOnNextLogon = plan.ResetPasswordOnNextLogon.ValueBool()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.StateOrProvince = plan.StateOrProvince.ValueString()
-	sp.StreetAddress = plan.StreetAddress.ValueString()
-	if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
-		sp.StsRefreshTokensValidFrom = v
+	if !plan.EXOModuleEnabled.Equal(state.EXOModuleEnabled) {
+		if !plan.EXOModuleEnabled.IsUnknown() {
+			sp.EXOModuleEnabled = plan.EXOModuleEnabled.ValueBoolPointer()
+		}
 	}
-	sp.Title = plan.Title.ValueString()
-	sp.VIP = plan.VIP.ValueBool()
-	sp.WebPage = plan.WebPage.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !plan.Fax.Equal(state.Fax) {
+		sp.Fax = plan.Fax.ValueString()
+	}
+	if !plan.FirstName.Equal(state.FirstName) {
+		sp.FirstName = plan.FirstName.ValueString()
+	}
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
+	}
+	if !plan.HomePhone.Equal(state.HomePhone) {
+		sp.HomePhone = plan.HomePhone.ValueString()
+	}
+	if !plan.Initials.Equal(state.Initials) {
+		sp.Initials = plan.Initials.ValueString()
+	}
+	if !plan.IsShadowMailbox.Equal(state.IsShadowMailbox) {
+		if !plan.IsShadowMailbox.IsUnknown() {
+			sp.IsShadowMailbox = plan.IsShadowMailbox.ValueBoolPointer()
+		}
+	}
+	if !plan.LastName.Equal(state.LastName) {
+		sp.LastName = plan.LastName.ValueString()
+	}
+	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
+		sp.MailboxRegion = plan.MailboxRegion.ValueString()
+	}
+	if !plan.MailboxRegionSuffix.Equal(state.MailboxRegionSuffix) {
+		if v := plan.MailboxRegionSuffix.ValueString(); v != "" {
+			sp.MailboxRegionSuffix = objectParam(v)
+		}
+	}
+	if !plan.ManagedOnboardingType.Equal(state.ManagedOnboardingType) {
+		if v := plan.ManagedOnboardingType.ValueString(); v != "" {
+			sp.ManagedOnboardingType = objectParam(v)
+		}
+	}
+	if !plan.Manager.Equal(state.Manager) {
+		if v := plan.Manager.ValueString(); v != "" {
+			sp.Manager = objectParam(v)
+		}
+	}
+	if !plan.MobilePhone.Equal(state.MobilePhone) {
+		sp.MobilePhone = plan.MobilePhone.ValueString()
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.Notes.Equal(state.Notes) {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !plan.Office.Equal(state.Office) {
+		sp.Office = plan.Office.ValueString()
+	}
+	if !plan.OtherFax.Equal(state.OtherFax) {
+		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OtherHomePhone.Equal(state.OtherHomePhone) {
+		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OtherTelephone.Equal(state.OtherTelephone) {
+		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.Pager.Equal(state.Pager) {
+		sp.Pager = plan.Pager.ValueString()
+	}
+	if !plan.PermanentlyClearPreviousMailboxInfo.Equal(state.PermanentlyClearPreviousMailboxInfo) {
+		sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
+	}
+	if !plan.Phone.Equal(state.Phone) {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !plan.PostOfficeBox.Equal(state.PostOfficeBox) {
+		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.PostalCode.Equal(state.PostalCode) {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !plan.PublicFolder.Equal(state.PublicFolder) {
+		sp.PublicFolder = plan.PublicFolder.ValueBool()
+	}
+	if !plan.RemotePowerShellEnabled.Equal(state.RemotePowerShellEnabled) {
+		if !plan.RemotePowerShellEnabled.IsUnknown() {
+			sp.RemotePowerShellEnabled = plan.RemotePowerShellEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveMailboxProvisioningConstraint.Equal(state.RemoveMailboxProvisioningConstraint) {
+		sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
+	}
+	if !plan.ResetPasswordOnNextLogon.Equal(state.ResetPasswordOnNextLogon) {
+		if !plan.ResetPasswordOnNextLogon.IsUnknown() {
+			sp.ResetPasswordOnNextLogon = plan.ResetPasswordOnNextLogon.ValueBoolPointer()
+		}
+	}
+	if !plan.SeniorityIndex.Equal(state.SeniorityIndex) {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !plan.StateOrProvince.Equal(state.StateOrProvince) {
+		sp.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !plan.StreetAddress.Equal(state.StreetAddress) {
+		sp.StreetAddress = plan.StreetAddress.ValueString()
+	}
+	if !plan.StsRefreshTokensValidFrom.Equal(state.StsRefreshTokensValidFrom) {
+		if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
+			sp.StsRefreshTokensValidFrom = objectParam(v)
+		}
+	}
+	if !plan.Title.Equal(state.Title) {
+		sp.Title = plan.Title.ValueString()
+	}
+	if !plan.VIP.Equal(state.VIP) {
+		if !plan.VIP.IsUnknown() {
+			sp.VIP = plan.VIP.ValueBoolPointer()
+		}
+	}
+	if !plan.WebPage.Equal(state.WebPage) {
+		sp.WebPage = plan.WebPage.ValueString()
+	}
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -366,44 +672,30 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AssistantName":             cfg.AssistantName,
-		"AuthenticationPolicy":      cfg.AuthenticationPolicy,
-		"City":                      cfg.City,
-		"Company":                   cfg.Company,
-		"CountryOrRegion":           cfg.CountryOrRegion,
-		"Department":                cfg.Department,
-		"DesiredWorkloads":          cfg.DesiredWorkloads,
-		"DisplayName":               cfg.DisplayName,
-		"Fax":                       cfg.Fax,
-		"FirstName":                 cfg.FirstName,
-		"GeoCoordinates":            cfg.GeoCoordinates,
-		"HomePhone":                 cfg.HomePhone,
-		"Initials":                  cfg.Initials,
-		"LastName":                  cfg.LastName,
-		"MailboxRegion":             cfg.MailboxRegion,
-		"MailboxRegionSuffix":       cfg.MailboxRegionSuffix,
-		"ManagedOnboardingType":     cfg.ManagedOnboardingType,
-		"Manager":                   cfg.Manager,
-		"MobilePhone":               cfg.MobilePhone,
-		"Name":                      cfg.Name,
-		"Notes":                     cfg.Notes,
-		"Office":                    cfg.Office,
-		"OtherFax":                  cfg.OtherFax,
-		"OtherHomePhone":            cfg.OtherHomePhone,
-		"OtherTelephone":            cfg.OtherTelephone,
-		"Pager":                     cfg.Pager,
-		"Phone":                     cfg.Phone,
-		"PhoneticDisplayName":       cfg.PhoneticDisplayName,
-		"PostOfficeBox":             cfg.PostOfficeBox,
-		"PostalCode":                cfg.PostalCode,
-		"SeniorityIndex":            cfg.SeniorityIndex,
-		"SimpleDisplayName":         cfg.SimpleDisplayName,
-		"StateOrProvince":           cfg.StateOrProvince,
-		"StreetAddress":             cfg.StreetAddress,
-		"StsRefreshTokensValidFrom": cfg.StsRefreshTokensValidFrom,
-		"Title":                     cfg.Title,
-		"WebPage":                   cfg.WebPage,
-		"WindowsEmailAddress":       cfg.WindowsEmailAddress,
+		"AssistantName":       cfg.AssistantName,
+		"City":                cfg.City,
+		"Company":             cfg.Company,
+		"Department":          cfg.Department,
+		"DisplayName":         cfg.DisplayName,
+		"Fax":                 cfg.Fax,
+		"FirstName":           cfg.FirstName,
+		"HomePhone":           cfg.HomePhone,
+		"Initials":            cfg.Initials,
+		"LastName":            cfg.LastName,
+		"MailboxRegion":       cfg.MailboxRegion,
+		"MobilePhone":         cfg.MobilePhone,
+		"Name":                cfg.Name,
+		"Notes":               cfg.Notes,
+		"Office":              cfg.Office,
+		"Pager":               cfg.Pager,
+		"Phone":               cfg.Phone,
+		"PhoneticDisplayName": cfg.PhoneticDisplayName,
+		"PostalCode":          cfg.PostalCode,
+		"SimpleDisplayName":   cfg.SimpleDisplayName,
+		"StateOrProvince":     cfg.StateOrProvince,
+		"StreetAddress":       cfg.StreetAddress,
+		"Title":               cfg.Title,
+		"WebPage":             cfg.WebPage,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -417,6 +709,185 @@ func (r *userResource) Delete(_ context.Context, _ resource.DeleteRequest, resp 
 func (r *userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *userResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan userModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetUser(ctx, exo.GetUserParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur userModel
+	readUser(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AssistantName.IsUnknown() {
+		plan.AssistantName = cur.AssistantName
+	}
+	if plan.AuthenticationPolicy.IsUnknown() {
+		plan.AuthenticationPolicy = cur.AuthenticationPolicy
+	}
+	if plan.BlockCloudCache.IsUnknown() {
+		plan.BlockCloudCache = cur.BlockCloudCache
+	}
+	if plan.CanHaveCloudCache.IsUnknown() {
+		plan.CanHaveCloudCache = cur.CanHaveCloudCache
+	}
+	if plan.City.IsUnknown() {
+		plan.City = cur.City
+	}
+	if plan.ClearDataEncryptionPolicy.IsUnknown() {
+		plan.ClearDataEncryptionPolicy = cur.ClearDataEncryptionPolicy
+	}
+	if plan.Company.IsUnknown() {
+		plan.Company = cur.Company
+	}
+	if plan.CountryOrRegion.IsUnknown() {
+		plan.CountryOrRegion = cur.CountryOrRegion
+	}
+	if plan.Department.IsUnknown() {
+		plan.Department = cur.Department
+	}
+	if plan.DesiredWorkloads.IsUnknown() {
+		plan.DesiredWorkloads = cur.DesiredWorkloads
+	}
+	if plan.DisplayName.IsUnknown() {
+		plan.DisplayName = cur.DisplayName
+	}
+	if plan.EXOModuleEnabled.IsUnknown() {
+		plan.EXOModuleEnabled = cur.EXOModuleEnabled
+	}
+	if plan.Fax.IsUnknown() {
+		plan.Fax = cur.Fax
+	}
+	if plan.FirstName.IsUnknown() {
+		plan.FirstName = cur.FirstName
+	}
+	if plan.GeoCoordinates.IsUnknown() {
+		plan.GeoCoordinates = cur.GeoCoordinates
+	}
+	if plan.HomePhone.IsUnknown() {
+		plan.HomePhone = cur.HomePhone
+	}
+	if plan.Initials.IsUnknown() {
+		plan.Initials = cur.Initials
+	}
+	if plan.IsShadowMailbox.IsUnknown() {
+		plan.IsShadowMailbox = cur.IsShadowMailbox
+	}
+	if plan.LastName.IsUnknown() {
+		plan.LastName = cur.LastName
+	}
+	if plan.MailboxRegion.IsUnknown() {
+		plan.MailboxRegion = cur.MailboxRegion
+	}
+	if plan.MailboxRegionSuffix.IsUnknown() {
+		plan.MailboxRegionSuffix = cur.MailboxRegionSuffix
+	}
+	if plan.ManagedOnboardingType.IsUnknown() {
+		plan.ManagedOnboardingType = cur.ManagedOnboardingType
+	}
+	if plan.Manager.IsUnknown() {
+		plan.Manager = cur.Manager
+	}
+	if plan.MobilePhone.IsUnknown() {
+		plan.MobilePhone = cur.MobilePhone
+	}
+	if plan.Name.IsUnknown() {
+		plan.Name = cur.Name
+	}
+	if plan.Notes.IsUnknown() {
+		plan.Notes = cur.Notes
+	}
+	if plan.Office.IsUnknown() {
+		plan.Office = cur.Office
+	}
+	if plan.OtherFax.IsUnknown() {
+		plan.OtherFax = cur.OtherFax
+	}
+	if plan.OtherHomePhone.IsUnknown() {
+		plan.OtherHomePhone = cur.OtherHomePhone
+	}
+	if plan.OtherTelephone.IsUnknown() {
+		plan.OtherTelephone = cur.OtherTelephone
+	}
+	if plan.Pager.IsUnknown() {
+		plan.Pager = cur.Pager
+	}
+	if plan.PermanentlyClearPreviousMailboxInfo.IsUnknown() {
+		plan.PermanentlyClearPreviousMailboxInfo = cur.PermanentlyClearPreviousMailboxInfo
+	}
+	if plan.Phone.IsUnknown() {
+		plan.Phone = cur.Phone
+	}
+	if plan.PhoneticDisplayName.IsUnknown() {
+		plan.PhoneticDisplayName = cur.PhoneticDisplayName
+	}
+	if plan.PostOfficeBox.IsUnknown() {
+		plan.PostOfficeBox = cur.PostOfficeBox
+	}
+	if plan.PostalCode.IsUnknown() {
+		plan.PostalCode = cur.PostalCode
+	}
+	if plan.PublicFolder.IsUnknown() {
+		plan.PublicFolder = cur.PublicFolder
+	}
+	if plan.RemotePowerShellEnabled.IsUnknown() {
+		plan.RemotePowerShellEnabled = cur.RemotePowerShellEnabled
+	}
+	if plan.RemoveMailboxProvisioningConstraint.IsUnknown() {
+		plan.RemoveMailboxProvisioningConstraint = cur.RemoveMailboxProvisioningConstraint
+	}
+	if plan.ResetPasswordOnNextLogon.IsUnknown() {
+		plan.ResetPasswordOnNextLogon = cur.ResetPasswordOnNextLogon
+	}
+	if plan.SeniorityIndex.IsUnknown() {
+		plan.SeniorityIndex = cur.SeniorityIndex
+	}
+	if plan.SimpleDisplayName.IsUnknown() {
+		plan.SimpleDisplayName = cur.SimpleDisplayName
+	}
+	if plan.StateOrProvince.IsUnknown() {
+		plan.StateOrProvince = cur.StateOrProvince
+	}
+	if plan.StreetAddress.IsUnknown() {
+		plan.StreetAddress = cur.StreetAddress
+	}
+	if plan.StsRefreshTokensValidFrom.IsUnknown() {
+		plan.StsRefreshTokensValidFrom = cur.StsRefreshTokensValidFrom
+	}
+	if plan.Title.IsUnknown() {
+		plan.Title = cur.Title
+	}
+	if plan.VIP.IsUnknown() {
+		plan.VIP = cur.VIP
+	}
+	if plan.WebPage.IsUnknown() {
+		plan.WebPage = cur.WebPage
+	}
+	if plan.WindowsEmailAddress.IsUnknown() {
+		plan.WindowsEmailAddress = cur.WindowsEmailAddress
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *userResource) identityOf(m userModel) string {
@@ -456,54 +927,54 @@ func (r *userResource) refresh(ctx context.Context, identity string, m *userMode
 func readUser(ctx context.Context, obj map[string]any, m *userModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.AssistantName = types.StringValue(getString(obj, "AssistantName"))
-	m.AuthenticationPolicy = types.StringValue(getString(obj, "AuthenticationPolicy"))
+	m.AuthenticationPolicy = types.StringValue(getObjectJSON(obj, "AuthenticationPolicy"))
 	m.BlockCloudCache = types.BoolValue(getBool(obj, "BlockCloudCache"))
 	m.CanHaveCloudCache = types.BoolValue(getBool(obj, "CanHaveCloudCache"))
 	m.City = types.StringValue(getString(obj, "City"))
 	m.ClearDataEncryptionPolicy = types.BoolValue(getBool(obj, "ClearDataEncryptionPolicy"))
 	m.Company = types.StringValue(getString(obj, "Company"))
-	m.CountryOrRegion = types.StringValue(getString(obj, "CountryOrRegion"))
+	m.CountryOrRegion = types.StringValue(getObjectJSON(obj, "CountryOrRegion"))
 	m.Department = types.StringValue(getString(obj, "Department"))
-	m.DesiredWorkloads = types.StringValue(getString(obj, "DesiredWorkloads"))
+	m.DesiredWorkloads = types.StringValue(getObjectJSON(obj, "DesiredWorkloads"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.EXOModuleEnabled = types.BoolValue(getBool(obj, "EXOModuleEnabled"))
 	m.Fax = types.StringValue(getString(obj, "Fax"))
 	m.FirstName = types.StringValue(getString(obj, "FirstName"))
-	m.GeoCoordinates = types.StringValue(getString(obj, "GeoCoordinates"))
+	m.GeoCoordinates = types.StringValue(getObjectJSON(obj, "GeoCoordinates"))
 	m.HomePhone = types.StringValue(getString(obj, "HomePhone"))
 	m.Initials = types.StringValue(getString(obj, "Initials"))
 	m.IsShadowMailbox = types.BoolValue(getBool(obj, "IsShadowMailbox"))
 	m.LastName = types.StringValue(getString(obj, "LastName"))
 	m.MailboxRegion = types.StringValue(getString(obj, "MailboxRegion"))
-	m.MailboxRegionSuffix = types.StringValue(getString(obj, "MailboxRegionSuffix"))
-	m.ManagedOnboardingType = types.StringValue(getString(obj, "ManagedOnboardingType"))
-	m.Manager = types.StringValue(getString(obj, "Manager"))
+	m.MailboxRegionSuffix = types.StringValue(getObjectJSON(obj, "MailboxRegionSuffix"))
+	m.ManagedOnboardingType = types.StringValue(getObjectJSON(obj, "ManagedOnboardingType"))
+	m.Manager = types.StringValue(getObjectJSON(obj, "Manager"))
 	m.MobilePhone = types.StringValue(getString(obj, "MobilePhone"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Notes = types.StringValue(getString(obj, "Notes"))
 	m.Office = types.StringValue(getString(obj, "Office"))
-	m.OtherFax = types.StringValue(getString(obj, "OtherFax"))
-	m.OtherHomePhone = types.StringValue(getString(obj, "OtherHomePhone"))
-	m.OtherTelephone = types.StringValue(getString(obj, "OtherTelephone"))
+	m.OtherFax = stringSetValue(ctx, getStringSlice(obj, "OtherFax"))
+	m.OtherHomePhone = stringSetValue(ctx, getStringSlice(obj, "OtherHomePhone"))
+	m.OtherTelephone = stringSetValue(ctx, getStringSlice(obj, "OtherTelephone"))
 	m.Pager = types.StringValue(getString(obj, "Pager"))
 	m.PermanentlyClearPreviousMailboxInfo = types.BoolValue(getBool(obj, "PermanentlyClearPreviousMailboxInfo"))
 	m.Phone = types.StringValue(getString(obj, "Phone"))
 	m.PhoneticDisplayName = types.StringValue(getString(obj, "PhoneticDisplayName"))
-	m.PostOfficeBox = types.StringValue(getString(obj, "PostOfficeBox"))
+	m.PostOfficeBox = stringSetValue(ctx, getStringSlice(obj, "PostOfficeBox"))
 	m.PostalCode = types.StringValue(getString(obj, "PostalCode"))
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
 	m.RemotePowerShellEnabled = types.BoolValue(getBool(obj, "RemotePowerShellEnabled"))
 	m.RemoveMailboxProvisioningConstraint = types.BoolValue(getBool(obj, "RemoveMailboxProvisioningConstraint"))
 	m.ResetPasswordOnNextLogon = types.BoolValue(getBool(obj, "ResetPasswordOnNextLogon"))
-	m.SeniorityIndex = types.StringValue(getString(obj, "SeniorityIndex"))
+	m.SeniorityIndex = types.Int64Value(getInt(obj, "SeniorityIndex"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
 	m.StateOrProvince = types.StringValue(getString(obj, "StateOrProvince"))
 	m.StreetAddress = types.StringValue(getString(obj, "StreetAddress"))
-	m.StsRefreshTokensValidFrom = types.StringValue(getString(obj, "StsRefreshTokensValidFrom"))
+	m.StsRefreshTokensValidFrom = types.StringValue(getObjectJSON(obj, "StsRefreshTokensValidFrom"))
 	m.Title = types.StringValue(getString(obj, "Title"))
 	m.VIP = types.BoolValue(getBool(obj, "VIP"))
 	m.WebPage = types.StringValue(getString(obj, "WebPage"))
-	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
+	m.WindowsEmailAddress = types.StringValue(getObjectJSON(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
@@ -535,20 +1006,20 @@ func (r *userResource) reconcileState(cfg, read *userModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Notes = reconcile.KeepStr(cfg.Notes, read.Notes)
 	read.Office = reconcile.KeepStr(cfg.Office, read.Office)
-	read.OtherFax = reconcile.KeepStr(cfg.OtherFax, read.OtherFax)
-	read.OtherHomePhone = reconcile.KeepStr(cfg.OtherHomePhone, read.OtherHomePhone)
-	read.OtherTelephone = reconcile.KeepStr(cfg.OtherTelephone, read.OtherTelephone)
+	read.OtherFax = reconcile.KeepSet(cfg.OtherFax, read.OtherFax)
+	read.OtherHomePhone = reconcile.KeepSet(cfg.OtherHomePhone, read.OtherHomePhone)
+	read.OtherTelephone = reconcile.KeepSet(cfg.OtherTelephone, read.OtherTelephone)
 	read.Pager = reconcile.KeepStr(cfg.Pager, read.Pager)
 	read.PermanentlyClearPreviousMailboxInfo = reconcile.KeepBool(cfg.PermanentlyClearPreviousMailboxInfo, read.PermanentlyClearPreviousMailboxInfo)
 	read.Phone = reconcile.KeepStr(cfg.Phone, read.Phone)
 	read.PhoneticDisplayName = reconcile.KeepStr(cfg.PhoneticDisplayName, read.PhoneticDisplayName)
-	read.PostOfficeBox = reconcile.KeepStr(cfg.PostOfficeBox, read.PostOfficeBox)
+	read.PostOfficeBox = reconcile.KeepSet(cfg.PostOfficeBox, read.PostOfficeBox)
 	read.PostalCode = reconcile.KeepStr(cfg.PostalCode, read.PostalCode)
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)
 	read.RemotePowerShellEnabled = reconcile.KeepBool(cfg.RemotePowerShellEnabled, read.RemotePowerShellEnabled)
 	read.RemoveMailboxProvisioningConstraint = reconcile.KeepBool(cfg.RemoveMailboxProvisioningConstraint, read.RemoveMailboxProvisioningConstraint)
 	read.ResetPasswordOnNextLogon = reconcile.KeepBool(cfg.ResetPasswordOnNextLogon, read.ResetPasswordOnNextLogon)
-	read.SeniorityIndex = reconcile.KeepStr(cfg.SeniorityIndex, read.SeniorityIndex)
+	read.SeniorityIndex = reconcile.KeepInt64(cfg.SeniorityIndex, read.SeniorityIndex)
 	read.SimpleDisplayName = reconcile.KeepStr(cfg.SimpleDisplayName, read.SimpleDisplayName)
 	read.StateOrProvince = reconcile.KeepStr(cfg.StateOrProvince, read.StateOrProvince)
 	read.StreetAddress = reconcile.KeepStr(cfg.StreetAddress, read.StreetAddress)

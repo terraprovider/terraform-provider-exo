@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +27,7 @@ var (
 	_ resource.Resource                = &organizationConfigResource{}
 	_ resource.ResourceWithConfigure   = &organizationConfigResource{}
 	_ resource.ResourceWithImportState = &organizationConfigResource{}
+	_ resource.ResourceWithModifyPlan  = &organizationConfigResource{}
 )
 
 type organizationConfigResource struct{ client *clients.Client }
@@ -42,7 +45,7 @@ type organizationConfigModel struct {
 	AppsForOfficeEnabled                                      types.Bool   `tfsdk:"apps_for_office_enabled"`
 	AsyncSendEnabled                                          types.Bool   `tfsdk:"async_send_enabled"`
 	AuditDisabled                                             types.Bool   `tfsdk:"audit_disabled"`
-	AutoArchivingThresholdPercentage                          types.String `tfsdk:"auto_archiving_threshold_percentage"`
+	AutoArchivingThresholdPercentage                          types.Int64  `tfsdk:"auto_archiving_threshold_percentage"`
 	AutoEnableArchiveMailbox                                  types.Bool   `tfsdk:"auto_enable_archive_mailbox"`
 	AutoExpandingArchive                                      types.Bool   `tfsdk:"auto_expanding_archive"`
 	AutodiscoverPartialDirSync                                types.Bool   `tfsdk:"autodiscover_partial_dir_sync"`
@@ -66,6 +69,7 @@ type organizationConfigModel struct {
 	BookingsSearchEngineIndexDisabled                         types.Bool   `tfsdk:"bookings_search_engine_index_disabled"`
 	BookingsSmsMicrosoftEnabled                               types.Bool   `tfsdk:"bookings_sms_microsoft_enabled"`
 	BookingsSocialSharingRestricted                           types.Bool   `tfsdk:"bookings_social_sharing_restricted"`
+	ByteEncoderTypeFor7BitCharsets                            types.Int64  `tfsdk:"byte_encoder_type_for7_bit_charsets"`
 	CalendarVersionStoreEnabled                               types.Bool   `tfsdk:"calendar_version_store_enabled"`
 	ComplianceMLBgdCrawlEnabled                               types.Bool   `tfsdk:"compliance_ml_bgd_crawl_enabled"`
 	ConnectorsActionableMessagesEnabled                       types.Bool   `tfsdk:"connectors_actionable_messages_enabled"`
@@ -77,10 +81,12 @@ type organizationConfigModel struct {
 	CustomerLockboxEnabled                                    types.Bool   `tfsdk:"customer_lockbox_enabled"`
 	DLPViaDcsEnabled                                          types.Bool   `tfsdk:"dlp_via_dcs_enabled"`
 	DLPWaitOnSendEnabled                                      types.Bool   `tfsdk:"dlp_wait_on_send_enabled"`
-	DLPWaitOnSendTimeout                                      types.String `tfsdk:"dlp_wait_on_send_timeout"`
+	DLPWaitOnSendTimeout                                      types.Int64  `tfsdk:"dlp_wait_on_send_timeout"`
 	DefaultAuthenticationPolicy                               types.String `tfsdk:"default_authentication_policy"`
 	DefaultFolderPermissionRestricted                         types.Bool   `tfsdk:"default_folder_permission_restricted"`
 	DefaultGroupAccessType                                    types.String `tfsdk:"default_group_access_type"`
+	DefaultMinutesToReduceLongEventsBy                        types.Int64  `tfsdk:"default_minutes_to_reduce_long_events_by"`
+	DefaultMinutesToReduceShortEventsBy                       types.Int64  `tfsdk:"default_minutes_to_reduce_short_events_by"`
 	DefaultPublicFolderAgeLimit                               types.String `tfsdk:"default_public_folder_age_limit"`
 	DefaultPublicFolderDeletedItemRetention                   types.String `tfsdk:"default_public_folder_deleted_item_retention"`
 	DefaultPublicFolderIssueWarningQuota                      types.String `tfsdk:"default_public_folder_issue_warning_quota"`
@@ -91,7 +97,7 @@ type organizationConfigModel struct {
 	DirectReportsGroupAutoCreationEnabled                     types.Bool   `tfsdk:"direct_reports_group_auto_creation_enabled"`
 	DisablePlusAddressInRecipients                            types.Bool   `tfsdk:"disable_plus_address_in_recipients"`
 	DistributionGroupDefaultOU                                types.String `tfsdk:"distribution_group_default_ou"`
-	DistributionGroupNameBlockedWordsList                     types.String `tfsdk:"distribution_group_name_blocked_words_list"`
+	DistributionGroupNameBlockedWordsList                     types.Set    `tfsdk:"distribution_group_name_blocked_words_list"`
 	DistributionGroupNamingPolicy                             types.String `tfsdk:"distribution_group_naming_policy"`
 	ElcProcessingDisabled                                     types.Bool   `tfsdk:"elc_processing_disabled"`
 	EnableForwardingAddressSyncForMailboxes                   types.Bool   `tfsdk:"enable_forwarding_address_sync_for_mailboxes"`
@@ -100,26 +106,26 @@ type organizationConfigModel struct {
 	EndUserMailNotificationForDelayedDelicensingEnabled       types.Bool   `tfsdk:"end_user_mail_notification_for_delayed_delicensing_enabled"`
 	EnforceExoAppRbacPermissions                              types.Bool   `tfsdk:"enforce_exo_app_rbac_permissions"`
 	EnforceShortenEventSetting                                types.Bool   `tfsdk:"enforce_shorten_event_setting"`
-	EwsAllowEntourage                                         types.String `tfsdk:"ews_allow_entourage"`
-	EwsAllowList                                              types.String `tfsdk:"ews_allow_list"`
-	EwsAllowMacOutlook                                        types.String `tfsdk:"ews_allow_mac_outlook"`
-	EwsAllowOutlook                                           types.String `tfsdk:"ews_allow_outlook"`
+	EwsAllowEntourage                                         types.Bool   `tfsdk:"ews_allow_entourage"`
+	EwsAllowList                                              types.Set    `tfsdk:"ews_allow_list"`
+	EwsAllowMacOutlook                                        types.Bool   `tfsdk:"ews_allow_mac_outlook"`
+	EwsAllowOutlook                                           types.Bool   `tfsdk:"ews_allow_outlook"`
 	EwsAllowedAppIDs                                          types.String `tfsdk:"ews_allowed_app_i_ds"`
 	EwsApplicationAccessPolicy                                types.String `tfsdk:"ews_application_access_policy"`
-	EwsBlockList                                              types.String `tfsdk:"ews_block_list"`
-	EwsEnabled                                                types.String `tfsdk:"ews_enabled"`
+	EwsBlockList                                              types.Set    `tfsdk:"ews_block_list"`
+	EwsEnabled                                                types.Bool   `tfsdk:"ews_enabled"`
 	ExchangeAttributesCloudManagedByDefault                   types.Bool   `tfsdk:"exchange_attributes_cloud_managed_by_default"`
 	ExchangeAttributesServerManagedByDefault                  types.Bool   `tfsdk:"exchange_attributes_server_managed_by_default"`
 	ExchangeNotificationEnabled                               types.Bool   `tfsdk:"exchange_notification_enabled"`
-	ExchangeNotificationRecipients                            types.String `tfsdk:"exchange_notification_recipients"`
+	ExchangeNotificationRecipients                            types.Set    `tfsdk:"exchange_notification_recipients"`
 	FindTimeAttendeeAuthenticationEnabled                     types.Bool   `tfsdk:"find_time_attendee_authentication_enabled"`
 	FindTimeAutoScheduleDisabled                              types.Bool   `tfsdk:"find_time_auto_schedule_disabled"`
 	FindTimeLockPollForAttendeesEnabled                       types.Bool   `tfsdk:"find_time_lock_poll_for_attendees_enabled"`
 	FindTimeOnlineMeetingOptionDisabled                       types.Bool   `tfsdk:"find_time_online_meeting_option_disabled"`
-	FocusedInboxOn                                            types.String `tfsdk:"focused_inbox_on"`
+	FocusedInboxOn                                            types.Bool   `tfsdk:"focused_inbox_on"`
 	HierarchicalAddressBookRoot                               types.String `tfsdk:"hierarchical_address_book_root"`
 	HybridRSVPEnabled                                         types.Bool   `tfsdk:"hybrid_rsvp_enabled"`
-	IPListBlocked                                             types.String `tfsdk:"ip_list_blocked"`
+	IPListBlocked                                             types.Set    `tfsdk:"ip_list_blocked"`
 	InRegionRoutingEnabled                                    types.Bool   `tfsdk:"in_region_routing_enabled"`
 	IsAgendaMailEnabled                                       types.Bool   `tfsdk:"is_agenda_mail_enabled"`
 	IsGroupFoldersAndRulesEnabled                             types.Bool   `tfsdk:"is_group_folders_and_rules_enabled"`
@@ -129,19 +135,19 @@ type organizationConfigModel struct {
 	MailTipsAllTipsEnabled                                    types.Bool   `tfsdk:"mail_tips_all_tips_enabled"`
 	MailTipsExternalRecipientsTipsEnabled                     types.Bool   `tfsdk:"mail_tips_external_recipients_tips_enabled"`
 	MailTipsGroupMetricsEnabled                               types.Bool   `tfsdk:"mail_tips_group_metrics_enabled"`
-	MailTipsLargeAudienceThreshold                            types.String `tfsdk:"mail_tips_large_audience_threshold"`
+	MailTipsLargeAudienceThreshold                            types.Int64  `tfsdk:"mail_tips_large_audience_threshold"`
 	MailTipsMailboxSourcedTipsEnabled                         types.Bool   `tfsdk:"mail_tips_mailbox_sourced_tips_enabled"`
 	MaskClientIpInReceivedHeadersEnabled                      types.Bool   `tfsdk:"mask_client_ip_in_received_headers_enabled"`
 	MatchSenderOrganizerProperties                            types.Bool   `tfsdk:"match_sender_organizer_properties"`
 	MessageHighlightsEnabled                                  types.Bool   `tfsdk:"message_highlights_enabled"`
 	MessageRecallAlertRecipientsEnabled                       types.Bool   `tfsdk:"message_recall_alert_recipients_enabled"`
 	MessageRecallAlertRecipientsReadMessagesOnlyEnabled       types.Bool   `tfsdk:"message_recall_alert_recipients_read_messages_only_enabled"`
-	MessageRecallEnabled                                      types.String `tfsdk:"message_recall_enabled"`
+	MessageRecallEnabled                                      types.Bool   `tfsdk:"message_recall_enabled"`
 	MessageRecallMaxRecallableAge                             types.String `tfsdk:"message_recall_max_recallable_age"`
 	MessageRemindersEnabled                                   types.Bool   `tfsdk:"message_reminders_enabled"`
 	MobileAppEducationEnabled                                 types.Bool   `tfsdk:"mobile_app_education_enabled"`
 	OAuth2ClientProfileEnabled                                types.Bool   `tfsdk:"o_auth2_client_profile_enabled"`
-	OnlineMeetingsByDefaultEnabled                            types.String `tfsdk:"online_meetings_by_default_enabled"`
+	OnlineMeetingsByDefaultEnabled                            types.Bool   `tfsdk:"online_meetings_by_default_enabled"`
 	OutlookGifPickerDisabled                                  types.Bool   `tfsdk:"outlook_gif_picker_disabled"`
 	OutlookMobileGCCRestrictionsEnabled                       types.Bool   `tfsdk:"outlook_mobile_gcc_restrictions_enabled"`
 	OutlookMobileHelpShiftEnabled                             types.Bool   `tfsdk:"outlook_mobile_help_shift_enabled"`
@@ -150,15 +156,17 @@ type organizationConfigModel struct {
 	OutlookTextPredictionDisabled                             types.Bool   `tfsdk:"outlook_text_prediction_disabled"`
 	PerTenantSwitchToESTSEnabled                              types.Bool   `tfsdk:"per_tenant_switch_to_ests_enabled"`
 	PostponeRoamingSignaturesUntilLater                       types.Bool   `tfsdk:"postpone_roaming_signatures_until_later"`
+	PreferredInternetCodePageForShiftJis                      types.Int64  `tfsdk:"preferred_internet_code_page_for_shift_jis"`
 	PublicComputersDetectionEnabled                           types.Bool   `tfsdk:"public_computers_detection_enabled"`
 	PublicFolderShowClientControl                             types.Bool   `tfsdk:"public_folder_show_client_control"`
 	PublicFoldersEnabled                                      types.String `tfsdk:"public_folders_enabled"`
 	ReadTrackingEnabled                                       types.Bool   `tfsdk:"read_tracking_enabled"`
-	RecallReadMessagesEnabled                                 types.String `tfsdk:"recall_read_messages_enabled"`
+	RecallReadMessagesEnabled                                 types.Bool   `tfsdk:"recall_read_messages_enabled"`
 	RecipientDelimiters                                       types.Bool   `tfsdk:"recipient_delimiters"`
 	RefreshSessionEnabled                                     types.Bool   `tfsdk:"refresh_session_enabled"`
 	RejectDirectSend                                          types.Bool   `tfsdk:"reject_direct_send"`
-	RemotePublicFolderMailboxes                               types.String `tfsdk:"remote_public_folder_mailboxes"`
+	RemotePublicFolderMailboxes                               types.Set    `tfsdk:"remote_public_folder_mailboxes"`
+	RequiredCharsetCoverage                                   types.Int64  `tfsdk:"required_charset_coverage"`
 	SendFromAliasEnabled                                      types.Bool   `tfsdk:"send_from_alias_enabled"`
 	SharedDomainEmailAddressFlowEnabled                       types.Bool   `tfsdk:"shared_domain_email_address_flow_enabled"`
 	ShortenEventScopeDefault                                  types.String `tfsdk:"shorten_event_scope_default"`
@@ -182,7 +190,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 		Description: "Manages the OrganizationConfig configuration via Set-OrganizationConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"actionable_messages_extenal_access_token_enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ActionableMessagesExtenalAccessTokenEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"activity_based_authentication_timeout_enabled":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ActivityBasedAuthenticationTimeoutEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"activity_based_authentication_timeout_interval":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActivityBasedAuthenticationTimeoutInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -190,7 +198,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"apps_for_office_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AppsForOfficeEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"async_send_enabled":                                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AsyncSendEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"audit_disabled":                                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AuditDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"auto_archiving_threshold_percentage":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoArchivingThresholdPercentage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"auto_archiving_threshold_percentage":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -AutoArchivingThresholdPercentage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"auto_enable_archive_mailbox":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoEnableArchiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"auto_expanding_archive":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoExpandingArchive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"autodiscover_partial_dir_sync":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutodiscoverPartialDirSync parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -214,6 +222,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"bookings_search_engine_index_disabled":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSearchEngineIndexDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_sms_microsoft_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSmsMicrosoftEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_social_sharing_restricted":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsSocialSharingRestricted parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"byte_encoder_type_for7_bit_charsets":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ByteEncoderTypeFor7BitCharsets parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"calendar_version_store_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CalendarVersionStoreEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"compliance_ml_bgd_crawl_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ComplianceMLBgdCrawlEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"connectors_actionable_messages_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConnectorsActionableMessagesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -225,10 +234,12 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"customer_lockbox_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomerLockboxEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"dlp_via_dcs_enabled":                                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPViaDcsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"dlp_wait_on_send_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"dlp_wait_on_send_timeout":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendTimeout parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"dlp_wait_on_send_timeout":                                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DLPWaitOnSendTimeout parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_authentication_policy":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultAuthenticationPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_folder_permission_restricted":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFolderPermissionRestricted parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"default_group_access_type":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultGroupAccessType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_long_events_by":                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceLongEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_short_events_by":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceShortEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_public_folder_age_limit":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderAgeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_deleted_item_retention":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderDeletedItemRetention parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_issue_warning_quota":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderIssueWarningQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -239,7 +250,7 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"direct_reports_group_auto_creation_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DirectReportsGroupAutoCreationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disable_plus_address_in_recipients":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisablePlusAddressInRecipients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"distribution_group_default_ou":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupDefaultOU parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"distribution_group_name_blocked_words_list":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNameBlockedWordsList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"distribution_group_name_blocked_words_list":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNameBlockedWordsList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"distribution_group_naming_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DistributionGroupNamingPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"elc_processing_disabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ElcProcessingDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_forwarding_address_sync_for_mailboxes":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableForwardingAddressSyncForMailboxes parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -248,26 +259,26 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"end_user_mail_notification_for_delayed_delicensing_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserMailNotificationForDelayedDelicensingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enforce_exo_app_rbac_permissions":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceExoAppRbacPermissions parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enforce_shorten_event_setting":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceShortenEventSetting parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ews_allow_entourage":                                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowEntourage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_allow_list":                                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_allow_mac_outlook":                                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowMacOutlook parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_allow_outlook":                                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowOutlook parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ews_allow_entourage":                                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowEntourage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"ews_allow_list":                                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EwsAllowList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"ews_allow_mac_outlook":                                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowMacOutlook parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"ews_allow_outlook":                                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowOutlook parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"ews_allowed_app_i_ds":                                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsAllowedAppIDs parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"ews_application_access_policy":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsApplicationAccessPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_block_list":                                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ews_enabled":                                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ews_block_list":                                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EwsBlockList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"ews_enabled":                                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EwsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_attributes_cloud_managed_by_default":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeAttributesCloudManagedByDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_attributes_server_managed_by_default":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeAttributesServerManagedByDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exchange_notification_enabled":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"exchange_notification_recipients":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"exchange_notification_recipients":                                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExchangeNotificationRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"find_time_attendee_authentication_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeAttendeeAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"find_time_auto_schedule_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeAutoScheduleDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"find_time_lock_poll_for_attendees_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeLockPollForAttendeesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"find_time_online_meeting_option_disabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FindTimeOnlineMeetingOptionDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"focused_inbox_on":                                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FocusedInboxOn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"focused_inbox_on":                                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FocusedInboxOn parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hierarchical_address_book_root":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HierarchicalAddressBookRoot parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hybrid_rsvp_enabled":                                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HybridRSVPEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ip_list_blocked":                                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPListBlocked parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ip_list_blocked":                                                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPListBlocked parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"in_region_routing_enabled":                                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InRegionRoutingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_agenda_mail_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsAgendaMailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_group_folders_and_rules_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsGroupFoldersAndRulesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -277,19 +288,19 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"mail_tips_all_tips_enabled":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsAllTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_tips_external_recipients_tips_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsExternalRecipientsTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_tips_group_metrics_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsGroupMetricsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"mail_tips_large_audience_threshold":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsLargeAudienceThreshold parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tips_large_audience_threshold":                                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsLargeAudienceThreshold parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"mail_tips_mailbox_sourced_tips_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsMailboxSourcedTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mask_client_ip_in_received_headers_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MaskClientIpInReceivedHeadersEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"match_sender_organizer_properties":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MatchSenderOrganizerProperties parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_highlights_enabled":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageHighlightsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_recall_alert_recipients_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRecallAlertRecipientsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_recall_alert_recipients_read_messages_only_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRecallAlertRecipientsReadMessagesOnlyEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"message_recall_enabled":                                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRecallEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"message_recall_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRecallEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_recall_max_recallable_age":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRecallMaxRecallableAge parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_reminders_enabled":                                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageRemindersEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mobile_app_education_enabled":                                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MobileAppEducationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"o_auth2_client_profile_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OAuth2ClientProfileEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"online_meetings_by_default_enabled":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OnlineMeetingsByDefaultEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"online_meetings_by_default_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OnlineMeetingsByDefaultEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"outlook_gif_picker_disabled":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookGifPickerDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"outlook_mobile_gcc_restrictions_enabled":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookMobileGCCRestrictionsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"outlook_mobile_help_shift_enabled":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookMobileHelpShiftEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -298,15 +309,17 @@ func (r *organizationConfigResource) Schema(_ context.Context, _ resource.Schema
 			"outlook_text_prediction_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookTextPredictionDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"per_tenant_switch_to_ests_enabled":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PerTenantSwitchToESTSEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"postpone_roaming_signatures_until_later":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PostponeRoamingSignaturesUntilLater parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"preferred_internet_code_page_for_shift_jis":                        schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PreferredInternetCodePageForShiftJis parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_computers_detection_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicComputersDetectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"public_folder_show_client_control":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolderShowClientControl parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"public_folders_enabled":                                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFoldersEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"read_tracking_enabled":                                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReadTrackingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"recall_read_messages_enabled":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecallReadMessagesEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"recall_read_messages_enabled":                                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecallReadMessagesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_delimiters":                                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientDelimiters parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"refresh_session_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RefreshSessionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reject_direct_send":                                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectDirectSend parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remote_public_folder_mailboxes":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemotePublicFolderMailboxes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"remote_public_folder_mailboxes":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemotePublicFolderMailboxes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"required_charset_coverage":                                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -RequiredCharsetCoverage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"send_from_alias_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SendFromAliasEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"shared_domain_email_address_flow_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SharedDomainEmailAddressFlowEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"shorten_event_scope_default":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ShortenEventScopeDefault parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -336,211 +349,729 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config organizationConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetOrganizationConfigParams{}
-	sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBool()
-	sp.ActivityBasedAuthenticationTimeoutEnabled = plan.ActivityBasedAuthenticationTimeoutEnabled.ValueBool()
-	if v := plan.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
-		sp.ActivityBasedAuthenticationTimeoutInterval = v
+	var cur *organizationConfigModel
+	curRead := false
+	current := func() *organizationConfigModel {
+		if !curRead {
+			curRead = true
+			var m organizationConfigModel
+			if r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OrganizationConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.ValueBool()
-	sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBool()
-	sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBool()
-	sp.AuditDisabled = plan.AuditDisabled.ValueBool()
-	if v := plan.AutoArchivingThresholdPercentage.ValueString(); v != "" {
-		sp.AutoArchivingThresholdPercentage = v
+	if !config.ActionableMessagesExtenalAccessTokenEnabled.IsNull() {
+		if !plan.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() {
+			sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBoolPointer()
+		}
 	}
-	sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBool()
-	sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
-	sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBool()
-	sp.AutomaticForcedReadReceiptEnabled = plan.AutomaticForcedReadReceiptEnabled.ValueBool()
-	sp.BlockMoveMessagesForGroupFolders = plan.BlockMoveMessagesForGroupFolders.ValueBool()
-	sp.BookingsAddressEntryRestricted = plan.BookingsAddressEntryRestricted.ValueBool()
-	sp.BookingsAuthEnabled = plan.BookingsAuthEnabled.ValueBool()
-	sp.BookingsBlockedWordsEnabled = plan.BookingsBlockedWordsEnabled.ValueBool()
-	sp.BookingsCreationOfCustomQuestionsRestricted = plan.BookingsCreationOfCustomQuestionsRestricted.ValueBool()
-	sp.BookingsEnabled = plan.BookingsEnabled.ValueBool()
-	sp.BookingsExposureOfStaffDetailsRestricted = plan.BookingsExposureOfStaffDetailsRestricted.ValueBool()
-	sp.BookingsMembershipApprovalRequired = plan.BookingsMembershipApprovalRequired.ValueBool()
-	sp.BookingsNamingPolicyEnabled = plan.BookingsNamingPolicyEnabled.ValueBool()
-	sp.BookingsNamingPolicyPrefix = plan.BookingsNamingPolicyPrefix.ValueString()
-	sp.BookingsNamingPolicyPrefixEnabled = plan.BookingsNamingPolicyPrefixEnabled.ValueBool()
-	sp.BookingsNamingPolicySuffix = plan.BookingsNamingPolicySuffix.ValueString()
-	sp.BookingsNamingPolicySuffixEnabled = plan.BookingsNamingPolicySuffixEnabled.ValueBool()
-	sp.BookingsNotesEntryRestricted = plan.BookingsNotesEntryRestricted.ValueBool()
-	sp.BookingsPaymentsEnabled = plan.BookingsPaymentsEnabled.ValueBool()
-	sp.BookingsPhoneNumberEntryRestricted = plan.BookingsPhoneNumberEntryRestricted.ValueBool()
-	sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBool()
-	sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBool()
-	sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBool()
-	sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBool()
-	sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBool()
-	sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBool()
-	sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBool()
-	sp.ConnectorsEnabledForOutlook = plan.ConnectorsEnabledForOutlook.ValueBool()
-	sp.ConnectorsEnabledForSharepoint = plan.ConnectorsEnabledForSharepoint.ValueBool()
-	sp.ConnectorsEnabledForTeams = plan.ConnectorsEnabledForTeams.ValueBool()
-	sp.ConnectorsEnabledForYammer = plan.ConnectorsEnabledForYammer.ValueBool()
-	sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBool()
-	sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBool()
-	sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBool()
-	if v := plan.DLPWaitOnSendTimeout.ValueString(); v != "" {
-		sp.DLPWaitOnSendTimeout = v
+	if !config.ActivityBasedAuthenticationTimeoutEnabled.IsNull() {
+		if !plan.ActivityBasedAuthenticationTimeoutEnabled.IsUnknown() {
+			sp.ActivityBasedAuthenticationTimeoutEnabled = plan.ActivityBasedAuthenticationTimeoutEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
-		sp.DefaultAuthenticationPolicy = v
+	if v := config.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
+		sp.ActivityBasedAuthenticationTimeoutInterval = objectParam(v)
 	}
-	sp.DefaultFolderPermissionRestricted = plan.DefaultFolderPermissionRestricted.ValueBool()
-	if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
-		sp.DefaultGroupAccessType = v
+	if !config.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsNull() {
+		if !plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsUnknown() {
+			sp.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
-		sp.DefaultPublicFolderAgeLimit = v
+	if !config.AppsForOfficeEnabled.IsNull() {
+		if !plan.AppsForOfficeEnabled.IsUnknown() {
+			sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderDeletedItemRetention = v
+	if !config.AsyncSendEnabled.IsNull() {
+		if !plan.AsyncSendEnabled.IsUnknown() {
+			sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderIssueWarningQuota = v
+	if !config.AuditDisabled.IsNull() {
+		if !plan.AuditDisabled.IsUnknown() {
+			sp.AuditDisabled = plan.AuditDisabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
-		sp.DefaultPublicFolderMaxItemSize = v
+	if !config.AutoArchivingThresholdPercentage.IsNull() {
+		if !plan.AutoArchivingThresholdPercentage.IsUnknown() {
+			sp.AutoArchivingThresholdPercentage = plan.AutoArchivingThresholdPercentage.ValueInt64Pointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderMovedItemRetention = v
+	if !config.AutoEnableArchiveMailbox.IsNull() {
+		if !plan.AutoEnableArchiveMailbox.IsUnknown() {
+			sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderProhibitPostQuota = v
+	if !config.AutoExpandingArchive.IsNull() {
+		sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
 	}
-	sp.DelayedDelicensingEnabled = plan.DelayedDelicensingEnabled.ValueBool()
-	sp.DirectReportsGroupAutoCreationEnabled = plan.DirectReportsGroupAutoCreationEnabled.ValueBool()
-	sp.DisablePlusAddressInRecipients = plan.DisablePlusAddressInRecipients.ValueBool()
-	if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
-		sp.DistributionGroupDefaultOU = v
+	if !config.AutodiscoverPartialDirSync.IsNull() {
+		if !plan.AutodiscoverPartialDirSync.IsUnknown() {
+			sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBoolPointer()
+		}
 	}
-	if v := plan.DistributionGroupNameBlockedWordsList.ValueString(); v != "" {
-		sp.DistributionGroupNameBlockedWordsList = v
+	if !config.AutomaticForcedReadReceiptEnabled.IsNull() {
+		if !plan.AutomaticForcedReadReceiptEnabled.IsUnknown() {
+			sp.AutomaticForcedReadReceiptEnabled = plan.AutomaticForcedReadReceiptEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
-		sp.DistributionGroupNamingPolicy = v
+	if !config.BlockMoveMessagesForGroupFolders.IsNull() {
+		if !plan.BlockMoveMessagesForGroupFolders.IsUnknown() {
+			sp.BlockMoveMessagesForGroupFolders = plan.BlockMoveMessagesForGroupFolders.ValueBoolPointer()
+		}
 	}
-	sp.ElcProcessingDisabled = plan.ElcProcessingDisabled.ValueBool()
-	sp.EnableForwardingAddressSyncForMailboxes = plan.EnableForwardingAddressSyncForMailboxes.ValueBool()
-	sp.EnableOutlookEvents = plan.EnableOutlookEvents.ValueBool()
-	sp.EndUserDLUpgradeFlowsDisabled = plan.EndUserDLUpgradeFlowsDisabled.ValueBool()
-	sp.EndUserMailNotificationForDelayedDelicensingEnabled = plan.EndUserMailNotificationForDelayedDelicensingEnabled.ValueBool()
-	sp.EnforceExoAppRbacPermissions = plan.EnforceExoAppRbacPermissions.ValueBool()
-	sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
-	if v := plan.EwsAllowEntourage.ValueString(); v != "" {
-		sp.EwsAllowEntourage = v
+	if !config.BookingsAddressEntryRestricted.IsNull() {
+		if !plan.BookingsAddressEntryRestricted.IsUnknown() {
+			sp.BookingsAddressEntryRestricted = plan.BookingsAddressEntryRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowList.ValueString(); v != "" {
-		sp.EwsAllowList = v
+	if !config.BookingsAuthEnabled.IsNull() {
+		if !plan.BookingsAuthEnabled.IsUnknown() {
+			sp.BookingsAuthEnabled = plan.BookingsAuthEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowMacOutlook.ValueString(); v != "" {
-		sp.EwsAllowMacOutlook = v
+	if !config.BookingsBlockedWordsEnabled.IsNull() {
+		if !plan.BookingsBlockedWordsEnabled.IsUnknown() {
+			sp.BookingsBlockedWordsEnabled = plan.BookingsBlockedWordsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowOutlook.ValueString(); v != "" {
-		sp.EwsAllowOutlook = v
+	if !config.BookingsCreationOfCustomQuestionsRestricted.IsNull() {
+		if !plan.BookingsCreationOfCustomQuestionsRestricted.IsUnknown() {
+			sp.BookingsCreationOfCustomQuestionsRestricted = plan.BookingsCreationOfCustomQuestionsRestricted.ValueBoolPointer()
+		}
 	}
-	sp.EwsAllowedAppIDs = plan.EwsAllowedAppIDs.ValueString()
-	if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
-		sp.EwsApplicationAccessPolicy = v
+	if !config.BookingsEnabled.IsNull() {
+		if !plan.BookingsEnabled.IsUnknown() {
+			sp.BookingsEnabled = plan.BookingsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsBlockList.ValueString(); v != "" {
-		sp.EwsBlockList = v
+	if !config.BookingsExposureOfStaffDetailsRestricted.IsNull() {
+		if !plan.BookingsExposureOfStaffDetailsRestricted.IsUnknown() {
+			sp.BookingsExposureOfStaffDetailsRestricted = plan.BookingsExposureOfStaffDetailsRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsEnabled.ValueString(); v != "" {
-		sp.EwsEnabled = v
+	if !config.BookingsMembershipApprovalRequired.IsNull() {
+		if !plan.BookingsMembershipApprovalRequired.IsUnknown() {
+			sp.BookingsMembershipApprovalRequired = plan.BookingsMembershipApprovalRequired.ValueBoolPointer()
+		}
 	}
-	sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
-	sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
-	sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBool()
-	if v := plan.ExchangeNotificationRecipients.ValueString(); v != "" {
-		sp.ExchangeNotificationRecipients = v
+	if !config.BookingsNamingPolicyEnabled.IsNull() {
+		if !plan.BookingsNamingPolicyEnabled.IsUnknown() {
+			sp.BookingsNamingPolicyEnabled = plan.BookingsNamingPolicyEnabled.ValueBoolPointer()
+		}
 	}
-	sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBool()
-	sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBool()
-	sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBool()
-	sp.FindTimeOnlineMeetingOptionDisabled = plan.FindTimeOnlineMeetingOptionDisabled.ValueBool()
-	if v := plan.FocusedInboxOn.ValueString(); v != "" {
-		sp.FocusedInboxOn = v
+	if !config.BookingsNamingPolicyPrefix.IsNull() {
+		sp.BookingsNamingPolicyPrefix = plan.BookingsNamingPolicyPrefix.ValueString()
 	}
-	if v := plan.HierarchicalAddressBookRoot.ValueString(); v != "" {
-		sp.HierarchicalAddressBookRoot = v
+	if !config.BookingsNamingPolicyPrefixEnabled.IsNull() {
+		if !plan.BookingsNamingPolicyPrefixEnabled.IsUnknown() {
+			sp.BookingsNamingPolicyPrefixEnabled = plan.BookingsNamingPolicyPrefixEnabled.ValueBoolPointer()
+		}
 	}
-	sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBool()
-	if v := plan.IPListBlocked.ValueString(); v != "" {
-		sp.IPListBlocked = v
+	if !config.BookingsNamingPolicySuffix.IsNull() {
+		sp.BookingsNamingPolicySuffix = plan.BookingsNamingPolicySuffix.ValueString()
 	}
-	sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBool()
-	sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBool()
-	sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBool()
-	sp.IsGroupMemberAllowedToEditContent = plan.IsGroupMemberAllowedToEditContent.ValueBool()
-	sp.LeanPopoutEnabled = plan.LeanPopoutEnabled.ValueBool()
-	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
-	sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBool()
-	sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBool()
-	sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBool()
-	if v := plan.MailTipsLargeAudienceThreshold.ValueString(); v != "" {
-		sp.MailTipsLargeAudienceThreshold = v
+	if !config.BookingsNamingPolicySuffixEnabled.IsNull() {
+		if !plan.BookingsNamingPolicySuffixEnabled.IsUnknown() {
+			sp.BookingsNamingPolicySuffixEnabled = plan.BookingsNamingPolicySuffixEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBool()
-	sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBool()
-	sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBool()
-	sp.MessageHighlightsEnabled = plan.MessageHighlightsEnabled.ValueBool()
-	sp.MessageRecallAlertRecipientsEnabled = plan.MessageRecallAlertRecipientsEnabled.ValueBool()
-	sp.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.ValueBool()
-	if v := plan.MessageRecallEnabled.ValueString(); v != "" {
-		sp.MessageRecallEnabled = v
+	if !config.BookingsNotesEntryRestricted.IsNull() {
+		if !plan.BookingsNotesEntryRestricted.IsUnknown() {
+			sp.BookingsNotesEntryRestricted = plan.BookingsNotesEntryRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.MessageRecallMaxRecallableAge.ValueString(); v != "" {
-		sp.MessageRecallMaxRecallableAge = v
+	if !config.BookingsPaymentsEnabled.IsNull() {
+		if !plan.BookingsPaymentsEnabled.IsUnknown() {
+			sp.BookingsPaymentsEnabled = plan.BookingsPaymentsEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MessageRemindersEnabled = plan.MessageRemindersEnabled.ValueBool()
-	sp.MobileAppEducationEnabled = plan.MobileAppEducationEnabled.ValueBool()
-	sp.OAuth2ClientProfileEnabled = plan.OAuth2ClientProfileEnabled.ValueBool()
-	if v := plan.OnlineMeetingsByDefaultEnabled.ValueString(); v != "" {
-		sp.OnlineMeetingsByDefaultEnabled = v
+	if !config.BookingsPhoneNumberEntryRestricted.IsNull() {
+		if !plan.BookingsPhoneNumberEntryRestricted.IsUnknown() {
+			sp.BookingsPhoneNumberEntryRestricted = plan.BookingsPhoneNumberEntryRestricted.ValueBoolPointer()
+		}
 	}
-	sp.OutlookGifPickerDisabled = plan.OutlookGifPickerDisabled.ValueBool()
-	sp.OutlookMobileGCCRestrictionsEnabled = plan.OutlookMobileGCCRestrictionsEnabled.ValueBool()
-	sp.OutlookMobileHelpShiftEnabled = plan.OutlookMobileHelpShiftEnabled.ValueBool()
-	sp.OutlookMobileSingleAccountEnabled = plan.OutlookMobileSingleAccountEnabled.ValueBool()
-	sp.OutlookPayEnabled = plan.OutlookPayEnabled.ValueBool()
-	sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBool()
-	sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBool()
-	sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBool()
-	sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBool()
-	sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBool()
-	if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
-		sp.PublicFoldersEnabled = v
+	if !config.BookingsSearchEngineIndexDisabled.IsNull() {
+		if !plan.BookingsSearchEngineIndexDisabled.IsUnknown() {
+			sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBoolPointer()
+		}
 	}
-	sp.ReadTrackingEnabled = plan.ReadTrackingEnabled.ValueBool()
-	if v := plan.RecallReadMessagesEnabled.ValueString(); v != "" {
-		sp.RecallReadMessagesEnabled = v
+	if !config.BookingsSmsMicrosoftEnabled.IsNull() {
+		if !plan.BookingsSmsMicrosoftEnabled.IsUnknown() {
+			sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBoolPointer()
+		}
 	}
-	sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBool()
-	sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBool()
-	sp.RejectDirectSend = plan.RejectDirectSend.ValueBool()
-	if v := plan.RemotePublicFolderMailboxes.ValueString(); v != "" {
-		sp.RemotePublicFolderMailboxes = v
+	if !config.BookingsSocialSharingRestricted.IsNull() {
+		if !plan.BookingsSocialSharingRestricted.IsUnknown() {
+			sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBoolPointer()
+		}
 	}
-	sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBool()
-	sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBool()
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = v
+	if !config.ByteEncoderTypeFor7BitCharsets.IsNull() {
+		if !plan.ByteEncoderTypeFor7BitCharsets.IsUnknown() {
+			sp.ByteEncoderTypeFor7BitCharsets = plan.ByteEncoderTypeFor7BitCharsets.ValueInt64Pointer()
+		}
 	}
-	if v := plan.SiteMailboxCreationURL.ValueString(); v != "" {
-		sp.SiteMailboxCreationURL = v
+	if !config.CalendarVersionStoreEnabled.IsNull() {
+		if !plan.CalendarVersionStoreEnabled.IsUnknown() {
+			sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBoolPointer()
+		}
 	}
-	sp.SmtpActionableMessagesEnabled = plan.SmtpActionableMessagesEnabled.ValueBool()
-	sp.TenantAdminNotificationForDelayedDelicensingEnabled = plan.TenantAdminNotificationForDelayedDelicensingEnabled.ValueBool()
-	sp.TwoClickMailPreviewEnabled = plan.TwoClickMailPreviewEnabled.ValueBool()
-	sp.UnblockUnsafeSenderPromptEnabled = plan.UnblockUnsafeSenderPromptEnabled.ValueBool()
-	sp.VisibleMeetingUpdateProperties = plan.VisibleMeetingUpdateProperties.ValueString()
-	sp.WebPushNotificationsDisabled = plan.WebPushNotificationsDisabled.ValueBool()
-	sp.WebSuggestedRepliesDisabled = plan.WebSuggestedRepliesDisabled.ValueBool()
-	sp.WorkspaceTenantEnabled = plan.WorkspaceTenantEnabled.ValueBool()
+	if !config.ComplianceMLBgdCrawlEnabled.IsNull() {
+		if !plan.ComplianceMLBgdCrawlEnabled.IsUnknown() {
+			sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsActionableMessagesEnabled.IsNull() {
+		if !plan.ConnectorsActionableMessagesEnabled.IsUnknown() {
+			sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsEnabled.IsNull() {
+		if !plan.ConnectorsEnabled.IsUnknown() {
+			sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsEnabledForOutlook.IsNull() {
+		if !plan.ConnectorsEnabledForOutlook.IsUnknown() {
+			sp.ConnectorsEnabledForOutlook = plan.ConnectorsEnabledForOutlook.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsEnabledForSharepoint.IsNull() {
+		if !plan.ConnectorsEnabledForSharepoint.IsUnknown() {
+			sp.ConnectorsEnabledForSharepoint = plan.ConnectorsEnabledForSharepoint.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsEnabledForTeams.IsNull() {
+		if !plan.ConnectorsEnabledForTeams.IsUnknown() {
+			sp.ConnectorsEnabledForTeams = plan.ConnectorsEnabledForTeams.ValueBoolPointer()
+		}
+	}
+	if !config.ConnectorsEnabledForYammer.IsNull() {
+		if !plan.ConnectorsEnabledForYammer.IsUnknown() {
+			sp.ConnectorsEnabledForYammer = plan.ConnectorsEnabledForYammer.ValueBoolPointer()
+		}
+	}
+	if !config.CustomerLockboxEnabled.IsNull() {
+		if !plan.CustomerLockboxEnabled.IsUnknown() {
+			sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DLPViaDcsEnabled.IsNull() {
+		if !plan.DLPViaDcsEnabled.IsUnknown() {
+			sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DLPWaitOnSendEnabled.IsNull() {
+		if !plan.DLPWaitOnSendEnabled.IsUnknown() {
+			sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DLPWaitOnSendTimeout.IsNull() {
+		if !plan.DLPWaitOnSendTimeout.IsUnknown() {
+			sp.DLPWaitOnSendTimeout = plan.DLPWaitOnSendTimeout.ValueInt64Pointer()
+		}
+	}
+	if v := config.DefaultAuthenticationPolicy.ValueString(); v != "" {
+		sp.DefaultAuthenticationPolicy = objectParam(v)
+	}
+	if !config.DefaultFolderPermissionRestricted.IsNull() {
+		if !plan.DefaultFolderPermissionRestricted.IsUnknown() {
+			sp.DefaultFolderPermissionRestricted = plan.DefaultFolderPermissionRestricted.ValueBoolPointer()
+		}
+	}
+	if v := config.DefaultGroupAccessType.ValueString(); v != "" {
+		sp.DefaultGroupAccessType = objectParam(v)
+	}
+	if !config.DefaultMinutesToReduceLongEventsBy.IsNull() {
+		if !plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceLongEventsBy = plan.DefaultMinutesToReduceLongEventsBy.ValueInt64Pointer()
+		}
+	}
+	if !config.DefaultMinutesToReduceShortEventsBy.IsNull() {
+		if !plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
+		}
+	}
+	if v := config.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
+		sp.DefaultPublicFolderAgeLimit = objectParam(v)
+	}
+	if v := config.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
+		sp.DefaultPublicFolderDeletedItemRetention = objectParam(v)
+	}
+	if v := config.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
+		sp.DefaultPublicFolderIssueWarningQuota = objectParam(v)
+	}
+	if v := config.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
+		sp.DefaultPublicFolderMaxItemSize = objectParam(v)
+	}
+	if v := config.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
+		sp.DefaultPublicFolderMovedItemRetention = objectParam(v)
+	}
+	if v := config.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
+		sp.DefaultPublicFolderProhibitPostQuota = objectParam(v)
+	}
+	if !config.DelayedDelicensingEnabled.IsNull() {
+		if !plan.DelayedDelicensingEnabled.IsUnknown() {
+			sp.DelayedDelicensingEnabled = plan.DelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DirectReportsGroupAutoCreationEnabled.IsNull() {
+		if !plan.DirectReportsGroupAutoCreationEnabled.IsUnknown() {
+			sp.DirectReportsGroupAutoCreationEnabled = plan.DirectReportsGroupAutoCreationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.DisablePlusAddressInRecipients.IsNull() {
+		if !plan.DisablePlusAddressInRecipients.IsUnknown() {
+			sp.DisablePlusAddressInRecipients = plan.DisablePlusAddressInRecipients.ValueBoolPointer()
+		}
+	}
+	if v := config.DistributionGroupDefaultOU.ValueString(); v != "" {
+		sp.DistributionGroupDefaultOU = objectParam(v)
+	}
+	if !config.DistributionGroupNameBlockedWordsList.IsNull() {
+		if !plan.DistributionGroupNameBlockedWordsList.IsNull() && !plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(v) > 0 {
+				sp.DistributionGroupNameBlockedWordsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.DistributionGroupNameBlockedWordsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if v := config.DistributionGroupNamingPolicy.ValueString(); v != "" {
+		sp.DistributionGroupNamingPolicy = objectParam(v)
+	}
+	if !config.ElcProcessingDisabled.IsNull() {
+		if !plan.ElcProcessingDisabled.IsUnknown() {
+			sp.ElcProcessingDisabled = plan.ElcProcessingDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.EnableForwardingAddressSyncForMailboxes.IsNull() {
+		if !plan.EnableForwardingAddressSyncForMailboxes.IsUnknown() {
+			sp.EnableForwardingAddressSyncForMailboxes = plan.EnableForwardingAddressSyncForMailboxes.ValueBoolPointer()
+		}
+	}
+	if !config.EnableOutlookEvents.IsNull() {
+		if !plan.EnableOutlookEvents.IsUnknown() {
+			sp.EnableOutlookEvents = plan.EnableOutlookEvents.ValueBoolPointer()
+		}
+	}
+	if !config.EndUserDLUpgradeFlowsDisabled.IsNull() {
+		if !plan.EndUserDLUpgradeFlowsDisabled.IsUnknown() {
+			sp.EndUserDLUpgradeFlowsDisabled = plan.EndUserDLUpgradeFlowsDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.EndUserMailNotificationForDelayedDelicensingEnabled.IsNull() {
+		if !plan.EndUserMailNotificationForDelayedDelicensingEnabled.IsUnknown() {
+			sp.EndUserMailNotificationForDelayedDelicensingEnabled = plan.EndUserMailNotificationForDelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.EnforceExoAppRbacPermissions.IsNull() {
+		if !plan.EnforceExoAppRbacPermissions.IsUnknown() {
+			sp.EnforceExoAppRbacPermissions = plan.EnforceExoAppRbacPermissions.ValueBoolPointer()
+		}
+	}
+	if !config.EnforceShortenEventSetting.IsNull() {
+		sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
+	}
+	if !config.EwsAllowEntourage.IsNull() {
+		if !plan.EwsAllowEntourage.IsUnknown() {
+			sp.EwsAllowEntourage = plan.EwsAllowEntourage.ValueBoolPointer()
+		}
+	}
+	if !config.EwsAllowList.IsNull() {
+		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.EwsAllowMacOutlook.IsNull() {
+		if !plan.EwsAllowMacOutlook.IsUnknown() {
+			sp.EwsAllowMacOutlook = plan.EwsAllowMacOutlook.ValueBoolPointer()
+		}
+	}
+	if !config.EwsAllowOutlook.IsNull() {
+		if !plan.EwsAllowOutlook.IsUnknown() {
+			sp.EwsAllowOutlook = plan.EwsAllowOutlook.ValueBoolPointer()
+		}
+	}
+	if !config.EwsAllowedAppIDs.IsNull() {
+		sp.EwsAllowedAppIDs = plan.EwsAllowedAppIDs.ValueString()
+	}
+	if v := config.EwsApplicationAccessPolicy.ValueString(); v != "" {
+		sp.EwsApplicationAccessPolicy = objectParam(v)
+	}
+	if !config.EwsBlockList.IsNull() {
+		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.EwsEnabled.IsNull() {
+		if !plan.EwsEnabled.IsUnknown() {
+			sp.EwsEnabled = plan.EwsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ExchangeAttributesCloudManagedByDefault.IsNull() {
+		sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
+	}
+	if !config.ExchangeAttributesServerManagedByDefault.IsNull() {
+		sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
+	}
+	if !config.ExchangeNotificationEnabled.IsNull() {
+		if !plan.ExchangeNotificationEnabled.IsUnknown() {
+			sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ExchangeNotificationRecipients.IsNull() {
+		if !plan.ExchangeNotificationRecipients.IsNull() && !plan.ExchangeNotificationRecipients.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ExchangeNotificationRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExchangeNotificationRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExchangeNotificationRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.FindTimeAttendeeAuthenticationEnabled.IsNull() {
+		if !plan.FindTimeAttendeeAuthenticationEnabled.IsUnknown() {
+			sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.FindTimeAutoScheduleDisabled.IsNull() {
+		if !plan.FindTimeAutoScheduleDisabled.IsUnknown() {
+			sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.FindTimeLockPollForAttendeesEnabled.IsNull() {
+		if !plan.FindTimeLockPollForAttendeesEnabled.IsUnknown() {
+			sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.FindTimeOnlineMeetingOptionDisabled.IsNull() {
+		if !plan.FindTimeOnlineMeetingOptionDisabled.IsUnknown() {
+			sp.FindTimeOnlineMeetingOptionDisabled = plan.FindTimeOnlineMeetingOptionDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.FocusedInboxOn.IsNull() {
+		if !plan.FocusedInboxOn.IsUnknown() {
+			sp.FocusedInboxOn = plan.FocusedInboxOn.ValueBoolPointer()
+		}
+	}
+	if v := config.HierarchicalAddressBookRoot.ValueString(); v != "" {
+		sp.HierarchicalAddressBookRoot = objectParam(v)
+	}
+	if !config.HybridRSVPEnabled.IsNull() {
+		if !plan.HybridRSVPEnabled.IsUnknown() {
+			sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IPListBlocked.IsNull() {
+		if !plan.IPListBlocked.IsNull() && !plan.IPListBlocked.IsUnknown() {
+			if v := toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics); len(v) > 0 {
+				sp.IPListBlocked = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPListBlocked, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPListBlockedDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.InRegionRoutingEnabled.IsNull() {
+		if !plan.InRegionRoutingEnabled.IsUnknown() {
+			sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IsAgendaMailEnabled.IsNull() {
+		if !plan.IsAgendaMailEnabled.IsUnknown() {
+			sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IsGroupFoldersAndRulesEnabled.IsNull() {
+		if !plan.IsGroupFoldersAndRulesEnabled.IsUnknown() {
+			sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IsGroupMemberAllowedToEditContent.IsNull() {
+		if !plan.IsGroupMemberAllowedToEditContent.IsUnknown() {
+			sp.IsGroupMemberAllowedToEditContent = plan.IsGroupMemberAllowedToEditContent.ValueBoolPointer()
+		}
+	}
+	if !config.LeanPopoutEnabled.IsNull() {
+		if !plan.LeanPopoutEnabled.IsUnknown() {
+			sp.LeanPopoutEnabled = plan.LeanPopoutEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.LinkPreviewEnabled.IsNull() {
+		if !plan.LinkPreviewEnabled.IsUnknown() {
+			sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailTipsAllTipsEnabled.IsNull() {
+		if !plan.MailTipsAllTipsEnabled.IsUnknown() {
+			sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailTipsExternalRecipientsTipsEnabled.IsNull() {
+		if !plan.MailTipsExternalRecipientsTipsEnabled.IsUnknown() {
+			sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailTipsGroupMetricsEnabled.IsNull() {
+		if !plan.MailTipsGroupMetricsEnabled.IsUnknown() {
+			sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailTipsLargeAudienceThreshold.IsNull() {
+		if !plan.MailTipsLargeAudienceThreshold.IsUnknown() {
+			sp.MailTipsLargeAudienceThreshold = plan.MailTipsLargeAudienceThreshold.ValueInt64Pointer()
+		}
+	}
+	if !config.MailTipsMailboxSourcedTipsEnabled.IsNull() {
+		if !plan.MailTipsMailboxSourcedTipsEnabled.IsUnknown() {
+			sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MaskClientIpInReceivedHeadersEnabled.IsNull() {
+		if !plan.MaskClientIpInReceivedHeadersEnabled.IsUnknown() {
+			sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MatchSenderOrganizerProperties.IsNull() {
+		if !plan.MatchSenderOrganizerProperties.IsUnknown() {
+			sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBoolPointer()
+		}
+	}
+	if !config.MessageHighlightsEnabled.IsNull() {
+		if !plan.MessageHighlightsEnabled.IsUnknown() {
+			sp.MessageHighlightsEnabled = plan.MessageHighlightsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MessageRecallAlertRecipientsEnabled.IsNull() {
+		if !plan.MessageRecallAlertRecipientsEnabled.IsUnknown() {
+			sp.MessageRecallAlertRecipientsEnabled = plan.MessageRecallAlertRecipientsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsNull() {
+		if !plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsUnknown() {
+			sp.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MessageRecallEnabled.IsNull() {
+		if !plan.MessageRecallEnabled.IsUnknown() {
+			sp.MessageRecallEnabled = plan.MessageRecallEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.MessageRecallMaxRecallableAge.ValueString(); v != "" {
+		sp.MessageRecallMaxRecallableAge = objectParam(v)
+	}
+	if !config.MessageRemindersEnabled.IsNull() {
+		if !plan.MessageRemindersEnabled.IsUnknown() {
+			sp.MessageRemindersEnabled = plan.MessageRemindersEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MobileAppEducationEnabled.IsNull() {
+		if !plan.MobileAppEducationEnabled.IsUnknown() {
+			sp.MobileAppEducationEnabled = plan.MobileAppEducationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OAuth2ClientProfileEnabled.IsNull() {
+		if !plan.OAuth2ClientProfileEnabled.IsUnknown() {
+			sp.OAuth2ClientProfileEnabled = plan.OAuth2ClientProfileEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OnlineMeetingsByDefaultEnabled.IsNull() {
+		if !plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+			sp.OnlineMeetingsByDefaultEnabled = plan.OnlineMeetingsByDefaultEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookGifPickerDisabled.IsNull() {
+		if !plan.OutlookGifPickerDisabled.IsUnknown() {
+			sp.OutlookGifPickerDisabled = plan.OutlookGifPickerDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookMobileGCCRestrictionsEnabled.IsNull() {
+		if !plan.OutlookMobileGCCRestrictionsEnabled.IsUnknown() {
+			sp.OutlookMobileGCCRestrictionsEnabled = plan.OutlookMobileGCCRestrictionsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookMobileHelpShiftEnabled.IsNull() {
+		if !plan.OutlookMobileHelpShiftEnabled.IsUnknown() {
+			sp.OutlookMobileHelpShiftEnabled = plan.OutlookMobileHelpShiftEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookMobileSingleAccountEnabled.IsNull() {
+		if !plan.OutlookMobileSingleAccountEnabled.IsUnknown() {
+			sp.OutlookMobileSingleAccountEnabled = plan.OutlookMobileSingleAccountEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookPayEnabled.IsNull() {
+		if !plan.OutlookPayEnabled.IsUnknown() {
+			sp.OutlookPayEnabled = plan.OutlookPayEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OutlookTextPredictionDisabled.IsNull() {
+		if !plan.OutlookTextPredictionDisabled.IsUnknown() {
+			sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.PerTenantSwitchToESTSEnabled.IsNull() {
+		if !plan.PerTenantSwitchToESTSEnabled.IsUnknown() {
+			sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PostponeRoamingSignaturesUntilLater.IsNull() {
+		if !plan.PostponeRoamingSignaturesUntilLater.IsUnknown() {
+			sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBoolPointer()
+		}
+	}
+	if !config.PreferredInternetCodePageForShiftJis.IsNull() {
+		if !plan.PreferredInternetCodePageForShiftJis.IsUnknown() {
+			sp.PreferredInternetCodePageForShiftJis = plan.PreferredInternetCodePageForShiftJis.ValueInt64Pointer()
+		}
+	}
+	if !config.PublicComputersDetectionEnabled.IsNull() {
+		if !plan.PublicComputersDetectionEnabled.IsUnknown() {
+			sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PublicFolderShowClientControl.IsNull() {
+		if !plan.PublicFolderShowClientControl.IsUnknown() {
+			sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBoolPointer()
+		}
+	}
+	if v := config.PublicFoldersEnabled.ValueString(); v != "" {
+		sp.PublicFoldersEnabled = objectParam(v)
+	}
+	if !config.ReadTrackingEnabled.IsNull() {
+		if !plan.ReadTrackingEnabled.IsUnknown() {
+			sp.ReadTrackingEnabled = plan.ReadTrackingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RecallReadMessagesEnabled.IsNull() {
+		if !plan.RecallReadMessagesEnabled.IsUnknown() {
+			sp.RecallReadMessagesEnabled = plan.RecallReadMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RecipientDelimiters.IsNull() {
+		if !plan.RecipientDelimiters.IsUnknown() {
+			sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBoolPointer()
+		}
+	}
+	if !config.RefreshSessionEnabled.IsNull() {
+		if !plan.RefreshSessionEnabled.IsUnknown() {
+			sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RejectDirectSend.IsNull() {
+		if !plan.RejectDirectSend.IsUnknown() {
+			sp.RejectDirectSend = plan.RejectDirectSend.ValueBoolPointer()
+		}
+	}
+	if !config.RemotePublicFolderMailboxes.IsNull() {
+		if !plan.RemotePublicFolderMailboxes.IsNull() && !plan.RemotePublicFolderMailboxes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics); len(v) > 0 {
+				sp.RemotePublicFolderMailboxes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemotePublicFolderMailboxes, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemotePublicFolderMailboxesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.RequiredCharsetCoverage.IsNull() {
+		if !plan.RequiredCharsetCoverage.IsUnknown() {
+			sp.RequiredCharsetCoverage = plan.RequiredCharsetCoverage.ValueInt64Pointer()
+		}
+	}
+	if !config.SendFromAliasEnabled.IsNull() {
+		if !plan.SendFromAliasEnabled.IsUnknown() {
+			sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SharedDomainEmailAddressFlowEnabled.IsNull() {
+		if !plan.SharedDomainEmailAddressFlowEnabled.IsUnknown() {
+			sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.ShortenEventScopeDefault.ValueString(); v != "" {
+		sp.ShortenEventScopeDefault = objectParam(v)
+	}
+	if v := config.SiteMailboxCreationURL.ValueString(); v != "" {
+		sp.SiteMailboxCreationURL = objectParam(v)
+	}
+	if !config.SmtpActionableMessagesEnabled.IsNull() {
+		if !plan.SmtpActionableMessagesEnabled.IsUnknown() {
+			sp.SmtpActionableMessagesEnabled = plan.SmtpActionableMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.TenantAdminNotificationForDelayedDelicensingEnabled.IsNull() {
+		if !plan.TenantAdminNotificationForDelayedDelicensingEnabled.IsUnknown() {
+			sp.TenantAdminNotificationForDelayedDelicensingEnabled = plan.TenantAdminNotificationForDelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.TwoClickMailPreviewEnabled.IsNull() {
+		if !plan.TwoClickMailPreviewEnabled.IsUnknown() {
+			sp.TwoClickMailPreviewEnabled = plan.TwoClickMailPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.UnblockUnsafeSenderPromptEnabled.IsNull() {
+		if !plan.UnblockUnsafeSenderPromptEnabled.IsUnknown() {
+			sp.UnblockUnsafeSenderPromptEnabled = plan.UnblockUnsafeSenderPromptEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.VisibleMeetingUpdateProperties.IsNull() {
+		sp.VisibleMeetingUpdateProperties = plan.VisibleMeetingUpdateProperties.ValueString()
+	}
+	if !config.WebPushNotificationsDisabled.IsNull() {
+		if !plan.WebPushNotificationsDisabled.IsUnknown() {
+			sp.WebPushNotificationsDisabled = plan.WebPushNotificationsDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.WebSuggestedRepliesDisabled.IsNull() {
+		if !plan.WebSuggestedRepliesDisabled.IsUnknown() {
+			sp.WebSuggestedRepliesDisabled = plan.WebSuggestedRepliesDisabled.ValueBoolPointer()
+		}
+	}
+	if !config.WorkspaceTenantEnabled.IsNull() {
+		if !plan.WorkspaceTenantEnabled.IsUnknown() {
+			sp.WorkspaceTenantEnabled = plan.WorkspaceTenantEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -579,210 +1110,757 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	id := r.identityOf(state)
 	sp := exo.SetOrganizationConfigParams{}
-	sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBool()
-	sp.ActivityBasedAuthenticationTimeoutEnabled = plan.ActivityBasedAuthenticationTimeoutEnabled.ValueBool()
-	if v := plan.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
-		sp.ActivityBasedAuthenticationTimeoutInterval = v
+	var cur *organizationConfigModel
+	curRead := false
+	current := func() *organizationConfigModel {
+		if !curRead {
+			curRead = true
+			var m organizationConfigModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OrganizationConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.ValueBool()
-	sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBool()
-	sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBool()
-	sp.AuditDisabled = plan.AuditDisabled.ValueBool()
-	if v := plan.AutoArchivingThresholdPercentage.ValueString(); v != "" {
-		sp.AutoArchivingThresholdPercentage = v
+	if !plan.ActionableMessagesExtenalAccessTokenEnabled.Equal(state.ActionableMessagesExtenalAccessTokenEnabled) {
+		if !plan.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() {
+			sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBoolPointer()
+		}
 	}
-	sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBool()
-	sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
-	sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBool()
-	sp.AutomaticForcedReadReceiptEnabled = plan.AutomaticForcedReadReceiptEnabled.ValueBool()
-	sp.BlockMoveMessagesForGroupFolders = plan.BlockMoveMessagesForGroupFolders.ValueBool()
-	sp.BookingsAddressEntryRestricted = plan.BookingsAddressEntryRestricted.ValueBool()
-	sp.BookingsAuthEnabled = plan.BookingsAuthEnabled.ValueBool()
-	sp.BookingsBlockedWordsEnabled = plan.BookingsBlockedWordsEnabled.ValueBool()
-	sp.BookingsCreationOfCustomQuestionsRestricted = plan.BookingsCreationOfCustomQuestionsRestricted.ValueBool()
-	sp.BookingsEnabled = plan.BookingsEnabled.ValueBool()
-	sp.BookingsExposureOfStaffDetailsRestricted = plan.BookingsExposureOfStaffDetailsRestricted.ValueBool()
-	sp.BookingsMembershipApprovalRequired = plan.BookingsMembershipApprovalRequired.ValueBool()
-	sp.BookingsNamingPolicyEnabled = plan.BookingsNamingPolicyEnabled.ValueBool()
-	sp.BookingsNamingPolicyPrefix = plan.BookingsNamingPolicyPrefix.ValueString()
-	sp.BookingsNamingPolicyPrefixEnabled = plan.BookingsNamingPolicyPrefixEnabled.ValueBool()
-	sp.BookingsNamingPolicySuffix = plan.BookingsNamingPolicySuffix.ValueString()
-	sp.BookingsNamingPolicySuffixEnabled = plan.BookingsNamingPolicySuffixEnabled.ValueBool()
-	sp.BookingsNotesEntryRestricted = plan.BookingsNotesEntryRestricted.ValueBool()
-	sp.BookingsPaymentsEnabled = plan.BookingsPaymentsEnabled.ValueBool()
-	sp.BookingsPhoneNumberEntryRestricted = plan.BookingsPhoneNumberEntryRestricted.ValueBool()
-	sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBool()
-	sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBool()
-	sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBool()
-	sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBool()
-	sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBool()
-	sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBool()
-	sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBool()
-	sp.ConnectorsEnabledForOutlook = plan.ConnectorsEnabledForOutlook.ValueBool()
-	sp.ConnectorsEnabledForSharepoint = plan.ConnectorsEnabledForSharepoint.ValueBool()
-	sp.ConnectorsEnabledForTeams = plan.ConnectorsEnabledForTeams.ValueBool()
-	sp.ConnectorsEnabledForYammer = plan.ConnectorsEnabledForYammer.ValueBool()
-	sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBool()
-	sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBool()
-	sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBool()
-	if v := plan.DLPWaitOnSendTimeout.ValueString(); v != "" {
-		sp.DLPWaitOnSendTimeout = v
+	if !plan.ActivityBasedAuthenticationTimeoutEnabled.Equal(state.ActivityBasedAuthenticationTimeoutEnabled) {
+		if !plan.ActivityBasedAuthenticationTimeoutEnabled.IsUnknown() {
+			sp.ActivityBasedAuthenticationTimeoutEnabled = plan.ActivityBasedAuthenticationTimeoutEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
-		sp.DefaultAuthenticationPolicy = v
+	if !plan.ActivityBasedAuthenticationTimeoutInterval.Equal(state.ActivityBasedAuthenticationTimeoutInterval) {
+		if v := plan.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
+			sp.ActivityBasedAuthenticationTimeoutInterval = objectParam(v)
+		}
 	}
-	sp.DefaultFolderPermissionRestricted = plan.DefaultFolderPermissionRestricted.ValueBool()
-	if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
-		sp.DefaultGroupAccessType = v
+	if !plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.Equal(state.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled) {
+		if !plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsUnknown() {
+			sp.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
-		sp.DefaultPublicFolderAgeLimit = v
+	if !plan.AppsForOfficeEnabled.Equal(state.AppsForOfficeEnabled) {
+		if !plan.AppsForOfficeEnabled.IsUnknown() {
+			sp.AppsForOfficeEnabled = plan.AppsForOfficeEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderDeletedItemRetention = v
+	if !plan.AsyncSendEnabled.Equal(state.AsyncSendEnabled) {
+		if !plan.AsyncSendEnabled.IsUnknown() {
+			sp.AsyncSendEnabled = plan.AsyncSendEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderIssueWarningQuota = v
+	if !plan.AuditDisabled.Equal(state.AuditDisabled) {
+		if !plan.AuditDisabled.IsUnknown() {
+			sp.AuditDisabled = plan.AuditDisabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
-		sp.DefaultPublicFolderMaxItemSize = v
+	if !plan.AutoArchivingThresholdPercentage.Equal(state.AutoArchivingThresholdPercentage) {
+		if !plan.AutoArchivingThresholdPercentage.IsUnknown() {
+			sp.AutoArchivingThresholdPercentage = plan.AutoArchivingThresholdPercentage.ValueInt64Pointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderMovedItemRetention = v
+	if !plan.AutoEnableArchiveMailbox.Equal(state.AutoEnableArchiveMailbox) {
+		if !plan.AutoEnableArchiveMailbox.IsUnknown() {
+			sp.AutoEnableArchiveMailbox = plan.AutoEnableArchiveMailbox.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderProhibitPostQuota = v
+	if !plan.AutoExpandingArchive.Equal(state.AutoExpandingArchive) {
+		sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
 	}
-	sp.DelayedDelicensingEnabled = plan.DelayedDelicensingEnabled.ValueBool()
-	sp.DirectReportsGroupAutoCreationEnabled = plan.DirectReportsGroupAutoCreationEnabled.ValueBool()
-	sp.DisablePlusAddressInRecipients = plan.DisablePlusAddressInRecipients.ValueBool()
-	if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
-		sp.DistributionGroupDefaultOU = v
+	if !plan.AutodiscoverPartialDirSync.Equal(state.AutodiscoverPartialDirSync) {
+		if !plan.AutodiscoverPartialDirSync.IsUnknown() {
+			sp.AutodiscoverPartialDirSync = plan.AutodiscoverPartialDirSync.ValueBoolPointer()
+		}
 	}
-	if v := plan.DistributionGroupNameBlockedWordsList.ValueString(); v != "" {
-		sp.DistributionGroupNameBlockedWordsList = v
+	if !plan.AutomaticForcedReadReceiptEnabled.Equal(state.AutomaticForcedReadReceiptEnabled) {
+		if !plan.AutomaticForcedReadReceiptEnabled.IsUnknown() {
+			sp.AutomaticForcedReadReceiptEnabled = plan.AutomaticForcedReadReceiptEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
-		sp.DistributionGroupNamingPolicy = v
+	if !plan.BlockMoveMessagesForGroupFolders.Equal(state.BlockMoveMessagesForGroupFolders) {
+		if !plan.BlockMoveMessagesForGroupFolders.IsUnknown() {
+			sp.BlockMoveMessagesForGroupFolders = plan.BlockMoveMessagesForGroupFolders.ValueBoolPointer()
+		}
 	}
-	sp.ElcProcessingDisabled = plan.ElcProcessingDisabled.ValueBool()
-	sp.EnableForwardingAddressSyncForMailboxes = plan.EnableForwardingAddressSyncForMailboxes.ValueBool()
-	sp.EnableOutlookEvents = plan.EnableOutlookEvents.ValueBool()
-	sp.EndUserDLUpgradeFlowsDisabled = plan.EndUserDLUpgradeFlowsDisabled.ValueBool()
-	sp.EndUserMailNotificationForDelayedDelicensingEnabled = plan.EndUserMailNotificationForDelayedDelicensingEnabled.ValueBool()
-	sp.EnforceExoAppRbacPermissions = plan.EnforceExoAppRbacPermissions.ValueBool()
-	sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
-	if v := plan.EwsAllowEntourage.ValueString(); v != "" {
-		sp.EwsAllowEntourage = v
+	if !plan.BookingsAddressEntryRestricted.Equal(state.BookingsAddressEntryRestricted) {
+		if !plan.BookingsAddressEntryRestricted.IsUnknown() {
+			sp.BookingsAddressEntryRestricted = plan.BookingsAddressEntryRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowList.ValueString(); v != "" {
-		sp.EwsAllowList = v
+	if !plan.BookingsAuthEnabled.Equal(state.BookingsAuthEnabled) {
+		if !plan.BookingsAuthEnabled.IsUnknown() {
+			sp.BookingsAuthEnabled = plan.BookingsAuthEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowMacOutlook.ValueString(); v != "" {
-		sp.EwsAllowMacOutlook = v
+	if !plan.BookingsBlockedWordsEnabled.Equal(state.BookingsBlockedWordsEnabled) {
+		if !plan.BookingsBlockedWordsEnabled.IsUnknown() {
+			sp.BookingsBlockedWordsEnabled = plan.BookingsBlockedWordsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsAllowOutlook.ValueString(); v != "" {
-		sp.EwsAllowOutlook = v
+	if !plan.BookingsCreationOfCustomQuestionsRestricted.Equal(state.BookingsCreationOfCustomQuestionsRestricted) {
+		if !plan.BookingsCreationOfCustomQuestionsRestricted.IsUnknown() {
+			sp.BookingsCreationOfCustomQuestionsRestricted = plan.BookingsCreationOfCustomQuestionsRestricted.ValueBoolPointer()
+		}
 	}
-	sp.EwsAllowedAppIDs = plan.EwsAllowedAppIDs.ValueString()
-	if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
-		sp.EwsApplicationAccessPolicy = v
+	if !plan.BookingsEnabled.Equal(state.BookingsEnabled) {
+		if !plan.BookingsEnabled.IsUnknown() {
+			sp.BookingsEnabled = plan.BookingsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsBlockList.ValueString(); v != "" {
-		sp.EwsBlockList = v
+	if !plan.BookingsExposureOfStaffDetailsRestricted.Equal(state.BookingsExposureOfStaffDetailsRestricted) {
+		if !plan.BookingsExposureOfStaffDetailsRestricted.IsUnknown() {
+			sp.BookingsExposureOfStaffDetailsRestricted = plan.BookingsExposureOfStaffDetailsRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.EwsEnabled.ValueString(); v != "" {
-		sp.EwsEnabled = v
+	if !plan.BookingsMembershipApprovalRequired.Equal(state.BookingsMembershipApprovalRequired) {
+		if !plan.BookingsMembershipApprovalRequired.IsUnknown() {
+			sp.BookingsMembershipApprovalRequired = plan.BookingsMembershipApprovalRequired.ValueBoolPointer()
+		}
 	}
-	sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
-	sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
-	sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBool()
-	if v := plan.ExchangeNotificationRecipients.ValueString(); v != "" {
-		sp.ExchangeNotificationRecipients = v
+	if !plan.BookingsNamingPolicyEnabled.Equal(state.BookingsNamingPolicyEnabled) {
+		if !plan.BookingsNamingPolicyEnabled.IsUnknown() {
+			sp.BookingsNamingPolicyEnabled = plan.BookingsNamingPolicyEnabled.ValueBoolPointer()
+		}
 	}
-	sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBool()
-	sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBool()
-	sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBool()
-	sp.FindTimeOnlineMeetingOptionDisabled = plan.FindTimeOnlineMeetingOptionDisabled.ValueBool()
-	if v := plan.FocusedInboxOn.ValueString(); v != "" {
-		sp.FocusedInboxOn = v
+	if !plan.BookingsNamingPolicyPrefix.Equal(state.BookingsNamingPolicyPrefix) {
+		sp.BookingsNamingPolicyPrefix = plan.BookingsNamingPolicyPrefix.ValueString()
 	}
-	if v := plan.HierarchicalAddressBookRoot.ValueString(); v != "" {
-		sp.HierarchicalAddressBookRoot = v
+	if !plan.BookingsNamingPolicyPrefixEnabled.Equal(state.BookingsNamingPolicyPrefixEnabled) {
+		if !plan.BookingsNamingPolicyPrefixEnabled.IsUnknown() {
+			sp.BookingsNamingPolicyPrefixEnabled = plan.BookingsNamingPolicyPrefixEnabled.ValueBoolPointer()
+		}
 	}
-	sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBool()
-	if v := plan.IPListBlocked.ValueString(); v != "" {
-		sp.IPListBlocked = v
+	if !plan.BookingsNamingPolicySuffix.Equal(state.BookingsNamingPolicySuffix) {
+		sp.BookingsNamingPolicySuffix = plan.BookingsNamingPolicySuffix.ValueString()
 	}
-	sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBool()
-	sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBool()
-	sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBool()
-	sp.IsGroupMemberAllowedToEditContent = plan.IsGroupMemberAllowedToEditContent.ValueBool()
-	sp.LeanPopoutEnabled = plan.LeanPopoutEnabled.ValueBool()
-	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
-	sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBool()
-	sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBool()
-	sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBool()
-	if v := plan.MailTipsLargeAudienceThreshold.ValueString(); v != "" {
-		sp.MailTipsLargeAudienceThreshold = v
+	if !plan.BookingsNamingPolicySuffixEnabled.Equal(state.BookingsNamingPolicySuffixEnabled) {
+		if !plan.BookingsNamingPolicySuffixEnabled.IsUnknown() {
+			sp.BookingsNamingPolicySuffixEnabled = plan.BookingsNamingPolicySuffixEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBool()
-	sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBool()
-	sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBool()
-	sp.MessageHighlightsEnabled = plan.MessageHighlightsEnabled.ValueBool()
-	sp.MessageRecallAlertRecipientsEnabled = plan.MessageRecallAlertRecipientsEnabled.ValueBool()
-	sp.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.ValueBool()
-	if v := plan.MessageRecallEnabled.ValueString(); v != "" {
-		sp.MessageRecallEnabled = v
+	if !plan.BookingsNotesEntryRestricted.Equal(state.BookingsNotesEntryRestricted) {
+		if !plan.BookingsNotesEntryRestricted.IsUnknown() {
+			sp.BookingsNotesEntryRestricted = plan.BookingsNotesEntryRestricted.ValueBoolPointer()
+		}
 	}
-	if v := plan.MessageRecallMaxRecallableAge.ValueString(); v != "" {
-		sp.MessageRecallMaxRecallableAge = v
+	if !plan.BookingsPaymentsEnabled.Equal(state.BookingsPaymentsEnabled) {
+		if !plan.BookingsPaymentsEnabled.IsUnknown() {
+			sp.BookingsPaymentsEnabled = plan.BookingsPaymentsEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MessageRemindersEnabled = plan.MessageRemindersEnabled.ValueBool()
-	sp.MobileAppEducationEnabled = plan.MobileAppEducationEnabled.ValueBool()
-	sp.OAuth2ClientProfileEnabled = plan.OAuth2ClientProfileEnabled.ValueBool()
-	if v := plan.OnlineMeetingsByDefaultEnabled.ValueString(); v != "" {
-		sp.OnlineMeetingsByDefaultEnabled = v
+	if !plan.BookingsPhoneNumberEntryRestricted.Equal(state.BookingsPhoneNumberEntryRestricted) {
+		if !plan.BookingsPhoneNumberEntryRestricted.IsUnknown() {
+			sp.BookingsPhoneNumberEntryRestricted = plan.BookingsPhoneNumberEntryRestricted.ValueBoolPointer()
+		}
 	}
-	sp.OutlookGifPickerDisabled = plan.OutlookGifPickerDisabled.ValueBool()
-	sp.OutlookMobileGCCRestrictionsEnabled = plan.OutlookMobileGCCRestrictionsEnabled.ValueBool()
-	sp.OutlookMobileHelpShiftEnabled = plan.OutlookMobileHelpShiftEnabled.ValueBool()
-	sp.OutlookMobileSingleAccountEnabled = plan.OutlookMobileSingleAccountEnabled.ValueBool()
-	sp.OutlookPayEnabled = plan.OutlookPayEnabled.ValueBool()
-	sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBool()
-	sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBool()
-	sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBool()
-	sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBool()
-	sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBool()
-	if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
-		sp.PublicFoldersEnabled = v
+	if !plan.BookingsSearchEngineIndexDisabled.Equal(state.BookingsSearchEngineIndexDisabled) {
+		if !plan.BookingsSearchEngineIndexDisabled.IsUnknown() {
+			sp.BookingsSearchEngineIndexDisabled = plan.BookingsSearchEngineIndexDisabled.ValueBoolPointer()
+		}
 	}
-	sp.ReadTrackingEnabled = plan.ReadTrackingEnabled.ValueBool()
-	if v := plan.RecallReadMessagesEnabled.ValueString(); v != "" {
-		sp.RecallReadMessagesEnabled = v
+	if !plan.BookingsSmsMicrosoftEnabled.Equal(state.BookingsSmsMicrosoftEnabled) {
+		if !plan.BookingsSmsMicrosoftEnabled.IsUnknown() {
+			sp.BookingsSmsMicrosoftEnabled = plan.BookingsSmsMicrosoftEnabled.ValueBoolPointer()
+		}
 	}
-	sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBool()
-	sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBool()
-	sp.RejectDirectSend = plan.RejectDirectSend.ValueBool()
-	if v := plan.RemotePublicFolderMailboxes.ValueString(); v != "" {
-		sp.RemotePublicFolderMailboxes = v
+	if !plan.BookingsSocialSharingRestricted.Equal(state.BookingsSocialSharingRestricted) {
+		if !plan.BookingsSocialSharingRestricted.IsUnknown() {
+			sp.BookingsSocialSharingRestricted = plan.BookingsSocialSharingRestricted.ValueBoolPointer()
+		}
 	}
-	sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBool()
-	sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBool()
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = v
+	if !plan.ByteEncoderTypeFor7BitCharsets.Equal(state.ByteEncoderTypeFor7BitCharsets) {
+		if !plan.ByteEncoderTypeFor7BitCharsets.IsUnknown() {
+			sp.ByteEncoderTypeFor7BitCharsets = plan.ByteEncoderTypeFor7BitCharsets.ValueInt64Pointer()
+		}
 	}
-	if v := plan.SiteMailboxCreationURL.ValueString(); v != "" {
-		sp.SiteMailboxCreationURL = v
+	if !plan.CalendarVersionStoreEnabled.Equal(state.CalendarVersionStoreEnabled) {
+		if !plan.CalendarVersionStoreEnabled.IsUnknown() {
+			sp.CalendarVersionStoreEnabled = plan.CalendarVersionStoreEnabled.ValueBoolPointer()
+		}
 	}
-	sp.SmtpActionableMessagesEnabled = plan.SmtpActionableMessagesEnabled.ValueBool()
-	sp.TenantAdminNotificationForDelayedDelicensingEnabled = plan.TenantAdminNotificationForDelayedDelicensingEnabled.ValueBool()
-	sp.TwoClickMailPreviewEnabled = plan.TwoClickMailPreviewEnabled.ValueBool()
-	sp.UnblockUnsafeSenderPromptEnabled = plan.UnblockUnsafeSenderPromptEnabled.ValueBool()
-	sp.VisibleMeetingUpdateProperties = plan.VisibleMeetingUpdateProperties.ValueString()
-	sp.WebPushNotificationsDisabled = plan.WebPushNotificationsDisabled.ValueBool()
-	sp.WebSuggestedRepliesDisabled = plan.WebSuggestedRepliesDisabled.ValueBool()
-	sp.WorkspaceTenantEnabled = plan.WorkspaceTenantEnabled.ValueBool()
+	if !plan.ComplianceMLBgdCrawlEnabled.Equal(state.ComplianceMLBgdCrawlEnabled) {
+		if !plan.ComplianceMLBgdCrawlEnabled.IsUnknown() {
+			sp.ComplianceMLBgdCrawlEnabled = plan.ComplianceMLBgdCrawlEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsActionableMessagesEnabled.Equal(state.ConnectorsActionableMessagesEnabled) {
+		if !plan.ConnectorsActionableMessagesEnabled.IsUnknown() {
+			sp.ConnectorsActionableMessagesEnabled = plan.ConnectorsActionableMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsEnabled.Equal(state.ConnectorsEnabled) {
+		if !plan.ConnectorsEnabled.IsUnknown() {
+			sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsEnabledForOutlook.Equal(state.ConnectorsEnabledForOutlook) {
+		if !plan.ConnectorsEnabledForOutlook.IsUnknown() {
+			sp.ConnectorsEnabledForOutlook = plan.ConnectorsEnabledForOutlook.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsEnabledForSharepoint.Equal(state.ConnectorsEnabledForSharepoint) {
+		if !plan.ConnectorsEnabledForSharepoint.IsUnknown() {
+			sp.ConnectorsEnabledForSharepoint = plan.ConnectorsEnabledForSharepoint.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsEnabledForTeams.Equal(state.ConnectorsEnabledForTeams) {
+		if !plan.ConnectorsEnabledForTeams.IsUnknown() {
+			sp.ConnectorsEnabledForTeams = plan.ConnectorsEnabledForTeams.ValueBoolPointer()
+		}
+	}
+	if !plan.ConnectorsEnabledForYammer.Equal(state.ConnectorsEnabledForYammer) {
+		if !plan.ConnectorsEnabledForYammer.IsUnknown() {
+			sp.ConnectorsEnabledForYammer = plan.ConnectorsEnabledForYammer.ValueBoolPointer()
+		}
+	}
+	if !plan.CustomerLockboxEnabled.Equal(state.CustomerLockboxEnabled) {
+		if !plan.CustomerLockboxEnabled.IsUnknown() {
+			sp.CustomerLockboxEnabled = plan.CustomerLockboxEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DLPViaDcsEnabled.Equal(state.DLPViaDcsEnabled) {
+		if !plan.DLPViaDcsEnabled.IsUnknown() {
+			sp.DLPViaDcsEnabled = plan.DLPViaDcsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DLPWaitOnSendEnabled.Equal(state.DLPWaitOnSendEnabled) {
+		if !plan.DLPWaitOnSendEnabled.IsUnknown() {
+			sp.DLPWaitOnSendEnabled = plan.DLPWaitOnSendEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DLPWaitOnSendTimeout.Equal(state.DLPWaitOnSendTimeout) {
+		if !plan.DLPWaitOnSendTimeout.IsUnknown() {
+			sp.DLPWaitOnSendTimeout = plan.DLPWaitOnSendTimeout.ValueInt64Pointer()
+		}
+	}
+	if !plan.DefaultAuthenticationPolicy.Equal(state.DefaultAuthenticationPolicy) {
+		if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
+			sp.DefaultAuthenticationPolicy = objectParam(v)
+		}
+	}
+	if !plan.DefaultFolderPermissionRestricted.Equal(state.DefaultFolderPermissionRestricted) {
+		if !plan.DefaultFolderPermissionRestricted.IsUnknown() {
+			sp.DefaultFolderPermissionRestricted = plan.DefaultFolderPermissionRestricted.ValueBoolPointer()
+		}
+	}
+	if !plan.DefaultGroupAccessType.Equal(state.DefaultGroupAccessType) {
+		if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
+			sp.DefaultGroupAccessType = objectParam(v)
+		}
+	}
+	if !plan.DefaultMinutesToReduceLongEventsBy.Equal(state.DefaultMinutesToReduceLongEventsBy) {
+		if !plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceLongEventsBy = plan.DefaultMinutesToReduceLongEventsBy.ValueInt64Pointer()
+		}
+	}
+	if !plan.DefaultMinutesToReduceShortEventsBy.Equal(state.DefaultMinutesToReduceShortEventsBy) {
+		if !plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
+		}
+	}
+	if !plan.DefaultPublicFolderAgeLimit.Equal(state.DefaultPublicFolderAgeLimit) {
+		if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
+			sp.DefaultPublicFolderAgeLimit = objectParam(v)
+		}
+	}
+	if !plan.DefaultPublicFolderDeletedItemRetention.Equal(state.DefaultPublicFolderDeletedItemRetention) {
+		if v := plan.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
+			sp.DefaultPublicFolderDeletedItemRetention = objectParam(v)
+		}
+	}
+	if !plan.DefaultPublicFolderIssueWarningQuota.Equal(state.DefaultPublicFolderIssueWarningQuota) {
+		if v := plan.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
+			sp.DefaultPublicFolderIssueWarningQuota = objectParam(v)
+		}
+	}
+	if !plan.DefaultPublicFolderMaxItemSize.Equal(state.DefaultPublicFolderMaxItemSize) {
+		if v := plan.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
+			sp.DefaultPublicFolderMaxItemSize = objectParam(v)
+		}
+	}
+	if !plan.DefaultPublicFolderMovedItemRetention.Equal(state.DefaultPublicFolderMovedItemRetention) {
+		if v := plan.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
+			sp.DefaultPublicFolderMovedItemRetention = objectParam(v)
+		}
+	}
+	if !plan.DefaultPublicFolderProhibitPostQuota.Equal(state.DefaultPublicFolderProhibitPostQuota) {
+		if v := plan.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
+			sp.DefaultPublicFolderProhibitPostQuota = objectParam(v)
+		}
+	}
+	if !plan.DelayedDelicensingEnabled.Equal(state.DelayedDelicensingEnabled) {
+		if !plan.DelayedDelicensingEnabled.IsUnknown() {
+			sp.DelayedDelicensingEnabled = plan.DelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DirectReportsGroupAutoCreationEnabled.Equal(state.DirectReportsGroupAutoCreationEnabled) {
+		if !plan.DirectReportsGroupAutoCreationEnabled.IsUnknown() {
+			sp.DirectReportsGroupAutoCreationEnabled = plan.DirectReportsGroupAutoCreationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DisablePlusAddressInRecipients.Equal(state.DisablePlusAddressInRecipients) {
+		if !plan.DisablePlusAddressInRecipients.IsUnknown() {
+			sp.DisablePlusAddressInRecipients = plan.DisablePlusAddressInRecipients.ValueBoolPointer()
+		}
+	}
+	if !plan.DistributionGroupDefaultOU.Equal(state.DistributionGroupDefaultOU) {
+		if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
+			sp.DistributionGroupDefaultOU = objectParam(v)
+		}
+	}
+	if !plan.DistributionGroupNameBlockedWordsList.Equal(state.DistributionGroupNameBlockedWordsList) {
+		if !plan.DistributionGroupNameBlockedWordsList.IsNull() && !plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(v) > 0 {
+				sp.DistributionGroupNameBlockedWordsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.DistributionGroupNameBlockedWordsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.DistributionGroupNamingPolicy.Equal(state.DistributionGroupNamingPolicy) {
+		if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
+			sp.DistributionGroupNamingPolicy = objectParam(v)
+		}
+	}
+	if !plan.ElcProcessingDisabled.Equal(state.ElcProcessingDisabled) {
+		if !plan.ElcProcessingDisabled.IsUnknown() {
+			sp.ElcProcessingDisabled = plan.ElcProcessingDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableForwardingAddressSyncForMailboxes.Equal(state.EnableForwardingAddressSyncForMailboxes) {
+		if !plan.EnableForwardingAddressSyncForMailboxes.IsUnknown() {
+			sp.EnableForwardingAddressSyncForMailboxes = plan.EnableForwardingAddressSyncForMailboxes.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableOutlookEvents.Equal(state.EnableOutlookEvents) {
+		if !plan.EnableOutlookEvents.IsUnknown() {
+			sp.EnableOutlookEvents = plan.EnableOutlookEvents.ValueBoolPointer()
+		}
+	}
+	if !plan.EndUserDLUpgradeFlowsDisabled.Equal(state.EndUserDLUpgradeFlowsDisabled) {
+		if !plan.EndUserDLUpgradeFlowsDisabled.IsUnknown() {
+			sp.EndUserDLUpgradeFlowsDisabled = plan.EndUserDLUpgradeFlowsDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EndUserMailNotificationForDelayedDelicensingEnabled.Equal(state.EndUserMailNotificationForDelayedDelicensingEnabled) {
+		if !plan.EndUserMailNotificationForDelayedDelicensingEnabled.IsUnknown() {
+			sp.EndUserMailNotificationForDelayedDelicensingEnabled = plan.EndUserMailNotificationForDelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EnforceExoAppRbacPermissions.Equal(state.EnforceExoAppRbacPermissions) {
+		if !plan.EnforceExoAppRbacPermissions.IsUnknown() {
+			sp.EnforceExoAppRbacPermissions = plan.EnforceExoAppRbacPermissions.ValueBoolPointer()
+		}
+	}
+	if !plan.EnforceShortenEventSetting.Equal(state.EnforceShortenEventSetting) {
+		sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
+	}
+	if !plan.EwsAllowEntourage.Equal(state.EwsAllowEntourage) {
+		if !plan.EwsAllowEntourage.IsUnknown() {
+			sp.EwsAllowEntourage = plan.EwsAllowEntourage.ValueBoolPointer()
+		}
+	}
+	if !plan.EwsAllowList.Equal(state.EwsAllowList) {
+		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.EwsAllowMacOutlook.Equal(state.EwsAllowMacOutlook) {
+		if !plan.EwsAllowMacOutlook.IsUnknown() {
+			sp.EwsAllowMacOutlook = plan.EwsAllowMacOutlook.ValueBoolPointer()
+		}
+	}
+	if !plan.EwsAllowOutlook.Equal(state.EwsAllowOutlook) {
+		if !plan.EwsAllowOutlook.IsUnknown() {
+			sp.EwsAllowOutlook = plan.EwsAllowOutlook.ValueBoolPointer()
+		}
+	}
+	if !plan.EwsAllowedAppIDs.Equal(state.EwsAllowedAppIDs) {
+		sp.EwsAllowedAppIDs = plan.EwsAllowedAppIDs.ValueString()
+	}
+	if !plan.EwsApplicationAccessPolicy.Equal(state.EwsApplicationAccessPolicy) {
+		if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
+			sp.EwsApplicationAccessPolicy = objectParam(v)
+		}
+	}
+	if !plan.EwsBlockList.Equal(state.EwsBlockList) {
+		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.EwsEnabled.Equal(state.EwsEnabled) {
+		if !plan.EwsEnabled.IsUnknown() {
+			sp.EwsEnabled = plan.EwsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExchangeAttributesCloudManagedByDefault.Equal(state.ExchangeAttributesCloudManagedByDefault) {
+		sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
+	}
+	if !plan.ExchangeAttributesServerManagedByDefault.Equal(state.ExchangeAttributesServerManagedByDefault) {
+		sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
+	}
+	if !plan.ExchangeNotificationEnabled.Equal(state.ExchangeNotificationEnabled) {
+		if !plan.ExchangeNotificationEnabled.IsUnknown() {
+			sp.ExchangeNotificationEnabled = plan.ExchangeNotificationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExchangeNotificationRecipients.Equal(state.ExchangeNotificationRecipients) {
+		if !plan.ExchangeNotificationRecipients.IsNull() && !plan.ExchangeNotificationRecipients.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ExchangeNotificationRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExchangeNotificationRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExchangeNotificationRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.FindTimeAttendeeAuthenticationEnabled.Equal(state.FindTimeAttendeeAuthenticationEnabled) {
+		if !plan.FindTimeAttendeeAuthenticationEnabled.IsUnknown() {
+			sp.FindTimeAttendeeAuthenticationEnabled = plan.FindTimeAttendeeAuthenticationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FindTimeAutoScheduleDisabled.Equal(state.FindTimeAutoScheduleDisabled) {
+		if !plan.FindTimeAutoScheduleDisabled.IsUnknown() {
+			sp.FindTimeAutoScheduleDisabled = plan.FindTimeAutoScheduleDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FindTimeLockPollForAttendeesEnabled.Equal(state.FindTimeLockPollForAttendeesEnabled) {
+		if !plan.FindTimeLockPollForAttendeesEnabled.IsUnknown() {
+			sp.FindTimeLockPollForAttendeesEnabled = plan.FindTimeLockPollForAttendeesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FindTimeOnlineMeetingOptionDisabled.Equal(state.FindTimeOnlineMeetingOptionDisabled) {
+		if !plan.FindTimeOnlineMeetingOptionDisabled.IsUnknown() {
+			sp.FindTimeOnlineMeetingOptionDisabled = plan.FindTimeOnlineMeetingOptionDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FocusedInboxOn.Equal(state.FocusedInboxOn) {
+		if !plan.FocusedInboxOn.IsUnknown() {
+			sp.FocusedInboxOn = plan.FocusedInboxOn.ValueBoolPointer()
+		}
+	}
+	if !plan.HierarchicalAddressBookRoot.Equal(state.HierarchicalAddressBookRoot) {
+		if v := plan.HierarchicalAddressBookRoot.ValueString(); v != "" {
+			sp.HierarchicalAddressBookRoot = objectParam(v)
+		}
+	}
+	if !plan.HybridRSVPEnabled.Equal(state.HybridRSVPEnabled) {
+		if !plan.HybridRSVPEnabled.IsUnknown() {
+			sp.HybridRSVPEnabled = plan.HybridRSVPEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IPListBlocked.Equal(state.IPListBlocked) {
+		if !plan.IPListBlocked.IsNull() && !plan.IPListBlocked.IsUnknown() {
+			if v := toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics); len(v) > 0 {
+				sp.IPListBlocked = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPListBlocked, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPListBlockedDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.InRegionRoutingEnabled.Equal(state.InRegionRoutingEnabled) {
+		if !plan.InRegionRoutingEnabled.IsUnknown() {
+			sp.InRegionRoutingEnabled = plan.InRegionRoutingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsAgendaMailEnabled.Equal(state.IsAgendaMailEnabled) {
+		if !plan.IsAgendaMailEnabled.IsUnknown() {
+			sp.IsAgendaMailEnabled = plan.IsAgendaMailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsGroupFoldersAndRulesEnabled.Equal(state.IsGroupFoldersAndRulesEnabled) {
+		if !plan.IsGroupFoldersAndRulesEnabled.IsUnknown() {
+			sp.IsGroupFoldersAndRulesEnabled = plan.IsGroupFoldersAndRulesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsGroupMemberAllowedToEditContent.Equal(state.IsGroupMemberAllowedToEditContent) {
+		if !plan.IsGroupMemberAllowedToEditContent.IsUnknown() {
+			sp.IsGroupMemberAllowedToEditContent = plan.IsGroupMemberAllowedToEditContent.ValueBoolPointer()
+		}
+	}
+	if !plan.LeanPopoutEnabled.Equal(state.LeanPopoutEnabled) {
+		if !plan.LeanPopoutEnabled.IsUnknown() {
+			sp.LeanPopoutEnabled = plan.LeanPopoutEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LinkPreviewEnabled.Equal(state.LinkPreviewEnabled) {
+		if !plan.LinkPreviewEnabled.IsUnknown() {
+			sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailTipsAllTipsEnabled.Equal(state.MailTipsAllTipsEnabled) {
+		if !plan.MailTipsAllTipsEnabled.IsUnknown() {
+			sp.MailTipsAllTipsEnabled = plan.MailTipsAllTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailTipsExternalRecipientsTipsEnabled.Equal(state.MailTipsExternalRecipientsTipsEnabled) {
+		if !plan.MailTipsExternalRecipientsTipsEnabled.IsUnknown() {
+			sp.MailTipsExternalRecipientsTipsEnabled = plan.MailTipsExternalRecipientsTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailTipsGroupMetricsEnabled.Equal(state.MailTipsGroupMetricsEnabled) {
+		if !plan.MailTipsGroupMetricsEnabled.IsUnknown() {
+			sp.MailTipsGroupMetricsEnabled = plan.MailTipsGroupMetricsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailTipsLargeAudienceThreshold.Equal(state.MailTipsLargeAudienceThreshold) {
+		if !plan.MailTipsLargeAudienceThreshold.IsUnknown() {
+			sp.MailTipsLargeAudienceThreshold = plan.MailTipsLargeAudienceThreshold.ValueInt64Pointer()
+		}
+	}
+	if !plan.MailTipsMailboxSourcedTipsEnabled.Equal(state.MailTipsMailboxSourcedTipsEnabled) {
+		if !plan.MailTipsMailboxSourcedTipsEnabled.IsUnknown() {
+			sp.MailTipsMailboxSourcedTipsEnabled = plan.MailTipsMailboxSourcedTipsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MaskClientIpInReceivedHeadersEnabled.Equal(state.MaskClientIpInReceivedHeadersEnabled) {
+		if !plan.MaskClientIpInReceivedHeadersEnabled.IsUnknown() {
+			sp.MaskClientIpInReceivedHeadersEnabled = plan.MaskClientIpInReceivedHeadersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MatchSenderOrganizerProperties.Equal(state.MatchSenderOrganizerProperties) {
+		if !plan.MatchSenderOrganizerProperties.IsUnknown() {
+			sp.MatchSenderOrganizerProperties = plan.MatchSenderOrganizerProperties.ValueBoolPointer()
+		}
+	}
+	if !plan.MessageHighlightsEnabled.Equal(state.MessageHighlightsEnabled) {
+		if !plan.MessageHighlightsEnabled.IsUnknown() {
+			sp.MessageHighlightsEnabled = plan.MessageHighlightsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MessageRecallAlertRecipientsEnabled.Equal(state.MessageRecallAlertRecipientsEnabled) {
+		if !plan.MessageRecallAlertRecipientsEnabled.IsUnknown() {
+			sp.MessageRecallAlertRecipientsEnabled = plan.MessageRecallAlertRecipientsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.Equal(state.MessageRecallAlertRecipientsReadMessagesOnlyEnabled) {
+		if !plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsUnknown() {
+			sp.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MessageRecallEnabled.Equal(state.MessageRecallEnabled) {
+		if !plan.MessageRecallEnabled.IsUnknown() {
+			sp.MessageRecallEnabled = plan.MessageRecallEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MessageRecallMaxRecallableAge.Equal(state.MessageRecallMaxRecallableAge) {
+		if v := plan.MessageRecallMaxRecallableAge.ValueString(); v != "" {
+			sp.MessageRecallMaxRecallableAge = objectParam(v)
+		}
+	}
+	if !plan.MessageRemindersEnabled.Equal(state.MessageRemindersEnabled) {
+		if !plan.MessageRemindersEnabled.IsUnknown() {
+			sp.MessageRemindersEnabled = plan.MessageRemindersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MobileAppEducationEnabled.Equal(state.MobileAppEducationEnabled) {
+		if !plan.MobileAppEducationEnabled.IsUnknown() {
+			sp.MobileAppEducationEnabled = plan.MobileAppEducationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OAuth2ClientProfileEnabled.Equal(state.OAuth2ClientProfileEnabled) {
+		if !plan.OAuth2ClientProfileEnabled.IsUnknown() {
+			sp.OAuth2ClientProfileEnabled = plan.OAuth2ClientProfileEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OnlineMeetingsByDefaultEnabled.Equal(state.OnlineMeetingsByDefaultEnabled) {
+		if !plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+			sp.OnlineMeetingsByDefaultEnabled = plan.OnlineMeetingsByDefaultEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookGifPickerDisabled.Equal(state.OutlookGifPickerDisabled) {
+		if !plan.OutlookGifPickerDisabled.IsUnknown() {
+			sp.OutlookGifPickerDisabled = plan.OutlookGifPickerDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookMobileGCCRestrictionsEnabled.Equal(state.OutlookMobileGCCRestrictionsEnabled) {
+		if !plan.OutlookMobileGCCRestrictionsEnabled.IsUnknown() {
+			sp.OutlookMobileGCCRestrictionsEnabled = plan.OutlookMobileGCCRestrictionsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookMobileHelpShiftEnabled.Equal(state.OutlookMobileHelpShiftEnabled) {
+		if !plan.OutlookMobileHelpShiftEnabled.IsUnknown() {
+			sp.OutlookMobileHelpShiftEnabled = plan.OutlookMobileHelpShiftEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookMobileSingleAccountEnabled.Equal(state.OutlookMobileSingleAccountEnabled) {
+		if !plan.OutlookMobileSingleAccountEnabled.IsUnknown() {
+			sp.OutlookMobileSingleAccountEnabled = plan.OutlookMobileSingleAccountEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookPayEnabled.Equal(state.OutlookPayEnabled) {
+		if !plan.OutlookPayEnabled.IsUnknown() {
+			sp.OutlookPayEnabled = plan.OutlookPayEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookTextPredictionDisabled.Equal(state.OutlookTextPredictionDisabled) {
+		if !plan.OutlookTextPredictionDisabled.IsUnknown() {
+			sp.OutlookTextPredictionDisabled = plan.OutlookTextPredictionDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PerTenantSwitchToESTSEnabled.Equal(state.PerTenantSwitchToESTSEnabled) {
+		if !plan.PerTenantSwitchToESTSEnabled.IsUnknown() {
+			sp.PerTenantSwitchToESTSEnabled = plan.PerTenantSwitchToESTSEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PostponeRoamingSignaturesUntilLater.Equal(state.PostponeRoamingSignaturesUntilLater) {
+		if !plan.PostponeRoamingSignaturesUntilLater.IsUnknown() {
+			sp.PostponeRoamingSignaturesUntilLater = plan.PostponeRoamingSignaturesUntilLater.ValueBoolPointer()
+		}
+	}
+	if !plan.PreferredInternetCodePageForShiftJis.Equal(state.PreferredInternetCodePageForShiftJis) {
+		if !plan.PreferredInternetCodePageForShiftJis.IsUnknown() {
+			sp.PreferredInternetCodePageForShiftJis = plan.PreferredInternetCodePageForShiftJis.ValueInt64Pointer()
+		}
+	}
+	if !plan.PublicComputersDetectionEnabled.Equal(state.PublicComputersDetectionEnabled) {
+		if !plan.PublicComputersDetectionEnabled.IsUnknown() {
+			sp.PublicComputersDetectionEnabled = plan.PublicComputersDetectionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PublicFolderShowClientControl.Equal(state.PublicFolderShowClientControl) {
+		if !plan.PublicFolderShowClientControl.IsUnknown() {
+			sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBoolPointer()
+		}
+	}
+	if !plan.PublicFoldersEnabled.Equal(state.PublicFoldersEnabled) {
+		if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
+			sp.PublicFoldersEnabled = objectParam(v)
+		}
+	}
+	if !plan.ReadTrackingEnabled.Equal(state.ReadTrackingEnabled) {
+		if !plan.ReadTrackingEnabled.IsUnknown() {
+			sp.ReadTrackingEnabled = plan.ReadTrackingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RecallReadMessagesEnabled.Equal(state.RecallReadMessagesEnabled) {
+		if !plan.RecallReadMessagesEnabled.IsUnknown() {
+			sp.RecallReadMessagesEnabled = plan.RecallReadMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RecipientDelimiters.Equal(state.RecipientDelimiters) {
+		if !plan.RecipientDelimiters.IsUnknown() {
+			sp.RecipientDelimiters = plan.RecipientDelimiters.ValueBoolPointer()
+		}
+	}
+	if !plan.RefreshSessionEnabled.Equal(state.RefreshSessionEnabled) {
+		if !plan.RefreshSessionEnabled.IsUnknown() {
+			sp.RefreshSessionEnabled = plan.RefreshSessionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RejectDirectSend.Equal(state.RejectDirectSend) {
+		if !plan.RejectDirectSend.IsUnknown() {
+			sp.RejectDirectSend = plan.RejectDirectSend.ValueBoolPointer()
+		}
+	}
+	if !plan.RemotePublicFolderMailboxes.Equal(state.RemotePublicFolderMailboxes) {
+		if !plan.RemotePublicFolderMailboxes.IsNull() && !plan.RemotePublicFolderMailboxes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics); len(v) > 0 {
+				sp.RemotePublicFolderMailboxes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemotePublicFolderMailboxes, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemotePublicFolderMailboxesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {
+		if !plan.RequiredCharsetCoverage.IsUnknown() {
+			sp.RequiredCharsetCoverage = plan.RequiredCharsetCoverage.ValueInt64Pointer()
+		}
+	}
+	if !plan.SendFromAliasEnabled.Equal(state.SendFromAliasEnabled) {
+		if !plan.SendFromAliasEnabled.IsUnknown() {
+			sp.SendFromAliasEnabled = plan.SendFromAliasEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SharedDomainEmailAddressFlowEnabled.Equal(state.SharedDomainEmailAddressFlowEnabled) {
+		if !plan.SharedDomainEmailAddressFlowEnabled.IsUnknown() {
+			sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ShortenEventScopeDefault.Equal(state.ShortenEventScopeDefault) {
+		if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
+			sp.ShortenEventScopeDefault = objectParam(v)
+		}
+	}
+	if !plan.SiteMailboxCreationURL.Equal(state.SiteMailboxCreationURL) {
+		if v := plan.SiteMailboxCreationURL.ValueString(); v != "" {
+			sp.SiteMailboxCreationURL = objectParam(v)
+		}
+	}
+	if !plan.SmtpActionableMessagesEnabled.Equal(state.SmtpActionableMessagesEnabled) {
+		if !plan.SmtpActionableMessagesEnabled.IsUnknown() {
+			sp.SmtpActionableMessagesEnabled = plan.SmtpActionableMessagesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TenantAdminNotificationForDelayedDelicensingEnabled.Equal(state.TenantAdminNotificationForDelayedDelicensingEnabled) {
+		if !plan.TenantAdminNotificationForDelayedDelicensingEnabled.IsUnknown() {
+			sp.TenantAdminNotificationForDelayedDelicensingEnabled = plan.TenantAdminNotificationForDelayedDelicensingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TwoClickMailPreviewEnabled.Equal(state.TwoClickMailPreviewEnabled) {
+		if !plan.TwoClickMailPreviewEnabled.IsUnknown() {
+			sp.TwoClickMailPreviewEnabled = plan.TwoClickMailPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.UnblockUnsafeSenderPromptEnabled.Equal(state.UnblockUnsafeSenderPromptEnabled) {
+		if !plan.UnblockUnsafeSenderPromptEnabled.IsUnknown() {
+			sp.UnblockUnsafeSenderPromptEnabled = plan.UnblockUnsafeSenderPromptEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.VisibleMeetingUpdateProperties.Equal(state.VisibleMeetingUpdateProperties) {
+		sp.VisibleMeetingUpdateProperties = plan.VisibleMeetingUpdateProperties.ValueString()
+	}
+	if !plan.WebPushNotificationsDisabled.Equal(state.WebPushNotificationsDisabled) {
+		if !plan.WebPushNotificationsDisabled.IsUnknown() {
+			sp.WebPushNotificationsDisabled = plan.WebPushNotificationsDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WebSuggestedRepliesDisabled.Equal(state.WebSuggestedRepliesDisabled) {
+		if !plan.WebSuggestedRepliesDisabled.IsUnknown() {
+			sp.WebSuggestedRepliesDisabled = plan.WebSuggestedRepliesDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WorkspaceTenantEnabled.Equal(state.WorkspaceTenantEnabled) {
+		if !plan.WorkspaceTenantEnabled.IsUnknown() {
+			sp.WorkspaceTenantEnabled = plan.WorkspaceTenantEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -792,44 +1870,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ActivityBasedAuthenticationTimeoutInterval": cfg.ActivityBasedAuthenticationTimeoutInterval,
-		"AutoArchivingThresholdPercentage":           cfg.AutoArchivingThresholdPercentage,
-		"BookingsNamingPolicyPrefix":                 cfg.BookingsNamingPolicyPrefix,
-		"BookingsNamingPolicySuffix":                 cfg.BookingsNamingPolicySuffix,
-		"DLPWaitOnSendTimeout":                       cfg.DLPWaitOnSendTimeout,
-		"DefaultAuthenticationPolicy":                cfg.DefaultAuthenticationPolicy,
-		"DefaultGroupAccessType":                     cfg.DefaultGroupAccessType,
-		"DefaultPublicFolderAgeLimit":                cfg.DefaultPublicFolderAgeLimit,
-		"DefaultPublicFolderDeletedItemRetention":    cfg.DefaultPublicFolderDeletedItemRetention,
-		"DefaultPublicFolderIssueWarningQuota":       cfg.DefaultPublicFolderIssueWarningQuota,
-		"DefaultPublicFolderMaxItemSize":             cfg.DefaultPublicFolderMaxItemSize,
-		"DefaultPublicFolderMovedItemRetention":      cfg.DefaultPublicFolderMovedItemRetention,
-		"DefaultPublicFolderProhibitPostQuota":       cfg.DefaultPublicFolderProhibitPostQuota,
-		"DistributionGroupDefaultOU":                 cfg.DistributionGroupDefaultOU,
-		"DistributionGroupNameBlockedWordsList":      cfg.DistributionGroupNameBlockedWordsList,
-		"DistributionGroupNamingPolicy":              cfg.DistributionGroupNamingPolicy,
-		"EwsAllowEntourage":                          cfg.EwsAllowEntourage,
-		"EwsAllowList":                               cfg.EwsAllowList,
-		"EwsAllowMacOutlook":                         cfg.EwsAllowMacOutlook,
-		"EwsAllowOutlook":                            cfg.EwsAllowOutlook,
-		"EwsAllowedAppIDs":                           cfg.EwsAllowedAppIDs,
-		"EwsApplicationAccessPolicy":                 cfg.EwsApplicationAccessPolicy,
-		"EwsBlockList":                               cfg.EwsBlockList,
-		"EwsEnabled":                                 cfg.EwsEnabled,
-		"ExchangeNotificationRecipients":             cfg.ExchangeNotificationRecipients,
-		"FocusedInboxOn":                             cfg.FocusedInboxOn,
-		"HierarchicalAddressBookRoot":                cfg.HierarchicalAddressBookRoot,
-		"IPListBlocked":                              cfg.IPListBlocked,
-		"MailTipsLargeAudienceThreshold":             cfg.MailTipsLargeAudienceThreshold,
-		"MessageRecallEnabled":                       cfg.MessageRecallEnabled,
-		"MessageRecallMaxRecallableAge":              cfg.MessageRecallMaxRecallableAge,
-		"OnlineMeetingsByDefaultEnabled":             cfg.OnlineMeetingsByDefaultEnabled,
-		"PublicFoldersEnabled":                       cfg.PublicFoldersEnabled,
-		"RecallReadMessagesEnabled":                  cfg.RecallReadMessagesEnabled,
-		"RemotePublicFolderMailboxes":                cfg.RemotePublicFolderMailboxes,
-		"ShortenEventScopeDefault":                   cfg.ShortenEventScopeDefault,
-		"SiteMailboxCreationURL":                     cfg.SiteMailboxCreationURL,
-		"VisibleMeetingUpdateProperties":             cfg.VisibleMeetingUpdateProperties,
+		"BookingsNamingPolicyPrefix":     cfg.BookingsNamingPolicyPrefix,
+		"BookingsNamingPolicySuffix":     cfg.BookingsNamingPolicySuffix,
+		"EwsAllowedAppIDs":               cfg.EwsAllowedAppIDs,
+		"VisibleMeetingUpdateProperties": cfg.VisibleMeetingUpdateProperties,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -843,6 +1887,457 @@ func (r *organizationConfigResource) Delete(_ context.Context, _ resource.Delete
 func (r *organizationConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *organizationConfigResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan organizationConfigModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetOrganizationConfig(ctx, exo.GetOrganizationConfigParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur organizationConfigModel
+	readOrganizationConfig(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() {
+		plan.ActionableMessagesExtenalAccessTokenEnabled = cur.ActionableMessagesExtenalAccessTokenEnabled
+	}
+	if plan.ActivityBasedAuthenticationTimeoutEnabled.IsUnknown() {
+		plan.ActivityBasedAuthenticationTimeoutEnabled = cur.ActivityBasedAuthenticationTimeoutEnabled
+	}
+	if plan.ActivityBasedAuthenticationTimeoutInterval.IsUnknown() {
+		plan.ActivityBasedAuthenticationTimeoutInterval = cur.ActivityBasedAuthenticationTimeoutInterval
+	}
+	if plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsUnknown() {
+		plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = cur.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled
+	}
+	if plan.AppsForOfficeEnabled.IsUnknown() {
+		plan.AppsForOfficeEnabled = cur.AppsForOfficeEnabled
+	}
+	if plan.AsyncSendEnabled.IsUnknown() {
+		plan.AsyncSendEnabled = cur.AsyncSendEnabled
+	}
+	if plan.AuditDisabled.IsUnknown() {
+		plan.AuditDisabled = cur.AuditDisabled
+	}
+	if plan.AutoArchivingThresholdPercentage.IsUnknown() {
+		plan.AutoArchivingThresholdPercentage = cur.AutoArchivingThresholdPercentage
+	}
+	if plan.AutoEnableArchiveMailbox.IsUnknown() {
+		plan.AutoEnableArchiveMailbox = cur.AutoEnableArchiveMailbox
+	}
+	if plan.AutoExpandingArchive.IsUnknown() {
+		plan.AutoExpandingArchive = cur.AutoExpandingArchive
+	}
+	if plan.AutodiscoverPartialDirSync.IsUnknown() {
+		plan.AutodiscoverPartialDirSync = cur.AutodiscoverPartialDirSync
+	}
+	if plan.AutomaticForcedReadReceiptEnabled.IsUnknown() {
+		plan.AutomaticForcedReadReceiptEnabled = cur.AutomaticForcedReadReceiptEnabled
+	}
+	if plan.BlockMoveMessagesForGroupFolders.IsUnknown() {
+		plan.BlockMoveMessagesForGroupFolders = cur.BlockMoveMessagesForGroupFolders
+	}
+	if plan.BookingsAddressEntryRestricted.IsUnknown() {
+		plan.BookingsAddressEntryRestricted = cur.BookingsAddressEntryRestricted
+	}
+	if plan.BookingsAuthEnabled.IsUnknown() {
+		plan.BookingsAuthEnabled = cur.BookingsAuthEnabled
+	}
+	if plan.BookingsBlockedWordsEnabled.IsUnknown() {
+		plan.BookingsBlockedWordsEnabled = cur.BookingsBlockedWordsEnabled
+	}
+	if plan.BookingsCreationOfCustomQuestionsRestricted.IsUnknown() {
+		plan.BookingsCreationOfCustomQuestionsRestricted = cur.BookingsCreationOfCustomQuestionsRestricted
+	}
+	if plan.BookingsEnabled.IsUnknown() {
+		plan.BookingsEnabled = cur.BookingsEnabled
+	}
+	if plan.BookingsExposureOfStaffDetailsRestricted.IsUnknown() {
+		plan.BookingsExposureOfStaffDetailsRestricted = cur.BookingsExposureOfStaffDetailsRestricted
+	}
+	if plan.BookingsMembershipApprovalRequired.IsUnknown() {
+		plan.BookingsMembershipApprovalRequired = cur.BookingsMembershipApprovalRequired
+	}
+	if plan.BookingsNamingPolicyEnabled.IsUnknown() {
+		plan.BookingsNamingPolicyEnabled = cur.BookingsNamingPolicyEnabled
+	}
+	if plan.BookingsNamingPolicyPrefix.IsUnknown() {
+		plan.BookingsNamingPolicyPrefix = cur.BookingsNamingPolicyPrefix
+	}
+	if plan.BookingsNamingPolicyPrefixEnabled.IsUnknown() {
+		plan.BookingsNamingPolicyPrefixEnabled = cur.BookingsNamingPolicyPrefixEnabled
+	}
+	if plan.BookingsNamingPolicySuffix.IsUnknown() {
+		plan.BookingsNamingPolicySuffix = cur.BookingsNamingPolicySuffix
+	}
+	if plan.BookingsNamingPolicySuffixEnabled.IsUnknown() {
+		plan.BookingsNamingPolicySuffixEnabled = cur.BookingsNamingPolicySuffixEnabled
+	}
+	if plan.BookingsNotesEntryRestricted.IsUnknown() {
+		plan.BookingsNotesEntryRestricted = cur.BookingsNotesEntryRestricted
+	}
+	if plan.BookingsPaymentsEnabled.IsUnknown() {
+		plan.BookingsPaymentsEnabled = cur.BookingsPaymentsEnabled
+	}
+	if plan.BookingsPhoneNumberEntryRestricted.IsUnknown() {
+		plan.BookingsPhoneNumberEntryRestricted = cur.BookingsPhoneNumberEntryRestricted
+	}
+	if plan.BookingsSearchEngineIndexDisabled.IsUnknown() {
+		plan.BookingsSearchEngineIndexDisabled = cur.BookingsSearchEngineIndexDisabled
+	}
+	if plan.BookingsSmsMicrosoftEnabled.IsUnknown() {
+		plan.BookingsSmsMicrosoftEnabled = cur.BookingsSmsMicrosoftEnabled
+	}
+	if plan.BookingsSocialSharingRestricted.IsUnknown() {
+		plan.BookingsSocialSharingRestricted = cur.BookingsSocialSharingRestricted
+	}
+	if plan.ByteEncoderTypeFor7BitCharsets.IsUnknown() {
+		plan.ByteEncoderTypeFor7BitCharsets = cur.ByteEncoderTypeFor7BitCharsets
+	}
+	if plan.CalendarVersionStoreEnabled.IsUnknown() {
+		plan.CalendarVersionStoreEnabled = cur.CalendarVersionStoreEnabled
+	}
+	if plan.ComplianceMLBgdCrawlEnabled.IsUnknown() {
+		plan.ComplianceMLBgdCrawlEnabled = cur.ComplianceMLBgdCrawlEnabled
+	}
+	if plan.ConnectorsActionableMessagesEnabled.IsUnknown() {
+		plan.ConnectorsActionableMessagesEnabled = cur.ConnectorsActionableMessagesEnabled
+	}
+	if plan.ConnectorsEnabled.IsUnknown() {
+		plan.ConnectorsEnabled = cur.ConnectorsEnabled
+	}
+	if plan.ConnectorsEnabledForOutlook.IsUnknown() {
+		plan.ConnectorsEnabledForOutlook = cur.ConnectorsEnabledForOutlook
+	}
+	if plan.ConnectorsEnabledForSharepoint.IsUnknown() {
+		plan.ConnectorsEnabledForSharepoint = cur.ConnectorsEnabledForSharepoint
+	}
+	if plan.ConnectorsEnabledForTeams.IsUnknown() {
+		plan.ConnectorsEnabledForTeams = cur.ConnectorsEnabledForTeams
+	}
+	if plan.ConnectorsEnabledForYammer.IsUnknown() {
+		plan.ConnectorsEnabledForYammer = cur.ConnectorsEnabledForYammer
+	}
+	if plan.CustomerLockboxEnabled.IsUnknown() {
+		plan.CustomerLockboxEnabled = cur.CustomerLockboxEnabled
+	}
+	if plan.DLPViaDcsEnabled.IsUnknown() {
+		plan.DLPViaDcsEnabled = cur.DLPViaDcsEnabled
+	}
+	if plan.DLPWaitOnSendEnabled.IsUnknown() {
+		plan.DLPWaitOnSendEnabled = cur.DLPWaitOnSendEnabled
+	}
+	if plan.DLPWaitOnSendTimeout.IsUnknown() {
+		plan.DLPWaitOnSendTimeout = cur.DLPWaitOnSendTimeout
+	}
+	if plan.DefaultAuthenticationPolicy.IsUnknown() {
+		plan.DefaultAuthenticationPolicy = cur.DefaultAuthenticationPolicy
+	}
+	if plan.DefaultFolderPermissionRestricted.IsUnknown() {
+		plan.DefaultFolderPermissionRestricted = cur.DefaultFolderPermissionRestricted
+	}
+	if plan.DefaultGroupAccessType.IsUnknown() {
+		plan.DefaultGroupAccessType = cur.DefaultGroupAccessType
+	}
+	if plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+		plan.DefaultMinutesToReduceLongEventsBy = cur.DefaultMinutesToReduceLongEventsBy
+	}
+	if plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+		plan.DefaultMinutesToReduceShortEventsBy = cur.DefaultMinutesToReduceShortEventsBy
+	}
+	if plan.DefaultPublicFolderAgeLimit.IsUnknown() {
+		plan.DefaultPublicFolderAgeLimit = cur.DefaultPublicFolderAgeLimit
+	}
+	if plan.DefaultPublicFolderDeletedItemRetention.IsUnknown() {
+		plan.DefaultPublicFolderDeletedItemRetention = cur.DefaultPublicFolderDeletedItemRetention
+	}
+	if plan.DefaultPublicFolderIssueWarningQuota.IsUnknown() {
+		plan.DefaultPublicFolderIssueWarningQuota = cur.DefaultPublicFolderIssueWarningQuota
+	}
+	if plan.DefaultPublicFolderMaxItemSize.IsUnknown() {
+		plan.DefaultPublicFolderMaxItemSize = cur.DefaultPublicFolderMaxItemSize
+	}
+	if plan.DefaultPublicFolderMovedItemRetention.IsUnknown() {
+		plan.DefaultPublicFolderMovedItemRetention = cur.DefaultPublicFolderMovedItemRetention
+	}
+	if plan.DefaultPublicFolderProhibitPostQuota.IsUnknown() {
+		plan.DefaultPublicFolderProhibitPostQuota = cur.DefaultPublicFolderProhibitPostQuota
+	}
+	if plan.DelayedDelicensingEnabled.IsUnknown() {
+		plan.DelayedDelicensingEnabled = cur.DelayedDelicensingEnabled
+	}
+	if plan.DirectReportsGroupAutoCreationEnabled.IsUnknown() {
+		plan.DirectReportsGroupAutoCreationEnabled = cur.DirectReportsGroupAutoCreationEnabled
+	}
+	if plan.DisablePlusAddressInRecipients.IsUnknown() {
+		plan.DisablePlusAddressInRecipients = cur.DisablePlusAddressInRecipients
+	}
+	if plan.DistributionGroupDefaultOU.IsUnknown() {
+		plan.DistributionGroupDefaultOU = cur.DistributionGroupDefaultOU
+	}
+	if plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
+		plan.DistributionGroupNameBlockedWordsList = cur.DistributionGroupNameBlockedWordsList
+	}
+	if plan.DistributionGroupNamingPolicy.IsUnknown() {
+		plan.DistributionGroupNamingPolicy = cur.DistributionGroupNamingPolicy
+	}
+	if plan.ElcProcessingDisabled.IsUnknown() {
+		plan.ElcProcessingDisabled = cur.ElcProcessingDisabled
+	}
+	if plan.EnableForwardingAddressSyncForMailboxes.IsUnknown() {
+		plan.EnableForwardingAddressSyncForMailboxes = cur.EnableForwardingAddressSyncForMailboxes
+	}
+	if plan.EnableOutlookEvents.IsUnknown() {
+		plan.EnableOutlookEvents = cur.EnableOutlookEvents
+	}
+	if plan.EndUserDLUpgradeFlowsDisabled.IsUnknown() {
+		plan.EndUserDLUpgradeFlowsDisabled = cur.EndUserDLUpgradeFlowsDisabled
+	}
+	if plan.EndUserMailNotificationForDelayedDelicensingEnabled.IsUnknown() {
+		plan.EndUserMailNotificationForDelayedDelicensingEnabled = cur.EndUserMailNotificationForDelayedDelicensingEnabled
+	}
+	if plan.EnforceExoAppRbacPermissions.IsUnknown() {
+		plan.EnforceExoAppRbacPermissions = cur.EnforceExoAppRbacPermissions
+	}
+	if plan.EnforceShortenEventSetting.IsUnknown() {
+		plan.EnforceShortenEventSetting = cur.EnforceShortenEventSetting
+	}
+	if plan.EwsAllowEntourage.IsUnknown() {
+		plan.EwsAllowEntourage = cur.EwsAllowEntourage
+	}
+	if plan.EwsAllowList.IsUnknown() {
+		plan.EwsAllowList = cur.EwsAllowList
+	}
+	if plan.EwsAllowMacOutlook.IsUnknown() {
+		plan.EwsAllowMacOutlook = cur.EwsAllowMacOutlook
+	}
+	if plan.EwsAllowOutlook.IsUnknown() {
+		plan.EwsAllowOutlook = cur.EwsAllowOutlook
+	}
+	if plan.EwsAllowedAppIDs.IsUnknown() {
+		plan.EwsAllowedAppIDs = cur.EwsAllowedAppIDs
+	}
+	if plan.EwsApplicationAccessPolicy.IsUnknown() {
+		plan.EwsApplicationAccessPolicy = cur.EwsApplicationAccessPolicy
+	}
+	if plan.EwsBlockList.IsUnknown() {
+		plan.EwsBlockList = cur.EwsBlockList
+	}
+	if plan.EwsEnabled.IsUnknown() {
+		plan.EwsEnabled = cur.EwsEnabled
+	}
+	if plan.ExchangeAttributesCloudManagedByDefault.IsUnknown() {
+		plan.ExchangeAttributesCloudManagedByDefault = cur.ExchangeAttributesCloudManagedByDefault
+	}
+	if plan.ExchangeAttributesServerManagedByDefault.IsUnknown() {
+		plan.ExchangeAttributesServerManagedByDefault = cur.ExchangeAttributesServerManagedByDefault
+	}
+	if plan.ExchangeNotificationEnabled.IsUnknown() {
+		plan.ExchangeNotificationEnabled = cur.ExchangeNotificationEnabled
+	}
+	if plan.ExchangeNotificationRecipients.IsUnknown() {
+		plan.ExchangeNotificationRecipients = cur.ExchangeNotificationRecipients
+	}
+	if plan.FindTimeAttendeeAuthenticationEnabled.IsUnknown() {
+		plan.FindTimeAttendeeAuthenticationEnabled = cur.FindTimeAttendeeAuthenticationEnabled
+	}
+	if plan.FindTimeAutoScheduleDisabled.IsUnknown() {
+		plan.FindTimeAutoScheduleDisabled = cur.FindTimeAutoScheduleDisabled
+	}
+	if plan.FindTimeLockPollForAttendeesEnabled.IsUnknown() {
+		plan.FindTimeLockPollForAttendeesEnabled = cur.FindTimeLockPollForAttendeesEnabled
+	}
+	if plan.FindTimeOnlineMeetingOptionDisabled.IsUnknown() {
+		plan.FindTimeOnlineMeetingOptionDisabled = cur.FindTimeOnlineMeetingOptionDisabled
+	}
+	if plan.FocusedInboxOn.IsUnknown() {
+		plan.FocusedInboxOn = cur.FocusedInboxOn
+	}
+	if plan.HierarchicalAddressBookRoot.IsUnknown() {
+		plan.HierarchicalAddressBookRoot = cur.HierarchicalAddressBookRoot
+	}
+	if plan.HybridRSVPEnabled.IsUnknown() {
+		plan.HybridRSVPEnabled = cur.HybridRSVPEnabled
+	}
+	if plan.IPListBlocked.IsUnknown() {
+		plan.IPListBlocked = cur.IPListBlocked
+	}
+	if plan.InRegionRoutingEnabled.IsUnknown() {
+		plan.InRegionRoutingEnabled = cur.InRegionRoutingEnabled
+	}
+	if plan.IsAgendaMailEnabled.IsUnknown() {
+		plan.IsAgendaMailEnabled = cur.IsAgendaMailEnabled
+	}
+	if plan.IsGroupFoldersAndRulesEnabled.IsUnknown() {
+		plan.IsGroupFoldersAndRulesEnabled = cur.IsGroupFoldersAndRulesEnabled
+	}
+	if plan.IsGroupMemberAllowedToEditContent.IsUnknown() {
+		plan.IsGroupMemberAllowedToEditContent = cur.IsGroupMemberAllowedToEditContent
+	}
+	if plan.LeanPopoutEnabled.IsUnknown() {
+		plan.LeanPopoutEnabled = cur.LeanPopoutEnabled
+	}
+	if plan.LinkPreviewEnabled.IsUnknown() {
+		plan.LinkPreviewEnabled = cur.LinkPreviewEnabled
+	}
+	if plan.MailTipsAllTipsEnabled.IsUnknown() {
+		plan.MailTipsAllTipsEnabled = cur.MailTipsAllTipsEnabled
+	}
+	if plan.MailTipsExternalRecipientsTipsEnabled.IsUnknown() {
+		plan.MailTipsExternalRecipientsTipsEnabled = cur.MailTipsExternalRecipientsTipsEnabled
+	}
+	if plan.MailTipsGroupMetricsEnabled.IsUnknown() {
+		plan.MailTipsGroupMetricsEnabled = cur.MailTipsGroupMetricsEnabled
+	}
+	if plan.MailTipsLargeAudienceThreshold.IsUnknown() {
+		plan.MailTipsLargeAudienceThreshold = cur.MailTipsLargeAudienceThreshold
+	}
+	if plan.MailTipsMailboxSourcedTipsEnabled.IsUnknown() {
+		plan.MailTipsMailboxSourcedTipsEnabled = cur.MailTipsMailboxSourcedTipsEnabled
+	}
+	if plan.MaskClientIpInReceivedHeadersEnabled.IsUnknown() {
+		plan.MaskClientIpInReceivedHeadersEnabled = cur.MaskClientIpInReceivedHeadersEnabled
+	}
+	if plan.MatchSenderOrganizerProperties.IsUnknown() {
+		plan.MatchSenderOrganizerProperties = cur.MatchSenderOrganizerProperties
+	}
+	if plan.MessageHighlightsEnabled.IsUnknown() {
+		plan.MessageHighlightsEnabled = cur.MessageHighlightsEnabled
+	}
+	if plan.MessageRecallAlertRecipientsEnabled.IsUnknown() {
+		plan.MessageRecallAlertRecipientsEnabled = cur.MessageRecallAlertRecipientsEnabled
+	}
+	if plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsUnknown() {
+		plan.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = cur.MessageRecallAlertRecipientsReadMessagesOnlyEnabled
+	}
+	if plan.MessageRecallEnabled.IsUnknown() {
+		plan.MessageRecallEnabled = cur.MessageRecallEnabled
+	}
+	if plan.MessageRecallMaxRecallableAge.IsUnknown() {
+		plan.MessageRecallMaxRecallableAge = cur.MessageRecallMaxRecallableAge
+	}
+	if plan.MessageRemindersEnabled.IsUnknown() {
+		plan.MessageRemindersEnabled = cur.MessageRemindersEnabled
+	}
+	if plan.MobileAppEducationEnabled.IsUnknown() {
+		plan.MobileAppEducationEnabled = cur.MobileAppEducationEnabled
+	}
+	if plan.OAuth2ClientProfileEnabled.IsUnknown() {
+		plan.OAuth2ClientProfileEnabled = cur.OAuth2ClientProfileEnabled
+	}
+	if plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+		plan.OnlineMeetingsByDefaultEnabled = cur.OnlineMeetingsByDefaultEnabled
+	}
+	if plan.OutlookGifPickerDisabled.IsUnknown() {
+		plan.OutlookGifPickerDisabled = cur.OutlookGifPickerDisabled
+	}
+	if plan.OutlookMobileGCCRestrictionsEnabled.IsUnknown() {
+		plan.OutlookMobileGCCRestrictionsEnabled = cur.OutlookMobileGCCRestrictionsEnabled
+	}
+	if plan.OutlookMobileHelpShiftEnabled.IsUnknown() {
+		plan.OutlookMobileHelpShiftEnabled = cur.OutlookMobileHelpShiftEnabled
+	}
+	if plan.OutlookMobileSingleAccountEnabled.IsUnknown() {
+		plan.OutlookMobileSingleAccountEnabled = cur.OutlookMobileSingleAccountEnabled
+	}
+	if plan.OutlookPayEnabled.IsUnknown() {
+		plan.OutlookPayEnabled = cur.OutlookPayEnabled
+	}
+	if plan.OutlookTextPredictionDisabled.IsUnknown() {
+		plan.OutlookTextPredictionDisabled = cur.OutlookTextPredictionDisabled
+	}
+	if plan.PerTenantSwitchToESTSEnabled.IsUnknown() {
+		plan.PerTenantSwitchToESTSEnabled = cur.PerTenantSwitchToESTSEnabled
+	}
+	if plan.PostponeRoamingSignaturesUntilLater.IsUnknown() {
+		plan.PostponeRoamingSignaturesUntilLater = cur.PostponeRoamingSignaturesUntilLater
+	}
+	if plan.PreferredInternetCodePageForShiftJis.IsUnknown() {
+		plan.PreferredInternetCodePageForShiftJis = cur.PreferredInternetCodePageForShiftJis
+	}
+	if plan.PublicComputersDetectionEnabled.IsUnknown() {
+		plan.PublicComputersDetectionEnabled = cur.PublicComputersDetectionEnabled
+	}
+	if plan.PublicFolderShowClientControl.IsUnknown() {
+		plan.PublicFolderShowClientControl = cur.PublicFolderShowClientControl
+	}
+	if plan.PublicFoldersEnabled.IsUnknown() {
+		plan.PublicFoldersEnabled = cur.PublicFoldersEnabled
+	}
+	if plan.ReadTrackingEnabled.IsUnknown() {
+		plan.ReadTrackingEnabled = cur.ReadTrackingEnabled
+	}
+	if plan.RecallReadMessagesEnabled.IsUnknown() {
+		plan.RecallReadMessagesEnabled = cur.RecallReadMessagesEnabled
+	}
+	if plan.RecipientDelimiters.IsUnknown() {
+		plan.RecipientDelimiters = cur.RecipientDelimiters
+	}
+	if plan.RefreshSessionEnabled.IsUnknown() {
+		plan.RefreshSessionEnabled = cur.RefreshSessionEnabled
+	}
+	if plan.RejectDirectSend.IsUnknown() {
+		plan.RejectDirectSend = cur.RejectDirectSend
+	}
+	if plan.RemotePublicFolderMailboxes.IsUnknown() {
+		plan.RemotePublicFolderMailboxes = cur.RemotePublicFolderMailboxes
+	}
+	if plan.RequiredCharsetCoverage.IsUnknown() {
+		plan.RequiredCharsetCoverage = cur.RequiredCharsetCoverage
+	}
+	if plan.SendFromAliasEnabled.IsUnknown() {
+		plan.SendFromAliasEnabled = cur.SendFromAliasEnabled
+	}
+	if plan.SharedDomainEmailAddressFlowEnabled.IsUnknown() {
+		plan.SharedDomainEmailAddressFlowEnabled = cur.SharedDomainEmailAddressFlowEnabled
+	}
+	if plan.ShortenEventScopeDefault.IsUnknown() {
+		plan.ShortenEventScopeDefault = cur.ShortenEventScopeDefault
+	}
+	if plan.SiteMailboxCreationURL.IsUnknown() {
+		plan.SiteMailboxCreationURL = cur.SiteMailboxCreationURL
+	}
+	if plan.SmtpActionableMessagesEnabled.IsUnknown() {
+		plan.SmtpActionableMessagesEnabled = cur.SmtpActionableMessagesEnabled
+	}
+	if plan.TenantAdminNotificationForDelayedDelicensingEnabled.IsUnknown() {
+		plan.TenantAdminNotificationForDelayedDelicensingEnabled = cur.TenantAdminNotificationForDelayedDelicensingEnabled
+	}
+	if plan.TwoClickMailPreviewEnabled.IsUnknown() {
+		plan.TwoClickMailPreviewEnabled = cur.TwoClickMailPreviewEnabled
+	}
+	if plan.UnblockUnsafeSenderPromptEnabled.IsUnknown() {
+		plan.UnblockUnsafeSenderPromptEnabled = cur.UnblockUnsafeSenderPromptEnabled
+	}
+	if plan.VisibleMeetingUpdateProperties.IsUnknown() {
+		plan.VisibleMeetingUpdateProperties = cur.VisibleMeetingUpdateProperties
+	}
+	if plan.WebPushNotificationsDisabled.IsUnknown() {
+		plan.WebPushNotificationsDisabled = cur.WebPushNotificationsDisabled
+	}
+	if plan.WebSuggestedRepliesDisabled.IsUnknown() {
+		plan.WebSuggestedRepliesDisabled = cur.WebSuggestedRepliesDisabled
+	}
+	if plan.WorkspaceTenantEnabled.IsUnknown() {
+		plan.WorkspaceTenantEnabled = cur.WorkspaceTenantEnabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *organizationConfigResource) identityOf(m organizationConfigModel) string {
@@ -885,12 +2380,12 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.ActionableMessagesExtenalAccessTokenEnabled = types.BoolValue(getBool(obj, "ActionableMessagesExtenalAccessTokenEnabled"))
 	m.ActivityBasedAuthenticationTimeoutEnabled = types.BoolValue(getBool(obj, "ActivityBasedAuthenticationTimeoutEnabled"))
-	m.ActivityBasedAuthenticationTimeoutInterval = types.StringValue(getString(obj, "ActivityBasedAuthenticationTimeoutInterval"))
+	m.ActivityBasedAuthenticationTimeoutInterval = types.StringValue(getObjectJSON(obj, "ActivityBasedAuthenticationTimeoutInterval"))
 	m.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled = types.BoolValue(getBool(obj, "ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled"))
 	m.AppsForOfficeEnabled = types.BoolValue(getBool(obj, "AppsForOfficeEnabled"))
 	m.AsyncSendEnabled = types.BoolValue(getBool(obj, "AsyncSendEnabled"))
 	m.AuditDisabled = types.BoolValue(getBool(obj, "AuditDisabled"))
-	m.AutoArchivingThresholdPercentage = types.StringValue(getString(obj, "AutoArchivingThresholdPercentage"))
+	m.AutoArchivingThresholdPercentage = types.Int64Value(getInt(obj, "AutoArchivingThresholdPercentage"))
 	m.AutoEnableArchiveMailbox = types.BoolValue(getBool(obj, "AutoEnableArchiveMailbox"))
 	m.AutoExpandingArchive = types.BoolValue(getBool(obj, "AutoExpandingArchive"))
 	m.AutodiscoverPartialDirSync = types.BoolValue(getBool(obj, "AutodiscoverPartialDirSync"))
@@ -914,6 +2409,7 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.BookingsSearchEngineIndexDisabled = types.BoolValue(getBool(obj, "BookingsSearchEngineIndexDisabled"))
 	m.BookingsSmsMicrosoftEnabled = types.BoolValue(getBool(obj, "BookingsSmsMicrosoftEnabled"))
 	m.BookingsSocialSharingRestricted = types.BoolValue(getBool(obj, "BookingsSocialSharingRestricted"))
+	m.ByteEncoderTypeFor7BitCharsets = types.Int64Value(getInt(obj, "ByteEncoderTypeFor7BitCharsets"))
 	m.CalendarVersionStoreEnabled = types.BoolValue(getBool(obj, "CalendarVersionStoreEnabled"))
 	m.ComplianceMLBgdCrawlEnabled = types.BoolValue(getBool(obj, "ComplianceMLBgdCrawlEnabled"))
 	m.ConnectorsActionableMessagesEnabled = types.BoolValue(getBool(obj, "ConnectorsActionableMessagesEnabled"))
@@ -925,22 +2421,24 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.CustomerLockboxEnabled = types.BoolValue(getBool(obj, "CustomerLockboxEnabled"))
 	m.DLPViaDcsEnabled = types.BoolValue(getBool(obj, "DLPViaDcsEnabled"))
 	m.DLPWaitOnSendEnabled = types.BoolValue(getBool(obj, "DLPWaitOnSendEnabled"))
-	m.DLPWaitOnSendTimeout = types.StringValue(getString(obj, "DLPWaitOnSendTimeout"))
-	m.DefaultAuthenticationPolicy = types.StringValue(getString(obj, "DefaultAuthenticationPolicy"))
+	m.DLPWaitOnSendTimeout = types.Int64Value(getInt(obj, "DLPWaitOnSendTimeout"))
+	m.DefaultAuthenticationPolicy = types.StringValue(getObjectJSON(obj, "DefaultAuthenticationPolicy"))
 	m.DefaultFolderPermissionRestricted = types.BoolValue(getBool(obj, "DefaultFolderPermissionRestricted"))
-	m.DefaultGroupAccessType = types.StringValue(getString(obj, "DefaultGroupAccessType"))
-	m.DefaultPublicFolderAgeLimit = types.StringValue(getString(obj, "DefaultPublicFolderAgeLimit"))
-	m.DefaultPublicFolderDeletedItemRetention = types.StringValue(getString(obj, "DefaultPublicFolderDeletedItemRetention"))
-	m.DefaultPublicFolderIssueWarningQuota = types.StringValue(getString(obj, "DefaultPublicFolderIssueWarningQuota"))
-	m.DefaultPublicFolderMaxItemSize = types.StringValue(getString(obj, "DefaultPublicFolderMaxItemSize"))
-	m.DefaultPublicFolderMovedItemRetention = types.StringValue(getString(obj, "DefaultPublicFolderMovedItemRetention"))
-	m.DefaultPublicFolderProhibitPostQuota = types.StringValue(getString(obj, "DefaultPublicFolderProhibitPostQuota"))
+	m.DefaultGroupAccessType = types.StringValue(getObjectJSON(obj, "DefaultGroupAccessType"))
+	m.DefaultMinutesToReduceLongEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceLongEventsBy"))
+	m.DefaultMinutesToReduceShortEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceShortEventsBy"))
+	m.DefaultPublicFolderAgeLimit = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderAgeLimit"))
+	m.DefaultPublicFolderDeletedItemRetention = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderDeletedItemRetention"))
+	m.DefaultPublicFolderIssueWarningQuota = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderIssueWarningQuota"))
+	m.DefaultPublicFolderMaxItemSize = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderMaxItemSize"))
+	m.DefaultPublicFolderMovedItemRetention = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderMovedItemRetention"))
+	m.DefaultPublicFolderProhibitPostQuota = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderProhibitPostQuota"))
 	m.DelayedDelicensingEnabled = types.BoolValue(getBool(obj, "DelayedDelicensingEnabled"))
 	m.DirectReportsGroupAutoCreationEnabled = types.BoolValue(getBool(obj, "DirectReportsGroupAutoCreationEnabled"))
 	m.DisablePlusAddressInRecipients = types.BoolValue(getBool(obj, "DisablePlusAddressInRecipients"))
-	m.DistributionGroupDefaultOU = types.StringValue(getString(obj, "DistributionGroupDefaultOU"))
-	m.DistributionGroupNameBlockedWordsList = types.StringValue(getString(obj, "DistributionGroupNameBlockedWordsList"))
-	m.DistributionGroupNamingPolicy = types.StringValue(getString(obj, "DistributionGroupNamingPolicy"))
+	m.DistributionGroupDefaultOU = types.StringValue(getObjectJSON(obj, "DistributionGroupDefaultOU"))
+	m.DistributionGroupNameBlockedWordsList = stringSetValue(ctx, getStringSlice(obj, "DistributionGroupNameBlockedWordsList"))
+	m.DistributionGroupNamingPolicy = types.StringValue(getObjectJSON(obj, "DistributionGroupNamingPolicy"))
 	m.ElcProcessingDisabled = types.BoolValue(getBool(obj, "ElcProcessingDisabled"))
 	m.EnableForwardingAddressSyncForMailboxes = types.BoolValue(getBool(obj, "EnableForwardingAddressSyncForMailboxes"))
 	m.EnableOutlookEvents = types.BoolValue(getBool(obj, "EnableOutlookEvents"))
@@ -948,26 +2446,26 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.EndUserMailNotificationForDelayedDelicensingEnabled = types.BoolValue(getBool(obj, "EndUserMailNotificationForDelayedDelicensingEnabled"))
 	m.EnforceExoAppRbacPermissions = types.BoolValue(getBool(obj, "EnforceExoAppRbacPermissions"))
 	m.EnforceShortenEventSetting = types.BoolValue(getBool(obj, "EnforceShortenEventSetting"))
-	m.EwsAllowEntourage = types.StringValue(getString(obj, "EwsAllowEntourage"))
-	m.EwsAllowList = types.StringValue(getString(obj, "EwsAllowList"))
-	m.EwsAllowMacOutlook = types.StringValue(getString(obj, "EwsAllowMacOutlook"))
-	m.EwsAllowOutlook = types.StringValue(getString(obj, "EwsAllowOutlook"))
+	m.EwsAllowEntourage = types.BoolValue(getBool(obj, "EwsAllowEntourage"))
+	m.EwsAllowList = stringSetValue(ctx, getStringSlice(obj, "EwsAllowList"))
+	m.EwsAllowMacOutlook = types.BoolValue(getBool(obj, "EwsAllowMacOutlook"))
+	m.EwsAllowOutlook = types.BoolValue(getBool(obj, "EwsAllowOutlook"))
 	m.EwsAllowedAppIDs = types.StringValue(getString(obj, "EwsAllowedAppIDs"))
-	m.EwsApplicationAccessPolicy = types.StringValue(getString(obj, "EwsApplicationAccessPolicy"))
-	m.EwsBlockList = types.StringValue(getString(obj, "EwsBlockList"))
-	m.EwsEnabled = types.StringValue(getString(obj, "EwsEnabled"))
+	m.EwsApplicationAccessPolicy = types.StringValue(getObjectJSON(obj, "EwsApplicationAccessPolicy"))
+	m.EwsBlockList = stringSetValue(ctx, getStringSlice(obj, "EwsBlockList"))
+	m.EwsEnabled = types.BoolValue(getBool(obj, "EwsEnabled"))
 	m.ExchangeAttributesCloudManagedByDefault = types.BoolValue(getBool(obj, "ExchangeAttributesCloudManagedByDefault"))
 	m.ExchangeAttributesServerManagedByDefault = types.BoolValue(getBool(obj, "ExchangeAttributesServerManagedByDefault"))
 	m.ExchangeNotificationEnabled = types.BoolValue(getBool(obj, "ExchangeNotificationEnabled"))
-	m.ExchangeNotificationRecipients = types.StringValue(getString(obj, "ExchangeNotificationRecipients"))
+	m.ExchangeNotificationRecipients = stringSetValue(ctx, getStringSlice(obj, "ExchangeNotificationRecipients"))
 	m.FindTimeAttendeeAuthenticationEnabled = types.BoolValue(getBool(obj, "FindTimeAttendeeAuthenticationEnabled"))
 	m.FindTimeAutoScheduleDisabled = types.BoolValue(getBool(obj, "FindTimeAutoScheduleDisabled"))
 	m.FindTimeLockPollForAttendeesEnabled = types.BoolValue(getBool(obj, "FindTimeLockPollForAttendeesEnabled"))
 	m.FindTimeOnlineMeetingOptionDisabled = types.BoolValue(getBool(obj, "FindTimeOnlineMeetingOptionDisabled"))
-	m.FocusedInboxOn = types.StringValue(getString(obj, "FocusedInboxOn"))
-	m.HierarchicalAddressBookRoot = types.StringValue(getString(obj, "HierarchicalAddressBookRoot"))
+	m.FocusedInboxOn = types.BoolValue(getBool(obj, "FocusedInboxOn"))
+	m.HierarchicalAddressBookRoot = types.StringValue(getObjectJSON(obj, "HierarchicalAddressBookRoot"))
 	m.HybridRSVPEnabled = types.BoolValue(getBool(obj, "HybridRSVPEnabled"))
-	m.IPListBlocked = types.StringValue(getString(obj, "IPListBlocked"))
+	m.IPListBlocked = stringSetValue(ctx, getStringSlice(obj, "IPListBlocked"))
 	m.InRegionRoutingEnabled = types.BoolValue(getBool(obj, "InRegionRoutingEnabled"))
 	m.IsAgendaMailEnabled = types.BoolValue(getBool(obj, "IsAgendaMailEnabled"))
 	m.IsGroupFoldersAndRulesEnabled = types.BoolValue(getBool(obj, "IsGroupFoldersAndRulesEnabled"))
@@ -977,19 +2475,19 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.MailTipsAllTipsEnabled = types.BoolValue(getBool(obj, "MailTipsAllTipsEnabled"))
 	m.MailTipsExternalRecipientsTipsEnabled = types.BoolValue(getBool(obj, "MailTipsExternalRecipientsTipsEnabled"))
 	m.MailTipsGroupMetricsEnabled = types.BoolValue(getBool(obj, "MailTipsGroupMetricsEnabled"))
-	m.MailTipsLargeAudienceThreshold = types.StringValue(getString(obj, "MailTipsLargeAudienceThreshold"))
+	m.MailTipsLargeAudienceThreshold = types.Int64Value(getInt(obj, "MailTipsLargeAudienceThreshold"))
 	m.MailTipsMailboxSourcedTipsEnabled = types.BoolValue(getBool(obj, "MailTipsMailboxSourcedTipsEnabled"))
 	m.MaskClientIpInReceivedHeadersEnabled = types.BoolValue(getBool(obj, "MaskClientIpInReceivedHeadersEnabled"))
 	m.MatchSenderOrganizerProperties = types.BoolValue(getBool(obj, "MatchSenderOrganizerProperties"))
 	m.MessageHighlightsEnabled = types.BoolValue(getBool(obj, "MessageHighlightsEnabled"))
 	m.MessageRecallAlertRecipientsEnabled = types.BoolValue(getBool(obj, "MessageRecallAlertRecipientsEnabled"))
 	m.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = types.BoolValue(getBool(obj, "MessageRecallAlertRecipientsReadMessagesOnlyEnabled"))
-	m.MessageRecallEnabled = types.StringValue(getString(obj, "MessageRecallEnabled"))
-	m.MessageRecallMaxRecallableAge = types.StringValue(getString(obj, "MessageRecallMaxRecallableAge"))
+	m.MessageRecallEnabled = types.BoolValue(getBool(obj, "MessageRecallEnabled"))
+	m.MessageRecallMaxRecallableAge = types.StringValue(getObjectJSON(obj, "MessageRecallMaxRecallableAge"))
 	m.MessageRemindersEnabled = types.BoolValue(getBool(obj, "MessageRemindersEnabled"))
 	m.MobileAppEducationEnabled = types.BoolValue(getBool(obj, "MobileAppEducationEnabled"))
 	m.OAuth2ClientProfileEnabled = types.BoolValue(getBool(obj, "OAuth2ClientProfileEnabled"))
-	m.OnlineMeetingsByDefaultEnabled = types.StringValue(getString(obj, "OnlineMeetingsByDefaultEnabled"))
+	m.OnlineMeetingsByDefaultEnabled = types.BoolValue(getBool(obj, "OnlineMeetingsByDefaultEnabled"))
 	m.OutlookGifPickerDisabled = types.BoolValue(getBool(obj, "OutlookGifPickerDisabled"))
 	m.OutlookMobileGCCRestrictionsEnabled = types.BoolValue(getBool(obj, "OutlookMobileGCCRestrictionsEnabled"))
 	m.OutlookMobileHelpShiftEnabled = types.BoolValue(getBool(obj, "OutlookMobileHelpShiftEnabled"))
@@ -998,19 +2496,21 @@ func readOrganizationConfig(ctx context.Context, obj map[string]any, m *organiza
 	m.OutlookTextPredictionDisabled = types.BoolValue(getBool(obj, "OutlookTextPredictionDisabled"))
 	m.PerTenantSwitchToESTSEnabled = types.BoolValue(getBool(obj, "PerTenantSwitchToESTSEnabled"))
 	m.PostponeRoamingSignaturesUntilLater = types.BoolValue(getBool(obj, "PostponeRoamingSignaturesUntilLater"))
+	m.PreferredInternetCodePageForShiftJis = types.Int64Value(getInt(obj, "PreferredInternetCodePageForShiftJis"))
 	m.PublicComputersDetectionEnabled = types.BoolValue(getBool(obj, "PublicComputersDetectionEnabled"))
 	m.PublicFolderShowClientControl = types.BoolValue(getBool(obj, "PublicFolderShowClientControl"))
-	m.PublicFoldersEnabled = types.StringValue(getString(obj, "PublicFoldersEnabled"))
+	m.PublicFoldersEnabled = types.StringValue(getObjectJSON(obj, "PublicFoldersEnabled"))
 	m.ReadTrackingEnabled = types.BoolValue(getBool(obj, "ReadTrackingEnabled"))
-	m.RecallReadMessagesEnabled = types.StringValue(getString(obj, "RecallReadMessagesEnabled"))
+	m.RecallReadMessagesEnabled = types.BoolValue(getBool(obj, "RecallReadMessagesEnabled"))
 	m.RecipientDelimiters = types.BoolValue(getBool(obj, "RecipientDelimiters"))
 	m.RefreshSessionEnabled = types.BoolValue(getBool(obj, "RefreshSessionEnabled"))
 	m.RejectDirectSend = types.BoolValue(getBool(obj, "RejectDirectSend"))
-	m.RemotePublicFolderMailboxes = types.StringValue(getString(obj, "RemotePublicFolderMailboxes"))
+	m.RemotePublicFolderMailboxes = stringSetValue(ctx, getStringSlice(obj, "RemotePublicFolderMailboxes"))
+	m.RequiredCharsetCoverage = types.Int64Value(getInt(obj, "RequiredCharsetCoverage"))
 	m.SendFromAliasEnabled = types.BoolValue(getBool(obj, "SendFromAliasEnabled"))
 	m.SharedDomainEmailAddressFlowEnabled = types.BoolValue(getBool(obj, "SharedDomainEmailAddressFlowEnabled"))
-	m.ShortenEventScopeDefault = types.StringValue(getString(obj, "ShortenEventScopeDefault"))
-	m.SiteMailboxCreationURL = types.StringValue(getString(obj, "SiteMailboxCreationURL"))
+	m.ShortenEventScopeDefault = types.StringValue(getObjectJSON(obj, "ShortenEventScopeDefault"))
+	m.SiteMailboxCreationURL = types.StringValue(getObjectJSON(obj, "SiteMailboxCreationURL"))
 	m.SmtpActionableMessagesEnabled = types.BoolValue(getBool(obj, "SmtpActionableMessagesEnabled"))
 	m.TenantAdminNotificationForDelayedDelicensingEnabled = types.BoolValue(getBool(obj, "TenantAdminNotificationForDelayedDelicensingEnabled"))
 	m.TwoClickMailPreviewEnabled = types.BoolValue(getBool(obj, "TwoClickMailPreviewEnabled"))
@@ -1030,7 +2530,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.AppsForOfficeEnabled = reconcile.KeepBool(cfg.AppsForOfficeEnabled, read.AppsForOfficeEnabled)
 	read.AsyncSendEnabled = reconcile.KeepBool(cfg.AsyncSendEnabled, read.AsyncSendEnabled)
 	read.AuditDisabled = reconcile.KeepBool(cfg.AuditDisabled, read.AuditDisabled)
-	read.AutoArchivingThresholdPercentage = reconcile.KeepStr(cfg.AutoArchivingThresholdPercentage, read.AutoArchivingThresholdPercentage)
+	read.AutoArchivingThresholdPercentage = reconcile.KeepInt64(cfg.AutoArchivingThresholdPercentage, read.AutoArchivingThresholdPercentage)
 	read.AutoEnableArchiveMailbox = reconcile.KeepBool(cfg.AutoEnableArchiveMailbox, read.AutoEnableArchiveMailbox)
 	read.AutoExpandingArchive = reconcile.KeepBool(cfg.AutoExpandingArchive, read.AutoExpandingArchive)
 	read.AutodiscoverPartialDirSync = reconcile.KeepBool(cfg.AutodiscoverPartialDirSync, read.AutodiscoverPartialDirSync)
@@ -1054,6 +2554,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.BookingsSearchEngineIndexDisabled = reconcile.KeepBool(cfg.BookingsSearchEngineIndexDisabled, read.BookingsSearchEngineIndexDisabled)
 	read.BookingsSmsMicrosoftEnabled = reconcile.KeepBool(cfg.BookingsSmsMicrosoftEnabled, read.BookingsSmsMicrosoftEnabled)
 	read.BookingsSocialSharingRestricted = reconcile.KeepBool(cfg.BookingsSocialSharingRestricted, read.BookingsSocialSharingRestricted)
+	read.ByteEncoderTypeFor7BitCharsets = reconcile.KeepInt64(cfg.ByteEncoderTypeFor7BitCharsets, read.ByteEncoderTypeFor7BitCharsets)
 	read.CalendarVersionStoreEnabled = reconcile.KeepBool(cfg.CalendarVersionStoreEnabled, read.CalendarVersionStoreEnabled)
 	read.ComplianceMLBgdCrawlEnabled = reconcile.KeepBool(cfg.ComplianceMLBgdCrawlEnabled, read.ComplianceMLBgdCrawlEnabled)
 	read.ConnectorsActionableMessagesEnabled = reconcile.KeepBool(cfg.ConnectorsActionableMessagesEnabled, read.ConnectorsActionableMessagesEnabled)
@@ -1065,10 +2566,12 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.CustomerLockboxEnabled = reconcile.KeepBool(cfg.CustomerLockboxEnabled, read.CustomerLockboxEnabled)
 	read.DLPViaDcsEnabled = reconcile.KeepBool(cfg.DLPViaDcsEnabled, read.DLPViaDcsEnabled)
 	read.DLPWaitOnSendEnabled = reconcile.KeepBool(cfg.DLPWaitOnSendEnabled, read.DLPWaitOnSendEnabled)
-	read.DLPWaitOnSendTimeout = reconcile.KeepStr(cfg.DLPWaitOnSendTimeout, read.DLPWaitOnSendTimeout)
+	read.DLPWaitOnSendTimeout = reconcile.KeepInt64(cfg.DLPWaitOnSendTimeout, read.DLPWaitOnSendTimeout)
 	read.DefaultAuthenticationPolicy = reconcile.KeepStr(cfg.DefaultAuthenticationPolicy, read.DefaultAuthenticationPolicy)
 	read.DefaultFolderPermissionRestricted = reconcile.KeepBool(cfg.DefaultFolderPermissionRestricted, read.DefaultFolderPermissionRestricted)
 	read.DefaultGroupAccessType = reconcile.KeepStr(cfg.DefaultGroupAccessType, read.DefaultGroupAccessType)
+	read.DefaultMinutesToReduceLongEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceLongEventsBy, read.DefaultMinutesToReduceLongEventsBy)
+	read.DefaultMinutesToReduceShortEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceShortEventsBy, read.DefaultMinutesToReduceShortEventsBy)
 	read.DefaultPublicFolderAgeLimit = reconcile.KeepStr(cfg.DefaultPublicFolderAgeLimit, read.DefaultPublicFolderAgeLimit)
 	read.DefaultPublicFolderDeletedItemRetention = reconcile.KeepStr(cfg.DefaultPublicFolderDeletedItemRetention, read.DefaultPublicFolderDeletedItemRetention)
 	read.DefaultPublicFolderIssueWarningQuota = reconcile.KeepStr(cfg.DefaultPublicFolderIssueWarningQuota, read.DefaultPublicFolderIssueWarningQuota)
@@ -1079,7 +2582,7 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.DirectReportsGroupAutoCreationEnabled = reconcile.KeepBool(cfg.DirectReportsGroupAutoCreationEnabled, read.DirectReportsGroupAutoCreationEnabled)
 	read.DisablePlusAddressInRecipients = reconcile.KeepBool(cfg.DisablePlusAddressInRecipients, read.DisablePlusAddressInRecipients)
 	read.DistributionGroupDefaultOU = reconcile.KeepStr(cfg.DistributionGroupDefaultOU, read.DistributionGroupDefaultOU)
-	read.DistributionGroupNameBlockedWordsList = reconcile.KeepStr(cfg.DistributionGroupNameBlockedWordsList, read.DistributionGroupNameBlockedWordsList)
+	read.DistributionGroupNameBlockedWordsList = reconcile.KeepSet(cfg.DistributionGroupNameBlockedWordsList, read.DistributionGroupNameBlockedWordsList)
 	read.DistributionGroupNamingPolicy = reconcile.KeepStr(cfg.DistributionGroupNamingPolicy, read.DistributionGroupNamingPolicy)
 	read.ElcProcessingDisabled = reconcile.KeepBool(cfg.ElcProcessingDisabled, read.ElcProcessingDisabled)
 	read.EnableForwardingAddressSyncForMailboxes = reconcile.KeepBool(cfg.EnableForwardingAddressSyncForMailboxes, read.EnableForwardingAddressSyncForMailboxes)
@@ -1088,26 +2591,26 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.EndUserMailNotificationForDelayedDelicensingEnabled = reconcile.KeepBool(cfg.EndUserMailNotificationForDelayedDelicensingEnabled, read.EndUserMailNotificationForDelayedDelicensingEnabled)
 	read.EnforceExoAppRbacPermissions = reconcile.KeepBool(cfg.EnforceExoAppRbacPermissions, read.EnforceExoAppRbacPermissions)
 	read.EnforceShortenEventSetting = reconcile.KeepBool(cfg.EnforceShortenEventSetting, read.EnforceShortenEventSetting)
-	read.EwsAllowEntourage = reconcile.KeepStr(cfg.EwsAllowEntourage, read.EwsAllowEntourage)
-	read.EwsAllowList = reconcile.KeepStr(cfg.EwsAllowList, read.EwsAllowList)
-	read.EwsAllowMacOutlook = reconcile.KeepStr(cfg.EwsAllowMacOutlook, read.EwsAllowMacOutlook)
-	read.EwsAllowOutlook = reconcile.KeepStr(cfg.EwsAllowOutlook, read.EwsAllowOutlook)
+	read.EwsAllowEntourage = reconcile.KeepBool(cfg.EwsAllowEntourage, read.EwsAllowEntourage)
+	read.EwsAllowList = reconcile.KeepSet(cfg.EwsAllowList, read.EwsAllowList)
+	read.EwsAllowMacOutlook = reconcile.KeepBool(cfg.EwsAllowMacOutlook, read.EwsAllowMacOutlook)
+	read.EwsAllowOutlook = reconcile.KeepBool(cfg.EwsAllowOutlook, read.EwsAllowOutlook)
 	read.EwsAllowedAppIDs = reconcile.KeepStr(cfg.EwsAllowedAppIDs, read.EwsAllowedAppIDs)
 	read.EwsApplicationAccessPolicy = reconcile.KeepStr(cfg.EwsApplicationAccessPolicy, read.EwsApplicationAccessPolicy)
-	read.EwsBlockList = reconcile.KeepStr(cfg.EwsBlockList, read.EwsBlockList)
-	read.EwsEnabled = reconcile.KeepStr(cfg.EwsEnabled, read.EwsEnabled)
+	read.EwsBlockList = reconcile.KeepSet(cfg.EwsBlockList, read.EwsBlockList)
+	read.EwsEnabled = reconcile.KeepBool(cfg.EwsEnabled, read.EwsEnabled)
 	read.ExchangeAttributesCloudManagedByDefault = reconcile.KeepBool(cfg.ExchangeAttributesCloudManagedByDefault, read.ExchangeAttributesCloudManagedByDefault)
 	read.ExchangeAttributesServerManagedByDefault = reconcile.KeepBool(cfg.ExchangeAttributesServerManagedByDefault, read.ExchangeAttributesServerManagedByDefault)
 	read.ExchangeNotificationEnabled = reconcile.KeepBool(cfg.ExchangeNotificationEnabled, read.ExchangeNotificationEnabled)
-	read.ExchangeNotificationRecipients = reconcile.KeepStr(cfg.ExchangeNotificationRecipients, read.ExchangeNotificationRecipients)
+	read.ExchangeNotificationRecipients = reconcile.KeepSet(cfg.ExchangeNotificationRecipients, read.ExchangeNotificationRecipients)
 	read.FindTimeAttendeeAuthenticationEnabled = reconcile.KeepBool(cfg.FindTimeAttendeeAuthenticationEnabled, read.FindTimeAttendeeAuthenticationEnabled)
 	read.FindTimeAutoScheduleDisabled = reconcile.KeepBool(cfg.FindTimeAutoScheduleDisabled, read.FindTimeAutoScheduleDisabled)
 	read.FindTimeLockPollForAttendeesEnabled = reconcile.KeepBool(cfg.FindTimeLockPollForAttendeesEnabled, read.FindTimeLockPollForAttendeesEnabled)
 	read.FindTimeOnlineMeetingOptionDisabled = reconcile.KeepBool(cfg.FindTimeOnlineMeetingOptionDisabled, read.FindTimeOnlineMeetingOptionDisabled)
-	read.FocusedInboxOn = reconcile.KeepStr(cfg.FocusedInboxOn, read.FocusedInboxOn)
+	read.FocusedInboxOn = reconcile.KeepBool(cfg.FocusedInboxOn, read.FocusedInboxOn)
 	read.HierarchicalAddressBookRoot = reconcile.KeepStr(cfg.HierarchicalAddressBookRoot, read.HierarchicalAddressBookRoot)
 	read.HybridRSVPEnabled = reconcile.KeepBool(cfg.HybridRSVPEnabled, read.HybridRSVPEnabled)
-	read.IPListBlocked = reconcile.KeepStr(cfg.IPListBlocked, read.IPListBlocked)
+	read.IPListBlocked = reconcile.KeepSet(cfg.IPListBlocked, read.IPListBlocked)
 	read.InRegionRoutingEnabled = reconcile.KeepBool(cfg.InRegionRoutingEnabled, read.InRegionRoutingEnabled)
 	read.IsAgendaMailEnabled = reconcile.KeepBool(cfg.IsAgendaMailEnabled, read.IsAgendaMailEnabled)
 	read.IsGroupFoldersAndRulesEnabled = reconcile.KeepBool(cfg.IsGroupFoldersAndRulesEnabled, read.IsGroupFoldersAndRulesEnabled)
@@ -1117,19 +2620,19 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.MailTipsAllTipsEnabled = reconcile.KeepBool(cfg.MailTipsAllTipsEnabled, read.MailTipsAllTipsEnabled)
 	read.MailTipsExternalRecipientsTipsEnabled = reconcile.KeepBool(cfg.MailTipsExternalRecipientsTipsEnabled, read.MailTipsExternalRecipientsTipsEnabled)
 	read.MailTipsGroupMetricsEnabled = reconcile.KeepBool(cfg.MailTipsGroupMetricsEnabled, read.MailTipsGroupMetricsEnabled)
-	read.MailTipsLargeAudienceThreshold = reconcile.KeepStr(cfg.MailTipsLargeAudienceThreshold, read.MailTipsLargeAudienceThreshold)
+	read.MailTipsLargeAudienceThreshold = reconcile.KeepInt64(cfg.MailTipsLargeAudienceThreshold, read.MailTipsLargeAudienceThreshold)
 	read.MailTipsMailboxSourcedTipsEnabled = reconcile.KeepBool(cfg.MailTipsMailboxSourcedTipsEnabled, read.MailTipsMailboxSourcedTipsEnabled)
 	read.MaskClientIpInReceivedHeadersEnabled = reconcile.KeepBool(cfg.MaskClientIpInReceivedHeadersEnabled, read.MaskClientIpInReceivedHeadersEnabled)
 	read.MatchSenderOrganizerProperties = reconcile.KeepBool(cfg.MatchSenderOrganizerProperties, read.MatchSenderOrganizerProperties)
 	read.MessageHighlightsEnabled = reconcile.KeepBool(cfg.MessageHighlightsEnabled, read.MessageHighlightsEnabled)
 	read.MessageRecallAlertRecipientsEnabled = reconcile.KeepBool(cfg.MessageRecallAlertRecipientsEnabled, read.MessageRecallAlertRecipientsEnabled)
 	read.MessageRecallAlertRecipientsReadMessagesOnlyEnabled = reconcile.KeepBool(cfg.MessageRecallAlertRecipientsReadMessagesOnlyEnabled, read.MessageRecallAlertRecipientsReadMessagesOnlyEnabled)
-	read.MessageRecallEnabled = reconcile.KeepStr(cfg.MessageRecallEnabled, read.MessageRecallEnabled)
+	read.MessageRecallEnabled = reconcile.KeepBool(cfg.MessageRecallEnabled, read.MessageRecallEnabled)
 	read.MessageRecallMaxRecallableAge = reconcile.KeepStr(cfg.MessageRecallMaxRecallableAge, read.MessageRecallMaxRecallableAge)
 	read.MessageRemindersEnabled = reconcile.KeepBool(cfg.MessageRemindersEnabled, read.MessageRemindersEnabled)
 	read.MobileAppEducationEnabled = reconcile.KeepBool(cfg.MobileAppEducationEnabled, read.MobileAppEducationEnabled)
 	read.OAuth2ClientProfileEnabled = reconcile.KeepBool(cfg.OAuth2ClientProfileEnabled, read.OAuth2ClientProfileEnabled)
-	read.OnlineMeetingsByDefaultEnabled = reconcile.KeepStr(cfg.OnlineMeetingsByDefaultEnabled, read.OnlineMeetingsByDefaultEnabled)
+	read.OnlineMeetingsByDefaultEnabled = reconcile.KeepBool(cfg.OnlineMeetingsByDefaultEnabled, read.OnlineMeetingsByDefaultEnabled)
 	read.OutlookGifPickerDisabled = reconcile.KeepBool(cfg.OutlookGifPickerDisabled, read.OutlookGifPickerDisabled)
 	read.OutlookMobileGCCRestrictionsEnabled = reconcile.KeepBool(cfg.OutlookMobileGCCRestrictionsEnabled, read.OutlookMobileGCCRestrictionsEnabled)
 	read.OutlookMobileHelpShiftEnabled = reconcile.KeepBool(cfg.OutlookMobileHelpShiftEnabled, read.OutlookMobileHelpShiftEnabled)
@@ -1138,15 +2641,17 @@ func (r *organizationConfigResource) reconcileState(cfg, read *organizationConfi
 	read.OutlookTextPredictionDisabled = reconcile.KeepBool(cfg.OutlookTextPredictionDisabled, read.OutlookTextPredictionDisabled)
 	read.PerTenantSwitchToESTSEnabled = reconcile.KeepBool(cfg.PerTenantSwitchToESTSEnabled, read.PerTenantSwitchToESTSEnabled)
 	read.PostponeRoamingSignaturesUntilLater = reconcile.KeepBool(cfg.PostponeRoamingSignaturesUntilLater, read.PostponeRoamingSignaturesUntilLater)
+	read.PreferredInternetCodePageForShiftJis = reconcile.KeepInt64(cfg.PreferredInternetCodePageForShiftJis, read.PreferredInternetCodePageForShiftJis)
 	read.PublicComputersDetectionEnabled = reconcile.KeepBool(cfg.PublicComputersDetectionEnabled, read.PublicComputersDetectionEnabled)
 	read.PublicFolderShowClientControl = reconcile.KeepBool(cfg.PublicFolderShowClientControl, read.PublicFolderShowClientControl)
 	read.PublicFoldersEnabled = reconcile.KeepStr(cfg.PublicFoldersEnabled, read.PublicFoldersEnabled)
 	read.ReadTrackingEnabled = reconcile.KeepBool(cfg.ReadTrackingEnabled, read.ReadTrackingEnabled)
-	read.RecallReadMessagesEnabled = reconcile.KeepStr(cfg.RecallReadMessagesEnabled, read.RecallReadMessagesEnabled)
+	read.RecallReadMessagesEnabled = reconcile.KeepBool(cfg.RecallReadMessagesEnabled, read.RecallReadMessagesEnabled)
 	read.RecipientDelimiters = reconcile.KeepBool(cfg.RecipientDelimiters, read.RecipientDelimiters)
 	read.RefreshSessionEnabled = reconcile.KeepBool(cfg.RefreshSessionEnabled, read.RefreshSessionEnabled)
 	read.RejectDirectSend = reconcile.KeepBool(cfg.RejectDirectSend, read.RejectDirectSend)
-	read.RemotePublicFolderMailboxes = reconcile.KeepStr(cfg.RemotePublicFolderMailboxes, read.RemotePublicFolderMailboxes)
+	read.RemotePublicFolderMailboxes = reconcile.KeepSet(cfg.RemotePublicFolderMailboxes, read.RemotePublicFolderMailboxes)
+	read.RequiredCharsetCoverage = reconcile.KeepInt64(cfg.RequiredCharsetCoverage, read.RequiredCharsetCoverage)
 	read.SendFromAliasEnabled = reconcile.KeepBool(cfg.SendFromAliasEnabled, read.SendFromAliasEnabled)
 	read.SharedDomainEmailAddressFlowEnabled = reconcile.KeepBool(cfg.SharedDomainEmailAddressFlowEnabled, read.SharedDomainEmailAddressFlowEnabled)
 	read.ShortenEventScopeDefault = reconcile.KeepStr(cfg.ShortenEventScopeDefault, read.ShortenEventScopeDefault)

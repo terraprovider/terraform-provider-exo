@@ -63,7 +63,7 @@ func (r *managementRoleAssignmentResource) Schema(_ context.Context, _ resource.
 		Description: "Manages the ManagementRoleAssignment object via New-ManagementRoleAssignment / Get-ManagementRoleAssignment / Set-ManagementRoleAssignment / Remove-ManagementRoleAssignment.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"app":                                 schema.StringAttribute{Required: true, Description: "Maps to the -App parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"custom_recipient_write_scope":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomRecipientWriteScope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_resource_scope":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomResourceScope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -97,45 +97,54 @@ func (r *managementRoleAssignmentResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	p := exo.NewManagementRoleAssignmentParams{
-		Delegating: plan.Delegating.ValueBool(),
-		Name:       plan.Name.ValueString(),
+	var config managementRoleAssignmentModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.App.ValueString(); v != "" {
-		p.App = v
+
+	p := exo.NewManagementRoleAssignmentParams{}
+	if v := config.App.ValueString(); v != "" {
+		p.App = objectParam(v)
 	}
-	if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
-		p.CustomRecipientWriteScope = v
+	if v := config.CustomRecipientWriteScope.ValueString(); v != "" {
+		p.CustomRecipientWriteScope = objectParam(v)
 	}
-	if v := plan.CustomResourceScope.ValueString(); v != "" {
-		p.CustomResourceScope = v
+	if v := config.CustomResourceScope.ValueString(); v != "" {
+		p.CustomResourceScope = objectParam(v)
 	}
-	if v := plan.ExclusiveRecipientWriteScope.ValueString(); v != "" {
-		p.ExclusiveRecipientWriteScope = v
+	if !config.Delegating.IsNull() {
+		p.Delegating = plan.Delegating.ValueBool()
 	}
-	if v := plan.Policy.ValueString(); v != "" {
-		p.Policy = v
+	if v := config.ExclusiveRecipientWriteScope.ValueString(); v != "" {
+		p.ExclusiveRecipientWriteScope = objectParam(v)
 	}
-	if v := plan.RecipientAdministrativeUnitScope.ValueString(); v != "" {
-		p.RecipientAdministrativeUnitScope = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
-	if v := plan.RecipientGroupScope.ValueString(); v != "" {
-		p.RecipientGroupScope = v
+	if v := config.Policy.ValueString(); v != "" {
+		p.Policy = objectParam(v)
 	}
-	if v := plan.RecipientOrganizationalUnitScope.ValueString(); v != "" {
-		p.RecipientOrganizationalUnitScope = v
+	if v := config.RecipientAdministrativeUnitScope.ValueString(); v != "" {
+		p.RecipientAdministrativeUnitScope = objectParam(v)
 	}
-	if v := plan.RecipientRelativeWriteScope.ValueString(); v != "" {
-		p.RecipientRelativeWriteScope = v
+	if v := config.RecipientGroupScope.ValueString(); v != "" {
+		p.RecipientGroupScope = objectParam(v)
 	}
-	if v := plan.Role.ValueString(); v != "" {
-		p.Role = v
+	if v := config.RecipientOrganizationalUnitScope.ValueString(); v != "" {
+		p.RecipientOrganizationalUnitScope = objectParam(v)
 	}
-	if v := plan.SecurityGroup.ValueString(); v != "" {
-		p.SecurityGroup = v
+	if v := config.RecipientRelativeWriteScope.ValueString(); v != "" {
+		p.RecipientRelativeWriteScope = objectParam(v)
 	}
-	if v := plan.User.ValueString(); v != "" {
-		p.User = v
+	if v := config.Role.ValueString(); v != "" {
+		p.Role = objectParam(v)
+	}
+	if v := config.SecurityGroup.ValueString(); v != "" {
+		p.SecurityGroup = objectParam(v)
+	}
+	if v := config.User.ValueString(); v != "" {
+		p.User = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,27 +196,45 @@ func (r *managementRoleAssignmentResource) Update(ctx context.Context, req resou
 	id := r.identityOf(state)
 	sp := exo.SetManagementRoleAssignmentParams{}
 	sp.Identity = id
-	if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
-		sp.CustomRecipientWriteScope = v
+	if !plan.CustomRecipientWriteScope.Equal(state.CustomRecipientWriteScope) {
+		if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
+			sp.CustomRecipientWriteScope = objectParam(v)
+		}
 	}
-	if v := plan.CustomResourceScope.ValueString(); v != "" {
-		sp.CustomResourceScope = v
+	if !plan.CustomResourceScope.Equal(state.CustomResourceScope) {
+		if v := plan.CustomResourceScope.ValueString(); v != "" {
+			sp.CustomResourceScope = objectParam(v)
+		}
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.ExclusiveRecipientWriteScope.ValueString(); v != "" {
-		sp.ExclusiveRecipientWriteScope = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecipientAdministrativeUnitScope.ValueString(); v != "" {
-		sp.RecipientAdministrativeUnitScope = v
+	if !plan.ExclusiveRecipientWriteScope.Equal(state.ExclusiveRecipientWriteScope) {
+		if v := plan.ExclusiveRecipientWriteScope.ValueString(); v != "" {
+			sp.ExclusiveRecipientWriteScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientGroupScope.ValueString(); v != "" {
-		sp.RecipientGroupScope = v
+	if !plan.RecipientAdministrativeUnitScope.Equal(state.RecipientAdministrativeUnitScope) {
+		if v := plan.RecipientAdministrativeUnitScope.ValueString(); v != "" {
+			sp.RecipientAdministrativeUnitScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientOrganizationalUnitScope.ValueString(); v != "" {
-		sp.RecipientOrganizationalUnitScope = v
+	if !plan.RecipientGroupScope.Equal(state.RecipientGroupScope) {
+		if v := plan.RecipientGroupScope.ValueString(); v != "" {
+			sp.RecipientGroupScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientRelativeWriteScope.ValueString(); v != "" {
-		sp.RecipientRelativeWriteScope = v
+	if !plan.RecipientOrganizationalUnitScope.Equal(state.RecipientOrganizationalUnitScope) {
+		if v := plan.RecipientOrganizationalUnitScope.ValueString(); v != "" {
+			sp.RecipientOrganizationalUnitScope = objectParam(v)
+		}
+	}
+	if !plan.RecipientRelativeWriteScope.Equal(state.RecipientRelativeWriteScope) {
+		if v := plan.RecipientRelativeWriteScope.ValueString(); v != "" {
+			sp.RecipientRelativeWriteScope = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -217,15 +244,7 @@ func (r *managementRoleAssignmentResource) Update(ctx context.Context, req resou
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"CustomRecipientWriteScope":        cfg.CustomRecipientWriteScope,
-		"CustomResourceScope":              cfg.CustomResourceScope,
-		"ExclusiveRecipientWriteScope":     cfg.ExclusiveRecipientWriteScope,
-		"RecipientAdministrativeUnitScope": cfg.RecipientAdministrativeUnitScope,
-		"RecipientGroupScope":              cfg.RecipientGroupScope,
-		"RecipientOrganizationalUnitScope": cfg.RecipientOrganizationalUnitScope,
-		"RecipientRelativeWriteScope":      cfg.RecipientRelativeWriteScope,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -286,21 +305,21 @@ func (r *managementRoleAssignmentResource) refresh(ctx context.Context, identity
 func readManagementRoleAssignment(ctx context.Context, obj map[string]any, m *managementRoleAssignmentModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.App = types.StringValue(getString(obj, "App"))
-	m.CustomRecipientWriteScope = types.StringValue(getString(obj, "CustomRecipientWriteScope"))
-	m.CustomResourceScope = types.StringValue(getString(obj, "CustomResourceScope"))
+	m.App = types.StringValue(getObjectJSON(obj, "App"))
+	m.CustomRecipientWriteScope = types.StringValue(getObjectJSON(obj, "CustomRecipientWriteScope"))
+	m.CustomResourceScope = types.StringValue(getObjectJSON(obj, "CustomResourceScope"))
 	m.Delegating = types.BoolValue(getBool(obj, "Delegating"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.ExclusiveRecipientWriteScope = types.StringValue(getString(obj, "ExclusiveRecipientWriteScope"))
+	m.ExclusiveRecipientWriteScope = types.StringValue(getObjectJSON(obj, "ExclusiveRecipientWriteScope"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Policy = types.StringValue(getString(obj, "Policy"))
-	m.RecipientAdministrativeUnitScope = types.StringValue(getString(obj, "RecipientAdministrativeUnitScope"))
-	m.RecipientGroupScope = types.StringValue(getString(obj, "RecipientGroupScope"))
-	m.RecipientOrganizationalUnitScope = types.StringValue(getString(obj, "RecipientOrganizationalUnitScope"))
-	m.RecipientRelativeWriteScope = types.StringValue(getString(obj, "RecipientRelativeWriteScope"))
-	m.Role = types.StringValue(getString(obj, "Role"))
-	m.SecurityGroup = types.StringValue(getString(obj, "SecurityGroup"))
-	m.User = types.StringValue(getString(obj, "User"))
+	m.Policy = types.StringValue(getObjectJSON(obj, "Policy"))
+	m.RecipientAdministrativeUnitScope = types.StringValue(getObjectJSON(obj, "RecipientAdministrativeUnitScope"))
+	m.RecipientGroupScope = types.StringValue(getObjectJSON(obj, "RecipientGroupScope"))
+	m.RecipientOrganizationalUnitScope = types.StringValue(getObjectJSON(obj, "RecipientOrganizationalUnitScope"))
+	m.RecipientRelativeWriteScope = types.StringValue(getObjectJSON(obj, "RecipientRelativeWriteScope"))
+	m.Role = types.StringValue(getObjectJSON(obj, "Role"))
+	m.SecurityGroup = types.StringValue(getObjectJSON(obj, "SecurityGroup"))
+	m.User = types.StringValue(getObjectJSON(obj, "User"))
 	_ = ctx
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -32,27 +33,31 @@ func (d *quarantinePolicyDataSource) Schema(_ context.Context, _ datasource.Sche
 	resp.Schema = schema.Schema{
 		Description: "Look up an existing QuarantinePolicy object. Set identity or name to select it.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
-			"identity":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"admin_display_name":                schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
-			"admin_notification_language":       schema.StringAttribute{Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter."},
-			"admin_notifications_enabled":       schema.BoolAttribute{Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter."},
-			"admin_quarantine_permissions_list": schema.StringAttribute{Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter."},
-			"custom_disclaimer":                 schema.StringAttribute{Computed: true, Description: "Maps to the -CustomDisclaimer parameter."},
-			"esn_enabled":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -ESNEnabled parameter."},
-			"end_user_quarantine_permissions":   schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter."},
+			"id":                                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
+			"identity":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
+			"admin_display_name":                             schema.StringAttribute{Computed: true, Description: "Maps to the -AdminDisplayName parameter."},
+			"admin_notification_frequency_in_days":           schema.Int64Attribute{Computed: true, Description: "Maps to the -AdminNotificationFrequencyInDays parameter."},
+			"admin_notification_language":                    schema.StringAttribute{Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter."},
+			"admin_notifications_enabled":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter."},
+			"admin_quarantine_permissions_list":              schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter."},
+			"custom_disclaimer":                              schema.StringAttribute{Computed: true, Description: "Maps to the -CustomDisclaimer parameter."},
+			"esn_enabled":                                    schema.BoolAttribute{Computed: true, Description: "Maps to the -ESNEnabled parameter."},
+			"end_user_quarantine_permissions":                schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter."},
+			"end_user_quarantine_permissions_value":          schema.Int64Attribute{Computed: true, Description: "Maps to the -EndUserQuarantinePermissionsValue parameter."},
 			"end_user_spam_notification_custom_from_address": schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromAddress parameter."},
 			"end_user_spam_notification_frequency":           schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequency parameter."},
+			"end_user_spam_notification_frequency_in_days":   schema.Int64Attribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequencyInDays parameter."},
 			"end_user_spam_notification_language":            schema.StringAttribute{Computed: true, Description: "Maps to the -EndUserSpamNotificationLanguage parameter."},
-			"esn_custom_subject":                             schema.StringAttribute{Computed: true, Description: "Maps to the -EsnCustomSubject parameter."},
+			"esn_custom_subject":                             schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EsnCustomSubject parameter."},
 			"ignore_dehydrated_flag":                         schema.BoolAttribute{Computed: true, Description: "Maps to the -IgnoreDehydratedFlag parameter."},
 			"include_messages_from_blocked_sender_address":   schema.BoolAttribute{Computed: true, Description: "Maps to the -IncludeMessagesFromBlockedSenderAddress parameter."},
-			"multi_language_custom_disclaimer":               schema.StringAttribute{Computed: true, Description: "Maps to the -MultiLanguageCustomDisclaimer parameter."},
-			"multi_language_sender_name":                     schema.StringAttribute{Computed: true, Description: "Maps to the -MultiLanguageSenderName parameter."},
-			"multi_language_setting":                         schema.StringAttribute{Computed: true, Description: "Maps to the -MultiLanguageSetting parameter."},
+			"multi_language_custom_disclaimer":               schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MultiLanguageCustomDisclaimer parameter."},
+			"multi_language_sender_name":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MultiLanguageSenderName parameter."},
+			"multi_language_setting":                         schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -MultiLanguageSetting parameter."},
 			"name":                                           schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"organization_branding_enabled":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OrganizationBrandingEnabled parameter."},
 			"quarantine_policy_type":                         schema.StringAttribute{Computed: true, Description: "Maps to the -QuarantinePolicyType parameter."},
+			"quarantine_retention_days":                      schema.Int64Attribute{Computed: true, Description: "Maps to the -QuarantineRetentionDays parameter."},
 		},
 	}
 }

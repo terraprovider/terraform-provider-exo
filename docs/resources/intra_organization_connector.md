@@ -19,7 +19,7 @@ Manages the IntraOrganizationConnector object via New-IntraOrganizationConnector
 
 - `discovery_endpoint` (String) Maps to the -DiscoveryEndpoint parameter.
 - `name` (String) Maps to the -Name parameter.
-- `target_address_domains` (String) Maps to the -TargetAddressDomains parameter.
+- `target_address_domains` (Set of String) Maps to the -TargetAddressDomains parameter.
 
 ### Optional
 

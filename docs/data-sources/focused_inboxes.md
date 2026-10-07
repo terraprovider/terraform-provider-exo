@@ -24,7 +24,7 @@ List every FocusedInbox object (Get-FocusedInbox).
 
 Read-Only:
 
-- `focused_inbox_on` (String) Maps to the -FocusedInboxOn parameter.
+- `focused_inbox_on` (Boolean) Maps to the -FocusedInboxOn parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.

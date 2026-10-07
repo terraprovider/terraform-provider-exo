@@ -21,7 +21,7 @@ Manages the FocusedInbox configuration via Set-FocusedInbox.
 
 ### Optional
 
-- `focused_inbox_on` (String) Maps to the -FocusedInboxOn parameter.
+- `focused_inbox_on` (Boolean) Maps to the -FocusedInboxOn parameter.
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.
 
 ### Read-Only

@@ -98,7 +98,7 @@ Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set
 - `except_if_header_matches_patterns` (Set of String) Maps to the -ExceptIfHeaderMatchesPatterns parameter.
 - `except_if_manager_addresses` (Set of String) Maps to the -ExceptIfManagerAddresses parameter.
 - `except_if_manager_for_evaluated_user` (String) Maps to the -ExceptIfManagerForEvaluatedUser parameter.
-- `except_if_message_contains_data_classifications` (Set of String) Maps to the -ExceptIfMessageContainsDataClassifications parameter.
+- `except_if_message_contains_data_classifications` (String) Maps to the -ExceptIfMessageContainsDataClassifications parameter.
 - `except_if_message_size_over` (String) Maps to the -ExceptIfMessageSizeOver parameter.
 - `except_if_message_type_matches` (String) Maps to the -ExceptIfMessageTypeMatches parameter.
 - `except_if_recipient_ad_attribute_contains_words` (Set of String) Maps to the -ExceptIfRecipientADAttributeContainsWords parameter.
@@ -112,7 +112,7 @@ Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set
 - `except_if_sender_ad_attribute_matches_patterns` (Set of String) Maps to the -ExceptIfSenderADAttributeMatchesPatterns parameter.
 - `except_if_sender_domain_is` (Set of String) Maps to the -ExceptIfSenderDomainIs parameter.
 - `except_if_sender_in_recipient_list` (Set of String) Maps to the -ExceptIfSenderInRecipientList parameter.
-- `except_if_sender_ip_ranges` (String) Maps to the -ExceptIfSenderIpRanges parameter.
+- `except_if_sender_ip_ranges` (Set of String) Maps to the -ExceptIfSenderIpRanges parameter.
 - `except_if_sender_management_relationship` (String) Maps to the -ExceptIfSenderManagementRelationship parameter.
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
 - `except_if_sent_to_member_of` (Set of String) Maps to the -ExceptIfSentToMemberOf parameter.
@@ -141,7 +141,7 @@ Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set
 - `log_event_text` (String) Maps to the -LogEventText parameter.
 - `manager_addresses` (Set of String) Maps to the -ManagerAddresses parameter.
 - `manager_for_evaluated_user` (String) Maps to the -ManagerForEvaluatedUser parameter.
-- `message_contains_data_classifications` (Set of String) Maps to the -MessageContainsDataClassifications parameter.
+- `message_contains_data_classifications` (String) Maps to the -MessageContainsDataClassifications parameter.
 - `message_size_over` (String) Maps to the -MessageSizeOver parameter.
 - `message_type_matches` (String) Maps to the -MessageTypeMatches parameter.
 - `mode` (String) Maps to the -Mode parameter.
@@ -149,6 +149,7 @@ Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set
 - `moderate_message_by_user` (Set of String) Maps to the -ModerateMessageByUser parameter.
 - `notify_sender` (String) Maps to the -NotifySender parameter.
 - `prepend_subject` (String) Maps to the -PrependSubject parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `quarantine` (Boolean) Maps to the -Quarantine parameter.
 - `recipient_ad_attribute_contains_words` (Set of String) Maps to the -RecipientADAttributeContainsWords parameter.
 - `recipient_ad_attribute_matches_patterns` (Set of String) Maps to the -RecipientADAttributeMatchesPatterns parameter.
@@ -174,7 +175,7 @@ Manages the TransportRule object via New-TransportRule / Get-TransportRule / Set
 - `sender_address_location` (String) Maps to the -SenderAddressLocation parameter.
 - `sender_domain_is` (Set of String) Maps to the -SenderDomainIs parameter.
 - `sender_in_recipient_list` (Set of String) Maps to the -SenderInRecipientList parameter.
-- `sender_ip_ranges` (String) Maps to the -SenderIpRanges parameter.
+- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.
 - `sender_management_relationship` (String) Maps to the -SenderManagementRelationship parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.

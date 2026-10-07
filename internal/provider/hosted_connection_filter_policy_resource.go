@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,8 +41,8 @@ type hostedConnectionFilterPolicyModel struct {
 	AdminDisplayName    types.String `tfsdk:"admin_display_name"`
 	ConfigurationXmlRaw types.String `tfsdk:"configuration_xml_raw"`
 	EnableSafeList      types.Bool   `tfsdk:"enable_safe_list"`
-	IPAllowList         types.String `tfsdk:"ip_allow_list"`
-	IPBlockList         types.String `tfsdk:"ip_block_list"`
+	IPAllowList         types.Set    `tfsdk:"ip_allow_list"`
+	IPBlockList         types.Set    `tfsdk:"ip_block_list"`
 	MakeDefault         types.Bool   `tfsdk:"make_default"`
 	Name                types.String `tfsdk:"name"`
 }
@@ -55,12 +56,12 @@ func (r *hostedConnectionFilterPolicyResource) Schema(_ context.Context, _ resou
 		Description: "Manages the HostedConnectionFilterPolicy object via New-HostedConnectionFilterPolicy / Get-HostedConnectionFilterPolicy / Set-HostedConnectionFilterPolicy / Remove-HostedConnectionFilterPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"configuration_xml_raw": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConfigurationXmlRaw parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enable_safe_list":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableSafeList parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ip_allow_list":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPAllowList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ip_block_list":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IPBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ip_allow_list":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPAllowList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"ip_block_list":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IPBlockList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"make_default":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MakeDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -81,17 +82,36 @@ func (r *hostedConnectionFilterPolicyResource) Create(ctx context.Context, req r
 		return
 	}
 
-	p := exo.NewHostedConnectionFilterPolicyParams{
-		AdminDisplayName:    plan.AdminDisplayName.ValueString(),
-		ConfigurationXmlRaw: plan.ConfigurationXmlRaw.ValueString(),
-		EnableSafeList:      plan.EnableSafeList.ValueBool(),
-		Name:                plan.Name.ValueString(),
+	var config hostedConnectionFilterPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.IPAllowList.ValueString(); v != "" {
-		p.IPAllowList = v
+
+	p := exo.NewHostedConnectionFilterPolicyParams{}
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.IPBlockList.ValueString(); v != "" {
-		p.IPBlockList = v
+	if !config.ConfigurationXmlRaw.IsNull() {
+		p.ConfigurationXmlRaw = plan.ConfigurationXmlRaw.ValueString()
+	}
+	if !config.EnableSafeList.IsNull() {
+		if !plan.EnableSafeList.IsUnknown() {
+			p.EnableSafeList = plan.EnableSafeList.ValueBoolPointer()
+		}
+	}
+	if !config.IPAllowList.IsNull() {
+		if v := toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics); len(v) > 0 {
+			p.IPAllowList = v
+		}
+	}
+	if !config.IPBlockList.IsNull() {
+		if v := toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics); len(v) > 0 {
+			p.IPBlockList = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -143,16 +163,60 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetHostedConnectionFilterPolicyParams{}
 	sp.Identity = id
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
-	sp.ConfigurationXmlRaw = plan.ConfigurationXmlRaw.ValueString()
-	sp.EnableSafeList = plan.EnableSafeList.ValueBool()
-	if v := plan.IPAllowList.ValueString(); v != "" {
-		sp.IPAllowList = v
+	var cur *hostedConnectionFilterPolicyModel
+	curRead := false
+	current := func() *hostedConnectionFilterPolicyModel {
+		if !curRead {
+			curRead = true
+			var m hostedConnectionFilterPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-HostedConnectionFilterPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.IPBlockList.ValueString(); v != "" {
-		sp.IPBlockList = v
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	sp.MakeDefault = plan.MakeDefault.ValueBool()
+	if !plan.ConfigurationXmlRaw.Equal(state.ConfigurationXmlRaw) {
+		sp.ConfigurationXmlRaw = plan.ConfigurationXmlRaw.ValueString()
+	}
+	if !plan.EnableSafeList.Equal(state.EnableSafeList) {
+		if !plan.EnableSafeList.IsUnknown() {
+			sp.EnableSafeList = plan.EnableSafeList.ValueBoolPointer()
+		}
+	}
+	if !plan.IPAllowList.Equal(state.IPAllowList) {
+		if !plan.IPAllowList.IsNull() && !plan.IPAllowList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.IPAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.IPBlockList.Equal(state.IPBlockList) {
+		if !plan.IPBlockList.IsNull() && !plan.IPBlockList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.IPBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.MakeDefault.Equal(state.MakeDefault) {
+		sp.MakeDefault = plan.MakeDefault.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -164,8 +228,6 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdminDisplayName":    cfg.AdminDisplayName,
 		"ConfigurationXmlRaw": cfg.ConfigurationXmlRaw,
-		"IPAllowList":         cfg.IPAllowList,
-		"IPBlockList":         cfg.IPBlockList,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -230,8 +292,8 @@ func readHostedConnectionFilterPolicy(ctx context.Context, obj map[string]any, m
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.ConfigurationXmlRaw = types.StringValue(getString(obj, "ConfigurationXmlRaw"))
 	m.EnableSafeList = types.BoolValue(getBool(obj, "EnableSafeList"))
-	m.IPAllowList = types.StringValue(getString(obj, "IPAllowList"))
-	m.IPBlockList = types.StringValue(getString(obj, "IPBlockList"))
+	m.IPAllowList = stringSetValue(ctx, getStringSlice(obj, "IPAllowList"))
+	m.IPBlockList = stringSetValue(ctx, getStringSlice(obj, "IPBlockList"))
 	m.MakeDefault = types.BoolValue(getBool(obj, "MakeDefault"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	_ = ctx
@@ -241,8 +303,8 @@ func (r *hostedConnectionFilterPolicyResource) reconcileState(cfg, read *hostedC
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
 	read.ConfigurationXmlRaw = reconcile.KeepStr(cfg.ConfigurationXmlRaw, read.ConfigurationXmlRaw)
 	read.EnableSafeList = reconcile.KeepBool(cfg.EnableSafeList, read.EnableSafeList)
-	read.IPAllowList = reconcile.KeepStr(cfg.IPAllowList, read.IPAllowList)
-	read.IPBlockList = reconcile.KeepStr(cfg.IPBlockList, read.IPBlockList)
+	read.IPAllowList = reconcile.KeepSet(cfg.IPAllowList, read.IPAllowList)
+	read.IPBlockList = reconcile.KeepSet(cfg.IPBlockList, read.IPBlockList)
 	read.MakeDefault = reconcile.KeepBool(cfg.MakeDefault, read.MakeDefault)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 }

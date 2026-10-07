@@ -21,11 +21,11 @@ Manages the MailPublicFolder configuration via Set-MailPublicFolder.
 
 ### Optional
 
-- `accept_messages_only_from` (String) Maps to the -AcceptMessagesOnlyFrom parameter.
-- `accept_messages_only_from_dl_members` (String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
-- `accept_messages_only_from_senders_or_members` (String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
+- `accept_messages_only_from` (Set of String) Maps to the -AcceptMessagesOnlyFrom parameter.
+- `accept_messages_only_from_dl_members` (Set of String) Maps to the -AcceptMessagesOnlyFromDLMembers parameter.
+- `accept_messages_only_from_senders_or_members` (Set of String) Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.
 - `alias_` (String) Maps to the -Alias parameter.
-- `bypass_moderation_from_senders_or_members` (String) Maps to the -BypassModerationFromSendersOrMembers parameter.
+- `bypass_moderation_from_senders_or_members` (Set of String) Maps to the -BypassModerationFromSendersOrMembers parameter.
 - `contacts` (Set of String) Maps to the -Contacts parameter.
 - `custom_attribute1` (String) Maps to the -CustomAttribute1 parameter.
 - `custom_attribute10` (String) Maps to the -CustomAttribute10 parameter.
@@ -45,31 +45,31 @@ Manages the MailPublicFolder configuration via Set-MailPublicFolder.
 - `deliver_to_mailbox_and_forward` (Boolean) Maps to the -DeliverToMailboxAndForward parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `email_address_policy_enabled` (Boolean) Maps to the -EmailAddressPolicyEnabled parameter.
-- `email_addresses` (String) Maps to the -EmailAddresses parameter.
+- `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
 - `entry_id` (String) Maps to the -EntryId parameter.
-- `extension_custom_attribute1` (String) Maps to the -ExtensionCustomAttribute1 parameter.
-- `extension_custom_attribute2` (String) Maps to the -ExtensionCustomAttribute2 parameter.
-- `extension_custom_attribute3` (String) Maps to the -ExtensionCustomAttribute3 parameter.
-- `extension_custom_attribute4` (String) Maps to the -ExtensionCustomAttribute4 parameter.
-- `extension_custom_attribute5` (String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `extension_custom_attribute1` (Set of String) Maps to the -ExtensionCustomAttribute1 parameter.
+- `extension_custom_attribute2` (Set of String) Maps to the -ExtensionCustomAttribute2 parameter.
+- `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
+- `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
+- `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `external_email_address` (String) Maps to the -ExternalEmailAddress parameter.
 - `forwarding_address` (String) Maps to the -ForwardingAddress parameter.
-- `grant_send_on_behalf_to` (String) Maps to the -GrantSendOnBehalfTo parameter.
+- `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `ignore_missing_folder_link` (Boolean) Maps to the -IgnoreMissingFolderLink parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
-- `mail_tip_translations` (String) Maps to the -MailTipTranslations parameter.
+- `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `max_receive_size` (String) Maps to the -MaxReceiveSize parameter.
 - `max_send_size` (String) Maps to the -MaxSendSize parameter.
-- `moderated_by` (String) Maps to the -ModeratedBy parameter.
+- `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `name` (String) Maps to the -Name parameter.
 - `on_premises_object_id` (String) Maps to the -OnPremisesObjectId parameter.
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
-- `reject_messages_from` (String) Maps to the -RejectMessagesFrom parameter.
-- `reject_messages_from_dl_members` (String) Maps to the -RejectMessagesFromDLMembers parameter.
-- `reject_messages_from_senders_or_members` (String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
+- `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
+- `reject_messages_from_dl_members` (Set of String) Maps to the -RejectMessagesFromDLMembers parameter.
+- `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.
 - `send_moderation_notifications` (String) Maps to the -SendModerationNotifications parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.

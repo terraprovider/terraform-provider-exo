@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -36,24 +38,28 @@ type quarantinePolicyModel struct {
 	ID                                       types.String `tfsdk:"id"`
 	Identity                                 types.String `tfsdk:"identity"`
 	AdminDisplayName                         types.String `tfsdk:"admin_display_name"`
+	AdminNotificationFrequencyInDays         types.Int64  `tfsdk:"admin_notification_frequency_in_days"`
 	AdminNotificationLanguage                types.String `tfsdk:"admin_notification_language"`
 	AdminNotificationsEnabled                types.Bool   `tfsdk:"admin_notifications_enabled"`
-	AdminQuarantinePermissionsList           types.String `tfsdk:"admin_quarantine_permissions_list"`
+	AdminQuarantinePermissionsList           types.Set    `tfsdk:"admin_quarantine_permissions_list"`
 	CustomDisclaimer                         types.String `tfsdk:"custom_disclaimer"`
 	ESNEnabled                               types.Bool   `tfsdk:"esn_enabled"`
 	EndUserQuarantinePermissions             types.String `tfsdk:"end_user_quarantine_permissions"`
+	EndUserQuarantinePermissionsValue        types.Int64  `tfsdk:"end_user_quarantine_permissions_value"`
 	EndUserSpamNotificationCustomFromAddress types.String `tfsdk:"end_user_spam_notification_custom_from_address"`
 	EndUserSpamNotificationFrequency         types.String `tfsdk:"end_user_spam_notification_frequency"`
+	EndUserSpamNotificationFrequencyInDays   types.Int64  `tfsdk:"end_user_spam_notification_frequency_in_days"`
 	EndUserSpamNotificationLanguage          types.String `tfsdk:"end_user_spam_notification_language"`
-	EsnCustomSubject                         types.String `tfsdk:"esn_custom_subject"`
+	EsnCustomSubject                         types.Set    `tfsdk:"esn_custom_subject"`
 	IgnoreDehydratedFlag                     types.Bool   `tfsdk:"ignore_dehydrated_flag"`
 	IncludeMessagesFromBlockedSenderAddress  types.Bool   `tfsdk:"include_messages_from_blocked_sender_address"`
-	MultiLanguageCustomDisclaimer            types.String `tfsdk:"multi_language_custom_disclaimer"`
-	MultiLanguageSenderName                  types.String `tfsdk:"multi_language_sender_name"`
-	MultiLanguageSetting                     types.String `tfsdk:"multi_language_setting"`
+	MultiLanguageCustomDisclaimer            types.Set    `tfsdk:"multi_language_custom_disclaimer"`
+	MultiLanguageSenderName                  types.Set    `tfsdk:"multi_language_sender_name"`
+	MultiLanguageSetting                     types.Set    `tfsdk:"multi_language_setting"`
 	Name                                     types.String `tfsdk:"name"`
 	OrganizationBrandingEnabled              types.Bool   `tfsdk:"organization_branding_enabled"`
 	QuarantinePolicyType                     types.String `tfsdk:"quarantine_policy_type"`
+	QuarantineRetentionDays                  types.Int64  `tfsdk:"quarantine_retention_days"`
 }
 
 func (r *quarantinePolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -64,27 +70,31 @@ func (r *quarantinePolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Manages the QuarantinePolicy object via New-QuarantinePolicy / Get-QuarantinePolicy / Set-QuarantinePolicy / Remove-QuarantinePolicy.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                          schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"admin_display_name":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"admin_notification_language":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"admin_notifications_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"admin_quarantine_permissions_list": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"custom_disclaimer":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomDisclaimer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"esn_enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ESNEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"end_user_quarantine_permissions":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"id":                                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"admin_display_name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"admin_notification_frequency_in_days":           schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationFrequencyInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"admin_notification_language":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"admin_notifications_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminNotificationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"admin_quarantine_permissions_list":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AdminQuarantinePermissionsList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"custom_disclaimer":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomDisclaimer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"esn_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ESNEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"end_user_quarantine_permissions":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_quarantine_permissions_value":          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserQuarantinePermissionsValue parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_custom_from_address": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_frequency":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequency parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_spam_notification_frequency_in_days":   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequencyInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_language":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"esn_custom_subject":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EsnCustomSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"esn_custom_subject":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EsnCustomSubject parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"ignore_dehydrated_flag":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IgnoreDehydratedFlag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"include_messages_from_blocked_sender_address":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IncludeMessagesFromBlockedSenderAddress parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"multi_language_custom_disclaimer":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguageCustomDisclaimer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_sender_name":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSenderName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_setting":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSetting parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"multi_language_custom_disclaimer":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguageCustomDisclaimer parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_sender_name":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSenderName parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_setting":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSetting parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                                           schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organization_branding_enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationBrandingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"quarantine_policy_type":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -QuarantinePolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"quarantine_retention_days":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -QuarantineRetentionDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -103,45 +113,104 @@ func (r *quarantinePolicyResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	p := exo.NewQuarantinePolicyParams{
-		AdminDisplayName:                         plan.AdminDisplayName.ValueString(),
-		AdminNotificationsEnabled:                plan.AdminNotificationsEnabled.ValueBool(),
-		CustomDisclaimer:                         plan.CustomDisclaimer.ValueString(),
-		ESNEnabled:                               plan.ESNEnabled.ValueBool(),
-		EndUserSpamNotificationCustomFromAddress: plan.EndUserSpamNotificationCustomFromAddress.ValueString(),
-		IncludeMessagesFromBlockedSenderAddress:  plan.IncludeMessagesFromBlockedSenderAddress.ValueBool(),
-		Name:                                     plan.Name.ValueString(),
-		OrganizationBrandingEnabled:              plan.OrganizationBrandingEnabled.ValueBool(),
+	var config quarantinePolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
-		p.AdminNotificationLanguage = v
+
+	p := exo.NewQuarantinePolicyParams{}
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.AdminQuarantinePermissionsList.ValueString(); v != "" {
-		p.AdminQuarantinePermissionsList = v
+	if !config.AdminNotificationFrequencyInDays.IsNull() {
+		if !plan.AdminNotificationFrequencyInDays.IsUnknown() {
+			p.AdminNotificationFrequencyInDays = plan.AdminNotificationFrequencyInDays.ValueInt64Pointer()
+		}
 	}
-	if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
-		p.EndUserQuarantinePermissions = v
+	if v := config.AdminNotificationLanguage.ValueString(); v != "" {
+		p.AdminNotificationLanguage = objectParam(v)
 	}
-	if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
-		p.EndUserSpamNotificationFrequency = v
+	if !config.AdminNotificationsEnabled.IsNull() {
+		if !plan.AdminNotificationsEnabled.IsUnknown() {
+			p.AdminNotificationsEnabled = plan.AdminNotificationsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		p.EndUserSpamNotificationLanguage = v
+	if !config.AdminQuarantinePermissionsList.IsNull() {
+		if v := toStringSlice(ctx, plan.AdminQuarantinePermissionsList, &resp.Diagnostics); len(v) > 0 {
+			p.AdminQuarantinePermissionsList = v
+		}
 	}
-	if v := plan.EsnCustomSubject.ValueString(); v != "" {
-		p.EsnCustomSubject = v
+	if !config.CustomDisclaimer.IsNull() {
+		p.CustomDisclaimer = plan.CustomDisclaimer.ValueString()
 	}
-	if v := plan.MultiLanguageCustomDisclaimer.ValueString(); v != "" {
-		p.MultiLanguageCustomDisclaimer = v
+	if !config.ESNEnabled.IsNull() {
+		if !plan.ESNEnabled.IsUnknown() {
+			p.ESNEnabled = plan.ESNEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguageSenderName.ValueString(); v != "" {
-		p.MultiLanguageSenderName = v
+	if v := config.EndUserQuarantinePermissions.ValueString(); v != "" {
+		p.EndUserQuarantinePermissions = objectParam(v)
 	}
-	if v := plan.MultiLanguageSetting.ValueString(); v != "" {
-		p.MultiLanguageSetting = v
+	if !config.EndUserQuarantinePermissionsValue.IsNull() {
+		if !plan.EndUserQuarantinePermissionsValue.IsUnknown() {
+			p.EndUserQuarantinePermissionsValue = plan.EndUserQuarantinePermissionsValue.ValueInt64Pointer()
+		}
 	}
-	if v := plan.QuarantinePolicyType.ValueString(); v != "" {
-		p.QuarantinePolicyType = v
+	if !config.EndUserSpamNotificationCustomFromAddress.IsNull() {
+		p.EndUserSpamNotificationCustomFromAddress = plan.EndUserSpamNotificationCustomFromAddress.ValueString()
+	}
+	if v := config.EndUserSpamNotificationFrequency.ValueString(); v != "" {
+		p.EndUserSpamNotificationFrequency = objectParam(v)
+	}
+	if !config.EndUserSpamNotificationFrequencyInDays.IsNull() {
+		if !plan.EndUserSpamNotificationFrequencyInDays.IsUnknown() {
+			p.EndUserSpamNotificationFrequencyInDays = plan.EndUserSpamNotificationFrequencyInDays.ValueInt64Pointer()
+		}
+	}
+	if v := config.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+		p.EndUserSpamNotificationLanguage = objectParam(v)
+	}
+	if !config.EsnCustomSubject.IsNull() {
+		if v := toStringSlice(ctx, plan.EsnCustomSubject, &resp.Diagnostics); len(v) > 0 {
+			p.EsnCustomSubject = v
+		}
+	}
+	if !config.IncludeMessagesFromBlockedSenderAddress.IsNull() {
+		if !plan.IncludeMessagesFromBlockedSenderAddress.IsUnknown() {
+			p.IncludeMessagesFromBlockedSenderAddress = plan.IncludeMessagesFromBlockedSenderAddress.ValueBoolPointer()
+		}
+	}
+	if !config.MultiLanguageCustomDisclaimer.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguageCustomDisclaimer, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguageCustomDisclaimer = v
+		}
+	}
+	if !config.MultiLanguageSenderName.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguageSenderName, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguageSenderName = v
+		}
+	}
+	if !config.MultiLanguageSetting.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguageSetting = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.OrganizationBrandingEnabled.IsNull() {
+		if !plan.OrganizationBrandingEnabled.IsUnknown() {
+			p.OrganizationBrandingEnabled = plan.OrganizationBrandingEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.QuarantinePolicyType.ValueString(); v != "" {
+		p.QuarantinePolicyType = objectParam(v)
+	}
+	if !config.QuarantineRetentionDays.IsNull() {
+		if !plan.QuarantineRetentionDays.IsUnknown() {
+			p.QuarantineRetentionDays = plan.QuarantineRetentionDays.ValueInt64Pointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -193,40 +262,154 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetQuarantinePolicyParams{}
 	sp.Identity = id
-	if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
-		sp.AdminNotificationLanguage = v
+	var cur *quarantinePolicyModel
+	curRead := false
+	current := func() *quarantinePolicyModel {
+		if !curRead {
+			curRead = true
+			var m quarantinePolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-QuarantinePolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.AdminNotificationsEnabled = plan.AdminNotificationsEnabled.ValueBool()
-	if v := plan.AdminQuarantinePermissionsList.ValueString(); v != "" {
-		sp.AdminQuarantinePermissionsList = v
+	if !plan.AdminNotificationFrequencyInDays.Equal(state.AdminNotificationFrequencyInDays) {
+		if !plan.AdminNotificationFrequencyInDays.IsUnknown() {
+			sp.AdminNotificationFrequencyInDays = plan.AdminNotificationFrequencyInDays.ValueInt64Pointer()
+		}
 	}
-	sp.CustomDisclaimer = plan.CustomDisclaimer.ValueString()
-	sp.ESNEnabled = plan.ESNEnabled.ValueBool()
-	if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
-		sp.EndUserQuarantinePermissions = v
+	if !plan.AdminNotificationLanguage.Equal(state.AdminNotificationLanguage) {
+		if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
+			sp.AdminNotificationLanguage = objectParam(v)
+		}
 	}
-	sp.EndUserSpamNotificationCustomFromAddress = plan.EndUserSpamNotificationCustomFromAddress.ValueString()
-	if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
-		sp.EndUserSpamNotificationFrequency = v
+	if !plan.AdminNotificationsEnabled.Equal(state.AdminNotificationsEnabled) {
+		if !plan.AdminNotificationsEnabled.IsUnknown() {
+			sp.AdminNotificationsEnabled = plan.AdminNotificationsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		sp.EndUserSpamNotificationLanguage = v
+	if !plan.AdminQuarantinePermissionsList.Equal(state.AdminQuarantinePermissionsList) {
+		if !plan.AdminQuarantinePermissionsList.IsNull() && !plan.AdminQuarantinePermissionsList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AdminQuarantinePermissionsList, &resp.Diagnostics); len(v) > 0 {
+				sp.AdminQuarantinePermissionsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AdminQuarantinePermissionsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.AdminQuarantinePermissionsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.EsnCustomSubject.ValueString(); v != "" {
-		sp.EsnCustomSubject = v
+	if !plan.CustomDisclaimer.Equal(state.CustomDisclaimer) {
+		sp.CustomDisclaimer = plan.CustomDisclaimer.ValueString()
 	}
-	sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
-	sp.IncludeMessagesFromBlockedSenderAddress = plan.IncludeMessagesFromBlockedSenderAddress.ValueBool()
-	if v := plan.MultiLanguageCustomDisclaimer.ValueString(); v != "" {
-		sp.MultiLanguageCustomDisclaimer = v
+	if !plan.ESNEnabled.Equal(state.ESNEnabled) {
+		if !plan.ESNEnabled.IsUnknown() {
+			sp.ESNEnabled = plan.ESNEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguageSenderName.ValueString(); v != "" {
-		sp.MultiLanguageSenderName = v
+	if !plan.EndUserQuarantinePermissions.Equal(state.EndUserQuarantinePermissions) {
+		if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
+			sp.EndUserQuarantinePermissions = objectParam(v)
+		}
 	}
-	if v := plan.MultiLanguageSetting.ValueString(); v != "" {
-		sp.MultiLanguageSetting = v
+	if !plan.EndUserQuarantinePermissionsValue.Equal(state.EndUserQuarantinePermissionsValue) {
+		if !plan.EndUserQuarantinePermissionsValue.IsUnknown() {
+			sp.EndUserQuarantinePermissionsValue = plan.EndUserQuarantinePermissionsValue.ValueInt64Pointer()
+		}
 	}
-	sp.OrganizationBrandingEnabled = plan.OrganizationBrandingEnabled.ValueBool()
+	if !plan.EndUserSpamNotificationCustomFromAddress.Equal(state.EndUserSpamNotificationCustomFromAddress) {
+		sp.EndUserSpamNotificationCustomFromAddress = plan.EndUserSpamNotificationCustomFromAddress.ValueString()
+	}
+	if !plan.EndUserSpamNotificationFrequency.Equal(state.EndUserSpamNotificationFrequency) {
+		if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
+			sp.EndUserSpamNotificationFrequency = objectParam(v)
+		}
+	}
+	if !plan.EndUserSpamNotificationFrequencyInDays.Equal(state.EndUserSpamNotificationFrequencyInDays) {
+		if !plan.EndUserSpamNotificationFrequencyInDays.IsUnknown() {
+			sp.EndUserSpamNotificationFrequencyInDays = plan.EndUserSpamNotificationFrequencyInDays.ValueInt64Pointer()
+		}
+	}
+	if !plan.EndUserSpamNotificationLanguage.Equal(state.EndUserSpamNotificationLanguage) {
+		if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+			sp.EndUserSpamNotificationLanguage = objectParam(v)
+		}
+	}
+	if !plan.EsnCustomSubject.Equal(state.EsnCustomSubject) {
+		if !plan.EsnCustomSubject.IsNull() && !plan.EsnCustomSubject.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EsnCustomSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.EsnCustomSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EsnCustomSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.EsnCustomSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
+		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+	}
+	if !plan.IncludeMessagesFromBlockedSenderAddress.Equal(state.IncludeMessagesFromBlockedSenderAddress) {
+		if !plan.IncludeMessagesFromBlockedSenderAddress.IsUnknown() {
+			sp.IncludeMessagesFromBlockedSenderAddress = plan.IncludeMessagesFromBlockedSenderAddress.ValueBoolPointer()
+		}
+	}
+	if !plan.MultiLanguageCustomDisclaimer.Equal(state.MultiLanguageCustomDisclaimer) {
+		if !plan.MultiLanguageCustomDisclaimer.IsNull() && !plan.MultiLanguageCustomDisclaimer.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MultiLanguageCustomDisclaimer, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageCustomDisclaimer = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageCustomDisclaimer, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageCustomDisclaimerDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.MultiLanguageSenderName.Equal(state.MultiLanguageSenderName) {
+		if !plan.MultiLanguageSenderName.IsNull() && !plan.MultiLanguageSenderName.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MultiLanguageSenderName, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSenderName = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSenderName, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSenderNameDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.MultiLanguageSetting.Equal(state.MultiLanguageSetting) {
+		if !plan.MultiLanguageSetting.IsNull() && !plan.MultiLanguageSetting.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSetting = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSetting, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSettingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OrganizationBrandingEnabled.Equal(state.OrganizationBrandingEnabled) {
+		if !plan.OrganizationBrandingEnabled.IsUnknown() {
+			sp.OrganizationBrandingEnabled = plan.OrganizationBrandingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.QuarantineRetentionDays.Equal(state.QuarantineRetentionDays) {
+		if !plan.QuarantineRetentionDays.IsUnknown() {
+			sp.QuarantineRetentionDays = plan.QuarantineRetentionDays.ValueInt64Pointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -236,17 +419,8 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AdminNotificationLanguage":                cfg.AdminNotificationLanguage,
-		"AdminQuarantinePermissionsList":           cfg.AdminQuarantinePermissionsList,
 		"CustomDisclaimer":                         cfg.CustomDisclaimer,
-		"EndUserQuarantinePermissions":             cfg.EndUserQuarantinePermissions,
 		"EndUserSpamNotificationCustomFromAddress": cfg.EndUserSpamNotificationCustomFromAddress,
-		"EndUserSpamNotificationFrequency":         cfg.EndUserSpamNotificationFrequency,
-		"EndUserSpamNotificationLanguage":          cfg.EndUserSpamNotificationLanguage,
-		"EsnCustomSubject":                         cfg.EsnCustomSubject,
-		"MultiLanguageCustomDisclaimer":            cfg.MultiLanguageCustomDisclaimer,
-		"MultiLanguageSenderName":                  cfg.MultiLanguageSenderName,
-		"MultiLanguageSetting":                     cfg.MultiLanguageSetting,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -309,45 +483,53 @@ func readQuarantinePolicy(ctx context.Context, obj map[string]any, m *quarantine
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
-	m.AdminNotificationLanguage = types.StringValue(getString(obj, "AdminNotificationLanguage"))
+	m.AdminNotificationFrequencyInDays = types.Int64Value(getInt(obj, "AdminNotificationFrequencyInDays"))
+	m.AdminNotificationLanguage = types.StringValue(getObjectJSON(obj, "AdminNotificationLanguage"))
 	m.AdminNotificationsEnabled = types.BoolValue(getBool(obj, "AdminNotificationsEnabled"))
-	m.AdminQuarantinePermissionsList = types.StringValue(getString(obj, "AdminQuarantinePermissionsList"))
+	m.AdminQuarantinePermissionsList = stringSetValue(ctx, getStringSlice(obj, "AdminQuarantinePermissionsList"))
 	m.CustomDisclaimer = types.StringValue(getString(obj, "CustomDisclaimer"))
 	m.ESNEnabled = types.BoolValue(getBool(obj, "ESNEnabled"))
-	m.EndUserQuarantinePermissions = types.StringValue(getString(obj, "EndUserQuarantinePermissions"))
+	m.EndUserQuarantinePermissions = types.StringValue(getObjectJSON(obj, "EndUserQuarantinePermissions"))
+	m.EndUserQuarantinePermissionsValue = types.Int64Value(getInt(obj, "EndUserQuarantinePermissionsValue"))
 	m.EndUserSpamNotificationCustomFromAddress = types.StringValue(getString(obj, "EndUserSpamNotificationCustomFromAddress"))
-	m.EndUserSpamNotificationFrequency = types.StringValue(getString(obj, "EndUserSpamNotificationFrequency"))
-	m.EndUserSpamNotificationLanguage = types.StringValue(getString(obj, "EndUserSpamNotificationLanguage"))
-	m.EsnCustomSubject = types.StringValue(getString(obj, "EsnCustomSubject"))
+	m.EndUserSpamNotificationFrequency = types.StringValue(getObjectJSON(obj, "EndUserSpamNotificationFrequency"))
+	m.EndUserSpamNotificationFrequencyInDays = types.Int64Value(getInt(obj, "EndUserSpamNotificationFrequencyInDays"))
+	m.EndUserSpamNotificationLanguage = types.StringValue(getObjectJSON(obj, "EndUserSpamNotificationLanguage"))
+	m.EsnCustomSubject = stringSetValue(ctx, getStringSlice(obj, "EsnCustomSubject"))
 	m.IgnoreDehydratedFlag = types.BoolValue(getBool(obj, "IgnoreDehydratedFlag"))
 	m.IncludeMessagesFromBlockedSenderAddress = types.BoolValue(getBool(obj, "IncludeMessagesFromBlockedSenderAddress"))
-	m.MultiLanguageCustomDisclaimer = types.StringValue(getString(obj, "MultiLanguageCustomDisclaimer"))
-	m.MultiLanguageSenderName = types.StringValue(getString(obj, "MultiLanguageSenderName"))
-	m.MultiLanguageSetting = types.StringValue(getString(obj, "MultiLanguageSetting"))
+	m.MultiLanguageCustomDisclaimer = stringSetValue(ctx, getStringSlice(obj, "MultiLanguageCustomDisclaimer"))
+	m.MultiLanguageSenderName = stringSetValue(ctx, getStringSlice(obj, "MultiLanguageSenderName"))
+	m.MultiLanguageSetting = stringSetValue(ctx, getStringSlice(obj, "MultiLanguageSetting"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OrganizationBrandingEnabled = types.BoolValue(getBool(obj, "OrganizationBrandingEnabled"))
-	m.QuarantinePolicyType = types.StringValue(getString(obj, "QuarantinePolicyType"))
+	m.QuarantinePolicyType = types.StringValue(getObjectJSON(obj, "QuarantinePolicyType"))
+	m.QuarantineRetentionDays = types.Int64Value(getInt(obj, "QuarantineRetentionDays"))
 	_ = ctx
 }
 
 func (r *quarantinePolicyResource) reconcileState(cfg, read *quarantinePolicyModel) {
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
+	read.AdminNotificationFrequencyInDays = reconcile.KeepInt64(cfg.AdminNotificationFrequencyInDays, read.AdminNotificationFrequencyInDays)
 	read.AdminNotificationLanguage = reconcile.KeepStr(cfg.AdminNotificationLanguage, read.AdminNotificationLanguage)
 	read.AdminNotificationsEnabled = reconcile.KeepBool(cfg.AdminNotificationsEnabled, read.AdminNotificationsEnabled)
-	read.AdminQuarantinePermissionsList = reconcile.KeepStr(cfg.AdminQuarantinePermissionsList, read.AdminQuarantinePermissionsList)
+	read.AdminQuarantinePermissionsList = reconcile.KeepSet(cfg.AdminQuarantinePermissionsList, read.AdminQuarantinePermissionsList)
 	read.CustomDisclaimer = reconcile.KeepStr(cfg.CustomDisclaimer, read.CustomDisclaimer)
 	read.ESNEnabled = reconcile.KeepBool(cfg.ESNEnabled, read.ESNEnabled)
 	read.EndUserQuarantinePermissions = reconcile.KeepStr(cfg.EndUserQuarantinePermissions, read.EndUserQuarantinePermissions)
+	read.EndUserQuarantinePermissionsValue = reconcile.KeepInt64(cfg.EndUserQuarantinePermissionsValue, read.EndUserQuarantinePermissionsValue)
 	read.EndUserSpamNotificationCustomFromAddress = reconcile.KeepStr(cfg.EndUserSpamNotificationCustomFromAddress, read.EndUserSpamNotificationCustomFromAddress)
 	read.EndUserSpamNotificationFrequency = reconcile.KeepStr(cfg.EndUserSpamNotificationFrequency, read.EndUserSpamNotificationFrequency)
+	read.EndUserSpamNotificationFrequencyInDays = reconcile.KeepInt64(cfg.EndUserSpamNotificationFrequencyInDays, read.EndUserSpamNotificationFrequencyInDays)
 	read.EndUserSpamNotificationLanguage = reconcile.KeepStr(cfg.EndUserSpamNotificationLanguage, read.EndUserSpamNotificationLanguage)
-	read.EsnCustomSubject = reconcile.KeepStr(cfg.EsnCustomSubject, read.EsnCustomSubject)
+	read.EsnCustomSubject = reconcile.KeepSet(cfg.EsnCustomSubject, read.EsnCustomSubject)
 	read.IgnoreDehydratedFlag = reconcile.KeepBool(cfg.IgnoreDehydratedFlag, read.IgnoreDehydratedFlag)
 	read.IncludeMessagesFromBlockedSenderAddress = reconcile.KeepBool(cfg.IncludeMessagesFromBlockedSenderAddress, read.IncludeMessagesFromBlockedSenderAddress)
-	read.MultiLanguageCustomDisclaimer = reconcile.KeepStr(cfg.MultiLanguageCustomDisclaimer, read.MultiLanguageCustomDisclaimer)
-	read.MultiLanguageSenderName = reconcile.KeepStr(cfg.MultiLanguageSenderName, read.MultiLanguageSenderName)
-	read.MultiLanguageSetting = reconcile.KeepStr(cfg.MultiLanguageSetting, read.MultiLanguageSetting)
+	read.MultiLanguageCustomDisclaimer = reconcile.KeepSet(cfg.MultiLanguageCustomDisclaimer, read.MultiLanguageCustomDisclaimer)
+	read.MultiLanguageSenderName = reconcile.KeepSet(cfg.MultiLanguageSenderName, read.MultiLanguageSenderName)
+	read.MultiLanguageSetting = reconcile.KeepSet(cfg.MultiLanguageSetting, read.MultiLanguageSetting)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationBrandingEnabled = reconcile.KeepBool(cfg.OrganizationBrandingEnabled, read.OrganizationBrandingEnabled)
 	read.QuarantinePolicyType = reconcile.KeepStr(cfg.QuarantinePolicyType, read.QuarantinePolicyType)
+	read.QuarantineRetentionDays = reconcile.KeepInt64(cfg.QuarantineRetentionDays, read.QuarantineRetentionDays)
 }

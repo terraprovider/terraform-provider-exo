@@ -31,8 +31,8 @@ Read-Only:
 - `is_default_auto_group_policy_tag` (Boolean) Maps to the -IsDefaultAutoGroupPolicyTag parameter.
 - `is_default_moderated_recipients_policy_tag` (Boolean) Maps to the -IsDefaultModeratedRecipientsPolicyTag parameter.
 - `legacy_managed_folder` (String) Maps to the -LegacyManagedFolder parameter.
-- `localized_comment` (String) Maps to the -LocalizedComment parameter.
-- `localized_retention_policy_tag_name` (String) Maps to the -LocalizedRetentionPolicyTagName parameter.
+- `localized_comment` (Set of String) Maps to the -LocalizedComment parameter.
+- `localized_retention_policy_tag_name` (Set of String) Maps to the -LocalizedRetentionPolicyTagName parameter.
 - `mailbox` (String) Maps to the -Mailbox parameter.
 - `message_class` (String) Maps to the -MessageClass parameter.
 - `must_display_comment_enabled` (Boolean) Maps to the -MustDisplayCommentEnabled parameter.

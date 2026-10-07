@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = &mailboxMessageConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxMessageConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxMessageConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxMessageConfigurationResource{}
 )
 
 type mailboxMessageConfigurationResource struct{ client *clients.Client }
@@ -49,6 +51,7 @@ type mailboxMessageConfigurationModel struct {
 	DefaultFontColor                       types.String `tfsdk:"default_font_color"`
 	DefaultFontFlags                       types.String `tfsdk:"default_font_flags"`
 	DefaultFontName                        types.String `tfsdk:"default_font_name"`
+	DefaultFontSize                        types.Int64  `tfsdk:"default_font_size"`
 	DefaultFormat                          types.String `tfsdk:"default_format"`
 	DefaultSignature                       types.String `tfsdk:"default_signature"`
 	DefaultSignatureOnReply                types.String `tfsdk:"default_signature_on_reply"`
@@ -57,6 +60,7 @@ type mailboxMessageConfigurationModel struct {
 	EchoGroupMessageBackToSubscribedSender types.Bool   `tfsdk:"echo_group_message_back_to_subscribed_sender"`
 	EmailComposeMode                       types.String `tfsdk:"email_compose_mode"`
 	EmptyDeletedItemsOnLogoff              types.Bool   `tfsdk:"empty_deleted_items_on_logoff"`
+	FavoritesBitFlags                      types.Int64  `tfsdk:"favorites_bit_flags"`
 	GlobalReadingPanePosition              types.String `tfsdk:"global_reading_pane_position"`
 	HideDeletedItems                       types.Bool   `tfsdk:"hide_deleted_items"`
 	IsDarkModeTheme                        types.Bool   `tfsdk:"is_dark_mode_theme"`
@@ -66,12 +70,15 @@ type mailboxMessageConfigurationModel struct {
 	IsReplyAllTheDefaultResponse           types.Bool   `tfsdk:"is_reply_all_the_default_response"`
 	LinkPreviewEnabled                     types.Bool   `tfsdk:"link_preview_enabled"`
 	MailFolderPaneExpanded                 types.Bool   `tfsdk:"mail_folder_pane_expanded"`
+	MailSendUndoInterval                   types.Int64  `tfsdk:"mail_send_undo_interval"`
 	ManuallyPickCertificate                types.Bool   `tfsdk:"manually_pick_certificate"`
+	NavigationBarWidth                     types.Int64  `tfsdk:"navigation_bar_width"`
 	NavigationPaneViewOption               types.String `tfsdk:"navigation_pane_view_option"`
 	NewEnabledPonts                        types.String `tfsdk:"new_enabled_ponts"`
 	NewItemNotification                    types.String `tfsdk:"new_item_notification"`
 	PreferAccessibleContent                types.Bool   `tfsdk:"prefer_accessible_content"`
 	PreviewMarkAsReadBehavior              types.String `tfsdk:"preview_mark_as_read_behavior"`
+	PreviewMarkAsReadDelaytime             types.Int64  `tfsdk:"preview_mark_as_read_delaytime"`
 	ReadReceiptResponse                    types.String `tfsdk:"read_receipt_response"`
 	ReportJunkSelected                     types.Bool   `tfsdk:"report_junk_selected"`
 	SendAddressDefault                     types.String `tfsdk:"send_address_default"`
@@ -117,6 +124,7 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"default_font_color":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontColor parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_font_flags":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontFlags parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_font_name":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_font_size":                            schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFontSize parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_format":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_signature":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultSignature parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_signature_on_reply":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultSignatureOnReply parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -125,6 +133,7 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"echo_group_message_back_to_subscribed_sender": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EchoGroupMessageBackToSubscribedSender parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"email_compose_mode":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailComposeMode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"empty_deleted_items_on_logoff":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EmptyDeletedItemsOnLogoff parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"favorites_bit_flags":                          schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -FavoritesBitFlags parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"global_reading_pane_position":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GlobalReadingPanePosition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hide_deleted_items":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HideDeletedItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_dark_mode_theme":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDarkModeTheme parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -134,12 +143,15 @@ func (r *mailboxMessageConfigurationResource) Schema(_ context.Context, _ resour
 			"is_reply_all_the_default_response":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsReplyAllTheDefaultResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"link_preview_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkPreviewEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_folder_pane_expanded":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailFolderPaneExpanded parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"mail_send_undo_interval":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MailSendUndoInterval parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"manually_pick_certificate":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ManuallyPickCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"navigation_bar_width":                         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -NavigationBarWidth parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"navigation_pane_view_option":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NavigationPaneViewOption parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"new_enabled_ponts":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NewEnabledPonts parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"new_item_notification":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NewItemNotification parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"prefer_accessible_content":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreferAccessibleContent parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"preview_mark_as_read_behavior":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PreviewMarkAsReadBehavior parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"preview_mark_as_read_delaytime":               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PreviewMarkAsReadDelaytime parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"read_receipt_response":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReadReceiptResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"report_junk_selected":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportJunkSelected parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_address_default":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendAddressDefault parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -178,88 +190,268 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxMessageConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxMessageConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
-		sp.AfterMoveOrDeleteBehavior = v
+	if v := config.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
+		sp.AfterMoveOrDeleteBehavior = objectParam(v)
 	}
-	sp.AlwaysShowBcc = plan.AlwaysShowBcc.ValueBool()
-	sp.AlwaysShowFrom = plan.AlwaysShowFrom.ValueBool()
-	sp.AutoAddSignature = plan.AutoAddSignature.ValueBool()
-	sp.AutoAddSignatureOnMobile = plan.AutoAddSignatureOnMobile.ValueBool()
-	sp.AutoAddSignatureOnReply = plan.AutoAddSignatureOnReply.ValueBool()
-	sp.CheckForForgottenAttachments = plan.CheckForForgottenAttachments.ValueBool()
-	sp.CheckForReportJunkDialog = plan.CheckForReportJunkDialog.ValueBool()
-	if v := plan.ConversationSortOrder.ValueString(); v != "" {
-		sp.ConversationSortOrder = v
+	if !config.AlwaysShowBcc.IsNull() {
+		if !plan.AlwaysShowBcc.IsUnknown() {
+			sp.AlwaysShowBcc = plan.AlwaysShowBcc.ValueBoolPointer()
+		}
 	}
-	sp.DefaultFontColor = plan.DefaultFontColor.ValueString()
-	if v := plan.DefaultFontFlags.ValueString(); v != "" {
-		sp.DefaultFontFlags = v
+	if !config.AlwaysShowFrom.IsNull() {
+		if !plan.AlwaysShowFrom.IsUnknown() {
+			sp.AlwaysShowFrom = plan.AlwaysShowFrom.ValueBoolPointer()
+		}
 	}
-	sp.DefaultFontName = plan.DefaultFontName.ValueString()
-	if v := plan.DefaultFormat.ValueString(); v != "" {
-		sp.DefaultFormat = v
+	if !config.AutoAddSignature.IsNull() {
+		if !plan.AutoAddSignature.IsUnknown() {
+			sp.AutoAddSignature = plan.AutoAddSignature.ValueBoolPointer()
+		}
 	}
-	sp.DefaultSignature = plan.DefaultSignature.ValueString()
-	sp.DefaultSignatureOnReply = plan.DefaultSignatureOnReply.ValueString()
-	sp.DeleteSignatureName = plan.DeleteSignatureName.ValueString()
-	if v := plan.DisplayDensityMode.ValueString(); v != "" {
-		sp.DisplayDensityMode = v
+	if !config.AutoAddSignatureOnMobile.IsNull() {
+		if !plan.AutoAddSignatureOnMobile.IsUnknown() {
+			sp.AutoAddSignatureOnMobile = plan.AutoAddSignatureOnMobile.ValueBoolPointer()
+		}
 	}
-	sp.EchoGroupMessageBackToSubscribedSender = plan.EchoGroupMessageBackToSubscribedSender.ValueBool()
-	if v := plan.EmailComposeMode.ValueString(); v != "" {
-		sp.EmailComposeMode = v
+	if !config.AutoAddSignatureOnReply.IsNull() {
+		if !plan.AutoAddSignatureOnReply.IsUnknown() {
+			sp.AutoAddSignatureOnReply = plan.AutoAddSignatureOnReply.ValueBoolPointer()
+		}
 	}
-	sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBool()
-	if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
-		sp.GlobalReadingPanePosition = v
+	if !config.CheckForForgottenAttachments.IsNull() {
+		if !plan.CheckForForgottenAttachments.IsUnknown() {
+			sp.CheckForForgottenAttachments = plan.CheckForForgottenAttachments.ValueBoolPointer()
+		}
 	}
-	sp.HideDeletedItems = plan.HideDeletedItems.ValueBool()
-	sp.IsDarkModeTheme = plan.IsDarkModeTheme.ValueBool()
-	sp.IsFavoritesFolderTreeCollapsed = plan.IsFavoritesFolderTreeCollapsed.ValueBool()
-	sp.IsFocusedInboxEnabled = plan.IsFocusedInboxEnabled.ValueBool()
-	sp.IsMailRootFolderTreeCollapsed = plan.IsMailRootFolderTreeCollapsed.ValueBool()
-	sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBool()
-	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
-	sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBool()
-	sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBool()
-	if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
-		sp.NavigationPaneViewOption = v
+	if !config.CheckForReportJunkDialog.IsNull() {
+		if !plan.CheckForReportJunkDialog.IsUnknown() {
+			sp.CheckForReportJunkDialog = plan.CheckForReportJunkDialog.ValueBoolPointer()
+		}
 	}
-	if v := plan.NewEnabledPonts.ValueString(); v != "" {
-		sp.NewEnabledPonts = v
+	if v := config.ConversationSortOrder.ValueString(); v != "" {
+		sp.ConversationSortOrder = objectParam(v)
 	}
-	if v := plan.NewItemNotification.ValueString(); v != "" {
-		sp.NewItemNotification = v
+	if !config.DefaultFontColor.IsNull() {
+		sp.DefaultFontColor = plan.DefaultFontColor.ValueString()
 	}
-	sp.PreferAccessibleContent = plan.PreferAccessibleContent.ValueBool()
-	if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
-		sp.PreviewMarkAsReadBehavior = v
+	if v := config.DefaultFontFlags.ValueString(); v != "" {
+		sp.DefaultFontFlags = objectParam(v)
 	}
-	if v := plan.ReadReceiptResponse.ValueString(); v != "" {
-		sp.ReadReceiptResponse = v
+	if !config.DefaultFontName.IsNull() {
+		sp.DefaultFontName = plan.DefaultFontName.ValueString()
 	}
-	sp.ReportJunkSelected = plan.ReportJunkSelected.ValueBool()
-	sp.SendAddressDefault = plan.SendAddressDefault.ValueString()
-	sp.ShowConversationAsTree = plan.ShowConversationAsTree.ValueBool()
-	sp.ShowInlinePreviews = plan.ShowInlinePreviews.ValueBool()
-	sp.ShowNotificationBar = plan.ShowNotificationBar.ValueBool()
-	sp.ShowPreviewTextInListView = plan.ShowPreviewTextInListView.ValueBool()
-	sp.ShowReadingPaneOnFirstLoad = plan.ShowReadingPaneOnFirstLoad.ValueBool()
-	sp.ShowSenderOnTopInListView = plan.ShowSenderOnTopInListView.ValueBool()
-	sp.ShowUpNext = plan.ShowUpNext.ValueBool()
-	sp.SignatureHtml = plan.SignatureHtml.ValueString()
-	sp.SignatureHtmlBody = plan.SignatureHtmlBody.ValueString()
-	sp.SignatureName = plan.SignatureName.ValueString()
-	sp.SignatureText = plan.SignatureText.ValueString()
-	sp.SignatureTextOnMobile = plan.SignatureTextOnMobile.ValueString()
-	sp.SigningCertificateId = plan.SigningCertificateId.ValueString()
-	sp.SigningCertificateSubject = plan.SigningCertificateSubject.ValueString()
-	sp.SmimeEncrypt = plan.SmimeEncrypt.ValueBool()
-	sp.SmimeSign = plan.SmimeSign.ValueBool()
-	sp.UseDefaultSignatureOnMobile = plan.UseDefaultSignatureOnMobile.ValueBool()
-	sp.WebSuggestedRepliesEnabledForUser = plan.WebSuggestedRepliesEnabledForUser.ValueBool()
+	if !config.DefaultFontSize.IsNull() {
+		if !plan.DefaultFontSize.IsUnknown() {
+			sp.DefaultFontSize = plan.DefaultFontSize.ValueInt64Pointer()
+		}
+	}
+	if v := config.DefaultFormat.ValueString(); v != "" {
+		sp.DefaultFormat = objectParam(v)
+	}
+	if !config.DefaultSignature.IsNull() {
+		sp.DefaultSignature = plan.DefaultSignature.ValueString()
+	}
+	if !config.DefaultSignatureOnReply.IsNull() {
+		sp.DefaultSignatureOnReply = plan.DefaultSignatureOnReply.ValueString()
+	}
+	if !config.DeleteSignatureName.IsNull() {
+		sp.DeleteSignatureName = plan.DeleteSignatureName.ValueString()
+	}
+	if v := config.DisplayDensityMode.ValueString(); v != "" {
+		sp.DisplayDensityMode = objectParam(v)
+	}
+	if !config.EchoGroupMessageBackToSubscribedSender.IsNull() {
+		if !plan.EchoGroupMessageBackToSubscribedSender.IsUnknown() {
+			sp.EchoGroupMessageBackToSubscribedSender = plan.EchoGroupMessageBackToSubscribedSender.ValueBoolPointer()
+		}
+	}
+	if v := config.EmailComposeMode.ValueString(); v != "" {
+		sp.EmailComposeMode = objectParam(v)
+	}
+	if !config.EmptyDeletedItemsOnLogoff.IsNull() {
+		if !plan.EmptyDeletedItemsOnLogoff.IsUnknown() {
+			sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBoolPointer()
+		}
+	}
+	if !config.FavoritesBitFlags.IsNull() {
+		if !plan.FavoritesBitFlags.IsUnknown() {
+			sp.FavoritesBitFlags = plan.FavoritesBitFlags.ValueInt64Pointer()
+		}
+	}
+	if v := config.GlobalReadingPanePosition.ValueString(); v != "" {
+		sp.GlobalReadingPanePosition = objectParam(v)
+	}
+	if !config.HideDeletedItems.IsNull() {
+		if !plan.HideDeletedItems.IsUnknown() {
+			sp.HideDeletedItems = plan.HideDeletedItems.ValueBoolPointer()
+		}
+	}
+	if !config.IsDarkModeTheme.IsNull() {
+		if !plan.IsDarkModeTheme.IsUnknown() {
+			sp.IsDarkModeTheme = plan.IsDarkModeTheme.ValueBoolPointer()
+		}
+	}
+	if !config.IsFavoritesFolderTreeCollapsed.IsNull() {
+		if !plan.IsFavoritesFolderTreeCollapsed.IsUnknown() {
+			sp.IsFavoritesFolderTreeCollapsed = plan.IsFavoritesFolderTreeCollapsed.ValueBoolPointer()
+		}
+	}
+	if !config.IsFocusedInboxEnabled.IsNull() {
+		if !plan.IsFocusedInboxEnabled.IsUnknown() {
+			sp.IsFocusedInboxEnabled = plan.IsFocusedInboxEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IsMailRootFolderTreeCollapsed.IsNull() {
+		if !plan.IsMailRootFolderTreeCollapsed.IsUnknown() {
+			sp.IsMailRootFolderTreeCollapsed = plan.IsMailRootFolderTreeCollapsed.ValueBoolPointer()
+		}
+	}
+	if !config.IsReplyAllTheDefaultResponse.IsNull() {
+		if !plan.IsReplyAllTheDefaultResponse.IsUnknown() {
+			sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBoolPointer()
+		}
+	}
+	if !config.LinkPreviewEnabled.IsNull() {
+		if !plan.LinkPreviewEnabled.IsUnknown() {
+			sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailFolderPaneExpanded.IsNull() {
+		if !plan.MailFolderPaneExpanded.IsUnknown() {
+			sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBoolPointer()
+		}
+	}
+	if !config.MailSendUndoInterval.IsNull() {
+		if !plan.MailSendUndoInterval.IsUnknown() {
+			sp.MailSendUndoInterval = plan.MailSendUndoInterval.ValueInt64Pointer()
+		}
+	}
+	if !config.ManuallyPickCertificate.IsNull() {
+		if !plan.ManuallyPickCertificate.IsUnknown() {
+			sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBoolPointer()
+		}
+	}
+	if !config.NavigationBarWidth.IsNull() {
+		if !plan.NavigationBarWidth.IsUnknown() {
+			sp.NavigationBarWidth = plan.NavigationBarWidth.ValueInt64Pointer()
+		}
+	}
+	if v := config.NavigationPaneViewOption.ValueString(); v != "" {
+		sp.NavigationPaneViewOption = objectParam(v)
+	}
+	if v := config.NewEnabledPonts.ValueString(); v != "" {
+		sp.NewEnabledPonts = objectParam(v)
+	}
+	if v := config.NewItemNotification.ValueString(); v != "" {
+		sp.NewItemNotification = objectParam(v)
+	}
+	if !config.PreferAccessibleContent.IsNull() {
+		if !plan.PreferAccessibleContent.IsUnknown() {
+			sp.PreferAccessibleContent = plan.PreferAccessibleContent.ValueBoolPointer()
+		}
+	}
+	if v := config.PreviewMarkAsReadBehavior.ValueString(); v != "" {
+		sp.PreviewMarkAsReadBehavior = objectParam(v)
+	}
+	if !config.PreviewMarkAsReadDelaytime.IsNull() {
+		if !plan.PreviewMarkAsReadDelaytime.IsUnknown() {
+			sp.PreviewMarkAsReadDelaytime = plan.PreviewMarkAsReadDelaytime.ValueInt64Pointer()
+		}
+	}
+	if v := config.ReadReceiptResponse.ValueString(); v != "" {
+		sp.ReadReceiptResponse = objectParam(v)
+	}
+	if !config.ReportJunkSelected.IsNull() {
+		if !plan.ReportJunkSelected.IsUnknown() {
+			sp.ReportJunkSelected = plan.ReportJunkSelected.ValueBoolPointer()
+		}
+	}
+	if !config.SendAddressDefault.IsNull() {
+		sp.SendAddressDefault = plan.SendAddressDefault.ValueString()
+	}
+	if !config.ShowConversationAsTree.IsNull() {
+		if !plan.ShowConversationAsTree.IsUnknown() {
+			sp.ShowConversationAsTree = plan.ShowConversationAsTree.ValueBoolPointer()
+		}
+	}
+	if !config.ShowInlinePreviews.IsNull() {
+		if !plan.ShowInlinePreviews.IsUnknown() {
+			sp.ShowInlinePreviews = plan.ShowInlinePreviews.ValueBoolPointer()
+		}
+	}
+	if !config.ShowNotificationBar.IsNull() {
+		if !plan.ShowNotificationBar.IsUnknown() {
+			sp.ShowNotificationBar = plan.ShowNotificationBar.ValueBoolPointer()
+		}
+	}
+	if !config.ShowPreviewTextInListView.IsNull() {
+		if !plan.ShowPreviewTextInListView.IsUnknown() {
+			sp.ShowPreviewTextInListView = plan.ShowPreviewTextInListView.ValueBoolPointer()
+		}
+	}
+	if !config.ShowReadingPaneOnFirstLoad.IsNull() {
+		if !plan.ShowReadingPaneOnFirstLoad.IsUnknown() {
+			sp.ShowReadingPaneOnFirstLoad = plan.ShowReadingPaneOnFirstLoad.ValueBoolPointer()
+		}
+	}
+	if !config.ShowSenderOnTopInListView.IsNull() {
+		if !plan.ShowSenderOnTopInListView.IsUnknown() {
+			sp.ShowSenderOnTopInListView = plan.ShowSenderOnTopInListView.ValueBoolPointer()
+		}
+	}
+	if !config.ShowUpNext.IsNull() {
+		if !plan.ShowUpNext.IsUnknown() {
+			sp.ShowUpNext = plan.ShowUpNext.ValueBoolPointer()
+		}
+	}
+	if !config.SignatureHtml.IsNull() {
+		sp.SignatureHtml = plan.SignatureHtml.ValueString()
+	}
+	if !config.SignatureHtmlBody.IsNull() {
+		sp.SignatureHtmlBody = plan.SignatureHtmlBody.ValueString()
+	}
+	if !config.SignatureName.IsNull() {
+		sp.SignatureName = plan.SignatureName.ValueString()
+	}
+	if !config.SignatureText.IsNull() {
+		sp.SignatureText = plan.SignatureText.ValueString()
+	}
+	if !config.SignatureTextOnMobile.IsNull() {
+		sp.SignatureTextOnMobile = plan.SignatureTextOnMobile.ValueString()
+	}
+	if !config.SigningCertificateId.IsNull() {
+		sp.SigningCertificateId = plan.SigningCertificateId.ValueString()
+	}
+	if !config.SigningCertificateSubject.IsNull() {
+		sp.SigningCertificateSubject = plan.SigningCertificateSubject.ValueString()
+	}
+	if !config.SmimeEncrypt.IsNull() {
+		if !plan.SmimeEncrypt.IsUnknown() {
+			sp.SmimeEncrypt = plan.SmimeEncrypt.ValueBoolPointer()
+		}
+	}
+	if !config.SmimeSign.IsNull() {
+		if !plan.SmimeSign.IsUnknown() {
+			sp.SmimeSign = plan.SmimeSign.ValueBoolPointer()
+		}
+	}
+	if !config.UseDefaultSignatureOnMobile.IsNull() {
+		if !plan.UseDefaultSignatureOnMobile.IsUnknown() {
+			sp.UseDefaultSignatureOnMobile = plan.UseDefaultSignatureOnMobile.ValueBoolPointer()
+		}
+	}
+	if !config.WebSuggestedRepliesEnabledForUser.IsNull() {
+		if !plan.WebSuggestedRepliesEnabledForUser.IsUnknown() {
+			sp.WebSuggestedRepliesEnabledForUser = plan.WebSuggestedRepliesEnabledForUser.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -299,86 +491,285 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	id := r.identityOf(state)
 	sp := exo.SetMailboxMessageConfigurationParams{}
 	sp.Identity = id
-	if v := plan.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
-		sp.AfterMoveOrDeleteBehavior = v
+	if !plan.AfterMoveOrDeleteBehavior.Equal(state.AfterMoveOrDeleteBehavior) {
+		if v := plan.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
+			sp.AfterMoveOrDeleteBehavior = objectParam(v)
+		}
 	}
-	sp.AlwaysShowBcc = plan.AlwaysShowBcc.ValueBool()
-	sp.AlwaysShowFrom = plan.AlwaysShowFrom.ValueBool()
-	sp.AutoAddSignature = plan.AutoAddSignature.ValueBool()
-	sp.AutoAddSignatureOnMobile = plan.AutoAddSignatureOnMobile.ValueBool()
-	sp.AutoAddSignatureOnReply = plan.AutoAddSignatureOnReply.ValueBool()
-	sp.CheckForForgottenAttachments = plan.CheckForForgottenAttachments.ValueBool()
-	sp.CheckForReportJunkDialog = plan.CheckForReportJunkDialog.ValueBool()
-	if v := plan.ConversationSortOrder.ValueString(); v != "" {
-		sp.ConversationSortOrder = v
+	if !plan.AlwaysShowBcc.Equal(state.AlwaysShowBcc) {
+		if !plan.AlwaysShowBcc.IsUnknown() {
+			sp.AlwaysShowBcc = plan.AlwaysShowBcc.ValueBoolPointer()
+		}
 	}
-	sp.DefaultFontColor = plan.DefaultFontColor.ValueString()
-	if v := plan.DefaultFontFlags.ValueString(); v != "" {
-		sp.DefaultFontFlags = v
+	if !plan.AlwaysShowFrom.Equal(state.AlwaysShowFrom) {
+		if !plan.AlwaysShowFrom.IsUnknown() {
+			sp.AlwaysShowFrom = plan.AlwaysShowFrom.ValueBoolPointer()
+		}
 	}
-	sp.DefaultFontName = plan.DefaultFontName.ValueString()
-	if v := plan.DefaultFormat.ValueString(); v != "" {
-		sp.DefaultFormat = v
+	if !plan.AutoAddSignature.Equal(state.AutoAddSignature) {
+		if !plan.AutoAddSignature.IsUnknown() {
+			sp.AutoAddSignature = plan.AutoAddSignature.ValueBoolPointer()
+		}
 	}
-	sp.DefaultSignature = plan.DefaultSignature.ValueString()
-	sp.DefaultSignatureOnReply = plan.DefaultSignatureOnReply.ValueString()
-	sp.DeleteSignatureName = plan.DeleteSignatureName.ValueString()
-	if v := plan.DisplayDensityMode.ValueString(); v != "" {
-		sp.DisplayDensityMode = v
+	if !plan.AutoAddSignatureOnMobile.Equal(state.AutoAddSignatureOnMobile) {
+		if !plan.AutoAddSignatureOnMobile.IsUnknown() {
+			sp.AutoAddSignatureOnMobile = plan.AutoAddSignatureOnMobile.ValueBoolPointer()
+		}
 	}
-	sp.EchoGroupMessageBackToSubscribedSender = plan.EchoGroupMessageBackToSubscribedSender.ValueBool()
-	if v := plan.EmailComposeMode.ValueString(); v != "" {
-		sp.EmailComposeMode = v
+	if !plan.AutoAddSignatureOnReply.Equal(state.AutoAddSignatureOnReply) {
+		if !plan.AutoAddSignatureOnReply.IsUnknown() {
+			sp.AutoAddSignatureOnReply = plan.AutoAddSignatureOnReply.ValueBoolPointer()
+		}
 	}
-	sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBool()
-	if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
-		sp.GlobalReadingPanePosition = v
+	if !plan.CheckForForgottenAttachments.Equal(state.CheckForForgottenAttachments) {
+		if !plan.CheckForForgottenAttachments.IsUnknown() {
+			sp.CheckForForgottenAttachments = plan.CheckForForgottenAttachments.ValueBoolPointer()
+		}
 	}
-	sp.HideDeletedItems = plan.HideDeletedItems.ValueBool()
-	sp.IsDarkModeTheme = plan.IsDarkModeTheme.ValueBool()
-	sp.IsFavoritesFolderTreeCollapsed = plan.IsFavoritesFolderTreeCollapsed.ValueBool()
-	sp.IsFocusedInboxEnabled = plan.IsFocusedInboxEnabled.ValueBool()
-	sp.IsMailRootFolderTreeCollapsed = plan.IsMailRootFolderTreeCollapsed.ValueBool()
-	sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBool()
-	sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBool()
-	sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBool()
-	sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBool()
-	if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
-		sp.NavigationPaneViewOption = v
+	if !plan.CheckForReportJunkDialog.Equal(state.CheckForReportJunkDialog) {
+		if !plan.CheckForReportJunkDialog.IsUnknown() {
+			sp.CheckForReportJunkDialog = plan.CheckForReportJunkDialog.ValueBoolPointer()
+		}
 	}
-	if v := plan.NewEnabledPonts.ValueString(); v != "" {
-		sp.NewEnabledPonts = v
+	if !plan.ConversationSortOrder.Equal(state.ConversationSortOrder) {
+		if v := plan.ConversationSortOrder.ValueString(); v != "" {
+			sp.ConversationSortOrder = objectParam(v)
+		}
 	}
-	if v := plan.NewItemNotification.ValueString(); v != "" {
-		sp.NewItemNotification = v
+	if !plan.DefaultFontColor.Equal(state.DefaultFontColor) {
+		sp.DefaultFontColor = plan.DefaultFontColor.ValueString()
 	}
-	sp.PreferAccessibleContent = plan.PreferAccessibleContent.ValueBool()
-	if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
-		sp.PreviewMarkAsReadBehavior = v
+	if !plan.DefaultFontFlags.Equal(state.DefaultFontFlags) {
+		if v := plan.DefaultFontFlags.ValueString(); v != "" {
+			sp.DefaultFontFlags = objectParam(v)
+		}
 	}
-	if v := plan.ReadReceiptResponse.ValueString(); v != "" {
-		sp.ReadReceiptResponse = v
+	if !plan.DefaultFontName.Equal(state.DefaultFontName) {
+		sp.DefaultFontName = plan.DefaultFontName.ValueString()
 	}
-	sp.ReportJunkSelected = plan.ReportJunkSelected.ValueBool()
-	sp.SendAddressDefault = plan.SendAddressDefault.ValueString()
-	sp.ShowConversationAsTree = plan.ShowConversationAsTree.ValueBool()
-	sp.ShowInlinePreviews = plan.ShowInlinePreviews.ValueBool()
-	sp.ShowNotificationBar = plan.ShowNotificationBar.ValueBool()
-	sp.ShowPreviewTextInListView = plan.ShowPreviewTextInListView.ValueBool()
-	sp.ShowReadingPaneOnFirstLoad = plan.ShowReadingPaneOnFirstLoad.ValueBool()
-	sp.ShowSenderOnTopInListView = plan.ShowSenderOnTopInListView.ValueBool()
-	sp.ShowUpNext = plan.ShowUpNext.ValueBool()
-	sp.SignatureHtml = plan.SignatureHtml.ValueString()
-	sp.SignatureHtmlBody = plan.SignatureHtmlBody.ValueString()
-	sp.SignatureName = plan.SignatureName.ValueString()
-	sp.SignatureText = plan.SignatureText.ValueString()
-	sp.SignatureTextOnMobile = plan.SignatureTextOnMobile.ValueString()
-	sp.SigningCertificateId = plan.SigningCertificateId.ValueString()
-	sp.SigningCertificateSubject = plan.SigningCertificateSubject.ValueString()
-	sp.SmimeEncrypt = plan.SmimeEncrypt.ValueBool()
-	sp.SmimeSign = plan.SmimeSign.ValueBool()
-	sp.UseDefaultSignatureOnMobile = plan.UseDefaultSignatureOnMobile.ValueBool()
-	sp.WebSuggestedRepliesEnabledForUser = plan.WebSuggestedRepliesEnabledForUser.ValueBool()
+	if !plan.DefaultFontSize.Equal(state.DefaultFontSize) {
+		if !plan.DefaultFontSize.IsUnknown() {
+			sp.DefaultFontSize = plan.DefaultFontSize.ValueInt64Pointer()
+		}
+	}
+	if !plan.DefaultFormat.Equal(state.DefaultFormat) {
+		if v := plan.DefaultFormat.ValueString(); v != "" {
+			sp.DefaultFormat = objectParam(v)
+		}
+	}
+	if !plan.DefaultSignature.Equal(state.DefaultSignature) {
+		sp.DefaultSignature = plan.DefaultSignature.ValueString()
+	}
+	if !plan.DefaultSignatureOnReply.Equal(state.DefaultSignatureOnReply) {
+		sp.DefaultSignatureOnReply = plan.DefaultSignatureOnReply.ValueString()
+	}
+	if !plan.DeleteSignatureName.Equal(state.DeleteSignatureName) {
+		sp.DeleteSignatureName = plan.DeleteSignatureName.ValueString()
+	}
+	if !plan.DisplayDensityMode.Equal(state.DisplayDensityMode) {
+		if v := plan.DisplayDensityMode.ValueString(); v != "" {
+			sp.DisplayDensityMode = objectParam(v)
+		}
+	}
+	if !plan.EchoGroupMessageBackToSubscribedSender.Equal(state.EchoGroupMessageBackToSubscribedSender) {
+		if !plan.EchoGroupMessageBackToSubscribedSender.IsUnknown() {
+			sp.EchoGroupMessageBackToSubscribedSender = plan.EchoGroupMessageBackToSubscribedSender.ValueBoolPointer()
+		}
+	}
+	if !plan.EmailComposeMode.Equal(state.EmailComposeMode) {
+		if v := plan.EmailComposeMode.ValueString(); v != "" {
+			sp.EmailComposeMode = objectParam(v)
+		}
+	}
+	if !plan.EmptyDeletedItemsOnLogoff.Equal(state.EmptyDeletedItemsOnLogoff) {
+		if !plan.EmptyDeletedItemsOnLogoff.IsUnknown() {
+			sp.EmptyDeletedItemsOnLogoff = plan.EmptyDeletedItemsOnLogoff.ValueBoolPointer()
+		}
+	}
+	if !plan.FavoritesBitFlags.Equal(state.FavoritesBitFlags) {
+		if !plan.FavoritesBitFlags.IsUnknown() {
+			sp.FavoritesBitFlags = plan.FavoritesBitFlags.ValueInt64Pointer()
+		}
+	}
+	if !plan.GlobalReadingPanePosition.Equal(state.GlobalReadingPanePosition) {
+		if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
+			sp.GlobalReadingPanePosition = objectParam(v)
+		}
+	}
+	if !plan.HideDeletedItems.Equal(state.HideDeletedItems) {
+		if !plan.HideDeletedItems.IsUnknown() {
+			sp.HideDeletedItems = plan.HideDeletedItems.ValueBoolPointer()
+		}
+	}
+	if !plan.IsDarkModeTheme.Equal(state.IsDarkModeTheme) {
+		if !plan.IsDarkModeTheme.IsUnknown() {
+			sp.IsDarkModeTheme = plan.IsDarkModeTheme.ValueBoolPointer()
+		}
+	}
+	if !plan.IsFavoritesFolderTreeCollapsed.Equal(state.IsFavoritesFolderTreeCollapsed) {
+		if !plan.IsFavoritesFolderTreeCollapsed.IsUnknown() {
+			sp.IsFavoritesFolderTreeCollapsed = plan.IsFavoritesFolderTreeCollapsed.ValueBoolPointer()
+		}
+	}
+	if !plan.IsFocusedInboxEnabled.Equal(state.IsFocusedInboxEnabled) {
+		if !plan.IsFocusedInboxEnabled.IsUnknown() {
+			sp.IsFocusedInboxEnabled = plan.IsFocusedInboxEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IsMailRootFolderTreeCollapsed.Equal(state.IsMailRootFolderTreeCollapsed) {
+		if !plan.IsMailRootFolderTreeCollapsed.IsUnknown() {
+			sp.IsMailRootFolderTreeCollapsed = plan.IsMailRootFolderTreeCollapsed.ValueBoolPointer()
+		}
+	}
+	if !plan.IsReplyAllTheDefaultResponse.Equal(state.IsReplyAllTheDefaultResponse) {
+		if !plan.IsReplyAllTheDefaultResponse.IsUnknown() {
+			sp.IsReplyAllTheDefaultResponse = plan.IsReplyAllTheDefaultResponse.ValueBoolPointer()
+		}
+	}
+	if !plan.LinkPreviewEnabled.Equal(state.LinkPreviewEnabled) {
+		if !plan.LinkPreviewEnabled.IsUnknown() {
+			sp.LinkPreviewEnabled = plan.LinkPreviewEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailFolderPaneExpanded.Equal(state.MailFolderPaneExpanded) {
+		if !plan.MailFolderPaneExpanded.IsUnknown() {
+			sp.MailFolderPaneExpanded = plan.MailFolderPaneExpanded.ValueBoolPointer()
+		}
+	}
+	if !plan.MailSendUndoInterval.Equal(state.MailSendUndoInterval) {
+		if !plan.MailSendUndoInterval.IsUnknown() {
+			sp.MailSendUndoInterval = plan.MailSendUndoInterval.ValueInt64Pointer()
+		}
+	}
+	if !plan.ManuallyPickCertificate.Equal(state.ManuallyPickCertificate) {
+		if !plan.ManuallyPickCertificate.IsUnknown() {
+			sp.ManuallyPickCertificate = plan.ManuallyPickCertificate.ValueBoolPointer()
+		}
+	}
+	if !plan.NavigationBarWidth.Equal(state.NavigationBarWidth) {
+		if !plan.NavigationBarWidth.IsUnknown() {
+			sp.NavigationBarWidth = plan.NavigationBarWidth.ValueInt64Pointer()
+		}
+	}
+	if !plan.NavigationPaneViewOption.Equal(state.NavigationPaneViewOption) {
+		if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
+			sp.NavigationPaneViewOption = objectParam(v)
+		}
+	}
+	if !plan.NewEnabledPonts.Equal(state.NewEnabledPonts) {
+		if v := plan.NewEnabledPonts.ValueString(); v != "" {
+			sp.NewEnabledPonts = objectParam(v)
+		}
+	}
+	if !plan.NewItemNotification.Equal(state.NewItemNotification) {
+		if v := plan.NewItemNotification.ValueString(); v != "" {
+			sp.NewItemNotification = objectParam(v)
+		}
+	}
+	if !plan.PreferAccessibleContent.Equal(state.PreferAccessibleContent) {
+		if !plan.PreferAccessibleContent.IsUnknown() {
+			sp.PreferAccessibleContent = plan.PreferAccessibleContent.ValueBoolPointer()
+		}
+	}
+	if !plan.PreviewMarkAsReadBehavior.Equal(state.PreviewMarkAsReadBehavior) {
+		if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
+			sp.PreviewMarkAsReadBehavior = objectParam(v)
+		}
+	}
+	if !plan.PreviewMarkAsReadDelaytime.Equal(state.PreviewMarkAsReadDelaytime) {
+		if !plan.PreviewMarkAsReadDelaytime.IsUnknown() {
+			sp.PreviewMarkAsReadDelaytime = plan.PreviewMarkAsReadDelaytime.ValueInt64Pointer()
+		}
+	}
+	if !plan.ReadReceiptResponse.Equal(state.ReadReceiptResponse) {
+		if v := plan.ReadReceiptResponse.ValueString(); v != "" {
+			sp.ReadReceiptResponse = objectParam(v)
+		}
+	}
+	if !plan.ReportJunkSelected.Equal(state.ReportJunkSelected) {
+		if !plan.ReportJunkSelected.IsUnknown() {
+			sp.ReportJunkSelected = plan.ReportJunkSelected.ValueBoolPointer()
+		}
+	}
+	if !plan.SendAddressDefault.Equal(state.SendAddressDefault) {
+		sp.SendAddressDefault = plan.SendAddressDefault.ValueString()
+	}
+	if !plan.ShowConversationAsTree.Equal(state.ShowConversationAsTree) {
+		if !plan.ShowConversationAsTree.IsUnknown() {
+			sp.ShowConversationAsTree = plan.ShowConversationAsTree.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowInlinePreviews.Equal(state.ShowInlinePreviews) {
+		if !plan.ShowInlinePreviews.IsUnknown() {
+			sp.ShowInlinePreviews = plan.ShowInlinePreviews.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowNotificationBar.Equal(state.ShowNotificationBar) {
+		if !plan.ShowNotificationBar.IsUnknown() {
+			sp.ShowNotificationBar = plan.ShowNotificationBar.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowPreviewTextInListView.Equal(state.ShowPreviewTextInListView) {
+		if !plan.ShowPreviewTextInListView.IsUnknown() {
+			sp.ShowPreviewTextInListView = plan.ShowPreviewTextInListView.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowReadingPaneOnFirstLoad.Equal(state.ShowReadingPaneOnFirstLoad) {
+		if !plan.ShowReadingPaneOnFirstLoad.IsUnknown() {
+			sp.ShowReadingPaneOnFirstLoad = plan.ShowReadingPaneOnFirstLoad.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowSenderOnTopInListView.Equal(state.ShowSenderOnTopInListView) {
+		if !plan.ShowSenderOnTopInListView.IsUnknown() {
+			sp.ShowSenderOnTopInListView = plan.ShowSenderOnTopInListView.ValueBoolPointer()
+		}
+	}
+	if !plan.ShowUpNext.Equal(state.ShowUpNext) {
+		if !plan.ShowUpNext.IsUnknown() {
+			sp.ShowUpNext = plan.ShowUpNext.ValueBoolPointer()
+		}
+	}
+	if !plan.SignatureHtml.Equal(state.SignatureHtml) {
+		sp.SignatureHtml = plan.SignatureHtml.ValueString()
+	}
+	if !plan.SignatureHtmlBody.Equal(state.SignatureHtmlBody) {
+		sp.SignatureHtmlBody = plan.SignatureHtmlBody.ValueString()
+	}
+	if !plan.SignatureName.Equal(state.SignatureName) {
+		sp.SignatureName = plan.SignatureName.ValueString()
+	}
+	if !plan.SignatureText.Equal(state.SignatureText) {
+		sp.SignatureText = plan.SignatureText.ValueString()
+	}
+	if !plan.SignatureTextOnMobile.Equal(state.SignatureTextOnMobile) {
+		sp.SignatureTextOnMobile = plan.SignatureTextOnMobile.ValueString()
+	}
+	if !plan.SigningCertificateId.Equal(state.SigningCertificateId) {
+		sp.SigningCertificateId = plan.SigningCertificateId.ValueString()
+	}
+	if !plan.SigningCertificateSubject.Equal(state.SigningCertificateSubject) {
+		sp.SigningCertificateSubject = plan.SigningCertificateSubject.ValueString()
+	}
+	if !plan.SmimeEncrypt.Equal(state.SmimeEncrypt) {
+		if !plan.SmimeEncrypt.IsUnknown() {
+			sp.SmimeEncrypt = plan.SmimeEncrypt.ValueBoolPointer()
+		}
+	}
+	if !plan.SmimeSign.Equal(state.SmimeSign) {
+		if !plan.SmimeSign.IsUnknown() {
+			sp.SmimeSign = plan.SmimeSign.ValueBoolPointer()
+		}
+	}
+	if !plan.UseDefaultSignatureOnMobile.Equal(state.UseDefaultSignatureOnMobile) {
+		if !plan.UseDefaultSignatureOnMobile.IsUnknown() {
+			sp.UseDefaultSignatureOnMobile = plan.UseDefaultSignatureOnMobile.ValueBoolPointer()
+		}
+	}
+	if !plan.WebSuggestedRepliesEnabledForUser.Equal(state.WebSuggestedRepliesEnabledForUser) {
+		if !plan.WebSuggestedRepliesEnabledForUser.IsUnknown() {
+			sp.WebSuggestedRepliesEnabledForUser = plan.WebSuggestedRepliesEnabledForUser.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -388,23 +779,11 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AfterMoveOrDeleteBehavior": cfg.AfterMoveOrDeleteBehavior,
-		"ConversationSortOrder":     cfg.ConversationSortOrder,
 		"DefaultFontColor":          cfg.DefaultFontColor,
-		"DefaultFontFlags":          cfg.DefaultFontFlags,
 		"DefaultFontName":           cfg.DefaultFontName,
-		"DefaultFormat":             cfg.DefaultFormat,
 		"DefaultSignature":          cfg.DefaultSignature,
 		"DefaultSignatureOnReply":   cfg.DefaultSignatureOnReply,
 		"DeleteSignatureName":       cfg.DeleteSignatureName,
-		"DisplayDensityMode":        cfg.DisplayDensityMode,
-		"EmailComposeMode":          cfg.EmailComposeMode,
-		"GlobalReadingPanePosition": cfg.GlobalReadingPanePosition,
-		"NavigationPaneViewOption":  cfg.NavigationPaneViewOption,
-		"NewEnabledPonts":           cfg.NewEnabledPonts,
-		"NewItemNotification":       cfg.NewItemNotification,
-		"PreviewMarkAsReadBehavior": cfg.PreviewMarkAsReadBehavior,
-		"ReadReceiptResponse":       cfg.ReadReceiptResponse,
 		"SendAddressDefault":        cfg.SendAddressDefault,
 		"SignatureHtml":             cfg.SignatureHtml,
 		"SignatureHtmlBody":         cfg.SignatureHtmlBody,
@@ -426,6 +805,221 @@ func (r *mailboxMessageConfigurationResource) Delete(_ context.Context, _ resour
 func (r *mailboxMessageConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxMessageConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxMessageConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxMessageConfiguration(ctx, exo.GetMailboxMessageConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxMessageConfigurationModel
+	readMailboxMessageConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AfterMoveOrDeleteBehavior.IsUnknown() {
+		plan.AfterMoveOrDeleteBehavior = cur.AfterMoveOrDeleteBehavior
+	}
+	if plan.AlwaysShowBcc.IsUnknown() {
+		plan.AlwaysShowBcc = cur.AlwaysShowBcc
+	}
+	if plan.AlwaysShowFrom.IsUnknown() {
+		plan.AlwaysShowFrom = cur.AlwaysShowFrom
+	}
+	if plan.AutoAddSignature.IsUnknown() {
+		plan.AutoAddSignature = cur.AutoAddSignature
+	}
+	if plan.AutoAddSignatureOnMobile.IsUnknown() {
+		plan.AutoAddSignatureOnMobile = cur.AutoAddSignatureOnMobile
+	}
+	if plan.AutoAddSignatureOnReply.IsUnknown() {
+		plan.AutoAddSignatureOnReply = cur.AutoAddSignatureOnReply
+	}
+	if plan.CheckForForgottenAttachments.IsUnknown() {
+		plan.CheckForForgottenAttachments = cur.CheckForForgottenAttachments
+	}
+	if plan.CheckForReportJunkDialog.IsUnknown() {
+		plan.CheckForReportJunkDialog = cur.CheckForReportJunkDialog
+	}
+	if plan.ConversationSortOrder.IsUnknown() {
+		plan.ConversationSortOrder = cur.ConversationSortOrder
+	}
+	if plan.DefaultFontColor.IsUnknown() {
+		plan.DefaultFontColor = cur.DefaultFontColor
+	}
+	if plan.DefaultFontFlags.IsUnknown() {
+		plan.DefaultFontFlags = cur.DefaultFontFlags
+	}
+	if plan.DefaultFontName.IsUnknown() {
+		plan.DefaultFontName = cur.DefaultFontName
+	}
+	if plan.DefaultFontSize.IsUnknown() {
+		plan.DefaultFontSize = cur.DefaultFontSize
+	}
+	if plan.DefaultFormat.IsUnknown() {
+		plan.DefaultFormat = cur.DefaultFormat
+	}
+	if plan.DefaultSignature.IsUnknown() {
+		plan.DefaultSignature = cur.DefaultSignature
+	}
+	if plan.DefaultSignatureOnReply.IsUnknown() {
+		plan.DefaultSignatureOnReply = cur.DefaultSignatureOnReply
+	}
+	if plan.DeleteSignatureName.IsUnknown() {
+		plan.DeleteSignatureName = cur.DeleteSignatureName
+	}
+	if plan.DisplayDensityMode.IsUnknown() {
+		plan.DisplayDensityMode = cur.DisplayDensityMode
+	}
+	if plan.EchoGroupMessageBackToSubscribedSender.IsUnknown() {
+		plan.EchoGroupMessageBackToSubscribedSender = cur.EchoGroupMessageBackToSubscribedSender
+	}
+	if plan.EmailComposeMode.IsUnknown() {
+		plan.EmailComposeMode = cur.EmailComposeMode
+	}
+	if plan.EmptyDeletedItemsOnLogoff.IsUnknown() {
+		plan.EmptyDeletedItemsOnLogoff = cur.EmptyDeletedItemsOnLogoff
+	}
+	if plan.FavoritesBitFlags.IsUnknown() {
+		plan.FavoritesBitFlags = cur.FavoritesBitFlags
+	}
+	if plan.GlobalReadingPanePosition.IsUnknown() {
+		plan.GlobalReadingPanePosition = cur.GlobalReadingPanePosition
+	}
+	if plan.HideDeletedItems.IsUnknown() {
+		plan.HideDeletedItems = cur.HideDeletedItems
+	}
+	if plan.IsDarkModeTheme.IsUnknown() {
+		plan.IsDarkModeTheme = cur.IsDarkModeTheme
+	}
+	if plan.IsFavoritesFolderTreeCollapsed.IsUnknown() {
+		plan.IsFavoritesFolderTreeCollapsed = cur.IsFavoritesFolderTreeCollapsed
+	}
+	if plan.IsFocusedInboxEnabled.IsUnknown() {
+		plan.IsFocusedInboxEnabled = cur.IsFocusedInboxEnabled
+	}
+	if plan.IsMailRootFolderTreeCollapsed.IsUnknown() {
+		plan.IsMailRootFolderTreeCollapsed = cur.IsMailRootFolderTreeCollapsed
+	}
+	if plan.IsReplyAllTheDefaultResponse.IsUnknown() {
+		plan.IsReplyAllTheDefaultResponse = cur.IsReplyAllTheDefaultResponse
+	}
+	if plan.LinkPreviewEnabled.IsUnknown() {
+		plan.LinkPreviewEnabled = cur.LinkPreviewEnabled
+	}
+	if plan.MailFolderPaneExpanded.IsUnknown() {
+		plan.MailFolderPaneExpanded = cur.MailFolderPaneExpanded
+	}
+	if plan.MailSendUndoInterval.IsUnknown() {
+		plan.MailSendUndoInterval = cur.MailSendUndoInterval
+	}
+	if plan.ManuallyPickCertificate.IsUnknown() {
+		plan.ManuallyPickCertificate = cur.ManuallyPickCertificate
+	}
+	if plan.NavigationBarWidth.IsUnknown() {
+		plan.NavigationBarWidth = cur.NavigationBarWidth
+	}
+	if plan.NavigationPaneViewOption.IsUnknown() {
+		plan.NavigationPaneViewOption = cur.NavigationPaneViewOption
+	}
+	if plan.NewEnabledPonts.IsUnknown() {
+		plan.NewEnabledPonts = cur.NewEnabledPonts
+	}
+	if plan.NewItemNotification.IsUnknown() {
+		plan.NewItemNotification = cur.NewItemNotification
+	}
+	if plan.PreferAccessibleContent.IsUnknown() {
+		plan.PreferAccessibleContent = cur.PreferAccessibleContent
+	}
+	if plan.PreviewMarkAsReadBehavior.IsUnknown() {
+		plan.PreviewMarkAsReadBehavior = cur.PreviewMarkAsReadBehavior
+	}
+	if plan.PreviewMarkAsReadDelaytime.IsUnknown() {
+		plan.PreviewMarkAsReadDelaytime = cur.PreviewMarkAsReadDelaytime
+	}
+	if plan.ReadReceiptResponse.IsUnknown() {
+		plan.ReadReceiptResponse = cur.ReadReceiptResponse
+	}
+	if plan.ReportJunkSelected.IsUnknown() {
+		plan.ReportJunkSelected = cur.ReportJunkSelected
+	}
+	if plan.SendAddressDefault.IsUnknown() {
+		plan.SendAddressDefault = cur.SendAddressDefault
+	}
+	if plan.ShowConversationAsTree.IsUnknown() {
+		plan.ShowConversationAsTree = cur.ShowConversationAsTree
+	}
+	if plan.ShowInlinePreviews.IsUnknown() {
+		plan.ShowInlinePreviews = cur.ShowInlinePreviews
+	}
+	if plan.ShowNotificationBar.IsUnknown() {
+		plan.ShowNotificationBar = cur.ShowNotificationBar
+	}
+	if plan.ShowPreviewTextInListView.IsUnknown() {
+		plan.ShowPreviewTextInListView = cur.ShowPreviewTextInListView
+	}
+	if plan.ShowReadingPaneOnFirstLoad.IsUnknown() {
+		plan.ShowReadingPaneOnFirstLoad = cur.ShowReadingPaneOnFirstLoad
+	}
+	if plan.ShowSenderOnTopInListView.IsUnknown() {
+		plan.ShowSenderOnTopInListView = cur.ShowSenderOnTopInListView
+	}
+	if plan.ShowUpNext.IsUnknown() {
+		plan.ShowUpNext = cur.ShowUpNext
+	}
+	if plan.SignatureHtml.IsUnknown() {
+		plan.SignatureHtml = cur.SignatureHtml
+	}
+	if plan.SignatureHtmlBody.IsUnknown() {
+		plan.SignatureHtmlBody = cur.SignatureHtmlBody
+	}
+	if plan.SignatureName.IsUnknown() {
+		plan.SignatureName = cur.SignatureName
+	}
+	if plan.SignatureText.IsUnknown() {
+		plan.SignatureText = cur.SignatureText
+	}
+	if plan.SignatureTextOnMobile.IsUnknown() {
+		plan.SignatureTextOnMobile = cur.SignatureTextOnMobile
+	}
+	if plan.SigningCertificateId.IsUnknown() {
+		plan.SigningCertificateId = cur.SigningCertificateId
+	}
+	if plan.SigningCertificateSubject.IsUnknown() {
+		plan.SigningCertificateSubject = cur.SigningCertificateSubject
+	}
+	if plan.SmimeEncrypt.IsUnknown() {
+		plan.SmimeEncrypt = cur.SmimeEncrypt
+	}
+	if plan.SmimeSign.IsUnknown() {
+		plan.SmimeSign = cur.SmimeSign
+	}
+	if plan.UseDefaultSignatureOnMobile.IsUnknown() {
+		plan.UseDefaultSignatureOnMobile = cur.UseDefaultSignatureOnMobile
+	}
+	if plan.WebSuggestedRepliesEnabledForUser.IsUnknown() {
+		plan.WebSuggestedRepliesEnabledForUser = cur.WebSuggestedRepliesEnabledForUser
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxMessageConfigurationResource) identityOf(m mailboxMessageConfigurationModel) string {
@@ -464,7 +1058,7 @@ func (r *mailboxMessageConfigurationResource) refresh(ctx context.Context, ident
 
 func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m *mailboxMessageConfigurationModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AfterMoveOrDeleteBehavior = types.StringValue(getString(obj, "AfterMoveOrDeleteBehavior"))
+	m.AfterMoveOrDeleteBehavior = types.StringValue(getObjectJSON(obj, "AfterMoveOrDeleteBehavior"))
 	m.AlwaysShowBcc = types.BoolValue(getBool(obj, "AlwaysShowBcc"))
 	m.AlwaysShowFrom = types.BoolValue(getBool(obj, "AlwaysShowFrom"))
 	m.AutoAddSignature = types.BoolValue(getBool(obj, "AutoAddSignature"))
@@ -472,19 +1066,21 @@ func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m 
 	m.AutoAddSignatureOnReply = types.BoolValue(getBool(obj, "AutoAddSignatureOnReply"))
 	m.CheckForForgottenAttachments = types.BoolValue(getBool(obj, "CheckForForgottenAttachments"))
 	m.CheckForReportJunkDialog = types.BoolValue(getBool(obj, "CheckForReportJunkDialog"))
-	m.ConversationSortOrder = types.StringValue(getString(obj, "ConversationSortOrder"))
+	m.ConversationSortOrder = types.StringValue(getObjectJSON(obj, "ConversationSortOrder"))
 	m.DefaultFontColor = types.StringValue(getString(obj, "DefaultFontColor"))
-	m.DefaultFontFlags = types.StringValue(getString(obj, "DefaultFontFlags"))
+	m.DefaultFontFlags = types.StringValue(getObjectJSON(obj, "DefaultFontFlags"))
 	m.DefaultFontName = types.StringValue(getString(obj, "DefaultFontName"))
-	m.DefaultFormat = types.StringValue(getString(obj, "DefaultFormat"))
+	m.DefaultFontSize = types.Int64Value(getInt(obj, "DefaultFontSize"))
+	m.DefaultFormat = types.StringValue(getObjectJSON(obj, "DefaultFormat"))
 	m.DefaultSignature = types.StringValue(getString(obj, "DefaultSignature"))
 	m.DefaultSignatureOnReply = types.StringValue(getString(obj, "DefaultSignatureOnReply"))
 	m.DeleteSignatureName = types.StringValue(getString(obj, "DeleteSignatureName"))
-	m.DisplayDensityMode = types.StringValue(getString(obj, "DisplayDensityMode"))
+	m.DisplayDensityMode = types.StringValue(getObjectJSON(obj, "DisplayDensityMode"))
 	m.EchoGroupMessageBackToSubscribedSender = types.BoolValue(getBool(obj, "EchoGroupMessageBackToSubscribedSender"))
-	m.EmailComposeMode = types.StringValue(getString(obj, "EmailComposeMode"))
+	m.EmailComposeMode = types.StringValue(getObjectJSON(obj, "EmailComposeMode"))
 	m.EmptyDeletedItemsOnLogoff = types.BoolValue(getBool(obj, "EmptyDeletedItemsOnLogoff"))
-	m.GlobalReadingPanePosition = types.StringValue(getString(obj, "GlobalReadingPanePosition"))
+	m.FavoritesBitFlags = types.Int64Value(getInt(obj, "FavoritesBitFlags"))
+	m.GlobalReadingPanePosition = types.StringValue(getObjectJSON(obj, "GlobalReadingPanePosition"))
 	m.HideDeletedItems = types.BoolValue(getBool(obj, "HideDeletedItems"))
 	m.IsDarkModeTheme = types.BoolValue(getBool(obj, "IsDarkModeTheme"))
 	m.IsFavoritesFolderTreeCollapsed = types.BoolValue(getBool(obj, "IsFavoritesFolderTreeCollapsed"))
@@ -493,13 +1089,16 @@ func readMailboxMessageConfiguration(ctx context.Context, obj map[string]any, m 
 	m.IsReplyAllTheDefaultResponse = types.BoolValue(getBool(obj, "IsReplyAllTheDefaultResponse"))
 	m.LinkPreviewEnabled = types.BoolValue(getBool(obj, "LinkPreviewEnabled"))
 	m.MailFolderPaneExpanded = types.BoolValue(getBool(obj, "MailFolderPaneExpanded"))
+	m.MailSendUndoInterval = types.Int64Value(getInt(obj, "MailSendUndoInterval"))
 	m.ManuallyPickCertificate = types.BoolValue(getBool(obj, "ManuallyPickCertificate"))
-	m.NavigationPaneViewOption = types.StringValue(getString(obj, "NavigationPaneViewOption"))
-	m.NewEnabledPonts = types.StringValue(getString(obj, "NewEnabledPonts"))
-	m.NewItemNotification = types.StringValue(getString(obj, "NewItemNotification"))
+	m.NavigationBarWidth = types.Int64Value(getInt(obj, "NavigationBarWidth"))
+	m.NavigationPaneViewOption = types.StringValue(getObjectJSON(obj, "NavigationPaneViewOption"))
+	m.NewEnabledPonts = types.StringValue(getObjectJSON(obj, "NewEnabledPonts"))
+	m.NewItemNotification = types.StringValue(getObjectJSON(obj, "NewItemNotification"))
 	m.PreferAccessibleContent = types.BoolValue(getBool(obj, "PreferAccessibleContent"))
-	m.PreviewMarkAsReadBehavior = types.StringValue(getString(obj, "PreviewMarkAsReadBehavior"))
-	m.ReadReceiptResponse = types.StringValue(getString(obj, "ReadReceiptResponse"))
+	m.PreviewMarkAsReadBehavior = types.StringValue(getObjectJSON(obj, "PreviewMarkAsReadBehavior"))
+	m.PreviewMarkAsReadDelaytime = types.Int64Value(getInt(obj, "PreviewMarkAsReadDelaytime"))
+	m.ReadReceiptResponse = types.StringValue(getObjectJSON(obj, "ReadReceiptResponse"))
 	m.ReportJunkSelected = types.BoolValue(getBool(obj, "ReportJunkSelected"))
 	m.SendAddressDefault = types.StringValue(getString(obj, "SendAddressDefault"))
 	m.ShowConversationAsTree = types.BoolValue(getBool(obj, "ShowConversationAsTree"))
@@ -536,6 +1135,7 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.DefaultFontColor = reconcile.KeepStr(cfg.DefaultFontColor, read.DefaultFontColor)
 	read.DefaultFontFlags = reconcile.KeepStr(cfg.DefaultFontFlags, read.DefaultFontFlags)
 	read.DefaultFontName = reconcile.KeepStr(cfg.DefaultFontName, read.DefaultFontName)
+	read.DefaultFontSize = reconcile.KeepInt64(cfg.DefaultFontSize, read.DefaultFontSize)
 	read.DefaultFormat = reconcile.KeepStr(cfg.DefaultFormat, read.DefaultFormat)
 	read.DefaultSignature = reconcile.KeepStr(cfg.DefaultSignature, read.DefaultSignature)
 	read.DefaultSignatureOnReply = reconcile.KeepStr(cfg.DefaultSignatureOnReply, read.DefaultSignatureOnReply)
@@ -544,6 +1144,7 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.EchoGroupMessageBackToSubscribedSender = reconcile.KeepBool(cfg.EchoGroupMessageBackToSubscribedSender, read.EchoGroupMessageBackToSubscribedSender)
 	read.EmailComposeMode = reconcile.KeepStr(cfg.EmailComposeMode, read.EmailComposeMode)
 	read.EmptyDeletedItemsOnLogoff = reconcile.KeepBool(cfg.EmptyDeletedItemsOnLogoff, read.EmptyDeletedItemsOnLogoff)
+	read.FavoritesBitFlags = reconcile.KeepInt64(cfg.FavoritesBitFlags, read.FavoritesBitFlags)
 	read.GlobalReadingPanePosition = reconcile.KeepStr(cfg.GlobalReadingPanePosition, read.GlobalReadingPanePosition)
 	read.HideDeletedItems = reconcile.KeepBool(cfg.HideDeletedItems, read.HideDeletedItems)
 	read.IsDarkModeTheme = reconcile.KeepBool(cfg.IsDarkModeTheme, read.IsDarkModeTheme)
@@ -553,12 +1154,15 @@ func (r *mailboxMessageConfigurationResource) reconcileState(cfg, read *mailboxM
 	read.IsReplyAllTheDefaultResponse = reconcile.KeepBool(cfg.IsReplyAllTheDefaultResponse, read.IsReplyAllTheDefaultResponse)
 	read.LinkPreviewEnabled = reconcile.KeepBool(cfg.LinkPreviewEnabled, read.LinkPreviewEnabled)
 	read.MailFolderPaneExpanded = reconcile.KeepBool(cfg.MailFolderPaneExpanded, read.MailFolderPaneExpanded)
+	read.MailSendUndoInterval = reconcile.KeepInt64(cfg.MailSendUndoInterval, read.MailSendUndoInterval)
 	read.ManuallyPickCertificate = reconcile.KeepBool(cfg.ManuallyPickCertificate, read.ManuallyPickCertificate)
+	read.NavigationBarWidth = reconcile.KeepInt64(cfg.NavigationBarWidth, read.NavigationBarWidth)
 	read.NavigationPaneViewOption = reconcile.KeepStr(cfg.NavigationPaneViewOption, read.NavigationPaneViewOption)
 	read.NewEnabledPonts = reconcile.KeepStr(cfg.NewEnabledPonts, read.NewEnabledPonts)
 	read.NewItemNotification = reconcile.KeepStr(cfg.NewItemNotification, read.NewItemNotification)
 	read.PreferAccessibleContent = reconcile.KeepBool(cfg.PreferAccessibleContent, read.PreferAccessibleContent)
 	read.PreviewMarkAsReadBehavior = reconcile.KeepStr(cfg.PreviewMarkAsReadBehavior, read.PreviewMarkAsReadBehavior)
+	read.PreviewMarkAsReadDelaytime = reconcile.KeepInt64(cfg.PreviewMarkAsReadDelaytime, read.PreviewMarkAsReadDelaytime)
 	read.ReadReceiptResponse = reconcile.KeepStr(cfg.ReadReceiptResponse, read.ReadReceiptResponse)
 	read.ReportJunkSelected = reconcile.KeepBool(cfg.ReportJunkSelected, read.ReportJunkSelected)
 	read.SendAddressDefault = reconcile.KeepStr(cfg.SendAddressDefault, read.SendAddressDefault)

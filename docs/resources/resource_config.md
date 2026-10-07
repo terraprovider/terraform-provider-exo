@@ -17,7 +17,7 @@ Manages the ResourceConfig configuration via Set-ResourceConfig.
 
 ### Optional
 
-- `resource_property_schema` (String) Maps to the -ResourcePropertySchema parameter.
+- `resource_property_schema` (Set of String) Maps to the -ResourcePropertySchema parameter.
 
 ### Read-Only
 

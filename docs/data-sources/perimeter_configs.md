@@ -24,6 +24,6 @@ List every PerimeterConfig object (Get-PerimeterConfig).
 
 Read-Only:
 
-- `gateway_ip_addresses` (String) Maps to the -GatewayIPAddresses parameter.
+- `gateway_ip_addresses` (Set of String) Maps to the -GatewayIPAddresses parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.

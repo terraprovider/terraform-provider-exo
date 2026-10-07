@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -39,7 +40,7 @@ type organizationRelationshipModel struct {
 	Identity                   types.String `tfsdk:"identity"`
 	ArchiveAccessEnabled       types.Bool   `tfsdk:"archive_access_enabled"`
 	DeliveryReportEnabled      types.Bool   `tfsdk:"delivery_report_enabled"`
-	DomainNames                types.String `tfsdk:"domain_names"`
+	DomainNames                types.Set    `tfsdk:"domain_names"`
 	Enabled                    types.Bool   `tfsdk:"enabled"`
 	FreeBusyAccessEnabled      types.Bool   `tfsdk:"free_busy_access_enabled"`
 	FreeBusyAccessLevel        types.String `tfsdk:"free_busy_access_level"`
@@ -49,7 +50,7 @@ type organizationRelationshipModel struct {
 	MailTipsAccessScope        types.String `tfsdk:"mail_tips_access_scope"`
 	MailboxMoveCapability      types.String `tfsdk:"mailbox_move_capability"`
 	MailboxMoveEnabled         types.Bool   `tfsdk:"mailbox_move_enabled"`
-	MailboxMovePublishedScopes types.String `tfsdk:"mailbox_move_published_scopes"`
+	MailboxMovePublishedScopes types.Set    `tfsdk:"mailbox_move_published_scopes"`
 	Name                       types.String `tfsdk:"name"`
 	OAuthApplicationId         types.String `tfsdk:"o_auth_application_id"`
 	OrganizationContact        types.String `tfsdk:"organization_contact"`
@@ -69,10 +70,10 @@ func (r *organizationRelationshipResource) Schema(_ context.Context, _ resource.
 		Description: "Manages the OrganizationRelationship object via New-OrganizationRelationship / Get-OrganizationRelationship / Set-OrganizationRelationship / Remove-OrganizationRelationship.",
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"archive_access_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"delivery_report_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliveryReportEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"domain_names":                  schema.StringAttribute{Required: true, Description: "Maps to the -DomainNames parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"domain_names":                  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -DomainNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"free_busy_access_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FreeBusyAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"free_busy_access_level":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FreeBusyAccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -82,7 +83,7 @@ func (r *organizationRelationshipResource) Schema(_ context.Context, _ resource.
 			"mail_tips_access_scope":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipsAccessScope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mailbox_move_capability":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxMoveCapability parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mailbox_move_enabled":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxMoveEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"mailbox_move_published_scopes": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxMovePublishedScopes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mailbox_move_published_scopes": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailboxMovePublishedScopes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"o_auth_application_id":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OAuthApplicationId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"organization_contact":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationContact parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -109,52 +110,93 @@ func (r *organizationRelationshipResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	p := exo.NewOrganizationRelationshipParams{
-		ArchiveAccessEnabled:  plan.ArchiveAccessEnabled.ValueBool(),
-		DeliveryReportEnabled: plan.DeliveryReportEnabled.ValueBool(),
-		Enabled:               plan.Enabled.ValueBool(),
-		FreeBusyAccessEnabled: plan.FreeBusyAccessEnabled.ValueBool(),
-		MailTipsAccessEnabled: plan.MailTipsAccessEnabled.ValueBool(),
-		MailboxMoveEnabled:    plan.MailboxMoveEnabled.ValueBool(),
-		Name:                  plan.Name.ValueString(),
-		OAuthApplicationId:    plan.OAuthApplicationId.ValueString(),
-		PhotosEnabled:         plan.PhotosEnabled.ValueBool(),
+	var config organizationRelationshipModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.DomainNames.ValueString(); v != "" {
-		p.DomainNames = v
+
+	p := exo.NewOrganizationRelationshipParams{}
+	if !config.ArchiveAccessEnabled.IsNull() {
+		if !plan.ArchiveAccessEnabled.IsUnknown() {
+			p.ArchiveAccessEnabled = plan.ArchiveAccessEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.FreeBusyAccessLevel.ValueString(); v != "" {
-		p.FreeBusyAccessLevel = v
+	if !config.DeliveryReportEnabled.IsNull() {
+		if !plan.DeliveryReportEnabled.IsUnknown() {
+			p.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.FreeBusyAccessScope.ValueString(); v != "" {
-		p.FreeBusyAccessScope = v
+	if !config.DomainNames.IsNull() {
+		if v := toStringSlice(ctx, plan.DomainNames, &resp.Diagnostics); len(v) > 0 {
+			p.DomainNames = v
+		}
 	}
-	if v := plan.MailTipsAccessLevel.ValueString(); v != "" {
-		p.MailTipsAccessLevel = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailTipsAccessScope.ValueString(); v != "" {
-		p.MailTipsAccessScope = v
+	if !config.FreeBusyAccessEnabled.IsNull() {
+		if !plan.FreeBusyAccessEnabled.IsUnknown() {
+			p.FreeBusyAccessEnabled = plan.FreeBusyAccessEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxMoveCapability.ValueString(); v != "" {
-		p.MailboxMoveCapability = v
+	if v := config.FreeBusyAccessLevel.ValueString(); v != "" {
+		p.FreeBusyAccessLevel = objectParam(v)
 	}
-	if v := plan.MailboxMovePublishedScopes.ValueString(); v != "" {
-		p.MailboxMovePublishedScopes = v
+	if v := config.FreeBusyAccessScope.ValueString(); v != "" {
+		p.FreeBusyAccessScope = objectParam(v)
 	}
-	if v := plan.OrganizationContact.ValueString(); v != "" {
-		p.OrganizationContact = v
+	if !config.MailTipsAccessEnabled.IsNull() {
+		if !plan.MailTipsAccessEnabled.IsUnknown() {
+			p.MailTipsAccessEnabled = plan.MailTipsAccessEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetApplicationUri.ValueString(); v != "" {
-		p.TargetApplicationUri = v
+	if v := config.MailTipsAccessLevel.ValueString(); v != "" {
+		p.MailTipsAccessLevel = objectParam(v)
 	}
-	if v := plan.TargetAutodiscoverEpr.ValueString(); v != "" {
-		p.TargetAutodiscoverEpr = v
+	if v := config.MailTipsAccessScope.ValueString(); v != "" {
+		p.MailTipsAccessScope = objectParam(v)
 	}
-	if v := plan.TargetOwaURL.ValueString(); v != "" {
-		p.TargetOwaURL = v
+	if v := config.MailboxMoveCapability.ValueString(); v != "" {
+		p.MailboxMoveCapability = objectParam(v)
 	}
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		p.TargetSharingEpr = v
+	if !config.MailboxMoveEnabled.IsNull() {
+		if !plan.MailboxMoveEnabled.IsUnknown() {
+			p.MailboxMoveEnabled = plan.MailboxMoveEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.MailboxMovePublishedScopes.IsNull() {
+		if v := toStringSlice(ctx, plan.MailboxMovePublishedScopes, &resp.Diagnostics); len(v) > 0 {
+			p.MailboxMovePublishedScopes = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.OAuthApplicationId.IsNull() {
+		p.OAuthApplicationId = plan.OAuthApplicationId.ValueString()
+	}
+	if v := config.OrganizationContact.ValueString(); v != "" {
+		p.OrganizationContact = objectParam(v)
+	}
+	if !config.PhotosEnabled.IsNull() {
+		if !plan.PhotosEnabled.IsUnknown() {
+			p.PhotosEnabled = plan.PhotosEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.TargetApplicationUri.ValueString(); v != "" {
+		p.TargetApplicationUri = objectParam(v)
+	}
+	if v := config.TargetAutodiscoverEpr.ValueString(); v != "" {
+		p.TargetAutodiscoverEpr = objectParam(v)
+	}
+	if v := config.TargetOwaURL.ValueString(); v != "" {
+		p.TargetOwaURL = objectParam(v)
+	}
+	if v := config.TargetSharingEpr.ValueString(); v != "" {
+		p.TargetSharingEpr = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -206,46 +248,120 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	id := r.identityOf(state)
 	sp := exo.SetOrganizationRelationshipParams{}
 	sp.Identity = id
-	sp.ArchiveAccessEnabled = plan.ArchiveAccessEnabled.ValueBool()
-	sp.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBool()
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.FreeBusyAccessEnabled = plan.FreeBusyAccessEnabled.ValueBool()
-	if v := plan.FreeBusyAccessLevel.ValueString(); v != "" {
-		sp.FreeBusyAccessLevel = v
+	var cur *organizationRelationshipModel
+	curRead := false
+	current := func() *organizationRelationshipModel {
+		if !curRead {
+			curRead = true
+			var m organizationRelationshipModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OrganizationRelationship failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.FreeBusyAccessScope.ValueString(); v != "" {
-		sp.FreeBusyAccessScope = v
+	if !plan.ArchiveAccessEnabled.Equal(state.ArchiveAccessEnabled) {
+		if !plan.ArchiveAccessEnabled.IsUnknown() {
+			sp.ArchiveAccessEnabled = plan.ArchiveAccessEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MailTipsAccessEnabled = plan.MailTipsAccessEnabled.ValueBool()
-	if v := plan.MailTipsAccessLevel.ValueString(); v != "" {
-		sp.MailTipsAccessLevel = v
+	if !plan.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
+		if !plan.DeliveryReportEnabled.IsUnknown() {
+			sp.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailTipsAccessScope.ValueString(); v != "" {
-		sp.MailTipsAccessScope = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxMoveCapability.ValueString(); v != "" {
-		sp.MailboxMoveCapability = v
+	if !plan.FreeBusyAccessEnabled.Equal(state.FreeBusyAccessEnabled) {
+		if !plan.FreeBusyAccessEnabled.IsUnknown() {
+			sp.FreeBusyAccessEnabled = plan.FreeBusyAccessEnabled.ValueBoolPointer()
+		}
 	}
-	sp.MailboxMoveEnabled = plan.MailboxMoveEnabled.ValueBool()
-	if v := plan.MailboxMovePublishedScopes.ValueString(); v != "" {
-		sp.MailboxMovePublishedScopes = v
+	if !plan.FreeBusyAccessLevel.Equal(state.FreeBusyAccessLevel) {
+		if v := plan.FreeBusyAccessLevel.ValueString(); v != "" {
+			sp.FreeBusyAccessLevel = objectParam(v)
+		}
 	}
-	sp.OAuthApplicationId = plan.OAuthApplicationId.ValueString()
-	if v := plan.OrganizationContact.ValueString(); v != "" {
-		sp.OrganizationContact = v
+	if !plan.FreeBusyAccessScope.Equal(state.FreeBusyAccessScope) {
+		if v := plan.FreeBusyAccessScope.ValueString(); v != "" {
+			sp.FreeBusyAccessScope = objectParam(v)
+		}
 	}
-	sp.PhotosEnabled = plan.PhotosEnabled.ValueBool()
-	if v := plan.TargetApplicationUri.ValueString(); v != "" {
-		sp.TargetApplicationUri = v
+	if !plan.MailTipsAccessEnabled.Equal(state.MailTipsAccessEnabled) {
+		if !plan.MailTipsAccessEnabled.IsUnknown() {
+			sp.MailTipsAccessEnabled = plan.MailTipsAccessEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetAutodiscoverEpr.ValueString(); v != "" {
-		sp.TargetAutodiscoverEpr = v
+	if !plan.MailTipsAccessLevel.Equal(state.MailTipsAccessLevel) {
+		if v := plan.MailTipsAccessLevel.ValueString(); v != "" {
+			sp.MailTipsAccessLevel = objectParam(v)
+		}
 	}
-	if v := plan.TargetOwaURL.ValueString(); v != "" {
-		sp.TargetOwaURL = v
+	if !plan.MailTipsAccessScope.Equal(state.MailTipsAccessScope) {
+		if v := plan.MailTipsAccessScope.ValueString(); v != "" {
+			sp.MailTipsAccessScope = objectParam(v)
+		}
 	}
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		sp.TargetSharingEpr = v
+	if !plan.MailboxMoveCapability.Equal(state.MailboxMoveCapability) {
+		if v := plan.MailboxMoveCapability.ValueString(); v != "" {
+			sp.MailboxMoveCapability = objectParam(v)
+		}
+	}
+	if !plan.MailboxMoveEnabled.Equal(state.MailboxMoveEnabled) {
+		if !plan.MailboxMoveEnabled.IsUnknown() {
+			sp.MailboxMoveEnabled = plan.MailboxMoveEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MailboxMovePublishedScopes.Equal(state.MailboxMovePublishedScopes) {
+		if !plan.MailboxMovePublishedScopes.IsNull() && !plan.MailboxMovePublishedScopes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MailboxMovePublishedScopes, &resp.Diagnostics); len(v) > 0 {
+				sp.MailboxMovePublishedScopes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailboxMovePublishedScopes, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailboxMovePublishedScopesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OAuthApplicationId.Equal(state.OAuthApplicationId) {
+		sp.OAuthApplicationId = plan.OAuthApplicationId.ValueString()
+	}
+	if !plan.OrganizationContact.Equal(state.OrganizationContact) {
+		if v := plan.OrganizationContact.ValueString(); v != "" {
+			sp.OrganizationContact = objectParam(v)
+		}
+	}
+	if !plan.PhotosEnabled.Equal(state.PhotosEnabled) {
+		if !plan.PhotosEnabled.IsUnknown() {
+			sp.PhotosEnabled = plan.PhotosEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TargetApplicationUri.Equal(state.TargetApplicationUri) {
+		if v := plan.TargetApplicationUri.ValueString(); v != "" {
+			sp.TargetApplicationUri = objectParam(v)
+		}
+	}
+	if !plan.TargetAutodiscoverEpr.Equal(state.TargetAutodiscoverEpr) {
+		if v := plan.TargetAutodiscoverEpr.ValueString(); v != "" {
+			sp.TargetAutodiscoverEpr = objectParam(v)
+		}
+	}
+	if !plan.TargetOwaURL.Equal(state.TargetOwaURL) {
+		if v := plan.TargetOwaURL.ValueString(); v != "" {
+			sp.TargetOwaURL = objectParam(v)
+		}
+	}
+	if !plan.TargetSharingEpr.Equal(state.TargetSharingEpr) {
+		if v := plan.TargetSharingEpr.ValueString(); v != "" {
+			sp.TargetSharingEpr = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -256,18 +372,7 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"FreeBusyAccessLevel":        cfg.FreeBusyAccessLevel,
-		"FreeBusyAccessScope":        cfg.FreeBusyAccessScope,
-		"MailTipsAccessLevel":        cfg.MailTipsAccessLevel,
-		"MailTipsAccessScope":        cfg.MailTipsAccessScope,
-		"MailboxMoveCapability":      cfg.MailboxMoveCapability,
-		"MailboxMovePublishedScopes": cfg.MailboxMovePublishedScopes,
-		"OAuthApplicationId":         cfg.OAuthApplicationId,
-		"OrganizationContact":        cfg.OrganizationContact,
-		"TargetApplicationUri":       cfg.TargetApplicationUri,
-		"TargetAutodiscoverEpr":      cfg.TargetAutodiscoverEpr,
-		"TargetOwaURL":               cfg.TargetOwaURL,
-		"TargetSharingEpr":           cfg.TargetSharingEpr,
+		"OAuthApplicationId": cfg.OAuthApplicationId,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -331,32 +436,32 @@ func readOrganizationRelationship(ctx context.Context, obj map[string]any, m *or
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.ArchiveAccessEnabled = types.BoolValue(getBool(obj, "ArchiveAccessEnabled"))
 	m.DeliveryReportEnabled = types.BoolValue(getBool(obj, "DeliveryReportEnabled"))
-	m.DomainNames = types.StringValue(getString(obj, "DomainNames"))
+	m.DomainNames = stringSetValue(ctx, getStringSlice(obj, "DomainNames"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.FreeBusyAccessEnabled = types.BoolValue(getBool(obj, "FreeBusyAccessEnabled"))
-	m.FreeBusyAccessLevel = types.StringValue(getString(obj, "FreeBusyAccessLevel"))
-	m.FreeBusyAccessScope = types.StringValue(getString(obj, "FreeBusyAccessScope"))
+	m.FreeBusyAccessLevel = types.StringValue(getObjectJSON(obj, "FreeBusyAccessLevel"))
+	m.FreeBusyAccessScope = types.StringValue(getObjectJSON(obj, "FreeBusyAccessScope"))
 	m.MailTipsAccessEnabled = types.BoolValue(getBool(obj, "MailTipsAccessEnabled"))
-	m.MailTipsAccessLevel = types.StringValue(getString(obj, "MailTipsAccessLevel"))
-	m.MailTipsAccessScope = types.StringValue(getString(obj, "MailTipsAccessScope"))
-	m.MailboxMoveCapability = types.StringValue(getString(obj, "MailboxMoveCapability"))
+	m.MailTipsAccessLevel = types.StringValue(getObjectJSON(obj, "MailTipsAccessLevel"))
+	m.MailTipsAccessScope = types.StringValue(getObjectJSON(obj, "MailTipsAccessScope"))
+	m.MailboxMoveCapability = types.StringValue(getObjectJSON(obj, "MailboxMoveCapability"))
 	m.MailboxMoveEnabled = types.BoolValue(getBool(obj, "MailboxMoveEnabled"))
-	m.MailboxMovePublishedScopes = types.StringValue(getString(obj, "MailboxMovePublishedScopes"))
+	m.MailboxMovePublishedScopes = stringSetValue(ctx, getStringSlice(obj, "MailboxMovePublishedScopes"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OAuthApplicationId = types.StringValue(getString(obj, "OAuthApplicationId"))
-	m.OrganizationContact = types.StringValue(getString(obj, "OrganizationContact"))
+	m.OrganizationContact = types.StringValue(getObjectJSON(obj, "OrganizationContact"))
 	m.PhotosEnabled = types.BoolValue(getBool(obj, "PhotosEnabled"))
-	m.TargetApplicationUri = types.StringValue(getString(obj, "TargetApplicationUri"))
-	m.TargetAutodiscoverEpr = types.StringValue(getString(obj, "TargetAutodiscoverEpr"))
-	m.TargetOwaURL = types.StringValue(getString(obj, "TargetOwaURL"))
-	m.TargetSharingEpr = types.StringValue(getString(obj, "TargetSharingEpr"))
+	m.TargetApplicationUri = types.StringValue(getObjectJSON(obj, "TargetApplicationUri"))
+	m.TargetAutodiscoverEpr = types.StringValue(getObjectJSON(obj, "TargetAutodiscoverEpr"))
+	m.TargetOwaURL = types.StringValue(getObjectJSON(obj, "TargetOwaURL"))
+	m.TargetSharingEpr = types.StringValue(getObjectJSON(obj, "TargetSharingEpr"))
 	_ = ctx
 }
 
 func (r *organizationRelationshipResource) reconcileState(cfg, read *organizationRelationshipModel) {
 	read.ArchiveAccessEnabled = reconcile.KeepBool(cfg.ArchiveAccessEnabled, read.ArchiveAccessEnabled)
 	read.DeliveryReportEnabled = reconcile.KeepBool(cfg.DeliveryReportEnabled, read.DeliveryReportEnabled)
-	read.DomainNames = reconcile.KeepStr(cfg.DomainNames, read.DomainNames)
+	read.DomainNames = reconcile.KeepSet(cfg.DomainNames, read.DomainNames)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.FreeBusyAccessEnabled = reconcile.KeepBool(cfg.FreeBusyAccessEnabled, read.FreeBusyAccessEnabled)
 	read.FreeBusyAccessLevel = reconcile.KeepStr(cfg.FreeBusyAccessLevel, read.FreeBusyAccessLevel)
@@ -366,7 +471,7 @@ func (r *organizationRelationshipResource) reconcileState(cfg, read *organizatio
 	read.MailTipsAccessScope = reconcile.KeepStr(cfg.MailTipsAccessScope, read.MailTipsAccessScope)
 	read.MailboxMoveCapability = reconcile.KeepStr(cfg.MailboxMoveCapability, read.MailboxMoveCapability)
 	read.MailboxMoveEnabled = reconcile.KeepBool(cfg.MailboxMoveEnabled, read.MailboxMoveEnabled)
-	read.MailboxMovePublishedScopes = reconcile.KeepStr(cfg.MailboxMovePublishedScopes, read.MailboxMovePublishedScopes)
+	read.MailboxMovePublishedScopes = reconcile.KeepSet(cfg.MailboxMovePublishedScopes, read.MailboxMovePublishedScopes)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OAuthApplicationId = reconcile.KeepStr(cfg.OAuthApplicationId, read.OAuthApplicationId)
 	read.OrganizationContact = reconcile.KeepStr(cfg.OrganizationContact, read.OrganizationContact)

@@ -26,6 +26,7 @@ var (
 	_ resource.Resource                = &mailboxAutoReplyConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxAutoReplyConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxAutoReplyConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxAutoReplyConfigurationResource{}
 )
 
 type mailboxAutoReplyConfigurationResource struct{ client *clients.Client }
@@ -93,28 +94,61 @@ func (r *mailboxAutoReplyConfigurationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxAutoReplyConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxAutoReplyConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AutoDeclineFutureRequestsWhenOOF = plan.AutoDeclineFutureRequestsWhenOOF.ValueBool()
-	if v := plan.AutoReplyState.ValueString(); v != "" {
-		sp.AutoReplyState = v
+	if !config.AutoDeclineFutureRequestsWhenOOF.IsNull() {
+		if !plan.AutoDeclineFutureRequestsWhenOOF.IsUnknown() {
+			sp.AutoDeclineFutureRequestsWhenOOF = plan.AutoDeclineFutureRequestsWhenOOF.ValueBoolPointer()
+		}
 	}
-	sp.CreateOOFEvent = plan.CreateOOFEvent.ValueBool()
-	sp.DeclineAllEventsForScheduledOOF = plan.DeclineAllEventsForScheduledOOF.ValueBool()
-	sp.DeclineEventsForScheduledOOF = plan.DeclineEventsForScheduledOOF.ValueBool()
-	sp.DeclineMeetingMessage = plan.DeclineMeetingMessage.ValueString()
-	if v := plan.EndTime.ValueString(); v != "" {
-		sp.EndTime = v
+	if v := config.AutoReplyState.ValueString(); v != "" {
+		sp.AutoReplyState = objectParam(v)
 	}
-	sp.EventsToDeleteIDs = toStringSlice(ctx, plan.EventsToDeleteIDs, &resp.Diagnostics)
-	if v := plan.ExternalAudience.ValueString(); v != "" {
-		sp.ExternalAudience = v
+	if !config.CreateOOFEvent.IsNull() {
+		if !plan.CreateOOFEvent.IsUnknown() {
+			sp.CreateOOFEvent = plan.CreateOOFEvent.ValueBoolPointer()
+		}
 	}
-	sp.ExternalMessage = plan.ExternalMessage.ValueString()
-	sp.InternalMessage = plan.InternalMessage.ValueString()
-	sp.OOFEventSubject = plan.OOFEventSubject.ValueString()
-	if v := plan.StartTime.ValueString(); v != "" {
-		sp.StartTime = v
+	if !config.DeclineAllEventsForScheduledOOF.IsNull() {
+		if !plan.DeclineAllEventsForScheduledOOF.IsUnknown() {
+			sp.DeclineAllEventsForScheduledOOF = plan.DeclineAllEventsForScheduledOOF.ValueBoolPointer()
+		}
+	}
+	if !config.DeclineEventsForScheduledOOF.IsNull() {
+		if !plan.DeclineEventsForScheduledOOF.IsUnknown() {
+			sp.DeclineEventsForScheduledOOF = plan.DeclineEventsForScheduledOOF.ValueBoolPointer()
+		}
+	}
+	if !config.DeclineMeetingMessage.IsNull() {
+		sp.DeclineMeetingMessage = plan.DeclineMeetingMessage.ValueString()
+	}
+	if v := config.EndTime.ValueString(); v != "" {
+		sp.EndTime = objectParam(v)
+	}
+	if !config.EventsToDeleteIDs.IsNull() {
+		if !plan.EventsToDeleteIDs.IsNull() && !plan.EventsToDeleteIDs.IsUnknown() {
+			sp.EventsToDeleteIDs = append([]string{}, toStringSlice(ctx, plan.EventsToDeleteIDs, &resp.Diagnostics)...)
+		}
+	}
+	if v := config.ExternalAudience.ValueString(); v != "" {
+		sp.ExternalAudience = objectParam(v)
+	}
+	if !config.ExternalMessage.IsNull() {
+		sp.ExternalMessage = plan.ExternalMessage.ValueString()
+	}
+	if !config.InternalMessage.IsNull() {
+		sp.InternalMessage = plan.InternalMessage.ValueString()
+	}
+	if !config.OOFEventSubject.IsNull() {
+		sp.OOFEventSubject = plan.OOFEventSubject.ValueString()
+	}
+	if v := config.StartTime.ValueString(); v != "" {
+		sp.StartTime = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -155,26 +189,62 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 	id := r.identityOf(state)
 	sp := exo.SetMailboxAutoReplyConfigurationParams{}
 	sp.Identity = id
-	sp.AutoDeclineFutureRequestsWhenOOF = plan.AutoDeclineFutureRequestsWhenOOF.ValueBool()
-	if v := plan.AutoReplyState.ValueString(); v != "" {
-		sp.AutoReplyState = v
+	if !plan.AutoDeclineFutureRequestsWhenOOF.Equal(state.AutoDeclineFutureRequestsWhenOOF) {
+		if !plan.AutoDeclineFutureRequestsWhenOOF.IsUnknown() {
+			sp.AutoDeclineFutureRequestsWhenOOF = plan.AutoDeclineFutureRequestsWhenOOF.ValueBoolPointer()
+		}
 	}
-	sp.CreateOOFEvent = plan.CreateOOFEvent.ValueBool()
-	sp.DeclineAllEventsForScheduledOOF = plan.DeclineAllEventsForScheduledOOF.ValueBool()
-	sp.DeclineEventsForScheduledOOF = plan.DeclineEventsForScheduledOOF.ValueBool()
-	sp.DeclineMeetingMessage = plan.DeclineMeetingMessage.ValueString()
-	if v := plan.EndTime.ValueString(); v != "" {
-		sp.EndTime = v
+	if !plan.AutoReplyState.Equal(state.AutoReplyState) {
+		if v := plan.AutoReplyState.ValueString(); v != "" {
+			sp.AutoReplyState = objectParam(v)
+		}
 	}
-	sp.EventsToDeleteIDs = toStringSlice(ctx, plan.EventsToDeleteIDs, &resp.Diagnostics)
-	if v := plan.ExternalAudience.ValueString(); v != "" {
-		sp.ExternalAudience = v
+	if !plan.CreateOOFEvent.Equal(state.CreateOOFEvent) {
+		if !plan.CreateOOFEvent.IsUnknown() {
+			sp.CreateOOFEvent = plan.CreateOOFEvent.ValueBoolPointer()
+		}
 	}
-	sp.ExternalMessage = plan.ExternalMessage.ValueString()
-	sp.InternalMessage = plan.InternalMessage.ValueString()
-	sp.OOFEventSubject = plan.OOFEventSubject.ValueString()
-	if v := plan.StartTime.ValueString(); v != "" {
-		sp.StartTime = v
+	if !plan.DeclineAllEventsForScheduledOOF.Equal(state.DeclineAllEventsForScheduledOOF) {
+		if !plan.DeclineAllEventsForScheduledOOF.IsUnknown() {
+			sp.DeclineAllEventsForScheduledOOF = plan.DeclineAllEventsForScheduledOOF.ValueBoolPointer()
+		}
+	}
+	if !plan.DeclineEventsForScheduledOOF.Equal(state.DeclineEventsForScheduledOOF) {
+		if !plan.DeclineEventsForScheduledOOF.IsUnknown() {
+			sp.DeclineEventsForScheduledOOF = plan.DeclineEventsForScheduledOOF.ValueBoolPointer()
+		}
+	}
+	if !plan.DeclineMeetingMessage.Equal(state.DeclineMeetingMessage) {
+		sp.DeclineMeetingMessage = plan.DeclineMeetingMessage.ValueString()
+	}
+	if !plan.EndTime.Equal(state.EndTime) {
+		if v := plan.EndTime.ValueString(); v != "" {
+			sp.EndTime = objectParam(v)
+		}
+	}
+	if !plan.EventsToDeleteIDs.Equal(state.EventsToDeleteIDs) {
+		if !plan.EventsToDeleteIDs.IsNull() && !plan.EventsToDeleteIDs.IsUnknown() {
+			sp.EventsToDeleteIDs = append([]string{}, toStringSlice(ctx, plan.EventsToDeleteIDs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExternalAudience.Equal(state.ExternalAudience) {
+		if v := plan.ExternalAudience.ValueString(); v != "" {
+			sp.ExternalAudience = objectParam(v)
+		}
+	}
+	if !plan.ExternalMessage.Equal(state.ExternalMessage) {
+		sp.ExternalMessage = plan.ExternalMessage.ValueString()
+	}
+	if !plan.InternalMessage.Equal(state.InternalMessage) {
+		sp.InternalMessage = plan.InternalMessage.ValueString()
+	}
+	if !plan.OOFEventSubject.Equal(state.OOFEventSubject) {
+		sp.OOFEventSubject = plan.OOFEventSubject.ValueString()
+	}
+	if !plan.StartTime.Equal(state.StartTime) {
+		if v := plan.StartTime.ValueString(); v != "" {
+			sp.StartTime = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -185,14 +255,10 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AutoReplyState":        cfg.AutoReplyState,
 		"DeclineMeetingMessage": cfg.DeclineMeetingMessage,
-		"EndTime":               cfg.EndTime,
-		"ExternalAudience":      cfg.ExternalAudience,
 		"ExternalMessage":       cfg.ExternalMessage,
 		"InternalMessage":       cfg.InternalMessage,
 		"OOFEventSubject":       cfg.OOFEventSubject,
-		"StartTime":             cfg.StartTime,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -206,6 +272,77 @@ func (r *mailboxAutoReplyConfigurationResource) Delete(_ context.Context, _ reso
 func (r *mailboxAutoReplyConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxAutoReplyConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxAutoReplyConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxAutoReplyConfiguration(ctx, exo.GetMailboxAutoReplyConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxAutoReplyConfigurationModel
+	readMailboxAutoReplyConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AutoDeclineFutureRequestsWhenOOF.IsUnknown() {
+		plan.AutoDeclineFutureRequestsWhenOOF = cur.AutoDeclineFutureRequestsWhenOOF
+	}
+	if plan.AutoReplyState.IsUnknown() {
+		plan.AutoReplyState = cur.AutoReplyState
+	}
+	if plan.CreateOOFEvent.IsUnknown() {
+		plan.CreateOOFEvent = cur.CreateOOFEvent
+	}
+	if plan.DeclineAllEventsForScheduledOOF.IsUnknown() {
+		plan.DeclineAllEventsForScheduledOOF = cur.DeclineAllEventsForScheduledOOF
+	}
+	if plan.DeclineEventsForScheduledOOF.IsUnknown() {
+		plan.DeclineEventsForScheduledOOF = cur.DeclineEventsForScheduledOOF
+	}
+	if plan.DeclineMeetingMessage.IsUnknown() {
+		plan.DeclineMeetingMessage = cur.DeclineMeetingMessage
+	}
+	if plan.EndTime.IsUnknown() {
+		plan.EndTime = cur.EndTime
+	}
+	if plan.EventsToDeleteIDs.IsUnknown() {
+		plan.EventsToDeleteIDs = cur.EventsToDeleteIDs
+	}
+	if plan.ExternalAudience.IsUnknown() {
+		plan.ExternalAudience = cur.ExternalAudience
+	}
+	if plan.ExternalMessage.IsUnknown() {
+		plan.ExternalMessage = cur.ExternalMessage
+	}
+	if plan.InternalMessage.IsUnknown() {
+		plan.InternalMessage = cur.InternalMessage
+	}
+	if plan.OOFEventSubject.IsUnknown() {
+		plan.OOFEventSubject = cur.OOFEventSubject
+	}
+	if plan.StartTime.IsUnknown() {
+		plan.StartTime = cur.StartTime
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxAutoReplyConfigurationResource) identityOf(m mailboxAutoReplyConfigurationModel) string {
@@ -245,18 +382,18 @@ func (r *mailboxAutoReplyConfigurationResource) refresh(ctx context.Context, ide
 func readMailboxAutoReplyConfiguration(ctx context.Context, obj map[string]any, m *mailboxAutoReplyConfigurationModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.AutoDeclineFutureRequestsWhenOOF = types.BoolValue(getBool(obj, "AutoDeclineFutureRequestsWhenOOF"))
-	m.AutoReplyState = types.StringValue(getString(obj, "AutoReplyState"))
+	m.AutoReplyState = types.StringValue(getObjectJSON(obj, "AutoReplyState"))
 	m.CreateOOFEvent = types.BoolValue(getBool(obj, "CreateOOFEvent"))
 	m.DeclineAllEventsForScheduledOOF = types.BoolValue(getBool(obj, "DeclineAllEventsForScheduledOOF"))
 	m.DeclineEventsForScheduledOOF = types.BoolValue(getBool(obj, "DeclineEventsForScheduledOOF"))
 	m.DeclineMeetingMessage = types.StringValue(getString(obj, "DeclineMeetingMessage"))
-	m.EndTime = types.StringValue(getString(obj, "EndTime"))
+	m.EndTime = types.StringValue(getObjectJSON(obj, "EndTime"))
 	m.EventsToDeleteIDs = stringSetValue(ctx, getStringSlice(obj, "EventsToDeleteIDs"))
-	m.ExternalAudience = types.StringValue(getString(obj, "ExternalAudience"))
+	m.ExternalAudience = types.StringValue(getObjectJSON(obj, "ExternalAudience"))
 	m.ExternalMessage = types.StringValue(getString(obj, "ExternalMessage"))
 	m.InternalMessage = types.StringValue(getString(obj, "InternalMessage"))
 	m.OOFEventSubject = types.StringValue(getString(obj, "OOFEventSubject"))
-	m.StartTime = types.StringValue(getString(obj, "StartTime"))
+	m.StartTime = types.StringValue(getObjectJSON(obj, "StartTime"))
 	_ = ctx
 }
 

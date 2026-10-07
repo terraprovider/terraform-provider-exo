@@ -30,7 +30,7 @@ Read-Only:
 - `custom_url_list` (String) Maps to the -CustomUrlList parameter.
 - `deliver_message_after_scan` (Boolean) Maps to the -DeliverMessageAfterScan parameter.
 - `disable_url_rewrite` (Boolean) Maps to the -DisableUrlRewrite parameter.
-- `do_not_rewrite_urls` (String) Maps to the -DoNotRewriteUrls parameter.
+- `do_not_rewrite_urls` (Set of String) Maps to the -DoNotRewriteUrls parameter.
 - `enable_for_internal_senders` (Boolean) Maps to the -EnableForInternalSenders parameter.
 - `enable_organization_branding` (Boolean) Maps to the -EnableOrganizationBranding parameter.
 - `enable_safe_links_for_email` (Boolean) Maps to the -EnableSafeLinksForEmail parameter.

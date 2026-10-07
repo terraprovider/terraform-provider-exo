@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -38,28 +39,28 @@ type inboxRuleModel struct {
 	Identity                              types.String `tfsdk:"identity"`
 	AlwaysDeleteOutlookRulesBlob          types.Bool   `tfsdk:"always_delete_outlook_rules_blob"`
 	AnyCategory                           types.Bool   `tfsdk:"any_category"`
-	ApplyCategory                         types.String `tfsdk:"apply_category"`
-	ApplySystemCategory                   types.String `tfsdk:"apply_system_category"`
-	AssignedCategories                    types.String `tfsdk:"assigned_categories"`
-	BodyContainsWords                     types.String `tfsdk:"body_contains_words"`
+	ApplyCategory                         types.Set    `tfsdk:"apply_category"`
+	ApplySystemCategory                   types.Set    `tfsdk:"apply_system_category"`
+	AssignedCategories                    types.Set    `tfsdk:"assigned_categories"`
+	BodyContainsWords                     types.Set    `tfsdk:"body_contains_words"`
 	BulkCategory                          types.String `tfsdk:"bulk_category"`
 	ClearCategories                       types.Bool   `tfsdk:"clear_categories"`
 	ClearFlag                             types.Bool   `tfsdk:"clear_flag"`
 	CompleteFlag                          types.Bool   `tfsdk:"complete_flag"`
 	CopyToFolder                          types.String `tfsdk:"copy_to_folder"`
 	DeleteMessage                         types.Bool   `tfsdk:"delete_message"`
-	DeleteSystemCategory                  types.String `tfsdk:"delete_system_category"`
+	DeleteSystemCategory                  types.Set    `tfsdk:"delete_system_category"`
 	DisplayAlert                          types.String `tfsdk:"display_alert"`
 	ExceptIfAnyCategory                   types.Bool   `tfsdk:"except_if_any_category"`
-	ExceptIfAssignedCategories            types.String `tfsdk:"except_if_assigned_categories"`
-	ExceptIfBodyContainsWords             types.String `tfsdk:"except_if_body_contains_words"`
+	ExceptIfAssignedCategories            types.Set    `tfsdk:"except_if_assigned_categories"`
+	ExceptIfBodyContainsWords             types.Set    `tfsdk:"except_if_body_contains_words"`
 	ExceptIfBulkCategory                  types.String `tfsdk:"except_if_bulk_category"`
 	ExceptIfFlaggedForAction              types.String `tfsdk:"except_if_flagged_for_action"`
 	ExceptIfFrom                          types.Set    `tfsdk:"except_if_from"`
-	ExceptIfFromAddressContainsWords      types.String `tfsdk:"except_if_from_address_contains_words"`
+	ExceptIfFromAddressContainsWords      types.Set    `tfsdk:"except_if_from_address_contains_words"`
 	ExceptIfHasAttachment                 types.Bool   `tfsdk:"except_if_has_attachment"`
 	ExceptIfHasClassification             types.Set    `tfsdk:"except_if_has_classification"`
-	ExceptIfHeaderContainsWords           types.String `tfsdk:"except_if_header_contains_words"`
+	ExceptIfHeaderContainsWords           types.Set    `tfsdk:"except_if_header_contains_words"`
 	ExceptIfIsExternal                    types.Bool   `tfsdk:"except_if_is_external"`
 	ExceptIfIsMentioned                   types.Bool   `tfsdk:"except_if_is_mentioned"`
 	ExceptIfMessageTypeMatches            types.String `tfsdk:"except_if_message_type_matches"`
@@ -69,11 +70,11 @@ type inboxRuleModel struct {
 	ExceptIfMyNameNotInToBox              types.Bool   `tfsdk:"except_if_my_name_not_in_to_box"`
 	ExceptIfReceivedAfterDate             types.String `tfsdk:"except_if_received_after_date"`
 	ExceptIfReceivedBeforeDate            types.String `tfsdk:"except_if_received_before_date"`
-	ExceptIfRecipientAddressContainsWords types.String `tfsdk:"except_if_recipient_address_contains_words"`
+	ExceptIfRecipientAddressContainsWords types.Set    `tfsdk:"except_if_recipient_address_contains_words"`
 	ExceptIfSentOnlyToMe                  types.Bool   `tfsdk:"except_if_sent_only_to_me"`
 	ExceptIfSentTo                        types.Set    `tfsdk:"except_if_sent_to"`
-	ExceptIfSubjectContainsWords          types.String `tfsdk:"except_if_subject_contains_words"`
-	ExceptIfSubjectOrBodyContainsWords    types.String `tfsdk:"except_if_subject_or_body_contains_words"`
+	ExceptIfSubjectContainsWords          types.Set    `tfsdk:"except_if_subject_contains_words"`
+	ExceptIfSubjectOrBodyContainsWords    types.Set    `tfsdk:"except_if_subject_or_body_contains_words"`
 	ExceptIfWithImportance                types.String `tfsdk:"except_if_with_importance"`
 	ExceptIfWithSensitivity               types.String `tfsdk:"except_if_with_sensitivity"`
 	ExceptIfWithinSizeRangeMaximum        types.String `tfsdk:"except_if_within_size_range_maximum"`
@@ -83,11 +84,11 @@ type inboxRuleModel struct {
 	ForwardAsAttachmentTo                 types.Set    `tfsdk:"forward_as_attachment_to"`
 	ForwardTo                             types.Set    `tfsdk:"forward_to"`
 	From                                  types.Set    `tfsdk:"from"`
-	FromAddressContainsWords              types.String `tfsdk:"from_address_contains_words"`
+	FromAddressContainsWords              types.Set    `tfsdk:"from_address_contains_words"`
 	FromMessageId                         types.String `tfsdk:"from_message_id"`
 	HasAttachment                         types.Bool   `tfsdk:"has_attachment"`
 	HasClassification                     types.Set    `tfsdk:"has_classification"`
-	HeaderContainsWords                   types.String `tfsdk:"header_contains_words"`
+	HeaderContainsWords                   types.Set    `tfsdk:"header_contains_words"`
 	IsExternal                            types.Bool   `tfsdk:"is_external"`
 	IsMentioned                           types.Bool   `tfsdk:"is_mentioned"`
 	Mailbox                               types.String `tfsdk:"mailbox"`
@@ -103,16 +104,17 @@ type inboxRuleModel struct {
 	PermanentDelete                       types.Bool   `tfsdk:"permanent_delete"`
 	PinMessage                            types.Bool   `tfsdk:"pin_message"`
 	PlaySound                             types.String `tfsdk:"play_sound"`
+	Priority                              types.Int64  `tfsdk:"priority"`
 	ReceivedAfterDate                     types.String `tfsdk:"received_after_date"`
 	ReceivedBeforeDate                    types.String `tfsdk:"received_before_date"`
-	RecipientAddressContainsWords         types.String `tfsdk:"recipient_address_contains_words"`
+	RecipientAddressContainsWords         types.Set    `tfsdk:"recipient_address_contains_words"`
 	RedirectTo                            types.Set    `tfsdk:"redirect_to"`
 	SentOnlyToMe                          types.Bool   `tfsdk:"sent_only_to_me"`
 	SentTo                                types.Set    `tfsdk:"sent_to"`
 	SoftDeleteMessage                     types.Bool   `tfsdk:"soft_delete_message"`
 	StopProcessingRules                   types.Bool   `tfsdk:"stop_processing_rules"`
-	SubjectContainsWords                  types.String `tfsdk:"subject_contains_words"`
-	SubjectOrBodyContainsWords            types.String `tfsdk:"subject_or_body_contains_words"`
+	SubjectContainsWords                  types.Set    `tfsdk:"subject_contains_words"`
+	SubjectOrBodyContainsWords            types.Set    `tfsdk:"subject_or_body_contains_words"`
 	ValidateOnly                          types.Bool   `tfsdk:"validate_only"`
 	WithImportance                        types.String `tfsdk:"with_importance"`
 	WithSensitivity                       types.String `tfsdk:"with_sensitivity"`
@@ -129,31 +131,31 @@ func (r *inboxRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 		Description: "Manages the InboxRule object via New-InboxRule / Get-InboxRule / Set-InboxRule / Remove-InboxRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                   schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                   schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"always_delete_outlook_rules_blob":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AlwaysDeleteOutlookRulesBlob parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"any_category":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AnyCategory parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"apply_category":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApplyCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"apply_system_category":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApplySystemCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"assigned_categories":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AssignedCategories parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"body_contains_words":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BodyContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"apply_category":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ApplyCategory parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"apply_system_category":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ApplySystemCategory parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"assigned_categories":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AssignedCategories parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"body_contains_words":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BodyContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"bulk_category":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"clear_categories":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClearCategories parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"clear_flag":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClearFlag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"complete_flag":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CompleteFlag parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"copy_to_folder":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CopyToFolder parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"delete_message":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteMessage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_system_category":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteSystemCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"delete_system_category":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DeleteSystemCategory parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"display_alert":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayAlert parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_any_category":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfAnyCategory parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"except_if_assigned_categories":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfAssignedCategories parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_if_body_contains_words":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfBodyContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_assigned_categories":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfAssignedCategories parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_if_body_contains_words":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfBodyContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_bulk_category":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfBulkCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_flagged_for_action":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfFlaggedForAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_from":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"except_if_from_address_contains_words":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfFromAddressContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_from_address_contains_words":      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfFromAddressContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_has_attachment":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfHasAttachment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_has_classification":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfHasClassification parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"except_if_header_contains_words":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfHeaderContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_header_contains_words":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfHeaderContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_is_external":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfIsExternal parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_is_mentioned":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfIsMentioned parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_message_type_matches":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfMessageTypeMatches parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -163,11 +165,11 @@ func (r *inboxRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"except_if_my_name_not_in_to_box":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfMyNameNotInToBox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_received_after_date":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfReceivedAfterDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_received_before_date":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfReceivedBeforeDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_if_recipient_address_contains_words": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientAddressContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_recipient_address_contains_words": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientAddressContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_only_to_me":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentOnlyToMe parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"except_if_subject_contains_words":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfSubjectContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_if_subject_or_body_contains_words":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfSubjectOrBodyContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"except_if_subject_contains_words":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSubjectContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_if_subject_or_body_contains_words":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSubjectOrBodyContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_with_importance":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfWithImportance parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_with_sensitivity":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfWithSensitivity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_within_size_range_maximum":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfWithinSizeRangeMaximum parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -177,11 +179,11 @@ func (r *inboxRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"forward_as_attachment_to":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForwardAsAttachmentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"forward_to":                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForwardTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"from":                                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -From parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"from_address_contains_words":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FromAddressContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"from_address_contains_words":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromAddressContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"from_message_id":                            schema.StringAttribute{Required: true, Description: "Maps to the -FromMessageId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"has_attachment":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HasAttachment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"has_classification":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -HasClassification parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"header_contains_words":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HeaderContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"header_contains_words":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -HeaderContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"is_external":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsExternal parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_mentioned":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsMentioned parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mailbox":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -197,16 +199,17 @@ func (r *inboxRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"permanent_delete":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PermanentDelete parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"pin_message":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PinMessage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"play_sound":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PlaySound parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"priority":                                   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"received_after_date":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReceivedAfterDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"received_before_date":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReceivedBeforeDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"recipient_address_contains_words":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientAddressContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"recipient_address_contains_words":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientAddressContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"redirect_to":                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RedirectTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_only_to_me":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SentOnlyToMe parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"sent_to":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"soft_delete_message":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SoftDeleteMessage parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"stop_processing_rules":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -StopProcessingRules parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"subject_contains_words":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SubjectContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"subject_or_body_contains_words":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SubjectOrBodyContainsWords parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"subject_contains_words":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SubjectContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"subject_or_body_contains_words":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SubjectOrBodyContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"validate_only":                              schema.BoolAttribute{Required: true, Description: "Maps to the -ValidateOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"with_importance":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WithImportance parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"with_sensitivity":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WithSensitivity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -230,161 +233,369 @@ func (r *inboxRuleResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	p := exo.NewInboxRuleParams{
-		AlwaysDeleteOutlookRulesBlob: plan.AlwaysDeleteOutlookRulesBlob.ValueBool(),
-		AnyCategory:                  plan.AnyCategory.ValueBool(),
-		BulkCategory:                 plan.BulkCategory.ValueString(),
-		ClearCategories:              plan.ClearCategories.ValueBool(),
-		ClearFlag:                    plan.ClearFlag.ValueBool(),
-		CompleteFlag:                 plan.CompleteFlag.ValueBool(),
-		DeleteMessage:                plan.DeleteMessage.ValueBool(),
-		DisplayAlert:                 plan.DisplayAlert.ValueString(),
-		ExceptIfAnyCategory:          plan.ExceptIfAnyCategory.ValueBool(),
-		ExceptIfBulkCategory:         plan.ExceptIfBulkCategory.ValueString(),
-		ExceptIfFlaggedForAction:     plan.ExceptIfFlaggedForAction.ValueString(),
-		ExceptIfFrom:                 toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics),
-		ExceptIfHasAttachment:        plan.ExceptIfHasAttachment.ValueBool(),
-		ExceptIfHasClassification:    toStringSlice(ctx, plan.ExceptIfHasClassification, &resp.Diagnostics),
-		ExceptIfIsExternal:           plan.ExceptIfIsExternal.ValueBool(),
-		ExceptIfIsMentioned:          plan.ExceptIfIsMentioned.ValueBool(),
-		ExceptIfMyNameInCcBox:        plan.ExceptIfMyNameInCcBox.ValueBool(),
-		ExceptIfMyNameInToBox:        plan.ExceptIfMyNameInToBox.ValueBool(),
-		ExceptIfMyNameInToOrCcBox:    plan.ExceptIfMyNameInToOrCcBox.ValueBool(),
-		ExceptIfMyNameNotInToBox:     plan.ExceptIfMyNameNotInToBox.ValueBool(),
-		ExceptIfSentOnlyToMe:         plan.ExceptIfSentOnlyToMe.ValueBool(),
-		ExceptIfSentTo:               toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
-		FlagMessage:                  plan.FlagMessage.ValueString(),
-		FlaggedForAction:             plan.FlaggedForAction.ValueString(),
-		ForwardAsAttachmentTo:        toStringSlice(ctx, plan.ForwardAsAttachmentTo, &resp.Diagnostics),
-		ForwardTo:                    toStringSlice(ctx, plan.ForwardTo, &resp.Diagnostics),
-		From:                         toStringSlice(ctx, plan.From, &resp.Diagnostics),
-		HasAttachment:                plan.HasAttachment.ValueBool(),
-		HasClassification:            toStringSlice(ctx, plan.HasClassification, &resp.Diagnostics),
-		IsExternal:                   plan.IsExternal.ValueBool(),
-		IsMentioned:                  plan.IsMentioned.ValueBool(),
-		MarkAsRead:                   plan.MarkAsRead.ValueBool(),
-		MyNameInCcBox:                plan.MyNameInCcBox.ValueBool(),
-		MyNameInToBox:                plan.MyNameInToBox.ValueBool(),
-		MyNameInToOrCcBox:            plan.MyNameInToOrCcBox.ValueBool(),
-		MyNameNotInToBox:             plan.MyNameNotInToBox.ValueBool(),
-		Name:                         plan.Name.ValueString(),
-		PermanentDelete:              plan.PermanentDelete.ValueBool(),
-		PinMessage:                   plan.PinMessage.ValueBool(),
-		PlaySound:                    plan.PlaySound.ValueString(),
-		RedirectTo:                   toStringSlice(ctx, plan.RedirectTo, &resp.Diagnostics),
-		SentOnlyToMe:                 plan.SentOnlyToMe.ValueBool(),
-		SentTo:                       toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
-		SoftDeleteMessage:            plan.SoftDeleteMessage.ValueBool(),
-		StopProcessingRules:          plan.StopProcessingRules.ValueBool(),
-		ValidateOnly:                 plan.ValidateOnly.ValueBool(),
+	var config inboxRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ApplyCategory.ValueString(); v != "" {
-		p.ApplyCategory = v
+
+	p := exo.NewInboxRuleParams{}
+	if !config.AlwaysDeleteOutlookRulesBlob.IsNull() {
+		p.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
 	}
-	if v := plan.ApplySystemCategory.ValueString(); v != "" {
-		p.ApplySystemCategory = v
+	if !config.AnyCategory.IsNull() {
+		if !plan.AnyCategory.IsUnknown() {
+			p.AnyCategory = plan.AnyCategory.ValueBoolPointer()
+		}
 	}
-	if v := plan.AssignedCategories.ValueString(); v != "" {
-		p.AssignedCategories = v
+	if !config.ApplyCategory.IsNull() {
+		if v := toStringSlice(ctx, plan.ApplyCategory, &resp.Diagnostics); len(v) > 0 {
+			p.ApplyCategory = v
+		}
 	}
-	if v := plan.BodyContainsWords.ValueString(); v != "" {
-		p.BodyContainsWords = v
+	if !config.ApplySystemCategory.IsNull() {
+		if v := toStringSlice(ctx, plan.ApplySystemCategory, &resp.Diagnostics); len(v) > 0 {
+			p.ApplySystemCategory = v
+		}
 	}
-	if v := plan.CopyToFolder.ValueString(); v != "" {
-		p.CopyToFolder = v
+	if !config.AssignedCategories.IsNull() {
+		if v := toStringSlice(ctx, plan.AssignedCategories, &resp.Diagnostics); len(v) > 0 {
+			p.AssignedCategories = v
+		}
 	}
-	if v := plan.DeleteSystemCategory.ValueString(); v != "" {
-		p.DeleteSystemCategory = v
+	if !config.BodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.BodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.BodyContainsWords = v
+		}
 	}
-	if v := plan.ExceptIfAssignedCategories.ValueString(); v != "" {
-		p.ExceptIfAssignedCategories = v
+	if !config.BulkCategory.IsNull() {
+		p.BulkCategory = plan.BulkCategory.ValueString()
 	}
-	if v := plan.ExceptIfBodyContainsWords.ValueString(); v != "" {
-		p.ExceptIfBodyContainsWords = v
+	if !config.ClearCategories.IsNull() {
+		if !plan.ClearCategories.IsUnknown() {
+			p.ClearCategories = plan.ClearCategories.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfFromAddressContainsWords.ValueString(); v != "" {
-		p.ExceptIfFromAddressContainsWords = v
+	if !config.ClearFlag.IsNull() {
+		if !plan.ClearFlag.IsUnknown() {
+			p.ClearFlag = plan.ClearFlag.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfHeaderContainsWords.ValueString(); v != "" {
-		p.ExceptIfHeaderContainsWords = v
+	if !config.CompleteFlag.IsNull() {
+		if !plan.CompleteFlag.IsUnknown() {
+			p.CompleteFlag = plan.CompleteFlag.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		p.ExceptIfMessageTypeMatches = v
+	if v := config.CopyToFolder.ValueString(); v != "" {
+		p.CopyToFolder = objectParam(v)
 	}
-	if v := plan.ExceptIfReceivedAfterDate.ValueString(); v != "" {
-		p.ExceptIfReceivedAfterDate = v
+	if !config.DeleteMessage.IsNull() {
+		if !plan.DeleteMessage.IsUnknown() {
+			p.DeleteMessage = plan.DeleteMessage.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
-		p.ExceptIfReceivedBeforeDate = v
+	if !config.DeleteSystemCategory.IsNull() {
+		if v := toStringSlice(ctx, plan.DeleteSystemCategory, &resp.Diagnostics); len(v) > 0 {
+			p.DeleteSystemCategory = v
+		}
 	}
-	if v := plan.ExceptIfRecipientAddressContainsWords.ValueString(); v != "" {
-		p.ExceptIfRecipientAddressContainsWords = v
+	if !config.DisplayAlert.IsNull() {
+		p.DisplayAlert = plan.DisplayAlert.ValueString()
 	}
-	if v := plan.ExceptIfSubjectContainsWords.ValueString(); v != "" {
-		p.ExceptIfSubjectContainsWords = v
+	if !config.ExceptIfAnyCategory.IsNull() {
+		if !plan.ExceptIfAnyCategory.IsUnknown() {
+			p.ExceptIfAnyCategory = plan.ExceptIfAnyCategory.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfSubjectOrBodyContainsWords.ValueString(); v != "" {
-		p.ExceptIfSubjectOrBodyContainsWords = v
+	if !config.ExceptIfAssignedCategories.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfAssignedCategories, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfAssignedCategories = v
+		}
 	}
-	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		p.ExceptIfWithImportance = v
+	if !config.ExceptIfBodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfBodyContainsWords = v
+		}
 	}
-	if v := plan.ExceptIfWithSensitivity.ValueString(); v != "" {
-		p.ExceptIfWithSensitivity = v
+	if !config.ExceptIfBulkCategory.IsNull() {
+		p.ExceptIfBulkCategory = plan.ExceptIfBulkCategory.ValueString()
 	}
-	if v := plan.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
-		p.ExceptIfWithinSizeRangeMaximum = v
+	if !config.ExceptIfFlaggedForAction.IsNull() {
+		p.ExceptIfFlaggedForAction = plan.ExceptIfFlaggedForAction.ValueString()
 	}
-	if v := plan.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
-		p.ExceptIfWithinSizeRangeMinimum = v
+	if !config.ExceptIfFrom.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFrom = v
+		}
 	}
-	if v := plan.FromAddressContainsWords.ValueString(); v != "" {
-		p.FromAddressContainsWords = v
+	if !config.ExceptIfFromAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfFromAddressContainsWords = v
+		}
 	}
-	if v := plan.FromMessageId.ValueString(); v != "" {
-		p.FromMessageId = v
+	if !config.ExceptIfHasAttachment.IsNull() {
+		if !plan.ExceptIfHasAttachment.IsUnknown() {
+			p.ExceptIfHasAttachment = plan.ExceptIfHasAttachment.ValueBoolPointer()
+		}
 	}
-	if v := plan.HeaderContainsWords.ValueString(); v != "" {
-		p.HeaderContainsWords = v
+	if !config.ExceptIfHasClassification.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfHasClassification, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfHasClassification = v
+		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		p.Mailbox = v
+	if !config.ExceptIfHeaderContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfHeaderContainsWords = v
+		}
 	}
-	if v := plan.MarkImportance.ValueString(); v != "" {
-		p.MarkImportance = v
+	if !config.ExceptIfIsExternal.IsNull() {
+		if !plan.ExceptIfIsExternal.IsUnknown() {
+			p.ExceptIfIsExternal = plan.ExceptIfIsExternal.ValueBoolPointer()
+		}
 	}
-	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		p.MessageTypeMatches = v
+	if !config.ExceptIfIsMentioned.IsNull() {
+		if !plan.ExceptIfIsMentioned.IsUnknown() {
+			p.ExceptIfIsMentioned = plan.ExceptIfIsMentioned.ValueBoolPointer()
+		}
 	}
-	if v := plan.MoveToFolder.ValueString(); v != "" {
-		p.MoveToFolder = v
+	if v := config.ExceptIfMessageTypeMatches.ValueString(); v != "" {
+		p.ExceptIfMessageTypeMatches = objectParam(v)
 	}
-	if v := plan.ReceivedAfterDate.ValueString(); v != "" {
-		p.ReceivedAfterDate = v
+	if !config.ExceptIfMyNameInCcBox.IsNull() {
+		if !plan.ExceptIfMyNameInCcBox.IsUnknown() {
+			p.ExceptIfMyNameInCcBox = plan.ExceptIfMyNameInCcBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.ReceivedBeforeDate.ValueString(); v != "" {
-		p.ReceivedBeforeDate = v
+	if !config.ExceptIfMyNameInToBox.IsNull() {
+		if !plan.ExceptIfMyNameInToBox.IsUnknown() {
+			p.ExceptIfMyNameInToBox = plan.ExceptIfMyNameInToBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecipientAddressContainsWords.ValueString(); v != "" {
-		p.RecipientAddressContainsWords = v
+	if !config.ExceptIfMyNameInToOrCcBox.IsNull() {
+		if !plan.ExceptIfMyNameInToOrCcBox.IsUnknown() {
+			p.ExceptIfMyNameInToOrCcBox = plan.ExceptIfMyNameInToOrCcBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.SubjectContainsWords.ValueString(); v != "" {
-		p.SubjectContainsWords = v
+	if !config.ExceptIfMyNameNotInToBox.IsNull() {
+		if !plan.ExceptIfMyNameNotInToBox.IsUnknown() {
+			p.ExceptIfMyNameNotInToBox = plan.ExceptIfMyNameNotInToBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.SubjectOrBodyContainsWords.ValueString(); v != "" {
-		p.SubjectOrBodyContainsWords = v
+	if v := config.ExceptIfReceivedAfterDate.ValueString(); v != "" {
+		p.ExceptIfReceivedAfterDate = objectParam(v)
 	}
-	if v := plan.WithImportance.ValueString(); v != "" {
-		p.WithImportance = v
+	if v := config.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
+		p.ExceptIfReceivedBeforeDate = objectParam(v)
 	}
-	if v := plan.WithSensitivity.ValueString(); v != "" {
-		p.WithSensitivity = v
+	if !config.ExceptIfRecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientAddressContainsWords = v
+		}
 	}
-	if v := plan.WithinSizeRangeMaximum.ValueString(); v != "" {
-		p.WithinSizeRangeMaximum = v
+	if !config.ExceptIfSentOnlyToMe.IsNull() {
+		if !plan.ExceptIfSentOnlyToMe.IsUnknown() {
+			p.ExceptIfSentOnlyToMe = plan.ExceptIfSentOnlyToMe.ValueBoolPointer()
+		}
 	}
-	if v := plan.WithinSizeRangeMinimum.ValueString(); v != "" {
-		p.WithinSizeRangeMinimum = v
+	if !config.ExceptIfSentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentTo = v
+		}
+	}
+	if !config.ExceptIfSubjectContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectContainsWords = v
+		}
+	}
+	if !config.ExceptIfSubjectOrBodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSubjectOrBodyContainsWords = v
+		}
+	}
+	if v := config.ExceptIfWithImportance.ValueString(); v != "" {
+		p.ExceptIfWithImportance = objectParam(v)
+	}
+	if v := config.ExceptIfWithSensitivity.ValueString(); v != "" {
+		p.ExceptIfWithSensitivity = objectParam(v)
+	}
+	if v := config.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
+		p.ExceptIfWithinSizeRangeMaximum = objectParam(v)
+	}
+	if v := config.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
+		p.ExceptIfWithinSizeRangeMinimum = objectParam(v)
+	}
+	if !config.FlagMessage.IsNull() {
+		p.FlagMessage = plan.FlagMessage.ValueString()
+	}
+	if !config.FlaggedForAction.IsNull() {
+		p.FlaggedForAction = plan.FlaggedForAction.ValueString()
+	}
+	if !config.ForwardAsAttachmentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ForwardAsAttachmentTo, &resp.Diagnostics); len(v) > 0 {
+			p.ForwardAsAttachmentTo = v
+		}
+	}
+	if !config.ForwardTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ForwardTo, &resp.Diagnostics); len(v) > 0 {
+			p.ForwardTo = v
+		}
+	}
+	if !config.From.IsNull() {
+		if v := toStringSlice(ctx, plan.From, &resp.Diagnostics); len(v) > 0 {
+			p.From = v
+		}
+	}
+	if !config.FromAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.FromAddressContainsWords = v
+		}
+	}
+	if v := config.FromMessageId.ValueString(); v != "" {
+		p.FromMessageId = objectParam(v)
+	}
+	if !config.HasAttachment.IsNull() {
+		if !plan.HasAttachment.IsUnknown() {
+			p.HasAttachment = plan.HasAttachment.ValueBoolPointer()
+		}
+	}
+	if !config.HasClassification.IsNull() {
+		if v := toStringSlice(ctx, plan.HasClassification, &resp.Diagnostics); len(v) > 0 {
+			p.HasClassification = v
+		}
+	}
+	if !config.HeaderContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.HeaderContainsWords = v
+		}
+	}
+	if !config.IsExternal.IsNull() {
+		if !plan.IsExternal.IsUnknown() {
+			p.IsExternal = plan.IsExternal.ValueBoolPointer()
+		}
+	}
+	if !config.IsMentioned.IsNull() {
+		if !plan.IsMentioned.IsUnknown() {
+			p.IsMentioned = plan.IsMentioned.ValueBoolPointer()
+		}
+	}
+	if v := config.Mailbox.ValueString(); v != "" {
+		p.Mailbox = objectParam(v)
+	}
+	if !config.MarkAsRead.IsNull() {
+		if !plan.MarkAsRead.IsUnknown() {
+			p.MarkAsRead = plan.MarkAsRead.ValueBoolPointer()
+		}
+	}
+	if v := config.MarkImportance.ValueString(); v != "" {
+		p.MarkImportance = objectParam(v)
+	}
+	if v := config.MessageTypeMatches.ValueString(); v != "" {
+		p.MessageTypeMatches = objectParam(v)
+	}
+	if v := config.MoveToFolder.ValueString(); v != "" {
+		p.MoveToFolder = objectParam(v)
+	}
+	if !config.MyNameInCcBox.IsNull() {
+		if !plan.MyNameInCcBox.IsUnknown() {
+			p.MyNameInCcBox = plan.MyNameInCcBox.ValueBoolPointer()
+		}
+	}
+	if !config.MyNameInToBox.IsNull() {
+		if !plan.MyNameInToBox.IsUnknown() {
+			p.MyNameInToBox = plan.MyNameInToBox.ValueBoolPointer()
+		}
+	}
+	if !config.MyNameInToOrCcBox.IsNull() {
+		if !plan.MyNameInToOrCcBox.IsUnknown() {
+			p.MyNameInToOrCcBox = plan.MyNameInToOrCcBox.ValueBoolPointer()
+		}
+	}
+	if !config.MyNameNotInToBox.IsNull() {
+		if !plan.MyNameNotInToBox.IsUnknown() {
+			p.MyNameNotInToBox = plan.MyNameNotInToBox.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.PermanentDelete.IsNull() {
+		if !plan.PermanentDelete.IsUnknown() {
+			p.PermanentDelete = plan.PermanentDelete.ValueBoolPointer()
+		}
+	}
+	if !config.PinMessage.IsNull() {
+		if !plan.PinMessage.IsUnknown() {
+			p.PinMessage = plan.PinMessage.ValueBoolPointer()
+		}
+	}
+	if !config.PlaySound.IsNull() {
+		p.PlaySound = plan.PlaySound.ValueString()
+	}
+	if !config.Priority.IsNull() {
+		if !plan.Priority.IsUnknown() {
+			p.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if v := config.ReceivedAfterDate.ValueString(); v != "" {
+		p.ReceivedAfterDate = objectParam(v)
+	}
+	if v := config.ReceivedBeforeDate.ValueString(); v != "" {
+		p.ReceivedBeforeDate = objectParam(v)
+	}
+	if !config.RecipientAddressContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientAddressContainsWords = v
+		}
+	}
+	if !config.RedirectTo.IsNull() {
+		if v := toStringSlice(ctx, plan.RedirectTo, &resp.Diagnostics); len(v) > 0 {
+			p.RedirectTo = v
+		}
+	}
+	if !config.SentOnlyToMe.IsNull() {
+		if !plan.SentOnlyToMe.IsUnknown() {
+			p.SentOnlyToMe = plan.SentOnlyToMe.ValueBoolPointer()
+		}
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
+	}
+	if !config.SoftDeleteMessage.IsNull() {
+		if !plan.SoftDeleteMessage.IsUnknown() {
+			p.SoftDeleteMessage = plan.SoftDeleteMessage.ValueBoolPointer()
+		}
+	}
+	if !config.StopProcessingRules.IsNull() {
+		if !plan.StopProcessingRules.IsUnknown() {
+			p.StopProcessingRules = plan.StopProcessingRules.ValueBoolPointer()
+		}
+	}
+	if !config.SubjectContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectContainsWords = v
+		}
+	}
+	if !config.SubjectOrBodyContainsWords.IsNull() {
+		if v := toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+			p.SubjectOrBodyContainsWords = v
+		}
+	}
+	if !config.ValidateOnly.IsNull() {
+		p.ValidateOnly = plan.ValidateOnly.ValueBool()
+	}
+	if v := config.WithImportance.ValueString(); v != "" {
+		p.WithImportance = objectParam(v)
+	}
+	if v := config.WithSensitivity.ValueString(); v != "" {
+		p.WithSensitivity = objectParam(v)
+	}
+	if v := config.WithinSizeRangeMaximum.ValueString(); v != "" {
+		p.WithinSizeRangeMaximum = objectParam(v)
+	}
+	if v := config.WithinSizeRangeMinimum.ValueString(); v != "" {
+		p.WithinSizeRangeMinimum = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -436,154 +647,523 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetInboxRuleParams{}
 	sp.Identity = id
-	sp.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
-	sp.AnyCategory = plan.AnyCategory.ValueBool()
-	if v := plan.ApplyCategory.ValueString(); v != "" {
-		sp.ApplyCategory = v
+	var cur *inboxRuleModel
+	curRead := false
+	current := func() *inboxRuleModel {
+		if !curRead {
+			curRead = true
+			var m inboxRuleModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-InboxRule failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.ApplySystemCategory.ValueString(); v != "" {
-		sp.ApplySystemCategory = v
+	if !plan.AlwaysDeleteOutlookRulesBlob.Equal(state.AlwaysDeleteOutlookRulesBlob) {
+		sp.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
 	}
-	if v := plan.AssignedCategories.ValueString(); v != "" {
-		sp.AssignedCategories = v
+	if !plan.AnyCategory.Equal(state.AnyCategory) {
+		if !plan.AnyCategory.IsUnknown() {
+			sp.AnyCategory = plan.AnyCategory.ValueBoolPointer()
+		}
 	}
-	if v := plan.BodyContainsWords.ValueString(); v != "" {
-		sp.BodyContainsWords = v
+	if !plan.ApplyCategory.Equal(state.ApplyCategory) {
+		if !plan.ApplyCategory.IsNull() && !plan.ApplyCategory.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ApplyCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.ApplyCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ApplyCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.ApplyCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.BulkCategory = plan.BulkCategory.ValueString()
-	sp.ClearCategories = plan.ClearCategories.ValueBool()
-	sp.ClearFlag = plan.ClearFlag.ValueBool()
-	sp.CompleteFlag = plan.CompleteFlag.ValueBool()
-	if v := plan.CopyToFolder.ValueString(); v != "" {
-		sp.CopyToFolder = v
+	if !plan.ApplySystemCategory.Equal(state.ApplySystemCategory) {
+		if !plan.ApplySystemCategory.IsNull() && !plan.ApplySystemCategory.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ApplySystemCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.ApplySystemCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ApplySystemCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.ApplySystemCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.DeleteMessage = plan.DeleteMessage.ValueBool()
-	if v := plan.DeleteSystemCategory.ValueString(); v != "" {
-		sp.DeleteSystemCategory = v
+	if !plan.AssignedCategories.Equal(state.AssignedCategories) {
+		if !plan.AssignedCategories.IsNull() && !plan.AssignedCategories.IsUnknown() {
+			sp.AssignedCategories = append([]string{}, toStringSlice(ctx, plan.AssignedCategories, &resp.Diagnostics)...)
+		}
 	}
-	sp.DisplayAlert = plan.DisplayAlert.ValueString()
-	sp.ExceptIfAnyCategory = plan.ExceptIfAnyCategory.ValueBool()
-	if v := plan.ExceptIfAssignedCategories.ValueString(); v != "" {
-		sp.ExceptIfAssignedCategories = v
+	if !plan.BodyContainsWords.Equal(state.BodyContainsWords) {
+		if !plan.BodyContainsWords.IsNull() && !plan.BodyContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.BodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.BodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ExceptIfBodyContainsWords.ValueString(); v != "" {
-		sp.ExceptIfBodyContainsWords = v
+	if !plan.BulkCategory.Equal(state.BulkCategory) {
+		sp.BulkCategory = plan.BulkCategory.ValueString()
 	}
-	sp.ExceptIfBulkCategory = plan.ExceptIfBulkCategory.ValueString()
-	sp.ExceptIfFlaggedForAction = plan.ExceptIfFlaggedForAction.ValueString()
-	sp.ExceptIfFrom = toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics)
-	if v := plan.ExceptIfFromAddressContainsWords.ValueString(); v != "" {
-		sp.ExceptIfFromAddressContainsWords = v
+	if !plan.ClearCategories.Equal(state.ClearCategories) {
+		if !plan.ClearCategories.IsUnknown() {
+			sp.ClearCategories = plan.ClearCategories.ValueBoolPointer()
+		}
 	}
-	sp.ExceptIfHasAttachment = plan.ExceptIfHasAttachment.ValueBool()
-	sp.ExceptIfHasClassification = toStringSlice(ctx, plan.ExceptIfHasClassification, &resp.Diagnostics)
-	if v := plan.ExceptIfHeaderContainsWords.ValueString(); v != "" {
-		sp.ExceptIfHeaderContainsWords = v
+	if !plan.ClearFlag.Equal(state.ClearFlag) {
+		if !plan.ClearFlag.IsUnknown() {
+			sp.ClearFlag = plan.ClearFlag.ValueBoolPointer()
+		}
 	}
-	sp.ExceptIfIsExternal = plan.ExceptIfIsExternal.ValueBool()
-	sp.ExceptIfIsMentioned = plan.ExceptIfIsMentioned.ValueBool()
-	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		sp.ExceptIfMessageTypeMatches = v
+	if !plan.CompleteFlag.Equal(state.CompleteFlag) {
+		if !plan.CompleteFlag.IsUnknown() {
+			sp.CompleteFlag = plan.CompleteFlag.ValueBoolPointer()
+		}
 	}
-	sp.ExceptIfMyNameInCcBox = plan.ExceptIfMyNameInCcBox.ValueBool()
-	sp.ExceptIfMyNameInToBox = plan.ExceptIfMyNameInToBox.ValueBool()
-	sp.ExceptIfMyNameInToOrCcBox = plan.ExceptIfMyNameInToOrCcBox.ValueBool()
-	sp.ExceptIfMyNameNotInToBox = plan.ExceptIfMyNameNotInToBox.ValueBool()
-	if v := plan.ExceptIfReceivedAfterDate.ValueString(); v != "" {
-		sp.ExceptIfReceivedAfterDate = v
+	if !plan.CopyToFolder.Equal(state.CopyToFolder) {
+		if v := plan.CopyToFolder.ValueString(); v != "" {
+			sp.CopyToFolder = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
-		sp.ExceptIfReceivedBeforeDate = v
+	if !plan.DeleteMessage.Equal(state.DeleteMessage) {
+		if !plan.DeleteMessage.IsUnknown() {
+			sp.DeleteMessage = plan.DeleteMessage.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfRecipientAddressContainsWords.ValueString(); v != "" {
-		sp.ExceptIfRecipientAddressContainsWords = v
+	if !plan.DeleteSystemCategory.Equal(state.DeleteSystemCategory) {
+		if !plan.DeleteSystemCategory.IsNull() && !plan.DeleteSystemCategory.IsUnknown() {
+			if v := toStringSlice(ctx, plan.DeleteSystemCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.DeleteSystemCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DeleteSystemCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.DeleteSystemCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.ExceptIfSentOnlyToMe = plan.ExceptIfSentOnlyToMe.ValueBool()
-	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
-	if v := plan.ExceptIfSubjectContainsWords.ValueString(); v != "" {
-		sp.ExceptIfSubjectContainsWords = v
+	if !plan.DisplayAlert.Equal(state.DisplayAlert) {
+		sp.DisplayAlert = plan.DisplayAlert.ValueString()
 	}
-	if v := plan.ExceptIfSubjectOrBodyContainsWords.ValueString(); v != "" {
-		sp.ExceptIfSubjectOrBodyContainsWords = v
+	if !plan.ExceptIfAnyCategory.Equal(state.ExceptIfAnyCategory) {
+		if !plan.ExceptIfAnyCategory.IsUnknown() {
+			sp.ExceptIfAnyCategory = plan.ExceptIfAnyCategory.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		sp.ExceptIfWithImportance = v
+	if !plan.ExceptIfAssignedCategories.Equal(state.ExceptIfAssignedCategories) {
+		if !plan.ExceptIfAssignedCategories.IsNull() && !plan.ExceptIfAssignedCategories.IsUnknown() {
+			sp.ExceptIfAssignedCategories = append([]string{}, toStringSlice(ctx, plan.ExceptIfAssignedCategories, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExceptIfWithSensitivity.ValueString(); v != "" {
-		sp.ExceptIfWithSensitivity = v
+	if !plan.ExceptIfBodyContainsWords.Equal(state.ExceptIfBodyContainsWords) {
+		if !plan.ExceptIfBodyContainsWords.IsNull() && !plan.ExceptIfBodyContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
-		sp.ExceptIfWithinSizeRangeMaximum = v
+	if !plan.ExceptIfBulkCategory.Equal(state.ExceptIfBulkCategory) {
+		sp.ExceptIfBulkCategory = plan.ExceptIfBulkCategory.ValueString()
 	}
-	if v := plan.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
-		sp.ExceptIfWithinSizeRangeMinimum = v
+	if !plan.ExceptIfFlaggedForAction.Equal(state.ExceptIfFlaggedForAction) {
+		sp.ExceptIfFlaggedForAction = plan.ExceptIfFlaggedForAction.ValueString()
 	}
-	sp.FlagMessage = plan.FlagMessage.ValueString()
-	sp.FlaggedForAction = plan.FlaggedForAction.ValueString()
-	sp.ForwardAsAttachmentTo = toStringSlice(ctx, plan.ForwardAsAttachmentTo, &resp.Diagnostics)
-	sp.ForwardTo = toStringSlice(ctx, plan.ForwardTo, &resp.Diagnostics)
-	sp.From = toStringSlice(ctx, plan.From, &resp.Diagnostics)
-	if v := plan.FromAddressContainsWords.ValueString(); v != "" {
-		sp.FromAddressContainsWords = v
+	if !plan.ExceptIfFrom.Equal(state.ExceptIfFrom) {
+		if !plan.ExceptIfFrom.IsNull() && !plan.ExceptIfFrom.IsUnknown() {
+			sp.ExceptIfFrom = append([]string{}, toStringSlice(ctx, plan.ExceptIfFrom, &resp.Diagnostics)...)
+		}
 	}
-	sp.HasAttachment = plan.HasAttachment.ValueBool()
-	sp.HasClassification = toStringSlice(ctx, plan.HasClassification, &resp.Diagnostics)
-	if v := plan.HeaderContainsWords.ValueString(); v != "" {
-		sp.HeaderContainsWords = v
+	if !plan.ExceptIfFromAddressContainsWords.Equal(state.ExceptIfFromAddressContainsWords) {
+		if !plan.ExceptIfFromAddressContainsWords.IsNull() && !plan.ExceptIfFromAddressContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfFromAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfFromAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.IsExternal = plan.IsExternal.ValueBool()
-	sp.IsMentioned = plan.IsMentioned.ValueBool()
-	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = v
+	if !plan.ExceptIfHasAttachment.Equal(state.ExceptIfHasAttachment) {
+		if !plan.ExceptIfHasAttachment.IsUnknown() {
+			sp.ExceptIfHasAttachment = plan.ExceptIfHasAttachment.ValueBoolPointer()
+		}
 	}
-	sp.MarkAsRead = plan.MarkAsRead.ValueBool()
-	if v := plan.MarkImportance.ValueString(); v != "" {
-		sp.MarkImportance = v
+	if !plan.ExceptIfHasClassification.Equal(state.ExceptIfHasClassification) {
+		if !plan.ExceptIfHasClassification.IsNull() && !plan.ExceptIfHasClassification.IsUnknown() {
+			sp.ExceptIfHasClassification = append([]string{}, toStringSlice(ctx, plan.ExceptIfHasClassification, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		sp.MessageTypeMatches = v
+	if !plan.ExceptIfHeaderContainsWords.Equal(state.ExceptIfHeaderContainsWords) {
+		if !plan.ExceptIfHeaderContainsWords.IsNull() && !plan.ExceptIfHeaderContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfHeaderContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfHeaderContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.MoveToFolder.ValueString(); v != "" {
-		sp.MoveToFolder = v
+	if !plan.ExceptIfIsExternal.Equal(state.ExceptIfIsExternal) {
+		if !plan.ExceptIfIsExternal.IsUnknown() {
+			sp.ExceptIfIsExternal = plan.ExceptIfIsExternal.ValueBoolPointer()
+		}
 	}
-	sp.MyNameInCcBox = plan.MyNameInCcBox.ValueBool()
-	sp.MyNameInToBox = plan.MyNameInToBox.ValueBool()
-	sp.MyNameInToOrCcBox = plan.MyNameInToOrCcBox.ValueBool()
-	sp.MyNameNotInToBox = plan.MyNameNotInToBox.ValueBool()
-	sp.PermanentDelete = plan.PermanentDelete.ValueBool()
-	sp.PinMessage = plan.PinMessage.ValueBool()
-	sp.PlaySound = plan.PlaySound.ValueString()
-	if v := plan.ReceivedAfterDate.ValueString(); v != "" {
-		sp.ReceivedAfterDate = v
+	if !plan.ExceptIfIsMentioned.Equal(state.ExceptIfIsMentioned) {
+		if !plan.ExceptIfIsMentioned.IsUnknown() {
+			sp.ExceptIfIsMentioned = plan.ExceptIfIsMentioned.ValueBoolPointer()
+		}
 	}
-	if v := plan.ReceivedBeforeDate.ValueString(); v != "" {
-		sp.ReceivedBeforeDate = v
+	if !plan.ExceptIfMessageTypeMatches.Equal(state.ExceptIfMessageTypeMatches) {
+		if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
+			sp.ExceptIfMessageTypeMatches = objectParam(v)
+		}
 	}
-	if v := plan.RecipientAddressContainsWords.ValueString(); v != "" {
-		sp.RecipientAddressContainsWords = v
+	if !plan.ExceptIfMyNameInCcBox.Equal(state.ExceptIfMyNameInCcBox) {
+		if !plan.ExceptIfMyNameInCcBox.IsUnknown() {
+			sp.ExceptIfMyNameInCcBox = plan.ExceptIfMyNameInCcBox.ValueBoolPointer()
+		}
 	}
-	sp.RedirectTo = toStringSlice(ctx, plan.RedirectTo, &resp.Diagnostics)
-	sp.SentOnlyToMe = plan.SentOnlyToMe.ValueBool()
-	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
-	sp.SoftDeleteMessage = plan.SoftDeleteMessage.ValueBool()
-	sp.StopProcessingRules = plan.StopProcessingRules.ValueBool()
-	if v := plan.SubjectContainsWords.ValueString(); v != "" {
-		sp.SubjectContainsWords = v
+	if !plan.ExceptIfMyNameInToBox.Equal(state.ExceptIfMyNameInToBox) {
+		if !plan.ExceptIfMyNameInToBox.IsUnknown() {
+			sp.ExceptIfMyNameInToBox = plan.ExceptIfMyNameInToBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.SubjectOrBodyContainsWords.ValueString(); v != "" {
-		sp.SubjectOrBodyContainsWords = v
+	if !plan.ExceptIfMyNameInToOrCcBox.Equal(state.ExceptIfMyNameInToOrCcBox) {
+		if !plan.ExceptIfMyNameInToOrCcBox.IsUnknown() {
+			sp.ExceptIfMyNameInToOrCcBox = plan.ExceptIfMyNameInToOrCcBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.WithImportance.ValueString(); v != "" {
-		sp.WithImportance = v
+	if !plan.ExceptIfMyNameNotInToBox.Equal(state.ExceptIfMyNameNotInToBox) {
+		if !plan.ExceptIfMyNameNotInToBox.IsUnknown() {
+			sp.ExceptIfMyNameNotInToBox = plan.ExceptIfMyNameNotInToBox.ValueBoolPointer()
+		}
 	}
-	if v := plan.WithSensitivity.ValueString(); v != "" {
-		sp.WithSensitivity = v
+	if !plan.ExceptIfReceivedAfterDate.Equal(state.ExceptIfReceivedAfterDate) {
+		if v := plan.ExceptIfReceivedAfterDate.ValueString(); v != "" {
+			sp.ExceptIfReceivedAfterDate = objectParam(v)
+		}
 	}
-	if v := plan.WithinSizeRangeMaximum.ValueString(); v != "" {
-		sp.WithinSizeRangeMaximum = v
+	if !plan.ExceptIfReceivedBeforeDate.Equal(state.ExceptIfReceivedBeforeDate) {
+		if v := plan.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
+			sp.ExceptIfReceivedBeforeDate = objectParam(v)
+		}
 	}
-	if v := plan.WithinSizeRangeMinimum.ValueString(); v != "" {
-		sp.WithinSizeRangeMinimum = v
+	if !plan.ExceptIfRecipientAddressContainsWords.Equal(state.ExceptIfRecipientAddressContainsWords) {
+		if !plan.ExceptIfRecipientAddressContainsWords.IsNull() && !plan.ExceptIfRecipientAddressContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfRecipientAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfRecipientAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExceptIfSentOnlyToMe.Equal(state.ExceptIfSentOnlyToMe) {
+		if !plan.ExceptIfSentOnlyToMe.IsUnknown() {
+			sp.ExceptIfSentOnlyToMe = plan.ExceptIfSentOnlyToMe.ValueBoolPointer()
+		}
+	}
+	if !plan.ExceptIfSentTo.Equal(state.ExceptIfSentTo) {
+		if !plan.ExceptIfSentTo.IsNull() && !plan.ExceptIfSentTo.IsUnknown() {
+			sp.ExceptIfSentTo = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSubjectContainsWords.Equal(state.ExceptIfSubjectContainsWords) {
+		if !plan.ExceptIfSubjectContainsWords.IsNull() && !plan.ExceptIfSubjectContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfSubjectContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfSubjectContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExceptIfSubjectOrBodyContainsWords.Equal(state.ExceptIfSubjectOrBodyContainsWords) {
+		if !plan.ExceptIfSubjectOrBodyContainsWords.IsNull() && !plan.ExceptIfSubjectOrBodyContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfSubjectOrBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfSubjectOrBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExceptIfWithImportance.Equal(state.ExceptIfWithImportance) {
+		if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
+			sp.ExceptIfWithImportance = objectParam(v)
+		}
+	}
+	if !plan.ExceptIfWithSensitivity.Equal(state.ExceptIfWithSensitivity) {
+		if v := plan.ExceptIfWithSensitivity.ValueString(); v != "" {
+			sp.ExceptIfWithSensitivity = objectParam(v)
+		}
+	}
+	if !plan.ExceptIfWithinSizeRangeMaximum.Equal(state.ExceptIfWithinSizeRangeMaximum) {
+		if v := plan.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
+			sp.ExceptIfWithinSizeRangeMaximum = objectParam(v)
+		}
+	}
+	if !plan.ExceptIfWithinSizeRangeMinimum.Equal(state.ExceptIfWithinSizeRangeMinimum) {
+		if v := plan.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
+			sp.ExceptIfWithinSizeRangeMinimum = objectParam(v)
+		}
+	}
+	if !plan.FlagMessage.Equal(state.FlagMessage) {
+		sp.FlagMessage = plan.FlagMessage.ValueString()
+	}
+	if !plan.FlaggedForAction.Equal(state.FlaggedForAction) {
+		sp.FlaggedForAction = plan.FlaggedForAction.ValueString()
+	}
+	if !plan.ForwardAsAttachmentTo.Equal(state.ForwardAsAttachmentTo) {
+		if !plan.ForwardAsAttachmentTo.IsNull() && !plan.ForwardAsAttachmentTo.IsUnknown() {
+			sp.ForwardAsAttachmentTo = append([]string{}, toStringSlice(ctx, plan.ForwardAsAttachmentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ForwardTo.Equal(state.ForwardTo) {
+		if !plan.ForwardTo.IsNull() && !plan.ForwardTo.IsUnknown() {
+			sp.ForwardTo = append([]string{}, toStringSlice(ctx, plan.ForwardTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.From.Equal(state.From) {
+		if !plan.From.IsNull() && !plan.From.IsUnknown() {
+			sp.From = append([]string{}, toStringSlice(ctx, plan.From, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.FromAddressContainsWords.Equal(state.FromAddressContainsWords) {
+		if !plan.FromAddressContainsWords.IsNull() && !plan.FromAddressContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.FromAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.FromAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.FromAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.HasAttachment.Equal(state.HasAttachment) {
+		if !plan.HasAttachment.IsUnknown() {
+			sp.HasAttachment = plan.HasAttachment.ValueBoolPointer()
+		}
+	}
+	if !plan.HasClassification.Equal(state.HasClassification) {
+		if !plan.HasClassification.IsNull() && !plan.HasClassification.IsUnknown() {
+			sp.HasClassification = append([]string{}, toStringSlice(ctx, plan.HasClassification, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.HeaderContainsWords.Equal(state.HeaderContainsWords) {
+		if !plan.HeaderContainsWords.IsNull() && !plan.HeaderContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.HeaderContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.HeaderContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.HeaderContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.IsExternal.Equal(state.IsExternal) {
+		if !plan.IsExternal.IsUnknown() {
+			sp.IsExternal = plan.IsExternal.ValueBoolPointer()
+		}
+	}
+	if !plan.IsMentioned.Equal(state.IsMentioned) {
+		if !plan.IsMentioned.IsUnknown() {
+			sp.IsMentioned = plan.IsMentioned.ValueBoolPointer()
+		}
+	}
+	if !plan.Mailbox.Equal(state.Mailbox) {
+		if v := plan.Mailbox.ValueString(); v != "" {
+			sp.Mailbox = objectParam(v)
+		}
+	}
+	if !plan.MarkAsRead.Equal(state.MarkAsRead) {
+		if !plan.MarkAsRead.IsUnknown() {
+			sp.MarkAsRead = plan.MarkAsRead.ValueBoolPointer()
+		}
+	}
+	if !plan.MarkImportance.Equal(state.MarkImportance) {
+		if v := plan.MarkImportance.ValueString(); v != "" {
+			sp.MarkImportance = objectParam(v)
+		}
+	}
+	if !plan.MessageTypeMatches.Equal(state.MessageTypeMatches) {
+		if v := plan.MessageTypeMatches.ValueString(); v != "" {
+			sp.MessageTypeMatches = objectParam(v)
+		}
+	}
+	if !plan.MoveToFolder.Equal(state.MoveToFolder) {
+		if v := plan.MoveToFolder.ValueString(); v != "" {
+			sp.MoveToFolder = objectParam(v)
+		}
+	}
+	if !plan.MyNameInCcBox.Equal(state.MyNameInCcBox) {
+		if !plan.MyNameInCcBox.IsUnknown() {
+			sp.MyNameInCcBox = plan.MyNameInCcBox.ValueBoolPointer()
+		}
+	}
+	if !plan.MyNameInToBox.Equal(state.MyNameInToBox) {
+		if !plan.MyNameInToBox.IsUnknown() {
+			sp.MyNameInToBox = plan.MyNameInToBox.ValueBoolPointer()
+		}
+	}
+	if !plan.MyNameInToOrCcBox.Equal(state.MyNameInToOrCcBox) {
+		if !plan.MyNameInToOrCcBox.IsUnknown() {
+			sp.MyNameInToOrCcBox = plan.MyNameInToOrCcBox.ValueBoolPointer()
+		}
+	}
+	if !plan.MyNameNotInToBox.Equal(state.MyNameNotInToBox) {
+		if !plan.MyNameNotInToBox.IsUnknown() {
+			sp.MyNameNotInToBox = plan.MyNameNotInToBox.ValueBoolPointer()
+		}
+	}
+	if !plan.PermanentDelete.Equal(state.PermanentDelete) {
+		if !plan.PermanentDelete.IsUnknown() {
+			sp.PermanentDelete = plan.PermanentDelete.ValueBoolPointer()
+		}
+	}
+	if !plan.PinMessage.Equal(state.PinMessage) {
+		if !plan.PinMessage.IsUnknown() {
+			sp.PinMessage = plan.PinMessage.ValueBoolPointer()
+		}
+	}
+	if !plan.PlaySound.Equal(state.PlaySound) {
+		sp.PlaySound = plan.PlaySound.ValueString()
+	}
+	if !plan.Priority.Equal(state.Priority) {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !plan.ReceivedAfterDate.Equal(state.ReceivedAfterDate) {
+		if v := plan.ReceivedAfterDate.ValueString(); v != "" {
+			sp.ReceivedAfterDate = objectParam(v)
+		}
+	}
+	if !plan.ReceivedBeforeDate.Equal(state.ReceivedBeforeDate) {
+		if v := plan.ReceivedBeforeDate.ValueString(); v != "" {
+			sp.ReceivedBeforeDate = objectParam(v)
+		}
+	}
+	if !plan.RecipientAddressContainsWords.Equal(state.RecipientAddressContainsWords) {
+		if !plan.RecipientAddressContainsWords.IsNull() && !plan.RecipientAddressContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.RecipientAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RecipientAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.RecipientAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RedirectTo.Equal(state.RedirectTo) {
+		if !plan.RedirectTo.IsNull() && !plan.RedirectTo.IsUnknown() {
+			sp.RedirectTo = append([]string{}, toStringSlice(ctx, plan.RedirectTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentOnlyToMe.Equal(state.SentOnlyToMe) {
+		if !plan.SentOnlyToMe.IsUnknown() {
+			sp.SentOnlyToMe = plan.SentOnlyToMe.ValueBoolPointer()
+		}
+	}
+	if !plan.SentTo.Equal(state.SentTo) {
+		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
+			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SoftDeleteMessage.Equal(state.SoftDeleteMessage) {
+		if !plan.SoftDeleteMessage.IsUnknown() {
+			sp.SoftDeleteMessage = plan.SoftDeleteMessage.ValueBoolPointer()
+		}
+	}
+	if !plan.StopProcessingRules.Equal(state.StopProcessingRules) {
+		if !plan.StopProcessingRules.IsUnknown() {
+			sp.StopProcessingRules = plan.StopProcessingRules.ValueBoolPointer()
+		}
+	}
+	if !plan.SubjectContainsWords.Equal(state.SubjectContainsWords) {
+		if !plan.SubjectContainsWords.IsNull() && !plan.SubjectContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.SubjectContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SubjectContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.SubjectContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.SubjectOrBodyContainsWords.Equal(state.SubjectOrBodyContainsWords) {
+		if !plan.SubjectOrBodyContainsWords.IsNull() && !plan.SubjectOrBodyContainsWords.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.SubjectOrBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SubjectOrBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.SubjectOrBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.WithImportance.Equal(state.WithImportance) {
+		if v := plan.WithImportance.ValueString(); v != "" {
+			sp.WithImportance = objectParam(v)
+		}
+	}
+	if !plan.WithSensitivity.Equal(state.WithSensitivity) {
+		if v := plan.WithSensitivity.ValueString(); v != "" {
+			sp.WithSensitivity = objectParam(v)
+		}
+	}
+	if !plan.WithinSizeRangeMaximum.Equal(state.WithinSizeRangeMaximum) {
+		if v := plan.WithinSizeRangeMaximum.ValueString(); v != "" {
+			sp.WithinSizeRangeMaximum = objectParam(v)
+		}
+	}
+	if !plan.WithinSizeRangeMinimum.Equal(state.WithinSizeRangeMinimum) {
+		if v := plan.WithinSizeRangeMinimum.ValueString(); v != "" {
+			sp.WithinSizeRangeMinimum = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -594,48 +1174,13 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ApplyCategory":                         cfg.ApplyCategory,
-		"ApplySystemCategory":                   cfg.ApplySystemCategory,
-		"AssignedCategories":                    cfg.AssignedCategories,
-		"BodyContainsWords":                     cfg.BodyContainsWords,
-		"BulkCategory":                          cfg.BulkCategory,
-		"CopyToFolder":                          cfg.CopyToFolder,
-		"DeleteSystemCategory":                  cfg.DeleteSystemCategory,
-		"DisplayAlert":                          cfg.DisplayAlert,
-		"ExceptIfAssignedCategories":            cfg.ExceptIfAssignedCategories,
-		"ExceptIfBodyContainsWords":             cfg.ExceptIfBodyContainsWords,
-		"ExceptIfBulkCategory":                  cfg.ExceptIfBulkCategory,
-		"ExceptIfFlaggedForAction":              cfg.ExceptIfFlaggedForAction,
-		"ExceptIfFromAddressContainsWords":      cfg.ExceptIfFromAddressContainsWords,
-		"ExceptIfHeaderContainsWords":           cfg.ExceptIfHeaderContainsWords,
-		"ExceptIfMessageTypeMatches":            cfg.ExceptIfMessageTypeMatches,
-		"ExceptIfReceivedAfterDate":             cfg.ExceptIfReceivedAfterDate,
-		"ExceptIfReceivedBeforeDate":            cfg.ExceptIfReceivedBeforeDate,
-		"ExceptIfRecipientAddressContainsWords": cfg.ExceptIfRecipientAddressContainsWords,
-		"ExceptIfSubjectContainsWords":          cfg.ExceptIfSubjectContainsWords,
-		"ExceptIfSubjectOrBodyContainsWords":    cfg.ExceptIfSubjectOrBodyContainsWords,
-		"ExceptIfWithImportance":                cfg.ExceptIfWithImportance,
-		"ExceptIfWithSensitivity":               cfg.ExceptIfWithSensitivity,
-		"ExceptIfWithinSizeRangeMaximum":        cfg.ExceptIfWithinSizeRangeMaximum,
-		"ExceptIfWithinSizeRangeMinimum":        cfg.ExceptIfWithinSizeRangeMinimum,
-		"FlagMessage":                           cfg.FlagMessage,
-		"FlaggedForAction":                      cfg.FlaggedForAction,
-		"FromAddressContainsWords":              cfg.FromAddressContainsWords,
-		"HeaderContainsWords":                   cfg.HeaderContainsWords,
-		"Mailbox":                               cfg.Mailbox,
-		"MarkImportance":                        cfg.MarkImportance,
-		"MessageTypeMatches":                    cfg.MessageTypeMatches,
-		"MoveToFolder":                          cfg.MoveToFolder,
-		"PlaySound":                             cfg.PlaySound,
-		"ReceivedAfterDate":                     cfg.ReceivedAfterDate,
-		"ReceivedBeforeDate":                    cfg.ReceivedBeforeDate,
-		"RecipientAddressContainsWords":         cfg.RecipientAddressContainsWords,
-		"SubjectContainsWords":                  cfg.SubjectContainsWords,
-		"SubjectOrBodyContainsWords":            cfg.SubjectOrBodyContainsWords,
-		"WithImportance":                        cfg.WithImportance,
-		"WithSensitivity":                       cfg.WithSensitivity,
-		"WithinSizeRangeMaximum":                cfg.WithinSizeRangeMaximum,
-		"WithinSizeRangeMinimum":                cfg.WithinSizeRangeMinimum,
+		"BulkCategory":             cfg.BulkCategory,
+		"DisplayAlert":             cfg.DisplayAlert,
+		"ExceptIfBulkCategory":     cfg.ExceptIfBulkCategory,
+		"ExceptIfFlaggedForAction": cfg.ExceptIfFlaggedForAction,
+		"FlagMessage":              cfg.FlagMessage,
+		"FlaggedForAction":         cfg.FlaggedForAction,
+		"PlaySound":                cfg.PlaySound,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -699,63 +1244,63 @@ func readInboxRule(ctx context.Context, obj map[string]any, m *inboxRuleModel) {
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AlwaysDeleteOutlookRulesBlob = types.BoolValue(getBool(obj, "AlwaysDeleteOutlookRulesBlob"))
 	m.AnyCategory = types.BoolValue(getBool(obj, "AnyCategory"))
-	m.ApplyCategory = types.StringValue(getString(obj, "ApplyCategory"))
-	m.ApplySystemCategory = types.StringValue(getString(obj, "ApplySystemCategory"))
-	m.AssignedCategories = types.StringValue(getString(obj, "AssignedCategories"))
-	m.BodyContainsWords = types.StringValue(getString(obj, "BodyContainsWords"))
+	m.ApplyCategory = stringSetValue(ctx, getStringSlice(obj, "ApplyCategory"))
+	m.ApplySystemCategory = stringSetValue(ctx, getStringSlice(obj, "ApplySystemCategory"))
+	m.AssignedCategories = stringSetValue(ctx, getStringSlice(obj, "AssignedCategories"))
+	m.BodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "BodyContainsWords"))
 	m.BulkCategory = types.StringValue(getString(obj, "BulkCategory"))
 	m.ClearCategories = types.BoolValue(getBool(obj, "ClearCategories"))
 	m.ClearFlag = types.BoolValue(getBool(obj, "ClearFlag"))
 	m.CompleteFlag = types.BoolValue(getBool(obj, "CompleteFlag"))
-	m.CopyToFolder = types.StringValue(getString(obj, "CopyToFolder"))
+	m.CopyToFolder = types.StringValue(getObjectJSON(obj, "CopyToFolder"))
 	m.DeleteMessage = types.BoolValue(getBool(obj, "DeleteMessage"))
-	m.DeleteSystemCategory = types.StringValue(getString(obj, "DeleteSystemCategory"))
+	m.DeleteSystemCategory = stringSetValue(ctx, getStringSlice(obj, "DeleteSystemCategory"))
 	m.DisplayAlert = types.StringValue(getString(obj, "DisplayAlert"))
 	m.ExceptIfAnyCategory = types.BoolValue(getBool(obj, "ExceptIfAnyCategory"))
-	m.ExceptIfAssignedCategories = types.StringValue(getString(obj, "ExceptIfAssignedCategories"))
-	m.ExceptIfBodyContainsWords = types.StringValue(getString(obj, "ExceptIfBodyContainsWords"))
+	m.ExceptIfAssignedCategories = stringSetValue(ctx, getStringSlice(obj, "ExceptIfAssignedCategories"))
+	m.ExceptIfBodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfBodyContainsWords"))
 	m.ExceptIfBulkCategory = types.StringValue(getString(obj, "ExceptIfBulkCategory"))
 	m.ExceptIfFlaggedForAction = types.StringValue(getString(obj, "ExceptIfFlaggedForAction"))
 	m.ExceptIfFrom = stringSetValue(ctx, getStringSlice(obj, "ExceptIfFrom"))
-	m.ExceptIfFromAddressContainsWords = types.StringValue(getString(obj, "ExceptIfFromAddressContainsWords"))
+	m.ExceptIfFromAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfFromAddressContainsWords"))
 	m.ExceptIfHasAttachment = types.BoolValue(getBool(obj, "ExceptIfHasAttachment"))
 	m.ExceptIfHasClassification = stringSetValue(ctx, getStringSlice(obj, "ExceptIfHasClassification"))
-	m.ExceptIfHeaderContainsWords = types.StringValue(getString(obj, "ExceptIfHeaderContainsWords"))
+	m.ExceptIfHeaderContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfHeaderContainsWords"))
 	m.ExceptIfIsExternal = types.BoolValue(getBool(obj, "ExceptIfIsExternal"))
 	m.ExceptIfIsMentioned = types.BoolValue(getBool(obj, "ExceptIfIsMentioned"))
-	m.ExceptIfMessageTypeMatches = types.StringValue(getString(obj, "ExceptIfMessageTypeMatches"))
+	m.ExceptIfMessageTypeMatches = types.StringValue(getObjectJSON(obj, "ExceptIfMessageTypeMatches"))
 	m.ExceptIfMyNameInCcBox = types.BoolValue(getBool(obj, "ExceptIfMyNameInCcBox"))
 	m.ExceptIfMyNameInToBox = types.BoolValue(getBool(obj, "ExceptIfMyNameInToBox"))
 	m.ExceptIfMyNameInToOrCcBox = types.BoolValue(getBool(obj, "ExceptIfMyNameInToOrCcBox"))
 	m.ExceptIfMyNameNotInToBox = types.BoolValue(getBool(obj, "ExceptIfMyNameNotInToBox"))
-	m.ExceptIfReceivedAfterDate = types.StringValue(getString(obj, "ExceptIfReceivedAfterDate"))
-	m.ExceptIfReceivedBeforeDate = types.StringValue(getString(obj, "ExceptIfReceivedBeforeDate"))
-	m.ExceptIfRecipientAddressContainsWords = types.StringValue(getString(obj, "ExceptIfRecipientAddressContainsWords"))
+	m.ExceptIfReceivedAfterDate = types.StringValue(getObjectJSON(obj, "ExceptIfReceivedAfterDate"))
+	m.ExceptIfReceivedBeforeDate = types.StringValue(getObjectJSON(obj, "ExceptIfReceivedBeforeDate"))
+	m.ExceptIfRecipientAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientAddressContainsWords"))
 	m.ExceptIfSentOnlyToMe = types.BoolValue(getBool(obj, "ExceptIfSentOnlyToMe"))
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
-	m.ExceptIfSubjectContainsWords = types.StringValue(getString(obj, "ExceptIfSubjectContainsWords"))
-	m.ExceptIfSubjectOrBodyContainsWords = types.StringValue(getString(obj, "ExceptIfSubjectOrBodyContainsWords"))
-	m.ExceptIfWithImportance = types.StringValue(getString(obj, "ExceptIfWithImportance"))
-	m.ExceptIfWithSensitivity = types.StringValue(getString(obj, "ExceptIfWithSensitivity"))
-	m.ExceptIfWithinSizeRangeMaximum = types.StringValue(getString(obj, "ExceptIfWithinSizeRangeMaximum"))
-	m.ExceptIfWithinSizeRangeMinimum = types.StringValue(getString(obj, "ExceptIfWithinSizeRangeMinimum"))
+	m.ExceptIfSubjectContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectContainsWords"))
+	m.ExceptIfSubjectOrBodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSubjectOrBodyContainsWords"))
+	m.ExceptIfWithImportance = types.StringValue(getObjectJSON(obj, "ExceptIfWithImportance"))
+	m.ExceptIfWithSensitivity = types.StringValue(getObjectJSON(obj, "ExceptIfWithSensitivity"))
+	m.ExceptIfWithinSizeRangeMaximum = types.StringValue(getObjectJSON(obj, "ExceptIfWithinSizeRangeMaximum"))
+	m.ExceptIfWithinSizeRangeMinimum = types.StringValue(getObjectJSON(obj, "ExceptIfWithinSizeRangeMinimum"))
 	m.FlagMessage = types.StringValue(getString(obj, "FlagMessage"))
 	m.FlaggedForAction = types.StringValue(getString(obj, "FlaggedForAction"))
 	m.ForwardAsAttachmentTo = stringSetValue(ctx, getStringSlice(obj, "ForwardAsAttachmentTo"))
 	m.ForwardTo = stringSetValue(ctx, getStringSlice(obj, "ForwardTo"))
 	m.From = stringSetValue(ctx, getStringSlice(obj, "From"))
-	m.FromAddressContainsWords = types.StringValue(getString(obj, "FromAddressContainsWords"))
-	m.FromMessageId = types.StringValue(getString(obj, "FromMessageId"))
+	m.FromAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "FromAddressContainsWords"))
+	m.FromMessageId = types.StringValue(getObjectJSON(obj, "FromMessageId"))
 	m.HasAttachment = types.BoolValue(getBool(obj, "HasAttachment"))
 	m.HasClassification = stringSetValue(ctx, getStringSlice(obj, "HasClassification"))
-	m.HeaderContainsWords = types.StringValue(getString(obj, "HeaderContainsWords"))
+	m.HeaderContainsWords = stringSetValue(ctx, getStringSlice(obj, "HeaderContainsWords"))
 	m.IsExternal = types.BoolValue(getBool(obj, "IsExternal"))
 	m.IsMentioned = types.BoolValue(getBool(obj, "IsMentioned"))
-	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
+	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
 	m.MarkAsRead = types.BoolValue(getBool(obj, "MarkAsRead"))
-	m.MarkImportance = types.StringValue(getString(obj, "MarkImportance"))
-	m.MessageTypeMatches = types.StringValue(getString(obj, "MessageTypeMatches"))
-	m.MoveToFolder = types.StringValue(getString(obj, "MoveToFolder"))
+	m.MarkImportance = types.StringValue(getObjectJSON(obj, "MarkImportance"))
+	m.MessageTypeMatches = types.StringValue(getObjectJSON(obj, "MessageTypeMatches"))
+	m.MoveToFolder = types.StringValue(getObjectJSON(obj, "MoveToFolder"))
 	m.MyNameInCcBox = types.BoolValue(getBool(obj, "MyNameInCcBox"))
 	m.MyNameInToBox = types.BoolValue(getBool(obj, "MyNameInToBox"))
 	m.MyNameInToOrCcBox = types.BoolValue(getBool(obj, "MyNameInToOrCcBox"))
@@ -764,49 +1309,50 @@ func readInboxRule(ctx context.Context, obj map[string]any, m *inboxRuleModel) {
 	m.PermanentDelete = types.BoolValue(getBool(obj, "PermanentDelete"))
 	m.PinMessage = types.BoolValue(getBool(obj, "PinMessage"))
 	m.PlaySound = types.StringValue(getString(obj, "PlaySound"))
-	m.ReceivedAfterDate = types.StringValue(getString(obj, "ReceivedAfterDate"))
-	m.ReceivedBeforeDate = types.StringValue(getString(obj, "ReceivedBeforeDate"))
-	m.RecipientAddressContainsWords = types.StringValue(getString(obj, "RecipientAddressContainsWords"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
+	m.ReceivedAfterDate = types.StringValue(getObjectJSON(obj, "ReceivedAfterDate"))
+	m.ReceivedBeforeDate = types.StringValue(getObjectJSON(obj, "ReceivedBeforeDate"))
+	m.RecipientAddressContainsWords = stringSetValue(ctx, getStringSlice(obj, "RecipientAddressContainsWords"))
 	m.RedirectTo = stringSetValue(ctx, getStringSlice(obj, "RedirectTo"))
 	m.SentOnlyToMe = types.BoolValue(getBool(obj, "SentOnlyToMe"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SoftDeleteMessage = types.BoolValue(getBool(obj, "SoftDeleteMessage"))
 	m.StopProcessingRules = types.BoolValue(getBool(obj, "StopProcessingRules"))
-	m.SubjectContainsWords = types.StringValue(getString(obj, "SubjectContainsWords"))
-	m.SubjectOrBodyContainsWords = types.StringValue(getString(obj, "SubjectOrBodyContainsWords"))
+	m.SubjectContainsWords = stringSetValue(ctx, getStringSlice(obj, "SubjectContainsWords"))
+	m.SubjectOrBodyContainsWords = stringSetValue(ctx, getStringSlice(obj, "SubjectOrBodyContainsWords"))
 	m.ValidateOnly = types.BoolValue(getBool(obj, "ValidateOnly"))
-	m.WithImportance = types.StringValue(getString(obj, "WithImportance"))
-	m.WithSensitivity = types.StringValue(getString(obj, "WithSensitivity"))
-	m.WithinSizeRangeMaximum = types.StringValue(getString(obj, "WithinSizeRangeMaximum"))
-	m.WithinSizeRangeMinimum = types.StringValue(getString(obj, "WithinSizeRangeMinimum"))
+	m.WithImportance = types.StringValue(getObjectJSON(obj, "WithImportance"))
+	m.WithSensitivity = types.StringValue(getObjectJSON(obj, "WithSensitivity"))
+	m.WithinSizeRangeMaximum = types.StringValue(getObjectJSON(obj, "WithinSizeRangeMaximum"))
+	m.WithinSizeRangeMinimum = types.StringValue(getObjectJSON(obj, "WithinSizeRangeMinimum"))
 	_ = ctx
 }
 
 func (r *inboxRuleResource) reconcileState(cfg, read *inboxRuleModel) {
 	read.AlwaysDeleteOutlookRulesBlob = reconcile.KeepBool(cfg.AlwaysDeleteOutlookRulesBlob, read.AlwaysDeleteOutlookRulesBlob)
 	read.AnyCategory = reconcile.KeepBool(cfg.AnyCategory, read.AnyCategory)
-	read.ApplyCategory = reconcile.KeepStr(cfg.ApplyCategory, read.ApplyCategory)
-	read.ApplySystemCategory = reconcile.KeepStr(cfg.ApplySystemCategory, read.ApplySystemCategory)
-	read.AssignedCategories = reconcile.KeepStr(cfg.AssignedCategories, read.AssignedCategories)
-	read.BodyContainsWords = reconcile.KeepStr(cfg.BodyContainsWords, read.BodyContainsWords)
+	read.ApplyCategory = reconcile.KeepSet(cfg.ApplyCategory, read.ApplyCategory)
+	read.ApplySystemCategory = reconcile.KeepSet(cfg.ApplySystemCategory, read.ApplySystemCategory)
+	read.AssignedCategories = reconcile.KeepSet(cfg.AssignedCategories, read.AssignedCategories)
+	read.BodyContainsWords = reconcile.KeepSet(cfg.BodyContainsWords, read.BodyContainsWords)
 	read.BulkCategory = reconcile.KeepStr(cfg.BulkCategory, read.BulkCategory)
 	read.ClearCategories = reconcile.KeepBool(cfg.ClearCategories, read.ClearCategories)
 	read.ClearFlag = reconcile.KeepBool(cfg.ClearFlag, read.ClearFlag)
 	read.CompleteFlag = reconcile.KeepBool(cfg.CompleteFlag, read.CompleteFlag)
 	read.CopyToFolder = reconcile.KeepStr(cfg.CopyToFolder, read.CopyToFolder)
 	read.DeleteMessage = reconcile.KeepBool(cfg.DeleteMessage, read.DeleteMessage)
-	read.DeleteSystemCategory = reconcile.KeepStr(cfg.DeleteSystemCategory, read.DeleteSystemCategory)
+	read.DeleteSystemCategory = reconcile.KeepSet(cfg.DeleteSystemCategory, read.DeleteSystemCategory)
 	read.DisplayAlert = reconcile.KeepStr(cfg.DisplayAlert, read.DisplayAlert)
 	read.ExceptIfAnyCategory = reconcile.KeepBool(cfg.ExceptIfAnyCategory, read.ExceptIfAnyCategory)
-	read.ExceptIfAssignedCategories = reconcile.KeepStr(cfg.ExceptIfAssignedCategories, read.ExceptIfAssignedCategories)
-	read.ExceptIfBodyContainsWords = reconcile.KeepStr(cfg.ExceptIfBodyContainsWords, read.ExceptIfBodyContainsWords)
+	read.ExceptIfAssignedCategories = reconcile.KeepSet(cfg.ExceptIfAssignedCategories, read.ExceptIfAssignedCategories)
+	read.ExceptIfBodyContainsWords = reconcile.KeepSet(cfg.ExceptIfBodyContainsWords, read.ExceptIfBodyContainsWords)
 	read.ExceptIfBulkCategory = reconcile.KeepStr(cfg.ExceptIfBulkCategory, read.ExceptIfBulkCategory)
 	read.ExceptIfFlaggedForAction = reconcile.KeepStr(cfg.ExceptIfFlaggedForAction, read.ExceptIfFlaggedForAction)
 	read.ExceptIfFrom = reconcile.KeepSet(cfg.ExceptIfFrom, read.ExceptIfFrom)
-	read.ExceptIfFromAddressContainsWords = reconcile.KeepStr(cfg.ExceptIfFromAddressContainsWords, read.ExceptIfFromAddressContainsWords)
+	read.ExceptIfFromAddressContainsWords = reconcile.KeepSet(cfg.ExceptIfFromAddressContainsWords, read.ExceptIfFromAddressContainsWords)
 	read.ExceptIfHasAttachment = reconcile.KeepBool(cfg.ExceptIfHasAttachment, read.ExceptIfHasAttachment)
 	read.ExceptIfHasClassification = reconcile.KeepSet(cfg.ExceptIfHasClassification, read.ExceptIfHasClassification)
-	read.ExceptIfHeaderContainsWords = reconcile.KeepStr(cfg.ExceptIfHeaderContainsWords, read.ExceptIfHeaderContainsWords)
+	read.ExceptIfHeaderContainsWords = reconcile.KeepSet(cfg.ExceptIfHeaderContainsWords, read.ExceptIfHeaderContainsWords)
 	read.ExceptIfIsExternal = reconcile.KeepBool(cfg.ExceptIfIsExternal, read.ExceptIfIsExternal)
 	read.ExceptIfIsMentioned = reconcile.KeepBool(cfg.ExceptIfIsMentioned, read.ExceptIfIsMentioned)
 	read.ExceptIfMessageTypeMatches = reconcile.KeepStr(cfg.ExceptIfMessageTypeMatches, read.ExceptIfMessageTypeMatches)
@@ -816,11 +1362,11 @@ func (r *inboxRuleResource) reconcileState(cfg, read *inboxRuleModel) {
 	read.ExceptIfMyNameNotInToBox = reconcile.KeepBool(cfg.ExceptIfMyNameNotInToBox, read.ExceptIfMyNameNotInToBox)
 	read.ExceptIfReceivedAfterDate = reconcile.KeepStr(cfg.ExceptIfReceivedAfterDate, read.ExceptIfReceivedAfterDate)
 	read.ExceptIfReceivedBeforeDate = reconcile.KeepStr(cfg.ExceptIfReceivedBeforeDate, read.ExceptIfReceivedBeforeDate)
-	read.ExceptIfRecipientAddressContainsWords = reconcile.KeepStr(cfg.ExceptIfRecipientAddressContainsWords, read.ExceptIfRecipientAddressContainsWords)
+	read.ExceptIfRecipientAddressContainsWords = reconcile.KeepSet(cfg.ExceptIfRecipientAddressContainsWords, read.ExceptIfRecipientAddressContainsWords)
 	read.ExceptIfSentOnlyToMe = reconcile.KeepBool(cfg.ExceptIfSentOnlyToMe, read.ExceptIfSentOnlyToMe)
 	read.ExceptIfSentTo = reconcile.KeepSet(cfg.ExceptIfSentTo, read.ExceptIfSentTo)
-	read.ExceptIfSubjectContainsWords = reconcile.KeepStr(cfg.ExceptIfSubjectContainsWords, read.ExceptIfSubjectContainsWords)
-	read.ExceptIfSubjectOrBodyContainsWords = reconcile.KeepStr(cfg.ExceptIfSubjectOrBodyContainsWords, read.ExceptIfSubjectOrBodyContainsWords)
+	read.ExceptIfSubjectContainsWords = reconcile.KeepSet(cfg.ExceptIfSubjectContainsWords, read.ExceptIfSubjectContainsWords)
+	read.ExceptIfSubjectOrBodyContainsWords = reconcile.KeepSet(cfg.ExceptIfSubjectOrBodyContainsWords, read.ExceptIfSubjectOrBodyContainsWords)
 	read.ExceptIfWithImportance = reconcile.KeepStr(cfg.ExceptIfWithImportance, read.ExceptIfWithImportance)
 	read.ExceptIfWithSensitivity = reconcile.KeepStr(cfg.ExceptIfWithSensitivity, read.ExceptIfWithSensitivity)
 	read.ExceptIfWithinSizeRangeMaximum = reconcile.KeepStr(cfg.ExceptIfWithinSizeRangeMaximum, read.ExceptIfWithinSizeRangeMaximum)
@@ -830,11 +1376,11 @@ func (r *inboxRuleResource) reconcileState(cfg, read *inboxRuleModel) {
 	read.ForwardAsAttachmentTo = reconcile.KeepSet(cfg.ForwardAsAttachmentTo, read.ForwardAsAttachmentTo)
 	read.ForwardTo = reconcile.KeepSet(cfg.ForwardTo, read.ForwardTo)
 	read.From = reconcile.KeepSet(cfg.From, read.From)
-	read.FromAddressContainsWords = reconcile.KeepStr(cfg.FromAddressContainsWords, read.FromAddressContainsWords)
+	read.FromAddressContainsWords = reconcile.KeepSet(cfg.FromAddressContainsWords, read.FromAddressContainsWords)
 	read.FromMessageId = reconcile.KeepStr(cfg.FromMessageId, read.FromMessageId)
 	read.HasAttachment = reconcile.KeepBool(cfg.HasAttachment, read.HasAttachment)
 	read.HasClassification = reconcile.KeepSet(cfg.HasClassification, read.HasClassification)
-	read.HeaderContainsWords = reconcile.KeepStr(cfg.HeaderContainsWords, read.HeaderContainsWords)
+	read.HeaderContainsWords = reconcile.KeepSet(cfg.HeaderContainsWords, read.HeaderContainsWords)
 	read.IsExternal = reconcile.KeepBool(cfg.IsExternal, read.IsExternal)
 	read.IsMentioned = reconcile.KeepBool(cfg.IsMentioned, read.IsMentioned)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
@@ -850,16 +1396,17 @@ func (r *inboxRuleResource) reconcileState(cfg, read *inboxRuleModel) {
 	read.PermanentDelete = reconcile.KeepBool(cfg.PermanentDelete, read.PermanentDelete)
 	read.PinMessage = reconcile.KeepBool(cfg.PinMessage, read.PinMessage)
 	read.PlaySound = reconcile.KeepStr(cfg.PlaySound, read.PlaySound)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.ReceivedAfterDate = reconcile.KeepStr(cfg.ReceivedAfterDate, read.ReceivedAfterDate)
 	read.ReceivedBeforeDate = reconcile.KeepStr(cfg.ReceivedBeforeDate, read.ReceivedBeforeDate)
-	read.RecipientAddressContainsWords = reconcile.KeepStr(cfg.RecipientAddressContainsWords, read.RecipientAddressContainsWords)
+	read.RecipientAddressContainsWords = reconcile.KeepSet(cfg.RecipientAddressContainsWords, read.RecipientAddressContainsWords)
 	read.RedirectTo = reconcile.KeepSet(cfg.RedirectTo, read.RedirectTo)
 	read.SentOnlyToMe = reconcile.KeepBool(cfg.SentOnlyToMe, read.SentOnlyToMe)
 	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 	read.SoftDeleteMessage = reconcile.KeepBool(cfg.SoftDeleteMessage, read.SoftDeleteMessage)
 	read.StopProcessingRules = reconcile.KeepBool(cfg.StopProcessingRules, read.StopProcessingRules)
-	read.SubjectContainsWords = reconcile.KeepStr(cfg.SubjectContainsWords, read.SubjectContainsWords)
-	read.SubjectOrBodyContainsWords = reconcile.KeepStr(cfg.SubjectOrBodyContainsWords, read.SubjectOrBodyContainsWords)
+	read.SubjectContainsWords = reconcile.KeepSet(cfg.SubjectContainsWords, read.SubjectContainsWords)
+	read.SubjectOrBodyContainsWords = reconcile.KeepSet(cfg.SubjectOrBodyContainsWords, read.SubjectOrBodyContainsWords)
 	read.ValidateOnly = reconcile.KeepBool(cfg.ValidateOnly, read.ValidateOnly)
 	read.WithImportance = reconcile.KeepStr(cfg.WithImportance, read.WithImportance)
 	read.WithSensitivity = reconcile.KeepStr(cfg.WithSensitivity, read.WithSensitivity)

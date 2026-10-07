@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &focusedInboxResource{}
 	_ resource.ResourceWithConfigure   = &focusedInboxResource{}
 	_ resource.ResourceWithImportState = &focusedInboxResource{}
+	_ resource.ResourceWithModifyPlan  = &focusedInboxResource{}
 )
 
 type focusedInboxResource struct{ client *clients.Client }
@@ -35,7 +36,7 @@ func NewFocusedInboxResource() resource.Resource { return &focusedInboxResource{
 type focusedInboxModel struct {
 	ID               types.String `tfsdk:"id"`
 	Identity         types.String `tfsdk:"identity"`
-	FocusedInboxOn   types.String `tfsdk:"focused_inbox_on"`
+	FocusedInboxOn   types.Bool   `tfsdk:"focused_inbox_on"`
 	UseCustomRouting types.Bool   `tfsdk:"use_custom_routing"`
 }
 
@@ -49,7 +50,7 @@ func (r *focusedInboxResource) Schema(_ context.Context, _ resource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"id":                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":           schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"focused_inbox_on":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FocusedInboxOn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"focused_inbox_on":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FocusedInboxOn parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"use_custom_routing": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseCustomRouting parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -68,12 +69,21 @@ func (r *focusedInboxResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config focusedInboxModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetFocusedInboxParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.FocusedInboxOn.ValueString(); v != "" {
-		sp.FocusedInboxOn = v
+	if !config.FocusedInboxOn.IsNull() {
+		if !plan.FocusedInboxOn.IsUnknown() {
+			sp.FocusedInboxOn = plan.FocusedInboxOn.ValueBoolPointer()
+		}
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !config.UseCustomRouting.IsNull() {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -113,10 +123,14 @@ func (r *focusedInboxResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetFocusedInboxParams{}
 	sp.Identity = id
-	if v := plan.FocusedInboxOn.ValueString(); v != "" {
-		sp.FocusedInboxOn = v
+	if !plan.FocusedInboxOn.Equal(state.FocusedInboxOn) {
+		if !plan.FocusedInboxOn.IsUnknown() {
+			sp.FocusedInboxOn = plan.FocusedInboxOn.ValueBoolPointer()
+		}
 	}
-	sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
+		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -125,9 +139,7 @@ func (r *focusedInboxResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"FocusedInboxOn": cfg.FocusedInboxOn,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -140,6 +152,44 @@ func (r *focusedInboxResource) Delete(_ context.Context, _ resource.DeleteReques
 func (r *focusedInboxResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *focusedInboxResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan focusedInboxModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetFocusedInbox(ctx, exo.GetFocusedInboxParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur focusedInboxModel
+	readFocusedInbox(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.FocusedInboxOn.IsUnknown() {
+		plan.FocusedInboxOn = cur.FocusedInboxOn
+	}
+	if plan.UseCustomRouting.IsUnknown() {
+		plan.UseCustomRouting = cur.UseCustomRouting
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *focusedInboxResource) identityOf(m focusedInboxModel) string {
@@ -178,12 +228,12 @@ func (r *focusedInboxResource) refresh(ctx context.Context, identity string, m *
 
 func readFocusedInbox(ctx context.Context, obj map[string]any, m *focusedInboxModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.FocusedInboxOn = types.StringValue(getString(obj, "FocusedInboxOn"))
+	m.FocusedInboxOn = types.BoolValue(getBool(obj, "FocusedInboxOn"))
 	m.UseCustomRouting = types.BoolValue(getBool(obj, "UseCustomRouting"))
 	_ = ctx
 }
 
 func (r *focusedInboxResource) reconcileState(cfg, read *focusedInboxModel) {
-	read.FocusedInboxOn = reconcile.KeepStr(cfg.FocusedInboxOn, read.FocusedInboxOn)
+	read.FocusedInboxOn = reconcile.KeepBool(cfg.FocusedInboxOn, read.FocusedInboxOn)
 	read.UseCustomRouting = reconcile.KeepBool(cfg.UseCustomRouting, read.UseCustomRouting)
 }

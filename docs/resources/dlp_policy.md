@@ -23,7 +23,7 @@ Manages the DlpPolicy object via New-DlpPolicy / Get-DlpPolicy / Set-DlpPolicy /
 - `parameters` (String) Maps to the -Parameters parameter.
 - `state` (String) Maps to the -State parameter.
 - `template` (String) Maps to the -Template parameter.
-- `template_data` (Set of String) Maps to the -TemplateData parameter.
+- `template_data` (String) Maps to the -TemplateData parameter.
 
 ### Read-Only
 

@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &arcConfigResource{}
 	_ resource.ResourceWithConfigure   = &arcConfigResource{}
 	_ resource.ResourceWithImportState = &arcConfigResource{}
+	_ resource.ResourceWithModifyPlan  = &arcConfigResource{}
 )
 
 type arcConfigResource struct{ client *clients.Client }
@@ -47,7 +48,7 @@ func (r *arcConfigResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 		Description: "Manages the ArcConfig configuration via Set-ArcConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"arc_trusted_sealers": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ArcTrustedSealers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -66,8 +67,17 @@ func (r *arcConfigResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config arcConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetArcConfigParams{}
-	sp.ArcTrustedSealers = toStringSlice(ctx, plan.ArcTrustedSealers, &resp.Diagnostics)
+	if !config.ArcTrustedSealers.IsNull() {
+		if !plan.ArcTrustedSealers.IsNull() && !plan.ArcTrustedSealers.IsUnknown() {
+			sp.ArcTrustedSealers = append([]string{}, toStringSlice(ctx, plan.ArcTrustedSealers, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -106,7 +116,11 @@ func (r *arcConfigResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	id := r.identityOf(state)
 	sp := exo.SetArcConfigParams{}
-	sp.ArcTrustedSealers = toStringSlice(ctx, plan.ArcTrustedSealers, &resp.Diagnostics)
+	if !plan.ArcTrustedSealers.Equal(state.ArcTrustedSealers) {
+		if !plan.ArcTrustedSealers.IsNull() && !plan.ArcTrustedSealers.IsUnknown() {
+			sp.ArcTrustedSealers = append([]string{}, toStringSlice(ctx, plan.ArcTrustedSealers, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -128,6 +142,37 @@ func (r *arcConfigResource) Delete(_ context.Context, _ resource.DeleteRequest, 
 func (r *arcConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *arcConfigResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan arcConfigModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetArcConfig(ctx, exo.GetArcConfigParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur arcConfigModel
+	readArcConfig(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.ArcTrustedSealers.IsUnknown() {
+		plan.ArcTrustedSealers = cur.ArcTrustedSealers
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *arcConfigResource) identityOf(m arcConfigModel) string {

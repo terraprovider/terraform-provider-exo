@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = &ldapDirectoryResource{}
 	_ resource.ResourceWithConfigure   = &ldapDirectoryResource{}
 	_ resource.ResourceWithImportState = &ldapDirectoryResource{}
+	_ resource.ResourceWithModifyPlan  = &ldapDirectoryResource{}
 )
 
 type ldapDirectoryResource struct{ client *clients.Client }
@@ -40,8 +42,8 @@ type ldapDirectoryModel struct {
 	Id           types.String `tfsdk:"id_"`
 	NoSsl        types.Bool   `tfsdk:"no_ssl"`
 	Organization types.String `tfsdk:"organization"`
-	Port         types.String `tfsdk:"port"`
-	TimeoutSec   types.String `tfsdk:"timeout_sec"`
+	Port         types.Int64  `tfsdk:"port"`
+	TimeoutSec   types.Int64  `tfsdk:"timeout_sec"`
 	UseSsl       types.Bool   `tfsdk:"use_ssl"`
 }
 
@@ -54,14 +56,14 @@ func (r *ldapDirectoryResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Manages the LdapDirectory configuration via Set-LdapDirectory.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"base_dn":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BaseDn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"host":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Host parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"id_":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Id parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"no_ssl":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NoSsl parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"organization": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Organization parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"port":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"timeout_sec":  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TimeoutSec parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"port":         schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"timeout_sec":  schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -TimeoutSec parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"use_ssl":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseSsl parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -80,21 +82,40 @@ func (r *ldapDirectoryResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config ldapDirectoryModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetLdapDirectoryParams{}
-	sp.BaseDn = plan.BaseDn.ValueString()
-	sp.Host = plan.Host.ValueString()
-	sp.Id = plan.Id.ValueString()
-	sp.NoSsl = plan.NoSsl.ValueBool()
-	if v := plan.Organization.ValueString(); v != "" {
-		sp.Organization = v
+	if !config.BaseDn.IsNull() {
+		sp.BaseDn = plan.BaseDn.ValueString()
 	}
-	if v := plan.Port.ValueString(); v != "" {
-		sp.Port = v
+	if !config.Host.IsNull() {
+		sp.Host = plan.Host.ValueString()
 	}
-	if v := plan.TimeoutSec.ValueString(); v != "" {
-		sp.TimeoutSec = v
+	if !config.Id.IsNull() {
+		sp.Id = plan.Id.ValueString()
 	}
-	sp.UseSsl = plan.UseSsl.ValueBool()
+	if !config.NoSsl.IsNull() {
+		sp.NoSsl = plan.NoSsl.ValueBool()
+	}
+	if v := config.Organization.ValueString(); v != "" {
+		sp.Organization = objectParam(v)
+	}
+	if !config.Port.IsNull() {
+		if !plan.Port.IsUnknown() {
+			sp.Port = plan.Port.ValueInt64Pointer()
+		}
+	}
+	if !config.TimeoutSec.IsNull() {
+		if !plan.TimeoutSec.IsUnknown() {
+			sp.TimeoutSec = plan.TimeoutSec.ValueInt64Pointer()
+		}
+	}
+	if !config.UseSsl.IsNull() {
+		sp.UseSsl = plan.UseSsl.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -133,20 +154,36 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	id := r.identityOf(state)
 	sp := exo.SetLdapDirectoryParams{}
-	sp.BaseDn = plan.BaseDn.ValueString()
-	sp.Host = plan.Host.ValueString()
-	sp.Id = plan.Id.ValueString()
-	sp.NoSsl = plan.NoSsl.ValueBool()
-	if v := plan.Organization.ValueString(); v != "" {
-		sp.Organization = v
+	if !plan.BaseDn.Equal(state.BaseDn) {
+		sp.BaseDn = plan.BaseDn.ValueString()
 	}
-	if v := plan.Port.ValueString(); v != "" {
-		sp.Port = v
+	if !plan.Host.Equal(state.Host) {
+		sp.Host = plan.Host.ValueString()
 	}
-	if v := plan.TimeoutSec.ValueString(); v != "" {
-		sp.TimeoutSec = v
+	if !plan.Id.Equal(state.Id) {
+		sp.Id = plan.Id.ValueString()
 	}
-	sp.UseSsl = plan.UseSsl.ValueBool()
+	if !plan.NoSsl.Equal(state.NoSsl) {
+		sp.NoSsl = plan.NoSsl.ValueBool()
+	}
+	if !plan.Organization.Equal(state.Organization) {
+		if v := plan.Organization.ValueString(); v != "" {
+			sp.Organization = objectParam(v)
+		}
+	}
+	if !plan.Port.Equal(state.Port) {
+		if !plan.Port.IsUnknown() {
+			sp.Port = plan.Port.ValueInt64Pointer()
+		}
+	}
+	if !plan.TimeoutSec.Equal(state.TimeoutSec) {
+		if !plan.TimeoutSec.IsUnknown() {
+			sp.TimeoutSec = plan.TimeoutSec.ValueInt64Pointer()
+		}
+	}
+	if !plan.UseSsl.Equal(state.UseSsl) {
+		sp.UseSsl = plan.UseSsl.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -156,12 +193,9 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"BaseDn":       cfg.BaseDn,
-		"Host":         cfg.Host,
-		"Id":           cfg.Id,
-		"Organization": cfg.Organization,
-		"Port":         cfg.Port,
-		"TimeoutSec":   cfg.TimeoutSec,
+		"BaseDn": cfg.BaseDn,
+		"Host":   cfg.Host,
+		"Id":     cfg.Id,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -175,6 +209,58 @@ func (r *ldapDirectoryResource) Delete(_ context.Context, _ resource.DeleteReque
 func (r *ldapDirectoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *ldapDirectoryResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan ldapDirectoryModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetLdapDirectory(ctx, exo.GetLdapDirectoryParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur ldapDirectoryModel
+	readLdapDirectory(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.BaseDn.IsUnknown() {
+		plan.BaseDn = cur.BaseDn
+	}
+	if plan.Host.IsUnknown() {
+		plan.Host = cur.Host
+	}
+	if plan.Id.IsUnknown() {
+		plan.Id = cur.Id
+	}
+	if plan.NoSsl.IsUnknown() {
+		plan.NoSsl = cur.NoSsl
+	}
+	if plan.Organization.IsUnknown() {
+		plan.Organization = cur.Organization
+	}
+	if plan.Port.IsUnknown() {
+		plan.Port = cur.Port
+	}
+	if plan.TimeoutSec.IsUnknown() {
+		plan.TimeoutSec = cur.TimeoutSec
+	}
+	if plan.UseSsl.IsUnknown() {
+		plan.UseSsl = cur.UseSsl
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *ldapDirectoryResource) identityOf(m ldapDirectoryModel) string {
@@ -219,9 +305,9 @@ func readLdapDirectory(ctx context.Context, obj map[string]any, m *ldapDirectory
 	m.Host = types.StringValue(getString(obj, "Host"))
 	m.Id = types.StringValue(getString(obj, "Id"))
 	m.NoSsl = types.BoolValue(getBool(obj, "NoSsl"))
-	m.Organization = types.StringValue(getString(obj, "Organization"))
-	m.Port = types.StringValue(getString(obj, "Port"))
-	m.TimeoutSec = types.StringValue(getString(obj, "TimeoutSec"))
+	m.Organization = types.StringValue(getObjectJSON(obj, "Organization"))
+	m.Port = types.Int64Value(getInt(obj, "Port"))
+	m.TimeoutSec = types.Int64Value(getInt(obj, "TimeoutSec"))
 	m.UseSsl = types.BoolValue(getBool(obj, "UseSsl"))
 	_ = ctx
 }
@@ -232,7 +318,7 @@ func (r *ldapDirectoryResource) reconcileState(cfg, read *ldapDirectoryModel) {
 	read.Id = reconcile.KeepStr(cfg.Id, read.Id)
 	read.NoSsl = reconcile.KeepBool(cfg.NoSsl, read.NoSsl)
 	read.Organization = reconcile.KeepStr(cfg.Organization, read.Organization)
-	read.Port = reconcile.KeepStr(cfg.Port, read.Port)
-	read.TimeoutSec = reconcile.KeepStr(cfg.TimeoutSec, read.TimeoutSec)
+	read.Port = reconcile.KeepInt64(cfg.Port, read.Port)
+	read.TimeoutSec = reconcile.KeepInt64(cfg.TimeoutSec, read.TimeoutSec)
 	read.UseSsl = reconcile.KeepBool(cfg.UseSsl, read.UseSsl)
 }

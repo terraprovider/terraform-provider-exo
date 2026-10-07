@@ -40,7 +40,7 @@ func (d *activeSyncOrganizationSettingsListDataSource) Schema(_ context.Context,
 			"active_sync_organization_settingses": schema.ListNestedAttribute{Computed: true, Description: "All ActiveSyncOrganizationSettings objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":                               schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"admin_mail_recipients":                  schema.StringAttribute{Computed: true, Description: "Maps to the -AdminMailRecipients parameter."},
+				"admin_mail_recipients":                  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AdminMailRecipients parameter."},
 				"allow_access_for_un_supported_platform": schema.BoolAttribute{Computed: true, Description: "Maps to the -AllowAccessForUnSupportedPlatform parameter."},
 				"allow_rms_support_for_unenlightened_apps":     schema.BoolAttribute{Computed: true, Description: "Maps to the -AllowRMSSupportForUnenlightenedApps parameter."},
 				"default_access_level":                         schema.StringAttribute{Computed: true, Description: "Maps to the -DefaultAccessLevel parameter."},

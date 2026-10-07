@@ -25,7 +25,7 @@ Manages the IRMConfiguration configuration via Set-IRMConfiguration.
 - `enable_portal_tracking_logs` (Boolean) Maps to the -EnablePortalTrackingLogs parameter.
 - `internal_licensing_enabled` (Boolean) Maps to the -InternalLicensingEnabled parameter.
 - `journal_report_decryption_enabled` (Boolean) Maps to the -JournalReportDecryptionEnabled parameter.
-- `licensing_location` (String) Maps to the -LicensingLocation parameter.
+- `licensing_location` (Set of String) Maps to the -LicensingLocation parameter.
 - `reject_if_recipient_has_no_rights` (Boolean) Maps to the -RejectIfRecipientHasNoRights parameter.
 - `rms_online_key_sharing_location` (String) Maps to the -RMSOnlineKeySharingLocation parameter.
 - `search_enabled` (Boolean) Maps to the -SearchEnabled parameter.

@@ -43,7 +43,7 @@ func (d *intraOrganizationConnectorListDataSource) Schema(_ context.Context, _ d
 				"discovery_endpoint":     schema.StringAttribute{Computed: true, Description: "Maps to the -DiscoveryEndpoint parameter."},
 				"enabled":                schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 				"name":                   schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
-				"target_address_domains": schema.StringAttribute{Computed: true, Description: "Maps to the -TargetAddressDomains parameter."},
+				"target_address_domains": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TargetAddressDomains parameter."},
 				"target_sharing_epr":     schema.StringAttribute{Computed: true, Description: "Maps to the -TargetSharingEpr parameter."},
 			}}},
 		},

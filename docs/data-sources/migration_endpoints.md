@@ -46,6 +46,7 @@ Read-Only:
 - `nspi_server` (String) Maps to the -NspiServer parameter.
 - `o_auth_code` (String) Maps to the -OAuthCode parameter.
 - `partition` (String) Maps to the -Partition parameter.
+- `port` (Number) Maps to the -Port parameter.
 - `public_folder` (Boolean) Maps to the -PublicFolder parameter.
 - `public_folder_database_server_legacy_dn` (String) Maps to the -PublicFolderDatabaseServerLegacyDN parameter.
 - `public_folder_to_unified_group` (Boolean) Maps to the -PublicFolderToUnifiedGroup parameter.
@@ -54,7 +55,7 @@ Read-Only:
 - `remote_tenant` (String) Maps to the -RemoteTenant parameter.
 - `rpc_proxy_server` (String) Maps to the -RPCProxyServer parameter.
 - `security` (String) Maps to the -Security parameter.
-- `service_account_key_file_data` (Set of String) Maps to the -ServiceAccountKeyFileData parameter.
+- `service_account_key_file_data` (String) Maps to the -ServiceAccountKeyFileData parameter.
 - `skip_verification` (Boolean) Maps to the -SkipVerification parameter.
 - `source_mailbox_legacy_dn` (String) Maps to the -SourceMailboxLegacyDN parameter.
 - `test_mailbox` (String) Maps to the -TestMailbox parameter.

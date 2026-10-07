@@ -39,15 +39,15 @@ Look up an existing Contact object. Set identity or name to select it.
 - `mobile_phone` (String) Maps to the -MobilePhone parameter.
 - `notes` (String) Maps to the -Notes parameter.
 - `office` (String) Maps to the -Office parameter.
-- `other_fax` (String) Maps to the -OtherFax parameter.
-- `other_home_phone` (String) Maps to the -OtherHomePhone parameter.
-- `other_telephone` (String) Maps to the -OtherTelephone parameter.
+- `other_fax` (Set of String) Maps to the -OtherFax parameter.
+- `other_home_phone` (Set of String) Maps to the -OtherHomePhone parameter.
+- `other_telephone` (Set of String) Maps to the -OtherTelephone parameter.
 - `pager` (String) Maps to the -Pager parameter.
 - `phone` (String) Maps to the -Phone parameter.
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
-- `post_office_box` (String) Maps to the -PostOfficeBox parameter.
+- `post_office_box` (Set of String) Maps to the -PostOfficeBox parameter.
 - `postal_code` (String) Maps to the -PostalCode parameter.
-- `seniority_index` (String) Maps to the -SeniorityIndex parameter.
+- `seniority_index` (Number) Maps to the -SeniorityIndex parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.
 - `state_or_province` (String) Maps to the -StateOrProvince parameter.
 - `street_address` (String) Maps to the -StreetAddress parameter.

@@ -39,7 +39,7 @@ func (d *dkimSigningConfigDataSource) Schema(_ context.Context, _ datasource.Sch
 			"domain_name":             schema.StringAttribute{Computed: true, Description: "Maps to the -DomainName parameter."},
 			"enabled":                 schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"header_canonicalization": schema.StringAttribute{Computed: true, Description: "Maps to the -HeaderCanonicalization parameter."},
-			"key_size":                schema.StringAttribute{Computed: true, Description: "Maps to the -KeySize parameter. Allowed values: 1024, 2048."},
+			"key_size":                schema.Int64Attribute{Computed: true, Description: "Maps to the -KeySize parameter. Allowed values: 1024, 2048."},
 			"publish_txt_records":     schema.BoolAttribute{Computed: true, Description: "Maps to the -PublishTxtRecords parameter."},
 		},
 	}

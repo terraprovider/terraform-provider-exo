@@ -34,7 +34,7 @@ Manages the MoveRequest object via New-MoveRequest / Get-MoveRequest / Set-MoveR
 - `completed_request_age_limit` (String) Maps to the -CompletedRequestAgeLimit parameter.
 - `force_offline` (Boolean) Maps to the -ForceOffline parameter.
 - `incremental_sync_interval` (String) Maps to the -IncrementalSyncInterval parameter.
-- `move_options` (String) Maps to the -MoveOptions parameter.
+- `move_options` (Set of String) Maps to the -MoveOptions parameter.
 - `prevent_completion` (Boolean) Maps to the -PreventCompletion parameter.
 - `primary_only` (Boolean) Maps to the -PrimaryOnly parameter.
 - `proxy_to_mailbox` (String) Maps to the -ProxyToMailbox parameter.

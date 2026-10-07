@@ -17,7 +17,7 @@ Manages the EmailAddressPolicy object via New-EmailAddressPolicy / Get-EmailAddr
 
 ### Required
 
-- `enabled_email_address_templates` (String) Maps to the -EnabledEmailAddressTemplates parameter.
+- `enabled_email_address_templates` (Set of String) Maps to the -EnabledEmailAddressTemplates parameter.
 - `enabled_primary_smtp_address_template` (String) Maps to the -EnabledPrimarySMTPAddressTemplate parameter.
 - `include_unified_group_recipients` (Boolean) Maps to the -IncludeUnifiedGroupRecipients parameter.
 - `name` (String) Maps to the -Name parameter.

@@ -24,6 +24,6 @@ List every LinkedUser object (Get-LinkedUser).
 
 Read-Only:
 
-- `certificate_subject` (String) Maps to the -CertificateSubject parameter.
+- `certificate_subject` (Set of String) Maps to the -CertificateSubject parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.

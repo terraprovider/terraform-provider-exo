@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -34,19 +35,19 @@ func (d *cASMailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"id":                                schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"active_sync_allowed_device_i_ds":   schema.StringAttribute{Computed: true, Description: "Maps to the -ActiveSyncAllowedDeviceIDs parameter."},
-			"active_sync_blocked_device_i_ds":   schema.StringAttribute{Computed: true, Description: "Maps to the -ActiveSyncBlockedDeviceIDs parameter."},
+			"active_sync_allowed_device_i_ds":   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ActiveSyncAllowedDeviceIDs parameter."},
+			"active_sync_blocked_device_i_ds":   schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ActiveSyncBlockedDeviceIDs parameter."},
 			"active_sync_debug_logging":         schema.BoolAttribute{Computed: true, Description: "Maps to the -ActiveSyncDebugLogging parameter."},
 			"active_sync_enabled":               schema.BoolAttribute{Computed: true, Description: "Maps to the -ActiveSyncEnabled parameter."},
 			"active_sync_mailbox_policy":        schema.StringAttribute{Computed: true, Description: "Maps to the -ActiveSyncMailboxPolicy parameter."},
 			"active_sync_suppress_read_receipt": schema.BoolAttribute{Computed: true, Description: "Maps to the -ActiveSyncSuppressReadReceipt parameter."},
-			"ews_allow_entourage":               schema.StringAttribute{Computed: true, Description: "Maps to the -EwsAllowEntourage parameter."},
-			"ews_allow_list":                    schema.StringAttribute{Computed: true, Description: "Maps to the -EwsAllowList parameter."},
-			"ews_allow_mac_outlook":             schema.StringAttribute{Computed: true, Description: "Maps to the -EwsAllowMacOutlook parameter."},
-			"ews_allow_outlook":                 schema.StringAttribute{Computed: true, Description: "Maps to the -EwsAllowOutlook parameter."},
+			"ews_allow_entourage":               schema.BoolAttribute{Computed: true, Description: "Maps to the -EwsAllowEntourage parameter."},
+			"ews_allow_list":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EwsAllowList parameter."},
+			"ews_allow_mac_outlook":             schema.BoolAttribute{Computed: true, Description: "Maps to the -EwsAllowMacOutlook parameter."},
+			"ews_allow_outlook":                 schema.BoolAttribute{Computed: true, Description: "Maps to the -EwsAllowOutlook parameter."},
 			"ews_application_access_policy":     schema.StringAttribute{Computed: true, Description: "Maps to the -EwsApplicationAccessPolicy parameter."},
-			"ews_block_list":                    schema.StringAttribute{Computed: true, Description: "Maps to the -EwsBlockList parameter."},
-			"ews_enabled":                       schema.StringAttribute{Computed: true, Description: "Maps to the -EwsEnabled parameter."},
+			"ews_block_list":                    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EwsBlockList parameter."},
+			"ews_enabled":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -EwsEnabled parameter."},
 			"imap_enabled":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -ImapEnabled parameter."},
 			"imap_force_i_cal_for_calendar_retrieval_option": schema.BoolAttribute{Computed: true, Description: "Maps to the -ImapForceICalForCalendarRetrievalOption parameter."},
 			"imap_messages_retrieval_mime_format":            schema.StringAttribute{Computed: true, Description: "Maps to the -ImapMessagesRetrievalMimeFormat parameter."},
@@ -54,11 +55,11 @@ func (d *cASMailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"imap_use_protocol_defaults":                     schema.BoolAttribute{Computed: true, Description: "Maps to the -ImapUseProtocolDefaults parameter."},
 			"is_optimized_for_accessibility":                 schema.BoolAttribute{Computed: true, Description: "Maps to the -IsOptimizedForAccessibility parameter."},
 			"mapi_enabled":                                   schema.BoolAttribute{Computed: true, Description: "Maps to the -MAPIEnabled parameter."},
-			"mac_outlook_enabled":                            schema.StringAttribute{Computed: true, Description: "Maps to the -MacOutlookEnabled parameter."},
+			"mac_outlook_enabled":                            schema.BoolAttribute{Computed: true, Description: "Maps to the -MacOutlookEnabled parameter."},
 			"owa_enabled":                                    schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAEnabled parameter."},
 			"ow_afor_devices_enabled":                        schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAforDevicesEnabled parameter."},
-			"one_win_native_outlook_enabled":                 schema.StringAttribute{Computed: true, Description: "Maps to the -OneWinNativeOutlookEnabled parameter."},
-			"outlook_mobile_enabled":                         schema.StringAttribute{Computed: true, Description: "Maps to the -OutlookMobileEnabled parameter."},
+			"one_win_native_outlook_enabled":                 schema.BoolAttribute{Computed: true, Description: "Maps to the -OneWinNativeOutlookEnabled parameter."},
+			"outlook_mobile_enabled":                         schema.BoolAttribute{Computed: true, Description: "Maps to the -OutlookMobileEnabled parameter."},
 			"owa_mailbox_policy":                             schema.StringAttribute{Computed: true, Description: "Maps to the -OwaMailboxPolicy parameter."},
 			"pop_enabled":                                    schema.BoolAttribute{Computed: true, Description: "Maps to the -PopEnabled parameter."},
 			"pop_force_i_cal_for_calendar_retrieval_option":  schema.BoolAttribute{Computed: true, Description: "Maps to the -PopForceICalForCalendarRetrievalOption parameter."},
@@ -67,8 +68,8 @@ func (d *cASMailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"pop_use_protocol_defaults":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -PopUseProtocolDefaults parameter."},
 			"public_folder_client_access":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -PublicFolderClientAccess parameter."},
 			"show_gal_as_default_view":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -ShowGalAsDefaultView parameter."},
-			"smtp_client_authentication_disabled":            schema.StringAttribute{Computed: true, Description: "Maps to the -SmtpClientAuthenticationDisabled parameter."},
-			"universal_outlook_enabled":                      schema.StringAttribute{Computed: true, Description: "Maps to the -UniversalOutlookEnabled parameter."},
+			"smtp_client_authentication_disabled":            schema.BoolAttribute{Computed: true, Description: "Maps to the -SmtpClientAuthenticationDisabled parameter."},
+			"universal_outlook_enabled":                      schema.BoolAttribute{Computed: true, Description: "Maps to the -UniversalOutlookEnabled parameter."},
 		},
 	}
 }

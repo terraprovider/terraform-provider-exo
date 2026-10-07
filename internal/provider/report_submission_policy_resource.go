@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -44,30 +46,30 @@ type reportSubmissionPolicyModel struct {
 	EnableThirdPartyAddress                                        types.Bool   `tfsdk:"enable_third_party_address"`
 	EnableUserEmailNotification                                    types.Bool   `tfsdk:"enable_user_email_notification"`
 	JunkReviewResultMessage                                        types.String `tfsdk:"junk_review_result_message"`
-	MultiLanguagePostSubmitMessageButtonLinkForJunk                types.String `tfsdk:"multi_language_post_submit_message_button_link_for_junk"`
-	MultiLanguagePostSubmitMessageButtonLinkForPhishing            types.String `tfsdk:"multi_language_post_submit_message_button_link_for_phishing"`
-	MultiLanguagePostSubmitMessageButtonTextForJunk                types.String `tfsdk:"multi_language_post_submit_message_button_text_for_junk"`
-	MultiLanguagePostSubmitMessageButtonTextForPhishing            types.String `tfsdk:"multi_language_post_submit_message_button_text_for_phishing"`
-	MultiLanguagePostSubmitMessageForJunk                          types.String `tfsdk:"multi_language_post_submit_message_for_junk"`
-	MultiLanguagePostSubmitMessageForPhishing                      types.String `tfsdk:"multi_language_post_submit_message_for_phishing"`
-	MultiLanguagePostSubmitMessageTitleForJunk                     types.String `tfsdk:"multi_language_post_submit_message_title_for_junk"`
-	MultiLanguagePostSubmitMessageTitleForPhishing                 types.String `tfsdk:"multi_language_post_submit_message_title_for_phishing"`
-	MultiLanguagePreSubmitMessageButtonLinkForJunk                 types.String `tfsdk:"multi_language_pre_submit_message_button_link_for_junk"`
-	MultiLanguagePreSubmitMessageButtonLinkForNotJunk              types.String `tfsdk:"multi_language_pre_submit_message_button_link_for_not_junk"`
-	MultiLanguagePreSubmitMessageButtonLinkForPhishing             types.String `tfsdk:"multi_language_pre_submit_message_button_link_for_phishing"`
-	MultiLanguagePreSubmitMessageButtonTextForJunk                 types.String `tfsdk:"multi_language_pre_submit_message_button_text_for_junk"`
-	MultiLanguagePreSubmitMessageButtonTextForNotJunk              types.String `tfsdk:"multi_language_pre_submit_message_button_text_for_not_junk"`
-	MultiLanguagePreSubmitMessageButtonTextForPhishing             types.String `tfsdk:"multi_language_pre_submit_message_button_text_for_phishing"`
-	MultiLanguagePreSubmitMessageForJunk                           types.String `tfsdk:"multi_language_pre_submit_message_for_junk"`
-	MultiLanguagePreSubmitMessageForNotJunk                        types.String `tfsdk:"multi_language_pre_submit_message_for_not_junk"`
-	MultiLanguagePreSubmitMessageForPhishing                       types.String `tfsdk:"multi_language_pre_submit_message_for_phishing"`
-	MultiLanguagePreSubmitMessageTitleForJunk                      types.String `tfsdk:"multi_language_pre_submit_message_title_for_junk"`
-	MultiLanguagePreSubmitMessageTitleForNotJunk                   types.String `tfsdk:"multi_language_pre_submit_message_title_for_not_junk"`
-	MultiLanguagePreSubmitMessageTitleForPhishing                  types.String `tfsdk:"multi_language_pre_submit_message_title_for_phishing"`
-	MultiLanguageSetting                                           types.String `tfsdk:"multi_language_setting"`
+	MultiLanguagePostSubmitMessageButtonLinkForJunk                types.Set    `tfsdk:"multi_language_post_submit_message_button_link_for_junk"`
+	MultiLanguagePostSubmitMessageButtonLinkForPhishing            types.Set    `tfsdk:"multi_language_post_submit_message_button_link_for_phishing"`
+	MultiLanguagePostSubmitMessageButtonTextForJunk                types.Set    `tfsdk:"multi_language_post_submit_message_button_text_for_junk"`
+	MultiLanguagePostSubmitMessageButtonTextForPhishing            types.Set    `tfsdk:"multi_language_post_submit_message_button_text_for_phishing"`
+	MultiLanguagePostSubmitMessageForJunk                          types.Set    `tfsdk:"multi_language_post_submit_message_for_junk"`
+	MultiLanguagePostSubmitMessageForPhishing                      types.Set    `tfsdk:"multi_language_post_submit_message_for_phishing"`
+	MultiLanguagePostSubmitMessageTitleForJunk                     types.Set    `tfsdk:"multi_language_post_submit_message_title_for_junk"`
+	MultiLanguagePostSubmitMessageTitleForPhishing                 types.Set    `tfsdk:"multi_language_post_submit_message_title_for_phishing"`
+	MultiLanguagePreSubmitMessageButtonLinkForJunk                 types.Set    `tfsdk:"multi_language_pre_submit_message_button_link_for_junk"`
+	MultiLanguagePreSubmitMessageButtonLinkForNotJunk              types.Set    `tfsdk:"multi_language_pre_submit_message_button_link_for_not_junk"`
+	MultiLanguagePreSubmitMessageButtonLinkForPhishing             types.Set    `tfsdk:"multi_language_pre_submit_message_button_link_for_phishing"`
+	MultiLanguagePreSubmitMessageButtonTextForJunk                 types.Set    `tfsdk:"multi_language_pre_submit_message_button_text_for_junk"`
+	MultiLanguagePreSubmitMessageButtonTextForNotJunk              types.Set    `tfsdk:"multi_language_pre_submit_message_button_text_for_not_junk"`
+	MultiLanguagePreSubmitMessageButtonTextForPhishing             types.Set    `tfsdk:"multi_language_pre_submit_message_button_text_for_phishing"`
+	MultiLanguagePreSubmitMessageForJunk                           types.Set    `tfsdk:"multi_language_pre_submit_message_for_junk"`
+	MultiLanguagePreSubmitMessageForNotJunk                        types.Set    `tfsdk:"multi_language_pre_submit_message_for_not_junk"`
+	MultiLanguagePreSubmitMessageForPhishing                       types.Set    `tfsdk:"multi_language_pre_submit_message_for_phishing"`
+	MultiLanguagePreSubmitMessageTitleForJunk                      types.Set    `tfsdk:"multi_language_pre_submit_message_title_for_junk"`
+	MultiLanguagePreSubmitMessageTitleForNotJunk                   types.Set    `tfsdk:"multi_language_pre_submit_message_title_for_not_junk"`
+	MultiLanguagePreSubmitMessageTitleForPhishing                  types.Set    `tfsdk:"multi_language_pre_submit_message_title_for_phishing"`
+	MultiLanguageSetting                                           types.Set    `tfsdk:"multi_language_setting"`
 	NotJunkReviewResultMessage                                     types.String `tfsdk:"not_junk_review_result_message"`
 	NotificationFooterMessage                                      types.String `tfsdk:"notification_footer_message"`
-	NotificationSenderAddress                                      types.String `tfsdk:"notification_sender_address"`
+	NotificationSenderAddress                                      types.Set    `tfsdk:"notification_sender_address"`
 	NotificationsForCleanSubmissionAirInvestigationsEnabled        types.Bool   `tfsdk:"notifications_for_clean_submission_air_investigations_enabled"`
 	NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled types.Bool   `tfsdk:"notifications_for_phish_malware_submission_air_investigations_enabled"`
 	NotificationsForSpamSubmissionAirInvestigationsEnabled         types.Bool   `tfsdk:"notifications_for_spam_submission_air_investigations_enabled"`
@@ -94,13 +96,14 @@ type reportSubmissionPolicyModel struct {
 	PreSubmitMessageTitleForPhishing                               types.String `tfsdk:"pre_submit_message_title_for_phishing"`
 	ReportChatMessageEnabled                                       types.Bool   `tfsdk:"report_chat_message_enabled"`
 	ReportChatMessageToCustomizedAddressEnabled                    types.Bool   `tfsdk:"report_chat_message_to_customized_address_enabled"`
-	ReportJunkAddresses                                            types.String `tfsdk:"report_junk_addresses"`
+	ReportJunkAddresses                                            types.Set    `tfsdk:"report_junk_addresses"`
 	ReportJunkToCustomizedAddress                                  types.Bool   `tfsdk:"report_junk_to_customized_address"`
-	ReportNotJunkAddresses                                         types.String `tfsdk:"report_not_junk_addresses"`
+	ReportNotJunkAddresses                                         types.Set    `tfsdk:"report_not_junk_addresses"`
 	ReportNotJunkToCustomizedAddress                               types.Bool   `tfsdk:"report_not_junk_to_customized_address"`
-	ReportPhishAddresses                                           types.String `tfsdk:"report_phish_addresses"`
+	ReportPhishAddresses                                           types.Set    `tfsdk:"report_phish_addresses"`
 	ReportPhishToCustomizedAddress                                 types.Bool   `tfsdk:"report_phish_to_customized_address"`
-	ThirdPartyReportAddresses                                      types.String `tfsdk:"third_party_report_addresses"`
+	ThirdPartyReportAddresses                                      types.Set    `tfsdk:"third_party_report_addresses"`
+	UserSubmissionOptions                                          types.Int64  `tfsdk:"user_submission_options"`
 	UserSubmissionOptionsMessage                                   types.String `tfsdk:"user_submission_options_message"`
 }
 
@@ -113,7 +116,7 @@ func (r *reportSubmissionPolicyResource) Schema(_ context.Context, _ resource.Sc
 		Description: "Manages the ReportSubmissionPolicy object via New-ReportSubmissionPolicy / Get-ReportSubmissionPolicy / Set-ReportSubmissionPolicy / Remove-ReportSubmissionPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"disable_quarantine_reporting_option": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisableQuarantineReportingOption parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"disable_user_submission_options":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisableUserSubmissionOptions parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_custom_notification_sender":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableCustomNotificationSender parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -123,30 +126,30 @@ func (r *reportSubmissionPolicyResource) Schema(_ context.Context, _ resource.Sc
 			"enable_third_party_address":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableThirdPartyAddress parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_user_email_notification":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableUserEmailNotification parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"junk_review_result_message":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -JunkReviewResultMessage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_button_link_for_junk":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonLinkForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_button_link_for_phishing":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonLinkForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_button_text_for_junk":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonTextForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_button_text_for_phishing":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonTextForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_for_junk":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_for_phishing":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_title_for_junk":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageTitleForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_post_submit_message_title_for_phishing":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageTitleForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_link_for_junk":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_link_for_not_junk":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForNotJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_link_for_phishing":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_text_for_junk":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_text_for_not_junk":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForNotJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_button_text_for_phishing":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_for_junk":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_for_not_junk":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForNotJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_for_phishing":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_title_for_junk":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_title_for_not_junk":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForNotJunk parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_pre_submit_message_title_for_phishing":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"multi_language_setting":                                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSetting parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_button_link_for_junk":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonLinkForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_button_link_for_phishing":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonLinkForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_button_text_for_junk":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonTextForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_button_text_for_phishing":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageButtonTextForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_for_junk":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_for_phishing":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_title_for_junk":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageTitleForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_post_submit_message_title_for_phishing":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePostSubmitMessageTitleForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_link_for_junk":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_link_for_not_junk":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForNotJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_link_for_phishing":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonLinkForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_text_for_junk":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_text_for_not_junk":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForNotJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_button_text_for_phishing":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageButtonTextForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_for_junk":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_for_not_junk":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForNotJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_for_phishing":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_title_for_junk":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_title_for_not_junk":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForNotJunk parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_pre_submit_message_title_for_phishing":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguagePreSubmitMessageTitleForPhishing parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"multi_language_setting":                                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MultiLanguageSetting parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"not_junk_review_result_message":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotJunkReviewResultMessage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"notification_footer_message":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationFooterMessage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"notification_sender_address":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationSenderAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"notification_sender_address":                                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NotificationSenderAddress parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"notifications_for_clean_submission_air_investigations_enabled":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationsForCleanSubmissionAirInvestigationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"notifications_for_phish_malware_submission_air_investigations_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"notifications_for_spam_submission_air_investigations_enabled":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationsForSpamSubmissionAirInvestigationsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -173,13 +176,14 @@ func (r *reportSubmissionPolicyResource) Schema(_ context.Context, _ resource.Sc
 			"pre_submit_message_title_for_phishing":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PreSubmitMessageTitleForPhishing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"report_chat_message_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportChatMessageEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"report_chat_message_to_customized_address_enabled":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportChatMessageToCustomizedAddressEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"report_junk_addresses":                                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportJunkAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"report_junk_addresses":                                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ReportJunkAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"report_junk_to_customized_address":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportJunkToCustomizedAddress parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"report_not_junk_addresses":                                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportNotJunkAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"report_not_junk_addresses":                                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ReportNotJunkAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"report_not_junk_to_customized_address":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportNotJunkToCustomizedAddress parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"report_phish_addresses":                                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportPhishAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"report_phish_addresses":                                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ReportPhishAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"report_phish_to_customized_address":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReportPhishToCustomizedAddress parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"third_party_report_addresses":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ThirdPartyReportAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"third_party_report_addresses":                                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ThirdPartyReportAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"user_submission_options":                                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -UserSubmissionOptions parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"user_submission_options_message":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -UserSubmissionOptionsMessage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -199,126 +203,310 @@ func (r *reportSubmissionPolicyResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	p := exo.NewReportSubmissionPolicyParams{
-		DisableQuarantineReportingOption:                               plan.DisableQuarantineReportingOption.ValueBool(),
-		DisableUserSubmissionOptions:                                   plan.DisableUserSubmissionOptions.ValueBool(),
-		EnableCustomNotificationSender:                                 plan.EnableCustomNotificationSender.ValueBool(),
-		EnableCustomizedMsg:                                            plan.EnableCustomizedMsg.ValueBool(),
-		EnableOrganizationBranding:                                     plan.EnableOrganizationBranding.ValueBool(),
-		EnableReportToMicrosoft:                                        plan.EnableReportToMicrosoft.ValueBool(),
-		EnableThirdPartyAddress:                                        plan.EnableThirdPartyAddress.ValueBool(),
-		EnableUserEmailNotification:                                    plan.EnableUserEmailNotification.ValueBool(),
-		JunkReviewResultMessage:                                        plan.JunkReviewResultMessage.ValueString(),
-		NotJunkReviewResultMessage:                                     plan.NotJunkReviewResultMessage.ValueString(),
-		NotificationFooterMessage:                                      plan.NotificationFooterMessage.ValueString(),
-		NotificationsForCleanSubmissionAirInvestigationsEnabled:        plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.ValueBool(),
-		NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled: plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.ValueBool(),
-		NotificationsForSpamSubmissionAirInvestigationsEnabled:         plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.ValueBool(),
-		NotificationsForSubmissionAirInvestigationsEnabled:             plan.NotificationsForSubmissionAirInvestigationsEnabled.ValueBool(),
-		OnlyShowPhishingDisclaimer:                                     plan.OnlyShowPhishingDisclaimer.ValueBool(),
-		PhishingReviewResultMessage:                                    plan.PhishingReviewResultMessage.ValueString(),
-		PostSubmitMessage:                                              plan.PostSubmitMessage.ValueString(),
-		PostSubmitMessageEnabled:                                       plan.PostSubmitMessageEnabled.ValueBool(),
-		PostSubmitMessageForJunk:                                       plan.PostSubmitMessageForJunk.ValueString(),
-		PostSubmitMessageForNotJunk:                                    plan.PostSubmitMessageForNotJunk.ValueString(),
-		PostSubmitMessageForPhishing:                                   plan.PostSubmitMessageForPhishing.ValueString(),
-		PostSubmitMessageTitle:                                         plan.PostSubmitMessageTitle.ValueString(),
-		PostSubmitMessageTitleForJunk:                                  plan.PostSubmitMessageTitleForJunk.ValueString(),
-		PostSubmitMessageTitleForNotJunk:                               plan.PostSubmitMessageTitleForNotJunk.ValueString(),
-		PostSubmitMessageTitleForPhishing:                              plan.PostSubmitMessageTitleForPhishing.ValueString(),
-		PreSubmitMessage:                                               plan.PreSubmitMessage.ValueString(),
-		PreSubmitMessageEnabled:                                        plan.PreSubmitMessageEnabled.ValueBool(),
-		PreSubmitMessageForJunk:                                        plan.PreSubmitMessageForJunk.ValueString(),
-		PreSubmitMessageForNotJunk:                                     plan.PreSubmitMessageForNotJunk.ValueString(),
-		PreSubmitMessageForPhishing:                                    plan.PreSubmitMessageForPhishing.ValueString(),
-		PreSubmitMessageTitle:                                          plan.PreSubmitMessageTitle.ValueString(),
-		PreSubmitMessageTitleForJunk:                                   plan.PreSubmitMessageTitleForJunk.ValueString(),
-		PreSubmitMessageTitleForNotJunk:                                plan.PreSubmitMessageTitleForNotJunk.ValueString(),
-		PreSubmitMessageTitleForPhishing:                               plan.PreSubmitMessageTitleForPhishing.ValueString(),
-		ReportChatMessageEnabled:                                       plan.ReportChatMessageEnabled.ValueBool(),
-		ReportChatMessageToCustomizedAddressEnabled:                    plan.ReportChatMessageToCustomizedAddressEnabled.ValueBool(),
-		ReportJunkToCustomizedAddress:                                  plan.ReportJunkToCustomizedAddress.ValueBool(),
-		ReportNotJunkToCustomizedAddress:                               plan.ReportNotJunkToCustomizedAddress.ValueBool(),
-		ReportPhishToCustomizedAddress:                                 plan.ReportPhishToCustomizedAddress.ValueBool(),
-		UserSubmissionOptionsMessage:                                   plan.UserSubmissionOptionsMessage.ValueString(),
+	var config reportSubmissionPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonLinkForJunk.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageButtonLinkForJunk = v
+
+	p := exo.NewReportSubmissionPolicyParams{}
+	if !config.DisableQuarantineReportingOption.IsNull() {
+		if !plan.DisableQuarantineReportingOption.IsUnknown() {
+			p.DisableQuarantineReportingOption = plan.DisableQuarantineReportingOption.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageButtonLinkForPhishing = v
+	if !config.DisableUserSubmissionOptions.IsNull() {
+		if !plan.DisableUserSubmissionOptions.IsUnknown() {
+			p.DisableUserSubmissionOptions = plan.DisableUserSubmissionOptions.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonTextForJunk.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageButtonTextForJunk = v
+	if !config.EnableCustomNotificationSender.IsNull() {
+		if !plan.EnableCustomNotificationSender.IsUnknown() {
+			p.EnableCustomNotificationSender = plan.EnableCustomNotificationSender.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonTextForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageButtonTextForPhishing = v
+	if !config.EnableCustomizedMsg.IsNull() {
+		if !plan.EnableCustomizedMsg.IsUnknown() {
+			p.EnableCustomizedMsg = plan.EnableCustomizedMsg.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageForJunk.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageForJunk = v
+	if !config.EnableOrganizationBranding.IsNull() {
+		if !plan.EnableOrganizationBranding.IsUnknown() {
+			p.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageForPhishing = v
+	if !config.EnableReportToMicrosoft.IsNull() {
+		if !plan.EnableReportToMicrosoft.IsUnknown() {
+			p.EnableReportToMicrosoft = plan.EnableReportToMicrosoft.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageTitleForJunk.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageTitleForJunk = v
+	if !config.EnableThirdPartyAddress.IsNull() {
+		if !plan.EnableThirdPartyAddress.IsUnknown() {
+			p.EnableThirdPartyAddress = plan.EnableThirdPartyAddress.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageTitleForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePostSubmitMessageTitleForPhishing = v
+	if !config.EnableUserEmailNotification.IsNull() {
+		if !plan.EnableUserEmailNotification.IsUnknown() {
+			p.EnableUserEmailNotification = plan.EnableUserEmailNotification.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonLinkForJunk = v
+	if !config.JunkReviewResultMessage.IsNull() {
+		p.JunkReviewResultMessage = plan.JunkReviewResultMessage.ValueString()
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = v
+	if !config.MultiLanguagePostSubmitMessageButtonLinkForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonLinkForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageButtonLinkForJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonLinkForPhishing = v
+	if !config.MultiLanguagePostSubmitMessageButtonLinkForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageButtonLinkForPhishing = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonTextForJunk = v
+	if !config.MultiLanguagePostSubmitMessageButtonTextForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonTextForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageButtonTextForJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonTextForNotJunk = v
+	if !config.MultiLanguagePostSubmitMessageButtonTextForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonTextForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageButtonTextForPhishing = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageButtonTextForPhishing = v
+	if !config.MultiLanguagePostSubmitMessageForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageForJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageForJunk = v
+	if !config.MultiLanguagePostSubmitMessageForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageForPhishing = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForNotJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageForNotJunk = v
+	if !config.MultiLanguagePostSubmitMessageTitleForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageTitleForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageTitleForJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageForPhishing = v
+	if !config.MultiLanguagePostSubmitMessageTitleForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageTitleForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePostSubmitMessageTitleForPhishing = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageTitleForJunk = v
+	if !config.MultiLanguagePreSubmitMessageButtonLinkForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonLinkForJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForNotJunk.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageTitleForNotJunk = v
+	if !config.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = v
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForPhishing.ValueString(); v != "" {
-		p.MultiLanguagePreSubmitMessageTitleForPhishing = v
+	if !config.MultiLanguagePreSubmitMessageButtonLinkForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonLinkForPhishing = v
+		}
 	}
-	if v := plan.MultiLanguageSetting.ValueString(); v != "" {
-		p.MultiLanguageSetting = v
+	if !config.MultiLanguagePreSubmitMessageButtonTextForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonTextForJunk = v
+		}
 	}
-	if v := plan.NotificationSenderAddress.ValueString(); v != "" {
-		p.NotificationSenderAddress = v
+	if !config.MultiLanguagePreSubmitMessageButtonTextForNotJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonTextForNotJunk = v
+		}
 	}
-	if v := plan.ReportJunkAddresses.ValueString(); v != "" {
-		p.ReportJunkAddresses = v
+	if !config.MultiLanguagePreSubmitMessageButtonTextForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageButtonTextForPhishing = v
+		}
 	}
-	if v := plan.ReportNotJunkAddresses.ValueString(); v != "" {
-		p.ReportNotJunkAddresses = v
+	if !config.MultiLanguagePreSubmitMessageForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageForJunk = v
+		}
 	}
-	if v := plan.ReportPhishAddresses.ValueString(); v != "" {
-		p.ReportPhishAddresses = v
+	if !config.MultiLanguagePreSubmitMessageForNotJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForNotJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageForNotJunk = v
+		}
 	}
-	if v := plan.ThirdPartyReportAddresses.ValueString(); v != "" {
-		p.ThirdPartyReportAddresses = v
+	if !config.MultiLanguagePreSubmitMessageForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageForPhishing = v
+		}
+	}
+	if !config.MultiLanguagePreSubmitMessageTitleForJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageTitleForJunk = v
+		}
+	}
+	if !config.MultiLanguagePreSubmitMessageTitleForNotJunk.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForNotJunk, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageTitleForNotJunk = v
+		}
+	}
+	if !config.MultiLanguagePreSubmitMessageTitleForPhishing.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForPhishing, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguagePreSubmitMessageTitleForPhishing = v
+		}
+	}
+	if !config.MultiLanguageSetting.IsNull() {
+		if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+			p.MultiLanguageSetting = v
+		}
+	}
+	if !config.NotJunkReviewResultMessage.IsNull() {
+		p.NotJunkReviewResultMessage = plan.NotJunkReviewResultMessage.ValueString()
+	}
+	if !config.NotificationFooterMessage.IsNull() {
+		p.NotificationFooterMessage = plan.NotificationFooterMessage.ValueString()
+	}
+	if !config.NotificationSenderAddress.IsNull() {
+		if v := toStringSlice(ctx, plan.NotificationSenderAddress, &resp.Diagnostics); len(v) > 0 {
+			p.NotificationSenderAddress = v
+		}
+	}
+	if !config.NotificationsForCleanSubmissionAirInvestigationsEnabled.IsNull() {
+		if !plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.IsUnknown() {
+			p.NotificationsForCleanSubmissionAirInvestigationsEnabled = plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.IsNull() {
+		if !plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.IsUnknown() {
+			p.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled = plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.NotificationsForSpamSubmissionAirInvestigationsEnabled.IsNull() {
+		if !plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.IsUnknown() {
+			p.NotificationsForSpamSubmissionAirInvestigationsEnabled = plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.NotificationsForSubmissionAirInvestigationsEnabled.IsNull() {
+		if !plan.NotificationsForSubmissionAirInvestigationsEnabled.IsUnknown() {
+			p.NotificationsForSubmissionAirInvestigationsEnabled = plan.NotificationsForSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.OnlyShowPhishingDisclaimer.IsNull() {
+		if !plan.OnlyShowPhishingDisclaimer.IsUnknown() {
+			p.OnlyShowPhishingDisclaimer = plan.OnlyShowPhishingDisclaimer.ValueBoolPointer()
+		}
+	}
+	if !config.PhishingReviewResultMessage.IsNull() {
+		p.PhishingReviewResultMessage = plan.PhishingReviewResultMessage.ValueString()
+	}
+	if !config.PostSubmitMessage.IsNull() {
+		p.PostSubmitMessage = plan.PostSubmitMessage.ValueString()
+	}
+	if !config.PostSubmitMessageEnabled.IsNull() {
+		if !plan.PostSubmitMessageEnabled.IsUnknown() {
+			p.PostSubmitMessageEnabled = plan.PostSubmitMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PostSubmitMessageForJunk.IsNull() {
+		p.PostSubmitMessageForJunk = plan.PostSubmitMessageForJunk.ValueString()
+	}
+	if !config.PostSubmitMessageForNotJunk.IsNull() {
+		p.PostSubmitMessageForNotJunk = plan.PostSubmitMessageForNotJunk.ValueString()
+	}
+	if !config.PostSubmitMessageForPhishing.IsNull() {
+		p.PostSubmitMessageForPhishing = plan.PostSubmitMessageForPhishing.ValueString()
+	}
+	if !config.PostSubmitMessageTitle.IsNull() {
+		p.PostSubmitMessageTitle = plan.PostSubmitMessageTitle.ValueString()
+	}
+	if !config.PostSubmitMessageTitleForJunk.IsNull() {
+		p.PostSubmitMessageTitleForJunk = plan.PostSubmitMessageTitleForJunk.ValueString()
+	}
+	if !config.PostSubmitMessageTitleForNotJunk.IsNull() {
+		p.PostSubmitMessageTitleForNotJunk = plan.PostSubmitMessageTitleForNotJunk.ValueString()
+	}
+	if !config.PostSubmitMessageTitleForPhishing.IsNull() {
+		p.PostSubmitMessageTitleForPhishing = plan.PostSubmitMessageTitleForPhishing.ValueString()
+	}
+	if !config.PreSubmitMessage.IsNull() {
+		p.PreSubmitMessage = plan.PreSubmitMessage.ValueString()
+	}
+	if !config.PreSubmitMessageEnabled.IsNull() {
+		if !plan.PreSubmitMessageEnabled.IsUnknown() {
+			p.PreSubmitMessageEnabled = plan.PreSubmitMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PreSubmitMessageForJunk.IsNull() {
+		p.PreSubmitMessageForJunk = plan.PreSubmitMessageForJunk.ValueString()
+	}
+	if !config.PreSubmitMessageForNotJunk.IsNull() {
+		p.PreSubmitMessageForNotJunk = plan.PreSubmitMessageForNotJunk.ValueString()
+	}
+	if !config.PreSubmitMessageForPhishing.IsNull() {
+		p.PreSubmitMessageForPhishing = plan.PreSubmitMessageForPhishing.ValueString()
+	}
+	if !config.PreSubmitMessageTitle.IsNull() {
+		p.PreSubmitMessageTitle = plan.PreSubmitMessageTitle.ValueString()
+	}
+	if !config.PreSubmitMessageTitleForJunk.IsNull() {
+		p.PreSubmitMessageTitleForJunk = plan.PreSubmitMessageTitleForJunk.ValueString()
+	}
+	if !config.PreSubmitMessageTitleForNotJunk.IsNull() {
+		p.PreSubmitMessageTitleForNotJunk = plan.PreSubmitMessageTitleForNotJunk.ValueString()
+	}
+	if !config.PreSubmitMessageTitleForPhishing.IsNull() {
+		p.PreSubmitMessageTitleForPhishing = plan.PreSubmitMessageTitleForPhishing.ValueString()
+	}
+	if !config.ReportChatMessageEnabled.IsNull() {
+		if !plan.ReportChatMessageEnabled.IsUnknown() {
+			p.ReportChatMessageEnabled = plan.ReportChatMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ReportChatMessageToCustomizedAddressEnabled.IsNull() {
+		if !plan.ReportChatMessageToCustomizedAddressEnabled.IsUnknown() {
+			p.ReportChatMessageToCustomizedAddressEnabled = plan.ReportChatMessageToCustomizedAddressEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ReportJunkAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ReportJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ReportJunkAddresses = v
+		}
+	}
+	if !config.ReportJunkToCustomizedAddress.IsNull() {
+		if !plan.ReportJunkToCustomizedAddress.IsUnknown() {
+			p.ReportJunkToCustomizedAddress = plan.ReportJunkToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !config.ReportNotJunkAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ReportNotJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ReportNotJunkAddresses = v
+		}
+	}
+	if !config.ReportNotJunkToCustomizedAddress.IsNull() {
+		if !plan.ReportNotJunkToCustomizedAddress.IsUnknown() {
+			p.ReportNotJunkToCustomizedAddress = plan.ReportNotJunkToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !config.ReportPhishAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ReportPhishAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ReportPhishAddresses = v
+		}
+	}
+	if !config.ReportPhishToCustomizedAddress.IsNull() {
+		if !plan.ReportPhishToCustomizedAddress.IsUnknown() {
+			p.ReportPhishToCustomizedAddress = plan.ReportPhishToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !config.ThirdPartyReportAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.ThirdPartyReportAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.ThirdPartyReportAddresses = v
+		}
+	}
+	if !config.UserSubmissionOptions.IsNull() {
+		if !plan.UserSubmissionOptions.IsUnknown() {
+			p.UserSubmissionOptions = plan.UserSubmissionOptions.ValueInt64Pointer()
+		}
+	}
+	if !config.UserSubmissionOptionsMessage.IsNull() {
+		p.UserSubmissionOptionsMessage = plan.UserSubmissionOptionsMessage.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -370,125 +558,366 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	id := r.identityOf(state)
 	sp := exo.SetReportSubmissionPolicyParams{}
 	sp.Identity = id
-	sp.DisableQuarantineReportingOption = plan.DisableQuarantineReportingOption.ValueBool()
-	sp.DisableUserSubmissionOptions = plan.DisableUserSubmissionOptions.ValueBool()
-	sp.EnableCustomNotificationSender = plan.EnableCustomNotificationSender.ValueBool()
-	sp.EnableCustomizedMsg = plan.EnableCustomizedMsg.ValueBool()
-	sp.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBool()
-	sp.EnableReportToMicrosoft = plan.EnableReportToMicrosoft.ValueBool()
-	sp.EnableThirdPartyAddress = plan.EnableThirdPartyAddress.ValueBool()
-	sp.EnableUserEmailNotification = plan.EnableUserEmailNotification.ValueBool()
-	sp.JunkReviewResultMessage = plan.JunkReviewResultMessage.ValueString()
-	if v := plan.MultiLanguagePostSubmitMessageButtonLinkForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageButtonLinkForJunk = v
+	var cur *reportSubmissionPolicyModel
+	curRead := false
+	current := func() *reportSubmissionPolicyModel {
+		if !curRead {
+			curRead = true
+			var m reportSubmissionPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ReportSubmissionPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageButtonLinkForPhishing = v
+	if !plan.DisableQuarantineReportingOption.Equal(state.DisableQuarantineReportingOption) {
+		if !plan.DisableQuarantineReportingOption.IsUnknown() {
+			sp.DisableQuarantineReportingOption = plan.DisableQuarantineReportingOption.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonTextForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageButtonTextForJunk = v
+	if !plan.DisableUserSubmissionOptions.Equal(state.DisableUserSubmissionOptions) {
+		if !plan.DisableUserSubmissionOptions.IsUnknown() {
+			sp.DisableUserSubmissionOptions = plan.DisableUserSubmissionOptions.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageButtonTextForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageButtonTextForPhishing = v
+	if !plan.EnableCustomNotificationSender.Equal(state.EnableCustomNotificationSender) {
+		if !plan.EnableCustomNotificationSender.IsUnknown() {
+			sp.EnableCustomNotificationSender = plan.EnableCustomNotificationSender.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageForJunk = v
+	if !plan.EnableCustomizedMsg.Equal(state.EnableCustomizedMsg) {
+		if !plan.EnableCustomizedMsg.IsUnknown() {
+			sp.EnableCustomizedMsg = plan.EnableCustomizedMsg.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageForPhishing = v
+	if !plan.EnableOrganizationBranding.Equal(state.EnableOrganizationBranding) {
+		if !plan.EnableOrganizationBranding.IsUnknown() {
+			sp.EnableOrganizationBranding = plan.EnableOrganizationBranding.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageTitleForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageTitleForJunk = v
+	if !plan.EnableReportToMicrosoft.Equal(state.EnableReportToMicrosoft) {
+		if !plan.EnableReportToMicrosoft.IsUnknown() {
+			sp.EnableReportToMicrosoft = plan.EnableReportToMicrosoft.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePostSubmitMessageTitleForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePostSubmitMessageTitleForPhishing = v
+	if !plan.EnableThirdPartyAddress.Equal(state.EnableThirdPartyAddress) {
+		if !plan.EnableThirdPartyAddress.IsUnknown() {
+			sp.EnableThirdPartyAddress = plan.EnableThirdPartyAddress.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonLinkForJunk = v
+	if !plan.EnableUserEmailNotification.Equal(state.EnableUserEmailNotification) {
+		if !plan.EnableUserEmailNotification.IsUnknown() {
+			sp.EnableUserEmailNotification = plan.EnableUserEmailNotification.ValueBoolPointer()
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = v
+	if !plan.JunkReviewResultMessage.Equal(state.JunkReviewResultMessage) {
+		sp.JunkReviewResultMessage = plan.JunkReviewResultMessage.ValueString()
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonLinkForPhishing = v
+	if !plan.MultiLanguagePostSubmitMessageButtonLinkForJunk.Equal(state.MultiLanguagePostSubmitMessageButtonLinkForJunk) {
+		if !plan.MultiLanguagePostSubmitMessageButtonLinkForJunk.IsNull() && !plan.MultiLanguagePostSubmitMessageButtonLinkForJunk.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageButtonLinkForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonLinkForJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonTextForJunk = v
+	if !plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing.Equal(state.MultiLanguagePostSubmitMessageButtonLinkForPhishing) {
+		if !plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing.IsNull() && !plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageButtonLinkForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonLinkForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonTextForNotJunk = v
+	if !plan.MultiLanguagePostSubmitMessageButtonTextForJunk.Equal(state.MultiLanguagePostSubmitMessageButtonTextForJunk) {
+		if !plan.MultiLanguagePostSubmitMessageButtonTextForJunk.IsNull() && !plan.MultiLanguagePostSubmitMessageButtonTextForJunk.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageButtonTextForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonTextForJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageButtonTextForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageButtonTextForPhishing = v
+	if !plan.MultiLanguagePostSubmitMessageButtonTextForPhishing.Equal(state.MultiLanguagePostSubmitMessageButtonTextForPhishing) {
+		if !plan.MultiLanguagePostSubmitMessageButtonTextForPhishing.IsNull() && !plan.MultiLanguagePostSubmitMessageButtonTextForPhishing.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageButtonTextForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageButtonTextForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageForJunk = v
+	if !plan.MultiLanguagePostSubmitMessageForJunk.Equal(state.MultiLanguagePostSubmitMessageForJunk) {
+		if !plan.MultiLanguagePostSubmitMessageForJunk.IsNull() && !plan.MultiLanguagePostSubmitMessageForJunk.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageForJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForNotJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageForNotJunk = v
+	if !plan.MultiLanguagePostSubmitMessageForPhishing.Equal(state.MultiLanguagePostSubmitMessageForPhishing) {
+		if !plan.MultiLanguagePostSubmitMessageForPhishing.IsNull() && !plan.MultiLanguagePostSubmitMessageForPhishing.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageForPhishing = v
+	if !plan.MultiLanguagePostSubmitMessageTitleForJunk.Equal(state.MultiLanguagePostSubmitMessageTitleForJunk) {
+		if !plan.MultiLanguagePostSubmitMessageTitleForJunk.IsNull() && !plan.MultiLanguagePostSubmitMessageTitleForJunk.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageTitleForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageTitleForJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageTitleForJunk = v
+	if !plan.MultiLanguagePostSubmitMessageTitleForPhishing.Equal(state.MultiLanguagePostSubmitMessageTitleForPhishing) {
+		if !plan.MultiLanguagePostSubmitMessageTitleForPhishing.IsNull() && !plan.MultiLanguagePostSubmitMessageTitleForPhishing.IsUnknown() {
+			sp.MultiLanguagePostSubmitMessageTitleForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePostSubmitMessageTitleForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForNotJunk.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageTitleForNotJunk = v
+	if !plan.MultiLanguagePreSubmitMessageButtonLinkForJunk.Equal(state.MultiLanguagePreSubmitMessageButtonLinkForJunk) {
+		if !plan.MultiLanguagePreSubmitMessageButtonLinkForJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonLinkForJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonLinkForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguagePreSubmitMessageTitleForPhishing.ValueString(); v != "" {
-		sp.MultiLanguagePreSubmitMessageTitleForPhishing = v
+	if !plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.Equal(state.MultiLanguagePreSubmitMessageButtonLinkForNotJunk) {
+		if !plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForNotJunk, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.MultiLanguageSetting.ValueString(); v != "" {
-		sp.MultiLanguageSetting = v
+	if !plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing.Equal(state.MultiLanguagePreSubmitMessageButtonLinkForPhishing) {
+		if !plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonLinkForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonLinkForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	sp.NotJunkReviewResultMessage = plan.NotJunkReviewResultMessage.ValueString()
-	sp.NotificationFooterMessage = plan.NotificationFooterMessage.ValueString()
-	if v := plan.NotificationSenderAddress.ValueString(); v != "" {
-		sp.NotificationSenderAddress = v
+	if !plan.MultiLanguagePreSubmitMessageButtonTextForJunk.Equal(state.MultiLanguagePreSubmitMessageButtonTextForJunk) {
+		if !plan.MultiLanguagePreSubmitMessageButtonTextForJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonTextForJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonTextForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForJunk, &resp.Diagnostics)...)
+		}
 	}
-	sp.NotificationsForCleanSubmissionAirInvestigationsEnabled = plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.ValueBool()
-	sp.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled = plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.ValueBool()
-	sp.NotificationsForSpamSubmissionAirInvestigationsEnabled = plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.ValueBool()
-	sp.NotificationsForSubmissionAirInvestigationsEnabled = plan.NotificationsForSubmissionAirInvestigationsEnabled.ValueBool()
-	sp.OnlyShowPhishingDisclaimer = plan.OnlyShowPhishingDisclaimer.ValueBool()
-	sp.PhishingReviewResultMessage = plan.PhishingReviewResultMessage.ValueString()
-	sp.PostSubmitMessage = plan.PostSubmitMessage.ValueString()
-	sp.PostSubmitMessageEnabled = plan.PostSubmitMessageEnabled.ValueBool()
-	sp.PostSubmitMessageForJunk = plan.PostSubmitMessageForJunk.ValueString()
-	sp.PostSubmitMessageForNotJunk = plan.PostSubmitMessageForNotJunk.ValueString()
-	sp.PostSubmitMessageForPhishing = plan.PostSubmitMessageForPhishing.ValueString()
-	sp.PostSubmitMessageTitle = plan.PostSubmitMessageTitle.ValueString()
-	sp.PostSubmitMessageTitleForJunk = plan.PostSubmitMessageTitleForJunk.ValueString()
-	sp.PostSubmitMessageTitleForNotJunk = plan.PostSubmitMessageTitleForNotJunk.ValueString()
-	sp.PostSubmitMessageTitleForPhishing = plan.PostSubmitMessageTitleForPhishing.ValueString()
-	sp.PreSubmitMessage = plan.PreSubmitMessage.ValueString()
-	sp.PreSubmitMessageEnabled = plan.PreSubmitMessageEnabled.ValueBool()
-	sp.PreSubmitMessageForJunk = plan.PreSubmitMessageForJunk.ValueString()
-	sp.PreSubmitMessageForNotJunk = plan.PreSubmitMessageForNotJunk.ValueString()
-	sp.PreSubmitMessageForPhishing = plan.PreSubmitMessageForPhishing.ValueString()
-	sp.PreSubmitMessageTitle = plan.PreSubmitMessageTitle.ValueString()
-	sp.PreSubmitMessageTitleForJunk = plan.PreSubmitMessageTitleForJunk.ValueString()
-	sp.PreSubmitMessageTitleForNotJunk = plan.PreSubmitMessageTitleForNotJunk.ValueString()
-	sp.PreSubmitMessageTitleForPhishing = plan.PreSubmitMessageTitleForPhishing.ValueString()
-	sp.ReportChatMessageEnabled = plan.ReportChatMessageEnabled.ValueBool()
-	sp.ReportChatMessageToCustomizedAddressEnabled = plan.ReportChatMessageToCustomizedAddressEnabled.ValueBool()
-	if v := plan.ReportJunkAddresses.ValueString(); v != "" {
-		sp.ReportJunkAddresses = v
+	if !plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk.Equal(state.MultiLanguagePreSubmitMessageButtonTextForNotJunk) {
+		if !plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonTextForNotJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForNotJunk, &resp.Diagnostics)...)
+		}
 	}
-	sp.ReportJunkToCustomizedAddress = plan.ReportJunkToCustomizedAddress.ValueBool()
-	if v := plan.ReportNotJunkAddresses.ValueString(); v != "" {
-		sp.ReportNotJunkAddresses = v
+	if !plan.MultiLanguagePreSubmitMessageButtonTextForPhishing.Equal(state.MultiLanguagePreSubmitMessageButtonTextForPhishing) {
+		if !plan.MultiLanguagePreSubmitMessageButtonTextForPhishing.IsNull() && !plan.MultiLanguagePreSubmitMessageButtonTextForPhishing.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageButtonTextForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageButtonTextForPhishing, &resp.Diagnostics)...)
+		}
 	}
-	sp.ReportNotJunkToCustomizedAddress = plan.ReportNotJunkToCustomizedAddress.ValueBool()
-	if v := plan.ReportPhishAddresses.ValueString(); v != "" {
-		sp.ReportPhishAddresses = v
+	if !plan.MultiLanguagePreSubmitMessageForJunk.Equal(state.MultiLanguagePreSubmitMessageForJunk) {
+		if !plan.MultiLanguagePreSubmitMessageForJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageForJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForJunk, &resp.Diagnostics)...)
+		}
 	}
-	sp.ReportPhishToCustomizedAddress = plan.ReportPhishToCustomizedAddress.ValueBool()
-	if v := plan.ThirdPartyReportAddresses.ValueString(); v != "" {
-		sp.ThirdPartyReportAddresses = v
+	if !plan.MultiLanguagePreSubmitMessageForNotJunk.Equal(state.MultiLanguagePreSubmitMessageForNotJunk) {
+		if !plan.MultiLanguagePreSubmitMessageForNotJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageForNotJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageForNotJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForNotJunk, &resp.Diagnostics)...)
+		}
 	}
-	sp.UserSubmissionOptionsMessage = plan.UserSubmissionOptionsMessage.ValueString()
+	if !plan.MultiLanguagePreSubmitMessageForPhishing.Equal(state.MultiLanguagePreSubmitMessageForPhishing) {
+		if !plan.MultiLanguagePreSubmitMessageForPhishing.IsNull() && !plan.MultiLanguagePreSubmitMessageForPhishing.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageForPhishing, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.MultiLanguagePreSubmitMessageTitleForJunk.Equal(state.MultiLanguagePreSubmitMessageTitleForJunk) {
+		if !plan.MultiLanguagePreSubmitMessageTitleForJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageTitleForJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageTitleForJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForJunk, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.MultiLanguagePreSubmitMessageTitleForNotJunk.Equal(state.MultiLanguagePreSubmitMessageTitleForNotJunk) {
+		if !plan.MultiLanguagePreSubmitMessageTitleForNotJunk.IsNull() && !plan.MultiLanguagePreSubmitMessageTitleForNotJunk.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageTitleForNotJunk = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForNotJunk, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.MultiLanguagePreSubmitMessageTitleForPhishing.Equal(state.MultiLanguagePreSubmitMessageTitleForPhishing) {
+		if !plan.MultiLanguagePreSubmitMessageTitleForPhishing.IsNull() && !plan.MultiLanguagePreSubmitMessageTitleForPhishing.IsUnknown() {
+			sp.MultiLanguagePreSubmitMessageTitleForPhishing = append([]string{}, toStringSlice(ctx, plan.MultiLanguagePreSubmitMessageTitleForPhishing, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.MultiLanguageSetting.Equal(state.MultiLanguageSetting) {
+		if !plan.MultiLanguageSetting.IsNull() && !plan.MultiLanguageSetting.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSetting = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSetting, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSettingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.NotJunkReviewResultMessage.Equal(state.NotJunkReviewResultMessage) {
+		sp.NotJunkReviewResultMessage = plan.NotJunkReviewResultMessage.ValueString()
+	}
+	if !plan.NotificationFooterMessage.Equal(state.NotificationFooterMessage) {
+		sp.NotificationFooterMessage = plan.NotificationFooterMessage.ValueString()
+	}
+	if !plan.NotificationSenderAddress.Equal(state.NotificationSenderAddress) {
+		if !plan.NotificationSenderAddress.IsNull() && !plan.NotificationSenderAddress.IsUnknown() {
+			if v := toStringSlice(ctx, plan.NotificationSenderAddress, &resp.Diagnostics); len(v) > 0 {
+				sp.NotificationSenderAddress = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NotificationSenderAddress, &resp.Diagnostics); len(rm) > 0 {
+						sp.NotificationSenderAddressDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForCleanSubmissionAirInvestigationsEnabled) {
+		if !plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.IsUnknown() {
+			sp.NotificationsForCleanSubmissionAirInvestigationsEnabled = plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled) {
+		if !plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.IsUnknown() {
+			sp.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled = plan.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForSpamSubmissionAirInvestigationsEnabled) {
+		if !plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.IsUnknown() {
+			sp.NotificationsForSpamSubmissionAirInvestigationsEnabled = plan.NotificationsForSpamSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NotificationsForSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForSubmissionAirInvestigationsEnabled) {
+		if !plan.NotificationsForSubmissionAirInvestigationsEnabled.IsUnknown() {
+			sp.NotificationsForSubmissionAirInvestigationsEnabled = plan.NotificationsForSubmissionAirInvestigationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OnlyShowPhishingDisclaimer.Equal(state.OnlyShowPhishingDisclaimer) {
+		if !plan.OnlyShowPhishingDisclaimer.IsUnknown() {
+			sp.OnlyShowPhishingDisclaimer = plan.OnlyShowPhishingDisclaimer.ValueBoolPointer()
+		}
+	}
+	if !plan.PhishingReviewResultMessage.Equal(state.PhishingReviewResultMessage) {
+		sp.PhishingReviewResultMessage = plan.PhishingReviewResultMessage.ValueString()
+	}
+	if !plan.PostSubmitMessage.Equal(state.PostSubmitMessage) {
+		sp.PostSubmitMessage = plan.PostSubmitMessage.ValueString()
+	}
+	if !plan.PostSubmitMessageEnabled.Equal(state.PostSubmitMessageEnabled) {
+		if !plan.PostSubmitMessageEnabled.IsUnknown() {
+			sp.PostSubmitMessageEnabled = plan.PostSubmitMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PostSubmitMessageForJunk.Equal(state.PostSubmitMessageForJunk) {
+		sp.PostSubmitMessageForJunk = plan.PostSubmitMessageForJunk.ValueString()
+	}
+	if !plan.PostSubmitMessageForNotJunk.Equal(state.PostSubmitMessageForNotJunk) {
+		sp.PostSubmitMessageForNotJunk = plan.PostSubmitMessageForNotJunk.ValueString()
+	}
+	if !plan.PostSubmitMessageForPhishing.Equal(state.PostSubmitMessageForPhishing) {
+		sp.PostSubmitMessageForPhishing = plan.PostSubmitMessageForPhishing.ValueString()
+	}
+	if !plan.PostSubmitMessageTitle.Equal(state.PostSubmitMessageTitle) {
+		sp.PostSubmitMessageTitle = plan.PostSubmitMessageTitle.ValueString()
+	}
+	if !plan.PostSubmitMessageTitleForJunk.Equal(state.PostSubmitMessageTitleForJunk) {
+		sp.PostSubmitMessageTitleForJunk = plan.PostSubmitMessageTitleForJunk.ValueString()
+	}
+	if !plan.PostSubmitMessageTitleForNotJunk.Equal(state.PostSubmitMessageTitleForNotJunk) {
+		sp.PostSubmitMessageTitleForNotJunk = plan.PostSubmitMessageTitleForNotJunk.ValueString()
+	}
+	if !plan.PostSubmitMessageTitleForPhishing.Equal(state.PostSubmitMessageTitleForPhishing) {
+		sp.PostSubmitMessageTitleForPhishing = plan.PostSubmitMessageTitleForPhishing.ValueString()
+	}
+	if !plan.PreSubmitMessage.Equal(state.PreSubmitMessage) {
+		sp.PreSubmitMessage = plan.PreSubmitMessage.ValueString()
+	}
+	if !plan.PreSubmitMessageEnabled.Equal(state.PreSubmitMessageEnabled) {
+		if !plan.PreSubmitMessageEnabled.IsUnknown() {
+			sp.PreSubmitMessageEnabled = plan.PreSubmitMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PreSubmitMessageForJunk.Equal(state.PreSubmitMessageForJunk) {
+		sp.PreSubmitMessageForJunk = plan.PreSubmitMessageForJunk.ValueString()
+	}
+	if !plan.PreSubmitMessageForNotJunk.Equal(state.PreSubmitMessageForNotJunk) {
+		sp.PreSubmitMessageForNotJunk = plan.PreSubmitMessageForNotJunk.ValueString()
+	}
+	if !plan.PreSubmitMessageForPhishing.Equal(state.PreSubmitMessageForPhishing) {
+		sp.PreSubmitMessageForPhishing = plan.PreSubmitMessageForPhishing.ValueString()
+	}
+	if !plan.PreSubmitMessageTitle.Equal(state.PreSubmitMessageTitle) {
+		sp.PreSubmitMessageTitle = plan.PreSubmitMessageTitle.ValueString()
+	}
+	if !plan.PreSubmitMessageTitleForJunk.Equal(state.PreSubmitMessageTitleForJunk) {
+		sp.PreSubmitMessageTitleForJunk = plan.PreSubmitMessageTitleForJunk.ValueString()
+	}
+	if !plan.PreSubmitMessageTitleForNotJunk.Equal(state.PreSubmitMessageTitleForNotJunk) {
+		sp.PreSubmitMessageTitleForNotJunk = plan.PreSubmitMessageTitleForNotJunk.ValueString()
+	}
+	if !plan.PreSubmitMessageTitleForPhishing.Equal(state.PreSubmitMessageTitleForPhishing) {
+		sp.PreSubmitMessageTitleForPhishing = plan.PreSubmitMessageTitleForPhishing.ValueString()
+	}
+	if !plan.ReportChatMessageEnabled.Equal(state.ReportChatMessageEnabled) {
+		if !plan.ReportChatMessageEnabled.IsUnknown() {
+			sp.ReportChatMessageEnabled = plan.ReportChatMessageEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ReportChatMessageToCustomizedAddressEnabled.Equal(state.ReportChatMessageToCustomizedAddressEnabled) {
+		if !plan.ReportChatMessageToCustomizedAddressEnabled.IsUnknown() {
+			sp.ReportChatMessageToCustomizedAddressEnabled = plan.ReportChatMessageToCustomizedAddressEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ReportJunkAddresses.Equal(state.ReportJunkAddresses) {
+		if !plan.ReportJunkAddresses.IsNull() && !plan.ReportJunkAddresses.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ReportJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportJunkAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportJunkAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportJunkAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ReportJunkToCustomizedAddress.Equal(state.ReportJunkToCustomizedAddress) {
+		if !plan.ReportJunkToCustomizedAddress.IsUnknown() {
+			sp.ReportJunkToCustomizedAddress = plan.ReportJunkToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !plan.ReportNotJunkAddresses.Equal(state.ReportNotJunkAddresses) {
+		if !plan.ReportNotJunkAddresses.IsNull() && !plan.ReportNotJunkAddresses.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ReportNotJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportNotJunkAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportNotJunkAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportNotJunkAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ReportNotJunkToCustomizedAddress.Equal(state.ReportNotJunkToCustomizedAddress) {
+		if !plan.ReportNotJunkToCustomizedAddress.IsUnknown() {
+			sp.ReportNotJunkToCustomizedAddress = plan.ReportNotJunkToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !plan.ReportPhishAddresses.Equal(state.ReportPhishAddresses) {
+		if !plan.ReportPhishAddresses.IsNull() && !plan.ReportPhishAddresses.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ReportPhishAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportPhishAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportPhishAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportPhishAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ReportPhishToCustomizedAddress.Equal(state.ReportPhishToCustomizedAddress) {
+		if !plan.ReportPhishToCustomizedAddress.IsUnknown() {
+			sp.ReportPhishToCustomizedAddress = plan.ReportPhishToCustomizedAddress.ValueBoolPointer()
+		}
+	}
+	if !plan.ThirdPartyReportAddresses.Equal(state.ThirdPartyReportAddresses) {
+		if !plan.ThirdPartyReportAddresses.IsNull() && !plan.ThirdPartyReportAddresses.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ThirdPartyReportAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ThirdPartyReportAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ThirdPartyReportAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ThirdPartyReportAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.UserSubmissionOptions.Equal(state.UserSubmissionOptions) {
+		if !plan.UserSubmissionOptions.IsUnknown() {
+			sp.UserSubmissionOptions = plan.UserSubmissionOptions.ValueInt64Pointer()
+		}
+	}
+	if !plan.UserSubmissionOptionsMessage.Equal(state.UserSubmissionOptionsMessage) {
+		sp.UserSubmissionOptionsMessage = plan.UserSubmissionOptionsMessage.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -498,53 +927,27 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"JunkReviewResultMessage":                             cfg.JunkReviewResultMessage,
-		"MultiLanguagePostSubmitMessageButtonLinkForJunk":     cfg.MultiLanguagePostSubmitMessageButtonLinkForJunk,
-		"MultiLanguagePostSubmitMessageButtonLinkForPhishing": cfg.MultiLanguagePostSubmitMessageButtonLinkForPhishing,
-		"MultiLanguagePostSubmitMessageButtonTextForJunk":     cfg.MultiLanguagePostSubmitMessageButtonTextForJunk,
-		"MultiLanguagePostSubmitMessageButtonTextForPhishing": cfg.MultiLanguagePostSubmitMessageButtonTextForPhishing,
-		"MultiLanguagePostSubmitMessageForJunk":               cfg.MultiLanguagePostSubmitMessageForJunk,
-		"MultiLanguagePostSubmitMessageForPhishing":           cfg.MultiLanguagePostSubmitMessageForPhishing,
-		"MultiLanguagePostSubmitMessageTitleForJunk":          cfg.MultiLanguagePostSubmitMessageTitleForJunk,
-		"MultiLanguagePostSubmitMessageTitleForPhishing":      cfg.MultiLanguagePostSubmitMessageTitleForPhishing,
-		"MultiLanguagePreSubmitMessageButtonLinkForJunk":      cfg.MultiLanguagePreSubmitMessageButtonLinkForJunk,
-		"MultiLanguagePreSubmitMessageButtonLinkForNotJunk":   cfg.MultiLanguagePreSubmitMessageButtonLinkForNotJunk,
-		"MultiLanguagePreSubmitMessageButtonLinkForPhishing":  cfg.MultiLanguagePreSubmitMessageButtonLinkForPhishing,
-		"MultiLanguagePreSubmitMessageButtonTextForJunk":      cfg.MultiLanguagePreSubmitMessageButtonTextForJunk,
-		"MultiLanguagePreSubmitMessageButtonTextForNotJunk":   cfg.MultiLanguagePreSubmitMessageButtonTextForNotJunk,
-		"MultiLanguagePreSubmitMessageButtonTextForPhishing":  cfg.MultiLanguagePreSubmitMessageButtonTextForPhishing,
-		"MultiLanguagePreSubmitMessageForJunk":                cfg.MultiLanguagePreSubmitMessageForJunk,
-		"MultiLanguagePreSubmitMessageForNotJunk":             cfg.MultiLanguagePreSubmitMessageForNotJunk,
-		"MultiLanguagePreSubmitMessageForPhishing":            cfg.MultiLanguagePreSubmitMessageForPhishing,
-		"MultiLanguagePreSubmitMessageTitleForJunk":           cfg.MultiLanguagePreSubmitMessageTitleForJunk,
-		"MultiLanguagePreSubmitMessageTitleForNotJunk":        cfg.MultiLanguagePreSubmitMessageTitleForNotJunk,
-		"MultiLanguagePreSubmitMessageTitleForPhishing":       cfg.MultiLanguagePreSubmitMessageTitleForPhishing,
-		"MultiLanguageSetting":                                cfg.MultiLanguageSetting,
-		"NotJunkReviewResultMessage":                          cfg.NotJunkReviewResultMessage,
-		"NotificationFooterMessage":                           cfg.NotificationFooterMessage,
-		"NotificationSenderAddress":                           cfg.NotificationSenderAddress,
-		"PhishingReviewResultMessage":                         cfg.PhishingReviewResultMessage,
-		"PostSubmitMessage":                                   cfg.PostSubmitMessage,
-		"PostSubmitMessageForJunk":                            cfg.PostSubmitMessageForJunk,
-		"PostSubmitMessageForNotJunk":                         cfg.PostSubmitMessageForNotJunk,
-		"PostSubmitMessageForPhishing":                        cfg.PostSubmitMessageForPhishing,
-		"PostSubmitMessageTitle":                              cfg.PostSubmitMessageTitle,
-		"PostSubmitMessageTitleForJunk":                       cfg.PostSubmitMessageTitleForJunk,
-		"PostSubmitMessageTitleForNotJunk":                    cfg.PostSubmitMessageTitleForNotJunk,
-		"PostSubmitMessageTitleForPhishing":                   cfg.PostSubmitMessageTitleForPhishing,
-		"PreSubmitMessage":                                    cfg.PreSubmitMessage,
-		"PreSubmitMessageForJunk":                             cfg.PreSubmitMessageForJunk,
-		"PreSubmitMessageForNotJunk":                          cfg.PreSubmitMessageForNotJunk,
-		"PreSubmitMessageForPhishing":                         cfg.PreSubmitMessageForPhishing,
-		"PreSubmitMessageTitle":                               cfg.PreSubmitMessageTitle,
-		"PreSubmitMessageTitleForJunk":                        cfg.PreSubmitMessageTitleForJunk,
-		"PreSubmitMessageTitleForNotJunk":                     cfg.PreSubmitMessageTitleForNotJunk,
-		"PreSubmitMessageTitleForPhishing":                    cfg.PreSubmitMessageTitleForPhishing,
-		"ReportJunkAddresses":                                 cfg.ReportJunkAddresses,
-		"ReportNotJunkAddresses":                              cfg.ReportNotJunkAddresses,
-		"ReportPhishAddresses":                                cfg.ReportPhishAddresses,
-		"ThirdPartyReportAddresses":                           cfg.ThirdPartyReportAddresses,
-		"UserSubmissionOptionsMessage":                        cfg.UserSubmissionOptionsMessage,
+		"JunkReviewResultMessage":           cfg.JunkReviewResultMessage,
+		"NotJunkReviewResultMessage":        cfg.NotJunkReviewResultMessage,
+		"NotificationFooterMessage":         cfg.NotificationFooterMessage,
+		"PhishingReviewResultMessage":       cfg.PhishingReviewResultMessage,
+		"PostSubmitMessage":                 cfg.PostSubmitMessage,
+		"PostSubmitMessageForJunk":          cfg.PostSubmitMessageForJunk,
+		"PostSubmitMessageForNotJunk":       cfg.PostSubmitMessageForNotJunk,
+		"PostSubmitMessageForPhishing":      cfg.PostSubmitMessageForPhishing,
+		"PostSubmitMessageTitle":            cfg.PostSubmitMessageTitle,
+		"PostSubmitMessageTitleForJunk":     cfg.PostSubmitMessageTitleForJunk,
+		"PostSubmitMessageTitleForNotJunk":  cfg.PostSubmitMessageTitleForNotJunk,
+		"PostSubmitMessageTitleForPhishing": cfg.PostSubmitMessageTitleForPhishing,
+		"PreSubmitMessage":                  cfg.PreSubmitMessage,
+		"PreSubmitMessageForJunk":           cfg.PreSubmitMessageForJunk,
+		"PreSubmitMessageForNotJunk":        cfg.PreSubmitMessageForNotJunk,
+		"PreSubmitMessageForPhishing":       cfg.PreSubmitMessageForPhishing,
+		"PreSubmitMessageTitle":             cfg.PreSubmitMessageTitle,
+		"PreSubmitMessageTitleForJunk":      cfg.PreSubmitMessageTitleForJunk,
+		"PreSubmitMessageTitleForNotJunk":   cfg.PreSubmitMessageTitleForNotJunk,
+		"PreSubmitMessageTitleForPhishing":  cfg.PreSubmitMessageTitleForPhishing,
+		"UserSubmissionOptionsMessage":      cfg.UserSubmissionOptionsMessage,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -615,30 +1018,30 @@ func readReportSubmissionPolicy(ctx context.Context, obj map[string]any, m *repo
 	m.EnableThirdPartyAddress = types.BoolValue(getBool(obj, "EnableThirdPartyAddress"))
 	m.EnableUserEmailNotification = types.BoolValue(getBool(obj, "EnableUserEmailNotification"))
 	m.JunkReviewResultMessage = types.StringValue(getString(obj, "JunkReviewResultMessage"))
-	m.MultiLanguagePostSubmitMessageButtonLinkForJunk = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageButtonLinkForJunk"))
-	m.MultiLanguagePostSubmitMessageButtonLinkForPhishing = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageButtonLinkForPhishing"))
-	m.MultiLanguagePostSubmitMessageButtonTextForJunk = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageButtonTextForJunk"))
-	m.MultiLanguagePostSubmitMessageButtonTextForPhishing = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageButtonTextForPhishing"))
-	m.MultiLanguagePostSubmitMessageForJunk = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageForJunk"))
-	m.MultiLanguagePostSubmitMessageForPhishing = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageForPhishing"))
-	m.MultiLanguagePostSubmitMessageTitleForJunk = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageTitleForJunk"))
-	m.MultiLanguagePostSubmitMessageTitleForPhishing = types.StringValue(getString(obj, "MultiLanguagePostSubmitMessageTitleForPhishing"))
-	m.MultiLanguagePreSubmitMessageButtonLinkForJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonLinkForJunk"))
-	m.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonLinkForNotJunk"))
-	m.MultiLanguagePreSubmitMessageButtonLinkForPhishing = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonLinkForPhishing"))
-	m.MultiLanguagePreSubmitMessageButtonTextForJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonTextForJunk"))
-	m.MultiLanguagePreSubmitMessageButtonTextForNotJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonTextForNotJunk"))
-	m.MultiLanguagePreSubmitMessageButtonTextForPhishing = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageButtonTextForPhishing"))
-	m.MultiLanguagePreSubmitMessageForJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageForJunk"))
-	m.MultiLanguagePreSubmitMessageForNotJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageForNotJunk"))
-	m.MultiLanguagePreSubmitMessageForPhishing = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageForPhishing"))
-	m.MultiLanguagePreSubmitMessageTitleForJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageTitleForJunk"))
-	m.MultiLanguagePreSubmitMessageTitleForNotJunk = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageTitleForNotJunk"))
-	m.MultiLanguagePreSubmitMessageTitleForPhishing = types.StringValue(getString(obj, "MultiLanguagePreSubmitMessageTitleForPhishing"))
-	m.MultiLanguageSetting = types.StringValue(getString(obj, "MultiLanguageSetting"))
+	m.MultiLanguagePostSubmitMessageButtonLinkForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageButtonLinkForJunk"))
+	m.MultiLanguagePostSubmitMessageButtonLinkForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageButtonLinkForPhishing"))
+	m.MultiLanguagePostSubmitMessageButtonTextForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageButtonTextForJunk"))
+	m.MultiLanguagePostSubmitMessageButtonTextForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageButtonTextForPhishing"))
+	m.MultiLanguagePostSubmitMessageForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageForJunk"))
+	m.MultiLanguagePostSubmitMessageForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageForPhishing"))
+	m.MultiLanguagePostSubmitMessageTitleForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageTitleForJunk"))
+	m.MultiLanguagePostSubmitMessageTitleForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePostSubmitMessageTitleForPhishing"))
+	m.MultiLanguagePreSubmitMessageButtonLinkForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonLinkForJunk"))
+	m.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonLinkForNotJunk"))
+	m.MultiLanguagePreSubmitMessageButtonLinkForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonLinkForPhishing"))
+	m.MultiLanguagePreSubmitMessageButtonTextForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonTextForJunk"))
+	m.MultiLanguagePreSubmitMessageButtonTextForNotJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonTextForNotJunk"))
+	m.MultiLanguagePreSubmitMessageButtonTextForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageButtonTextForPhishing"))
+	m.MultiLanguagePreSubmitMessageForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageForJunk"))
+	m.MultiLanguagePreSubmitMessageForNotJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageForNotJunk"))
+	m.MultiLanguagePreSubmitMessageForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageForPhishing"))
+	m.MultiLanguagePreSubmitMessageTitleForJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageTitleForJunk"))
+	m.MultiLanguagePreSubmitMessageTitleForNotJunk = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageTitleForNotJunk"))
+	m.MultiLanguagePreSubmitMessageTitleForPhishing = stringSetValue(ctx, getStringSlice(obj, "MultiLanguagePreSubmitMessageTitleForPhishing"))
+	m.MultiLanguageSetting = stringSetValue(ctx, getStringSlice(obj, "MultiLanguageSetting"))
 	m.NotJunkReviewResultMessage = types.StringValue(getString(obj, "NotJunkReviewResultMessage"))
 	m.NotificationFooterMessage = types.StringValue(getString(obj, "NotificationFooterMessage"))
-	m.NotificationSenderAddress = types.StringValue(getString(obj, "NotificationSenderAddress"))
+	m.NotificationSenderAddress = stringSetValue(ctx, getStringSlice(obj, "NotificationSenderAddress"))
 	m.NotificationsForCleanSubmissionAirInvestigationsEnabled = types.BoolValue(getBool(obj, "NotificationsForCleanSubmissionAirInvestigationsEnabled"))
 	m.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled = types.BoolValue(getBool(obj, "NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled"))
 	m.NotificationsForSpamSubmissionAirInvestigationsEnabled = types.BoolValue(getBool(obj, "NotificationsForSpamSubmissionAirInvestigationsEnabled"))
@@ -665,13 +1068,14 @@ func readReportSubmissionPolicy(ctx context.Context, obj map[string]any, m *repo
 	m.PreSubmitMessageTitleForPhishing = types.StringValue(getString(obj, "PreSubmitMessageTitleForPhishing"))
 	m.ReportChatMessageEnabled = types.BoolValue(getBool(obj, "ReportChatMessageEnabled"))
 	m.ReportChatMessageToCustomizedAddressEnabled = types.BoolValue(getBool(obj, "ReportChatMessageToCustomizedAddressEnabled"))
-	m.ReportJunkAddresses = types.StringValue(getString(obj, "ReportJunkAddresses"))
+	m.ReportJunkAddresses = stringSetValue(ctx, getStringSlice(obj, "ReportJunkAddresses"))
 	m.ReportJunkToCustomizedAddress = types.BoolValue(getBool(obj, "ReportJunkToCustomizedAddress"))
-	m.ReportNotJunkAddresses = types.StringValue(getString(obj, "ReportNotJunkAddresses"))
+	m.ReportNotJunkAddresses = stringSetValue(ctx, getStringSlice(obj, "ReportNotJunkAddresses"))
 	m.ReportNotJunkToCustomizedAddress = types.BoolValue(getBool(obj, "ReportNotJunkToCustomizedAddress"))
-	m.ReportPhishAddresses = types.StringValue(getString(obj, "ReportPhishAddresses"))
+	m.ReportPhishAddresses = stringSetValue(ctx, getStringSlice(obj, "ReportPhishAddresses"))
 	m.ReportPhishToCustomizedAddress = types.BoolValue(getBool(obj, "ReportPhishToCustomizedAddress"))
-	m.ThirdPartyReportAddresses = types.StringValue(getString(obj, "ThirdPartyReportAddresses"))
+	m.ThirdPartyReportAddresses = stringSetValue(ctx, getStringSlice(obj, "ThirdPartyReportAddresses"))
+	m.UserSubmissionOptions = types.Int64Value(getInt(obj, "UserSubmissionOptions"))
 	m.UserSubmissionOptionsMessage = types.StringValue(getString(obj, "UserSubmissionOptionsMessage"))
 	_ = ctx
 }
@@ -686,30 +1090,30 @@ func (r *reportSubmissionPolicyResource) reconcileState(cfg, read *reportSubmiss
 	read.EnableThirdPartyAddress = reconcile.KeepBool(cfg.EnableThirdPartyAddress, read.EnableThirdPartyAddress)
 	read.EnableUserEmailNotification = reconcile.KeepBool(cfg.EnableUserEmailNotification, read.EnableUserEmailNotification)
 	read.JunkReviewResultMessage = reconcile.KeepStr(cfg.JunkReviewResultMessage, read.JunkReviewResultMessage)
-	read.MultiLanguagePostSubmitMessageButtonLinkForJunk = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageButtonLinkForJunk, read.MultiLanguagePostSubmitMessageButtonLinkForJunk)
-	read.MultiLanguagePostSubmitMessageButtonLinkForPhishing = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageButtonLinkForPhishing, read.MultiLanguagePostSubmitMessageButtonLinkForPhishing)
-	read.MultiLanguagePostSubmitMessageButtonTextForJunk = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageButtonTextForJunk, read.MultiLanguagePostSubmitMessageButtonTextForJunk)
-	read.MultiLanguagePostSubmitMessageButtonTextForPhishing = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageButtonTextForPhishing, read.MultiLanguagePostSubmitMessageButtonTextForPhishing)
-	read.MultiLanguagePostSubmitMessageForJunk = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageForJunk, read.MultiLanguagePostSubmitMessageForJunk)
-	read.MultiLanguagePostSubmitMessageForPhishing = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageForPhishing, read.MultiLanguagePostSubmitMessageForPhishing)
-	read.MultiLanguagePostSubmitMessageTitleForJunk = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageTitleForJunk, read.MultiLanguagePostSubmitMessageTitleForJunk)
-	read.MultiLanguagePostSubmitMessageTitleForPhishing = reconcile.KeepStr(cfg.MultiLanguagePostSubmitMessageTitleForPhishing, read.MultiLanguagePostSubmitMessageTitleForPhishing)
-	read.MultiLanguagePreSubmitMessageButtonLinkForJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonLinkForJunk, read.MultiLanguagePreSubmitMessageButtonLinkForJunk)
-	read.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonLinkForNotJunk, read.MultiLanguagePreSubmitMessageButtonLinkForNotJunk)
-	read.MultiLanguagePreSubmitMessageButtonLinkForPhishing = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonLinkForPhishing, read.MultiLanguagePreSubmitMessageButtonLinkForPhishing)
-	read.MultiLanguagePreSubmitMessageButtonTextForJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonTextForJunk, read.MultiLanguagePreSubmitMessageButtonTextForJunk)
-	read.MultiLanguagePreSubmitMessageButtonTextForNotJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonTextForNotJunk, read.MultiLanguagePreSubmitMessageButtonTextForNotJunk)
-	read.MultiLanguagePreSubmitMessageButtonTextForPhishing = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageButtonTextForPhishing, read.MultiLanguagePreSubmitMessageButtonTextForPhishing)
-	read.MultiLanguagePreSubmitMessageForJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageForJunk, read.MultiLanguagePreSubmitMessageForJunk)
-	read.MultiLanguagePreSubmitMessageForNotJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageForNotJunk, read.MultiLanguagePreSubmitMessageForNotJunk)
-	read.MultiLanguagePreSubmitMessageForPhishing = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageForPhishing, read.MultiLanguagePreSubmitMessageForPhishing)
-	read.MultiLanguagePreSubmitMessageTitleForJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageTitleForJunk, read.MultiLanguagePreSubmitMessageTitleForJunk)
-	read.MultiLanguagePreSubmitMessageTitleForNotJunk = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageTitleForNotJunk, read.MultiLanguagePreSubmitMessageTitleForNotJunk)
-	read.MultiLanguagePreSubmitMessageTitleForPhishing = reconcile.KeepStr(cfg.MultiLanguagePreSubmitMessageTitleForPhishing, read.MultiLanguagePreSubmitMessageTitleForPhishing)
-	read.MultiLanguageSetting = reconcile.KeepStr(cfg.MultiLanguageSetting, read.MultiLanguageSetting)
+	read.MultiLanguagePostSubmitMessageButtonLinkForJunk = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageButtonLinkForJunk, read.MultiLanguagePostSubmitMessageButtonLinkForJunk)
+	read.MultiLanguagePostSubmitMessageButtonLinkForPhishing = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageButtonLinkForPhishing, read.MultiLanguagePostSubmitMessageButtonLinkForPhishing)
+	read.MultiLanguagePostSubmitMessageButtonTextForJunk = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageButtonTextForJunk, read.MultiLanguagePostSubmitMessageButtonTextForJunk)
+	read.MultiLanguagePostSubmitMessageButtonTextForPhishing = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageButtonTextForPhishing, read.MultiLanguagePostSubmitMessageButtonTextForPhishing)
+	read.MultiLanguagePostSubmitMessageForJunk = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageForJunk, read.MultiLanguagePostSubmitMessageForJunk)
+	read.MultiLanguagePostSubmitMessageForPhishing = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageForPhishing, read.MultiLanguagePostSubmitMessageForPhishing)
+	read.MultiLanguagePostSubmitMessageTitleForJunk = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageTitleForJunk, read.MultiLanguagePostSubmitMessageTitleForJunk)
+	read.MultiLanguagePostSubmitMessageTitleForPhishing = reconcile.KeepSet(cfg.MultiLanguagePostSubmitMessageTitleForPhishing, read.MultiLanguagePostSubmitMessageTitleForPhishing)
+	read.MultiLanguagePreSubmitMessageButtonLinkForJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonLinkForJunk, read.MultiLanguagePreSubmitMessageButtonLinkForJunk)
+	read.MultiLanguagePreSubmitMessageButtonLinkForNotJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonLinkForNotJunk, read.MultiLanguagePreSubmitMessageButtonLinkForNotJunk)
+	read.MultiLanguagePreSubmitMessageButtonLinkForPhishing = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonLinkForPhishing, read.MultiLanguagePreSubmitMessageButtonLinkForPhishing)
+	read.MultiLanguagePreSubmitMessageButtonTextForJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonTextForJunk, read.MultiLanguagePreSubmitMessageButtonTextForJunk)
+	read.MultiLanguagePreSubmitMessageButtonTextForNotJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonTextForNotJunk, read.MultiLanguagePreSubmitMessageButtonTextForNotJunk)
+	read.MultiLanguagePreSubmitMessageButtonTextForPhishing = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageButtonTextForPhishing, read.MultiLanguagePreSubmitMessageButtonTextForPhishing)
+	read.MultiLanguagePreSubmitMessageForJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageForJunk, read.MultiLanguagePreSubmitMessageForJunk)
+	read.MultiLanguagePreSubmitMessageForNotJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageForNotJunk, read.MultiLanguagePreSubmitMessageForNotJunk)
+	read.MultiLanguagePreSubmitMessageForPhishing = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageForPhishing, read.MultiLanguagePreSubmitMessageForPhishing)
+	read.MultiLanguagePreSubmitMessageTitleForJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageTitleForJunk, read.MultiLanguagePreSubmitMessageTitleForJunk)
+	read.MultiLanguagePreSubmitMessageTitleForNotJunk = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageTitleForNotJunk, read.MultiLanguagePreSubmitMessageTitleForNotJunk)
+	read.MultiLanguagePreSubmitMessageTitleForPhishing = reconcile.KeepSet(cfg.MultiLanguagePreSubmitMessageTitleForPhishing, read.MultiLanguagePreSubmitMessageTitleForPhishing)
+	read.MultiLanguageSetting = reconcile.KeepSet(cfg.MultiLanguageSetting, read.MultiLanguageSetting)
 	read.NotJunkReviewResultMessage = reconcile.KeepStr(cfg.NotJunkReviewResultMessage, read.NotJunkReviewResultMessage)
 	read.NotificationFooterMessage = reconcile.KeepStr(cfg.NotificationFooterMessage, read.NotificationFooterMessage)
-	read.NotificationSenderAddress = reconcile.KeepStr(cfg.NotificationSenderAddress, read.NotificationSenderAddress)
+	read.NotificationSenderAddress = reconcile.KeepSet(cfg.NotificationSenderAddress, read.NotificationSenderAddress)
 	read.NotificationsForCleanSubmissionAirInvestigationsEnabled = reconcile.KeepBool(cfg.NotificationsForCleanSubmissionAirInvestigationsEnabled, read.NotificationsForCleanSubmissionAirInvestigationsEnabled)
 	read.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled = reconcile.KeepBool(cfg.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled, read.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled)
 	read.NotificationsForSpamSubmissionAirInvestigationsEnabled = reconcile.KeepBool(cfg.NotificationsForSpamSubmissionAirInvestigationsEnabled, read.NotificationsForSpamSubmissionAirInvestigationsEnabled)
@@ -736,12 +1140,13 @@ func (r *reportSubmissionPolicyResource) reconcileState(cfg, read *reportSubmiss
 	read.PreSubmitMessageTitleForPhishing = reconcile.KeepStr(cfg.PreSubmitMessageTitleForPhishing, read.PreSubmitMessageTitleForPhishing)
 	read.ReportChatMessageEnabled = reconcile.KeepBool(cfg.ReportChatMessageEnabled, read.ReportChatMessageEnabled)
 	read.ReportChatMessageToCustomizedAddressEnabled = reconcile.KeepBool(cfg.ReportChatMessageToCustomizedAddressEnabled, read.ReportChatMessageToCustomizedAddressEnabled)
-	read.ReportJunkAddresses = reconcile.KeepStr(cfg.ReportJunkAddresses, read.ReportJunkAddresses)
+	read.ReportJunkAddresses = reconcile.KeepSet(cfg.ReportJunkAddresses, read.ReportJunkAddresses)
 	read.ReportJunkToCustomizedAddress = reconcile.KeepBool(cfg.ReportJunkToCustomizedAddress, read.ReportJunkToCustomizedAddress)
-	read.ReportNotJunkAddresses = reconcile.KeepStr(cfg.ReportNotJunkAddresses, read.ReportNotJunkAddresses)
+	read.ReportNotJunkAddresses = reconcile.KeepSet(cfg.ReportNotJunkAddresses, read.ReportNotJunkAddresses)
 	read.ReportNotJunkToCustomizedAddress = reconcile.KeepBool(cfg.ReportNotJunkToCustomizedAddress, read.ReportNotJunkToCustomizedAddress)
-	read.ReportPhishAddresses = reconcile.KeepStr(cfg.ReportPhishAddresses, read.ReportPhishAddresses)
+	read.ReportPhishAddresses = reconcile.KeepSet(cfg.ReportPhishAddresses, read.ReportPhishAddresses)
 	read.ReportPhishToCustomizedAddress = reconcile.KeepBool(cfg.ReportPhishToCustomizedAddress, read.ReportPhishToCustomizedAddress)
-	read.ThirdPartyReportAddresses = reconcile.KeepStr(cfg.ThirdPartyReportAddresses, read.ThirdPartyReportAddresses)
+	read.ThirdPartyReportAddresses = reconcile.KeepSet(cfg.ThirdPartyReportAddresses, read.ThirdPartyReportAddresses)
+	read.UserSubmissionOptions = reconcile.KeepInt64(cfg.UserSubmissionOptions, read.UserSubmissionOptions)
 	read.UserSubmissionOptionsMessage = reconcile.KeepStr(cfg.UserSubmissionOptionsMessage, read.UserSubmissionOptionsMessage)
 }

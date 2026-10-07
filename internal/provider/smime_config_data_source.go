@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -39,13 +38,13 @@ func (d *smimeConfigDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"owa_allow_user_choice_of_signing_certificate":           schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAAllowUserChoiceOfSigningCertificate parameter."},
 			"owa_always_encrypt":                                     schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAAlwaysEncrypt parameter."},
 			"owa_always_sign":                                        schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAAlwaysSign parameter."},
-			"owabcc_encrypted_email_forking":                         schema.StringAttribute{Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter."},
-			"owacrl_connection_timeout":                              schema.StringAttribute{Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter."},
-			"owacrl_retrieval_timeout":                               schema.StringAttribute{Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter."},
+			"owabcc_encrypted_email_forking":                         schema.Int64Attribute{Computed: true, Description: "Maps to the -OWABCCEncryptedEmailForking parameter."},
+			"owacrl_connection_timeout":                              schema.Int64Attribute{Computed: true, Description: "Maps to the -OWACRLConnectionTimeout parameter."},
+			"owacrl_retrieval_timeout":                               schema.Int64Attribute{Computed: true, Description: "Maps to the -OWACRLRetrievalTimeout parameter."},
 			"owa_check_crl_on_send":                                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OWACheckCRLOnSend parameter."},
 			"owa_clear_sign":                                         schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAClearSign parameter."},
 			"owa_copy_recipient_headers":                             schema.BoolAttribute{Computed: true, Description: "Maps to the -OWACopyRecipientHeaders parameter."},
-			"owadl_expansion_timeout":                                schema.StringAttribute{Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter."},
+			"owadl_expansion_timeout":                                schema.Int64Attribute{Computed: true, Description: "Maps to the -OWADLExpansionTimeout parameter."},
 			"owa_disable_crl_check":                                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OWADisableCRLCheck parameter."},
 			"owa_encrypt_temporary_buffers":                          schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAEncryptTemporaryBuffers parameter."},
 			"owa_encryption_algorithms":                              schema.StringAttribute{Computed: true, Description: "Maps to the -OWAEncryptionAlgorithms parameter."},
@@ -60,7 +59,7 @@ func (d *smimeConfigDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"owa_triple_wrap_signed_encrypted_mail":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OWATripleWrapSignedEncryptedMail parameter."},
 			"owa_use_key_identifier":                                 schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseKeyIdentifier parameter."},
 			"owa_use_secondary_proxies_when_finding_certificates":    schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseSecondaryProxiesWhenFindingCertificates parameter."},
-			"smime_certificate_issuing_ca":                           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
+			"smime_certificate_issuing_ca":                           schema.StringAttribute{Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
 		},
 	}
 }

@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -24,6 +26,7 @@ var (
 	_ resource.Resource                = &contactResource{}
 	_ resource.ResourceWithConfigure   = &contactResource{}
 	_ resource.ResourceWithImportState = &contactResource{}
+	_ resource.ResourceWithModifyPlan  = &contactResource{}
 )
 
 type contactResource struct{ client *clients.Client }
@@ -51,15 +54,15 @@ type contactModel struct {
 	Name                types.String `tfsdk:"name"`
 	Notes               types.String `tfsdk:"notes"`
 	Office              types.String `tfsdk:"office"`
-	OtherFax            types.String `tfsdk:"other_fax"`
-	OtherHomePhone      types.String `tfsdk:"other_home_phone"`
-	OtherTelephone      types.String `tfsdk:"other_telephone"`
+	OtherFax            types.Set    `tfsdk:"other_fax"`
+	OtherHomePhone      types.Set    `tfsdk:"other_home_phone"`
+	OtherTelephone      types.Set    `tfsdk:"other_telephone"`
 	Pager               types.String `tfsdk:"pager"`
 	Phone               types.String `tfsdk:"phone"`
 	PhoneticDisplayName types.String `tfsdk:"phonetic_display_name"`
-	PostOfficeBox       types.String `tfsdk:"post_office_box"`
+	PostOfficeBox       types.Set    `tfsdk:"post_office_box"`
 	PostalCode          types.String `tfsdk:"postal_code"`
-	SeniorityIndex      types.String `tfsdk:"seniority_index"`
+	SeniorityIndex      types.Int64  `tfsdk:"seniority_index"`
 	SimpleDisplayName   types.String `tfsdk:"simple_display_name"`
 	StateOrProvince     types.String `tfsdk:"state_or_province"`
 	StreetAddress       types.String `tfsdk:"street_address"`
@@ -96,15 +99,15 @@ func (r *contactResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"name":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"notes":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Notes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"office":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_fax":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_home_phone":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"other_telephone":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"other_fax":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherFax parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_home_phone":      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherHomePhone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"other_telephone":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -OtherTelephone parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"pager":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Pager parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phone":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Phone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phonetic_display_name": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"post_office_box":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"post_office_box":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -PostOfficeBox parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"postal_code":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PostalCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"seniority_index":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"seniority_index":       schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -SeniorityIndex parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"simple_display_name":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"state_or_province":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StateOrProvince parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"street_address":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StreetAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -129,58 +132,167 @@ func (r *contactResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config contactModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetContactParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AssistantName = plan.AssistantName.ValueString()
-	sp.City = plan.City.ValueString()
-	sp.Company = plan.Company.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	var cur *contactModel
+	curRead := false
+	current := func() *contactModel {
+		if !curRead {
+			curRead = true
+			var m contactModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-Contact failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.Department = plan.Department.ValueString()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.Fax = plan.Fax.ValueString()
-	sp.FirstName = plan.FirstName.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !config.AssistantName.IsNull() {
+		sp.AssistantName = plan.AssistantName.ValueString()
 	}
-	sp.HomePhone = plan.HomePhone.ValueString()
-	sp.Initials = plan.Initials.ValueString()
-	sp.LastName = plan.LastName.ValueString()
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = v
+	if !config.City.IsNull() {
+		sp.City = plan.City.ValueString()
 	}
-	sp.MobilePhone = plan.MobilePhone.ValueString()
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
+	if !config.Company.IsNull() {
+		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
+	if v := config.CountryOrRegion.ValueString(); v != "" {
+		sp.CountryOrRegion = objectParam(v)
 	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
+	if !config.Department.IsNull() {
+		sp.Department = plan.Department.ValueString()
 	}
-	sp.Pager = plan.Pager.ValueString()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
+	if !config.DisplayName.IsNull() {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.PostalCode = plan.PostalCode.ValueString()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !config.Fax.IsNull() {
+		sp.Fax = plan.Fax.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.StateOrProvince = plan.StateOrProvince.ValueString()
-	sp.StreetAddress = plan.StreetAddress.ValueString()
-	sp.TelephoneAssistant = plan.TelephoneAssistant.ValueString()
-	sp.Title = plan.Title.ValueString()
-	sp.WebPage = plan.WebPage.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !config.FirstName.IsNull() {
+		sp.FirstName = plan.FirstName.ValueString()
+	}
+	if v := config.GeoCoordinates.ValueString(); v != "" {
+		sp.GeoCoordinates = objectParam(v)
+	}
+	if !config.HomePhone.IsNull() {
+		sp.HomePhone = plan.HomePhone.ValueString()
+	}
+	if !config.Initials.IsNull() {
+		sp.Initials = plan.Initials.ValueString()
+	}
+	if !config.LastName.IsNull() {
+		sp.LastName = plan.LastName.ValueString()
+	}
+	if v := config.Manager.ValueString(); v != "" {
+		sp.Manager = objectParam(v)
+	}
+	if !config.MobilePhone.IsNull() {
+		sp.MobilePhone = plan.MobilePhone.ValueString()
+	}
+	if !config.Name.IsNull() {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !config.Notes.IsNull() {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !config.Office.IsNull() {
+		sp.Office = plan.Office.ValueString()
+	}
+	if !config.OtherFax.IsNull() {
+		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.OtherHomePhone.IsNull() {
+		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.OtherTelephone.IsNull() {
+		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.Pager.IsNull() {
+		sp.Pager = plan.Pager.ValueString()
+	}
+	if !config.Phone.IsNull() {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !config.PhoneticDisplayName.IsNull() {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !config.PostOfficeBox.IsNull() {
+		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.PostalCode.IsNull() {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !config.SeniorityIndex.IsNull() {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !config.SimpleDisplayName.IsNull() {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !config.StateOrProvince.IsNull() {
+		sp.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !config.StreetAddress.IsNull() {
+		sp.StreetAddress = plan.StreetAddress.ValueString()
+	}
+	if !config.TelephoneAssistant.IsNull() {
+		sp.TelephoneAssistant = plan.TelephoneAssistant.ValueString()
+	}
+	if !config.Title.IsNull() {
+		sp.Title = plan.Title.ValueString()
+	}
+	if !config.WebPage.IsNull() {
+		sp.WebPage = plan.WebPage.ValueString()
+	}
+	if v := config.WindowsEmailAddress.ValueString(); v != "" {
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -221,56 +333,168 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	id := r.identityOf(state)
 	sp := exo.SetContactParams{}
 	sp.Identity = id
-	sp.AssistantName = plan.AssistantName.ValueString()
-	sp.City = plan.City.ValueString()
-	sp.Company = plan.Company.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	var cur *contactModel
+	curRead := false
+	current := func() *contactModel {
+		if !curRead {
+			curRead = true
+			var m contactModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-Contact failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.Department = plan.Department.ValueString()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.Fax = plan.Fax.ValueString()
-	sp.FirstName = plan.FirstName.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !plan.AssistantName.Equal(state.AssistantName) {
+		sp.AssistantName = plan.AssistantName.ValueString()
 	}
-	sp.HomePhone = plan.HomePhone.ValueString()
-	sp.Initials = plan.Initials.ValueString()
-	sp.LastName = plan.LastName.ValueString()
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = v
+	if !plan.City.Equal(state.City) {
+		sp.City = plan.City.ValueString()
 	}
-	sp.MobilePhone = plan.MobilePhone.ValueString()
-	sp.Name = plan.Name.ValueString()
-	sp.Notes = plan.Notes.ValueString()
-	sp.Office = plan.Office.ValueString()
-	if v := plan.OtherFax.ValueString(); v != "" {
-		sp.OtherFax = v
+	if !plan.Company.Equal(state.Company) {
+		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.OtherHomePhone.ValueString(); v != "" {
-		sp.OtherHomePhone = v
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
-	if v := plan.OtherTelephone.ValueString(); v != "" {
-		sp.OtherTelephone = v
+	if !plan.Department.Equal(state.Department) {
+		sp.Department = plan.Department.ValueString()
 	}
-	sp.Pager = plan.Pager.ValueString()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PostOfficeBox.ValueString(); v != "" {
-		sp.PostOfficeBox = v
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	sp.PostalCode = plan.PostalCode.ValueString()
-	if v := plan.SeniorityIndex.ValueString(); v != "" {
-		sp.SeniorityIndex = v
+	if !plan.Fax.Equal(state.Fax) {
+		sp.Fax = plan.Fax.ValueString()
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	sp.StateOrProvince = plan.StateOrProvince.ValueString()
-	sp.StreetAddress = plan.StreetAddress.ValueString()
-	sp.TelephoneAssistant = plan.TelephoneAssistant.ValueString()
-	sp.Title = plan.Title.ValueString()
-	sp.WebPage = plan.WebPage.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !plan.FirstName.Equal(state.FirstName) {
+		sp.FirstName = plan.FirstName.ValueString()
+	}
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
+	}
+	if !plan.HomePhone.Equal(state.HomePhone) {
+		sp.HomePhone = plan.HomePhone.ValueString()
+	}
+	if !plan.Initials.Equal(state.Initials) {
+		sp.Initials = plan.Initials.ValueString()
+	}
+	if !plan.LastName.Equal(state.LastName) {
+		sp.LastName = plan.LastName.ValueString()
+	}
+	if !plan.Manager.Equal(state.Manager) {
+		if v := plan.Manager.ValueString(); v != "" {
+			sp.Manager = objectParam(v)
+		}
+	}
+	if !plan.MobilePhone.Equal(state.MobilePhone) {
+		sp.MobilePhone = plan.MobilePhone.ValueString()
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.Notes.Equal(state.Notes) {
+		sp.Notes = plan.Notes.ValueString()
+	}
+	if !plan.Office.Equal(state.Office) {
+		sp.Office = plan.Office.ValueString()
+	}
+	if !plan.OtherFax.Equal(state.OtherFax) {
+		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OtherHomePhone.Equal(state.OtherHomePhone) {
+		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.OtherTelephone.Equal(state.OtherTelephone) {
+		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.Pager.Equal(state.Pager) {
+		sp.Pager = plan.Pager.ValueString()
+	}
+	if !plan.Phone.Equal(state.Phone) {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !plan.PostOfficeBox.Equal(state.PostOfficeBox) {
+		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.PostalCode.Equal(state.PostalCode) {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !plan.SeniorityIndex.Equal(state.SeniorityIndex) {
+		if !plan.SeniorityIndex.IsUnknown() {
+			sp.SeniorityIndex = plan.SeniorityIndex.ValueInt64Pointer()
+		}
+	}
+	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !plan.StateOrProvince.Equal(state.StateOrProvince) {
+		sp.StateOrProvince = plan.StateOrProvince.ValueString()
+	}
+	if !plan.StreetAddress.Equal(state.StreetAddress) {
+		sp.StreetAddress = plan.StreetAddress.ValueString()
+	}
+	if !plan.TelephoneAssistant.Equal(state.TelephoneAssistant) {
+		sp.TelephoneAssistant = plan.TelephoneAssistant.ValueString()
+	}
+	if !plan.Title.Equal(state.Title) {
+		sp.Title = plan.Title.ValueString()
+	}
+	if !plan.WebPage.Equal(state.WebPage) {
+		sp.WebPage = plan.WebPage.ValueString()
+	}
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -284,36 +508,27 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 		"AssistantName":       cfg.AssistantName,
 		"City":                cfg.City,
 		"Company":             cfg.Company,
-		"CountryOrRegion":     cfg.CountryOrRegion,
 		"Department":          cfg.Department,
 		"DisplayName":         cfg.DisplayName,
 		"Fax":                 cfg.Fax,
 		"FirstName":           cfg.FirstName,
-		"GeoCoordinates":      cfg.GeoCoordinates,
 		"HomePhone":           cfg.HomePhone,
 		"Initials":            cfg.Initials,
 		"LastName":            cfg.LastName,
-		"Manager":             cfg.Manager,
 		"MobilePhone":         cfg.MobilePhone,
 		"Name":                cfg.Name,
 		"Notes":               cfg.Notes,
 		"Office":              cfg.Office,
-		"OtherFax":            cfg.OtherFax,
-		"OtherHomePhone":      cfg.OtherHomePhone,
-		"OtherTelephone":      cfg.OtherTelephone,
 		"Pager":               cfg.Pager,
 		"Phone":               cfg.Phone,
 		"PhoneticDisplayName": cfg.PhoneticDisplayName,
-		"PostOfficeBox":       cfg.PostOfficeBox,
 		"PostalCode":          cfg.PostalCode,
-		"SeniorityIndex":      cfg.SeniorityIndex,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
 		"StateOrProvince":     cfg.StateOrProvince,
 		"StreetAddress":       cfg.StreetAddress,
 		"TelephoneAssistant":  cfg.TelephoneAssistant,
 		"Title":               cfg.Title,
 		"WebPage":             cfg.WebPage,
-		"WindowsEmailAddress": cfg.WindowsEmailAddress,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -327,6 +542,137 @@ func (r *contactResource) Delete(_ context.Context, _ resource.DeleteRequest, re
 func (r *contactResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *contactResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan contactModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetContact(ctx, exo.GetContactParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur contactModel
+	readContact(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AssistantName.IsUnknown() {
+		plan.AssistantName = cur.AssistantName
+	}
+	if plan.City.IsUnknown() {
+		plan.City = cur.City
+	}
+	if plan.Company.IsUnknown() {
+		plan.Company = cur.Company
+	}
+	if plan.CountryOrRegion.IsUnknown() {
+		plan.CountryOrRegion = cur.CountryOrRegion
+	}
+	if plan.Department.IsUnknown() {
+		plan.Department = cur.Department
+	}
+	if plan.DisplayName.IsUnknown() {
+		plan.DisplayName = cur.DisplayName
+	}
+	if plan.Fax.IsUnknown() {
+		plan.Fax = cur.Fax
+	}
+	if plan.FirstName.IsUnknown() {
+		plan.FirstName = cur.FirstName
+	}
+	if plan.GeoCoordinates.IsUnknown() {
+		plan.GeoCoordinates = cur.GeoCoordinates
+	}
+	if plan.HomePhone.IsUnknown() {
+		plan.HomePhone = cur.HomePhone
+	}
+	if plan.Initials.IsUnknown() {
+		plan.Initials = cur.Initials
+	}
+	if plan.LastName.IsUnknown() {
+		plan.LastName = cur.LastName
+	}
+	if plan.Manager.IsUnknown() {
+		plan.Manager = cur.Manager
+	}
+	if plan.MobilePhone.IsUnknown() {
+		plan.MobilePhone = cur.MobilePhone
+	}
+	if plan.Name.IsUnknown() {
+		plan.Name = cur.Name
+	}
+	if plan.Notes.IsUnknown() {
+		plan.Notes = cur.Notes
+	}
+	if plan.Office.IsUnknown() {
+		plan.Office = cur.Office
+	}
+	if plan.OtherFax.IsUnknown() {
+		plan.OtherFax = cur.OtherFax
+	}
+	if plan.OtherHomePhone.IsUnknown() {
+		plan.OtherHomePhone = cur.OtherHomePhone
+	}
+	if plan.OtherTelephone.IsUnknown() {
+		plan.OtherTelephone = cur.OtherTelephone
+	}
+	if plan.Pager.IsUnknown() {
+		plan.Pager = cur.Pager
+	}
+	if plan.Phone.IsUnknown() {
+		plan.Phone = cur.Phone
+	}
+	if plan.PhoneticDisplayName.IsUnknown() {
+		plan.PhoneticDisplayName = cur.PhoneticDisplayName
+	}
+	if plan.PostOfficeBox.IsUnknown() {
+		plan.PostOfficeBox = cur.PostOfficeBox
+	}
+	if plan.PostalCode.IsUnknown() {
+		plan.PostalCode = cur.PostalCode
+	}
+	if plan.SeniorityIndex.IsUnknown() {
+		plan.SeniorityIndex = cur.SeniorityIndex
+	}
+	if plan.SimpleDisplayName.IsUnknown() {
+		plan.SimpleDisplayName = cur.SimpleDisplayName
+	}
+	if plan.StateOrProvince.IsUnknown() {
+		plan.StateOrProvince = cur.StateOrProvince
+	}
+	if plan.StreetAddress.IsUnknown() {
+		plan.StreetAddress = cur.StreetAddress
+	}
+	if plan.TelephoneAssistant.IsUnknown() {
+		plan.TelephoneAssistant = cur.TelephoneAssistant
+	}
+	if plan.Title.IsUnknown() {
+		plan.Title = cur.Title
+	}
+	if plan.WebPage.IsUnknown() {
+		plan.WebPage = cur.WebPage
+	}
+	if plan.WindowsEmailAddress.IsUnknown() {
+		plan.WindowsEmailAddress = cur.WindowsEmailAddress
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *contactResource) identityOf(m contactModel) string {
@@ -368,36 +714,36 @@ func readContact(ctx context.Context, obj map[string]any, m *contactModel) {
 	m.AssistantName = types.StringValue(getString(obj, "AssistantName"))
 	m.City = types.StringValue(getString(obj, "City"))
 	m.Company = types.StringValue(getString(obj, "Company"))
-	m.CountryOrRegion = types.StringValue(getString(obj, "CountryOrRegion"))
+	m.CountryOrRegion = types.StringValue(getObjectJSON(obj, "CountryOrRegion"))
 	m.Department = types.StringValue(getString(obj, "Department"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.Fax = types.StringValue(getString(obj, "Fax"))
 	m.FirstName = types.StringValue(getString(obj, "FirstName"))
-	m.GeoCoordinates = types.StringValue(getString(obj, "GeoCoordinates"))
+	m.GeoCoordinates = types.StringValue(getObjectJSON(obj, "GeoCoordinates"))
 	m.HomePhone = types.StringValue(getString(obj, "HomePhone"))
 	m.Initials = types.StringValue(getString(obj, "Initials"))
 	m.LastName = types.StringValue(getString(obj, "LastName"))
-	m.Manager = types.StringValue(getString(obj, "Manager"))
+	m.Manager = types.StringValue(getObjectJSON(obj, "Manager"))
 	m.MobilePhone = types.StringValue(getString(obj, "MobilePhone"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Notes = types.StringValue(getString(obj, "Notes"))
 	m.Office = types.StringValue(getString(obj, "Office"))
-	m.OtherFax = types.StringValue(getString(obj, "OtherFax"))
-	m.OtherHomePhone = types.StringValue(getString(obj, "OtherHomePhone"))
-	m.OtherTelephone = types.StringValue(getString(obj, "OtherTelephone"))
+	m.OtherFax = stringSetValue(ctx, getStringSlice(obj, "OtherFax"))
+	m.OtherHomePhone = stringSetValue(ctx, getStringSlice(obj, "OtherHomePhone"))
+	m.OtherTelephone = stringSetValue(ctx, getStringSlice(obj, "OtherTelephone"))
 	m.Pager = types.StringValue(getString(obj, "Pager"))
 	m.Phone = types.StringValue(getString(obj, "Phone"))
 	m.PhoneticDisplayName = types.StringValue(getString(obj, "PhoneticDisplayName"))
-	m.PostOfficeBox = types.StringValue(getString(obj, "PostOfficeBox"))
+	m.PostOfficeBox = stringSetValue(ctx, getStringSlice(obj, "PostOfficeBox"))
 	m.PostalCode = types.StringValue(getString(obj, "PostalCode"))
-	m.SeniorityIndex = types.StringValue(getString(obj, "SeniorityIndex"))
+	m.SeniorityIndex = types.Int64Value(getInt(obj, "SeniorityIndex"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
 	m.StateOrProvince = types.StringValue(getString(obj, "StateOrProvince"))
 	m.StreetAddress = types.StringValue(getString(obj, "StreetAddress"))
 	m.TelephoneAssistant = types.StringValue(getString(obj, "TelephoneAssistant"))
 	m.Title = types.StringValue(getString(obj, "Title"))
 	m.WebPage = types.StringValue(getString(obj, "WebPage"))
-	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
+	m.WindowsEmailAddress = types.StringValue(getObjectJSON(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
@@ -419,15 +765,15 @@ func (r *contactResource) reconcileState(cfg, read *contactModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.Notes = reconcile.KeepStr(cfg.Notes, read.Notes)
 	read.Office = reconcile.KeepStr(cfg.Office, read.Office)
-	read.OtherFax = reconcile.KeepStr(cfg.OtherFax, read.OtherFax)
-	read.OtherHomePhone = reconcile.KeepStr(cfg.OtherHomePhone, read.OtherHomePhone)
-	read.OtherTelephone = reconcile.KeepStr(cfg.OtherTelephone, read.OtherTelephone)
+	read.OtherFax = reconcile.KeepSet(cfg.OtherFax, read.OtherFax)
+	read.OtherHomePhone = reconcile.KeepSet(cfg.OtherHomePhone, read.OtherHomePhone)
+	read.OtherTelephone = reconcile.KeepSet(cfg.OtherTelephone, read.OtherTelephone)
 	read.Pager = reconcile.KeepStr(cfg.Pager, read.Pager)
 	read.Phone = reconcile.KeepStr(cfg.Phone, read.Phone)
 	read.PhoneticDisplayName = reconcile.KeepStr(cfg.PhoneticDisplayName, read.PhoneticDisplayName)
-	read.PostOfficeBox = reconcile.KeepStr(cfg.PostOfficeBox, read.PostOfficeBox)
+	read.PostOfficeBox = reconcile.KeepSet(cfg.PostOfficeBox, read.PostOfficeBox)
 	read.PostalCode = reconcile.KeepStr(cfg.PostalCode, read.PostalCode)
-	read.SeniorityIndex = reconcile.KeepStr(cfg.SeniorityIndex, read.SeniorityIndex)
+	read.SeniorityIndex = reconcile.KeepInt64(cfg.SeniorityIndex, read.SeniorityIndex)
 	read.SimpleDisplayName = reconcile.KeepStr(cfg.SimpleDisplayName, read.SimpleDisplayName)
 	read.StateOrProvince = reconcile.KeepStr(cfg.StateOrProvince, read.StateOrProvince)
 	read.StreetAddress = reconcile.KeepStr(cfg.StreetAddress, read.StreetAddress)

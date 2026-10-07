@@ -24,13 +24,13 @@ Manages the HostedOutboundSpamFilterPolicy object via New-HostedOutboundSpamFilt
 - `action_when_threshold_reached` (String) Maps to the -ActionWhenThresholdReached parameter.
 - `admin_display_name` (String) Maps to the -AdminDisplayName parameter.
 - `auto_forwarding_mode` (String) Maps to the -AutoForwardingMode parameter.
-- `bcc_suspicious_outbound_additional_recipients` (String) Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter.
+- `bcc_suspicious_outbound_additional_recipients` (Set of String) Maps to the -BccSuspiciousOutboundAdditionalRecipients parameter.
 - `bcc_suspicious_outbound_mail` (Boolean) Maps to the -BccSuspiciousOutboundMail parameter.
 - `notify_outbound_spam` (Boolean) Maps to the -NotifyOutboundSpam parameter.
-- `notify_outbound_spam_recipients` (String) Maps to the -NotifyOutboundSpamRecipients parameter.
-- `recipient_limit_external_per_hour` (String) Maps to the -RecipientLimitExternalPerHour parameter.
-- `recipient_limit_internal_per_hour` (String) Maps to the -RecipientLimitInternalPerHour parameter.
-- `recipient_limit_per_day` (String) Maps to the -RecipientLimitPerDay parameter.
+- `notify_outbound_spam_recipients` (Set of String) Maps to the -NotifyOutboundSpamRecipients parameter.
+- `recipient_limit_external_per_hour` (Number) Maps to the -RecipientLimitExternalPerHour parameter.
+- `recipient_limit_internal_per_hour` (Number) Maps to the -RecipientLimitInternalPerHour parameter.
+- `recipient_limit_per_day` (Number) Maps to the -RecipientLimitPerDay parameter.
 - `recommended_policy_type` (String) Maps to the -RecommendedPolicyType parameter.
 
 ### Read-Only

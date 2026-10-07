@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -39,27 +40,28 @@ type owaMailboxPolicyModel struct {
 	AccountTransferEnabled                               types.Bool   `tfsdk:"account_transfer_enabled"`
 	ActionForUnknownFileAndMIMETypes                     types.String `tfsdk:"action_for_unknown_file_and_mime_types"`
 	ActiveSyncIntegrationEnabled                         types.Bool   `tfsdk:"active_sync_integration_enabled"`
-	AdditionalAccountsEnabled                            types.String `tfsdk:"additional_accounts_enabled"`
+	AdditionalAccountsEnabled                            types.Bool   `tfsdk:"additional_accounts_enabled"`
 	AdditionalStorageProvidersAvailable                  types.Bool   `tfsdk:"additional_storage_providers_available"`
 	AllAddressListsEnabled                               types.Bool   `tfsdk:"all_address_lists_enabled"`
 	AllowCopyContactsToDeviceAddressBook                 types.Bool   `tfsdk:"allow_copy_contacts_to_device_address_book"`
 	AllowOfflineOn                                       types.String `tfsdk:"allow_offline_on"`
-	AllowedFileTypes                                     types.String `tfsdk:"allowed_file_types"`
-	AllowedMimeTypes                                     types.String `tfsdk:"allowed_mime_types"`
+	AllowedFileTypes                                     types.Set    `tfsdk:"allowed_file_types"`
+	AllowedMimeTypes                                     types.Set    `tfsdk:"allowed_mime_types"`
 	AllowedOrganizationAccountDomains                    types.Set    `tfsdk:"allowed_organization_account_domains"`
 	AttachmentsOfflineEnabledWin                         types.Bool   `tfsdk:"attachments_offline_enabled_win"`
 	BizBarEnabled                                        types.Bool   `tfsdk:"biz_bar_enabled"`
-	BlockedFileTypes                                     types.String `tfsdk:"blocked_file_types"`
-	BlockedMimeTypes                                     types.String `tfsdk:"blocked_mime_types"`
+	BlockedFileTypes                                     types.Set    `tfsdk:"blocked_file_types"`
+	BlockedMimeTypes                                     types.Set    `tfsdk:"blocked_mime_types"`
 	BookingsMailboxCreationEnabled                       types.Bool   `tfsdk:"bookings_mailbox_creation_enabled"`
 	BookingsMailboxDomain                                types.String `tfsdk:"bookings_mailbox_domain"`
 	BulkImportEMLEnabled                                 types.String `tfsdk:"bulk_import_eml_enabled"`
 	CalendarEnabled                                      types.Bool   `tfsdk:"calendar_enabled"`
 	ChangePasswordEnabled                                types.Bool   `tfsdk:"change_password_enabled"`
-	ChangeSettingsAccountEnabled                         types.String `tfsdk:"change_settings_account_enabled"`
+	ChangeSettingsAccountEnabled                         types.Bool   `tfsdk:"change_settings_account_enabled"`
 	ClassicAttachmentsEnabled                            types.Bool   `tfsdk:"classic_attachments_enabled"`
 	ConditionalAccessPolicy                              types.String `tfsdk:"conditional_access_policy"`
 	ContactsEnabled                                      types.Bool   `tfsdk:"contacts_enabled"`
+	DefaultClientLanguage                                types.Int64  `tfsdk:"default_client_language"`
 	DefaultTheme                                         types.String `tfsdk:"default_theme"`
 	DelegateAccessEnabled                                types.Bool   `tfsdk:"delegate_access_enabled"`
 	DirectFileAccessOnPrivateComputersEnabled            types.Bool   `tfsdk:"direct_file_access_on_private_computers_enabled"`
@@ -73,36 +75,38 @@ type owaMailboxPolicyModel struct {
 	ExternalSPMySiteHostURL                              types.String `tfsdk:"external_sp_my_site_host_url"`
 	FeedbackEnabled                                      types.Bool   `tfsdk:"feedback_enabled"`
 	ForceSaveAttachmentFilteringEnabled                  types.Bool   `tfsdk:"force_save_attachment_filtering_enabled"`
-	ForceSaveFileTypes                                   types.String `tfsdk:"force_save_file_types"`
-	ForceSaveMimeTypes                                   types.String `tfsdk:"force_save_mime_types"`
+	ForceSaveFileTypes                                   types.Set    `tfsdk:"force_save_file_types"`
+	ForceSaveMimeTypes                                   types.Set    `tfsdk:"force_save_mime_types"`
 	ForceWacViewingFirstOnPrivateComputers               types.Bool   `tfsdk:"force_wac_viewing_first_on_private_computers"`
 	ForceWacViewingFirstOnPublicComputers                types.Bool   `tfsdk:"force_wac_viewing_first_on_public_computers"`
 	FreCardsEnabled                                      types.Bool   `tfsdk:"fre_cards_enabled"`
 	GlobalAddressListEnabled                             types.Bool   `tfsdk:"global_address_list_enabled"`
 	GroupCreationEnabled                                 types.Bool   `tfsdk:"group_creation_enabled"`
-	HideClassicOutlookToggleOut                          types.String `tfsdk:"hide_classic_outlook_toggle_out"`
+	HideClassicOutlookToggleOut                          types.Bool   `tfsdk:"hide_classic_outlook_toggle_out"`
 	IRMEnabled                                           types.Bool   `tfsdk:"irm_enabled"`
 	InstantMessagingEnabled                              types.Bool   `tfsdk:"instant_messaging_enabled"`
 	InstantMessagingType                                 types.String `tfsdk:"instant_messaging_type"`
 	InterestingCalendarsEnabled                          types.Bool   `tfsdk:"interesting_calendars_enabled"`
 	InternalSPMySiteHostURL                              types.String `tfsdk:"internal_sp_my_site_host_url"`
 	IsDefault                                            types.Bool   `tfsdk:"is_default"`
-	ItemsToOtherAccountsEnabled                          types.String `tfsdk:"items_to_other_accounts_enabled"`
+	ItemsToOtherAccountsEnabled                          types.Bool   `tfsdk:"items_to_other_accounts_enabled"`
 	JournalEnabled                                       types.Bool   `tfsdk:"journal_enabled"`
 	LinkedInEnabled                                      types.Bool   `tfsdk:"linked_in_enabled"`
 	LocalEventsEnabled                                   types.Bool   `tfsdk:"local_events_enabled"`
+	LogonAndErrorLanguage                                types.Int64  `tfsdk:"logon_and_error_language"`
 	MessagePreviewsDisabled                              types.Bool   `tfsdk:"message_previews_disabled"`
 	MonthlyUpdatesEnabled                                types.Bool   `tfsdk:"monthly_updates_enabled"`
 	Name                                                 types.String `tfsdk:"name"`
 	NotesEnabled                                         types.Bool   `tfsdk:"notes_enabled"`
 	NpsSurveysEnabled                                    types.Bool   `tfsdk:"nps_surveys_enabled"`
 	OWALightEnabled                                      types.Bool   `tfsdk:"owa_light_enabled"`
+	OfflineDaysOfEmailToSave                             types.Int64  `tfsdk:"offline_days_of_email_to_save"`
 	OfflineDaysOfEmailToSaveSelectionEnabled             types.Bool   `tfsdk:"offline_days_of_email_to_save_selection_enabled"`
 	OfflineEnabledWeb                                    types.Bool   `tfsdk:"offline_enabled_web"`
 	OfflineEnabledWin                                    types.Bool   `tfsdk:"offline_enabled_win"`
 	OnSendAddinsEnabled                                  types.Bool   `tfsdk:"on_send_addins_enabled"`
 	OneDriveAttachmentsEnabled                           types.Bool   `tfsdk:"one_drive_attachments_enabled"`
-	OneWinNativeOutlookEnabled                           types.String `tfsdk:"one_win_native_outlook_enabled"`
+	OneWinNativeOutlookEnabled                           types.Bool   `tfsdk:"one_win_native_outlook_enabled"`
 	OrganizationEnabled                                  types.Bool   `tfsdk:"organization_enabled"`
 	OutboundCharset                                      types.String `tfsdk:"outbound_charset"`
 	OutlookBetaToggleEnabled                             types.Bool   `tfsdk:"outlook_beta_toggle_enabled"`
@@ -111,7 +115,7 @@ type owaMailboxPolicyModel struct {
 	OutlookNewslettersReactions                          types.String `tfsdk:"outlook_newsletters_reactions"`
 	OutlookNewslettersShowMore                           types.String `tfsdk:"outlook_newsletters_show_more"`
 	PersonalAccountCalendarsEnabled                      types.Bool   `tfsdk:"personal_account_calendars_enabled"`
-	PersonalAccountsEnabled                              types.String `tfsdk:"personal_accounts_enabled"`
+	PersonalAccountsEnabled                              types.Bool   `tfsdk:"personal_accounts_enabled"`
 	PersonalBookingsDisabled                             types.Bool   `tfsdk:"personal_bookings_disabled"`
 	PhoneticSupportEnabled                               types.Bool   `tfsdk:"phonetic_support_enabled"`
 	PlacesEnabled                                        types.Bool   `tfsdk:"places_enabled"`
@@ -163,31 +167,32 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Manages the OwaMailboxPolicy object via New-OwaMailboxPolicy / Get-OwaMailboxPolicy / Set-OwaMailboxPolicy / Remove-OwaMailboxPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                                         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                                   schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                                   schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"account_transfer_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AccountTransferEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"action_for_unknown_file_and_mime_types":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ActionForUnknownFileAndMIMETypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"active_sync_integration_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ActiveSyncIntegrationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"additional_accounts_enabled":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalAccountsEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"additional_accounts_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalAccountsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"additional_storage_providers_available":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalStorageProvidersAvailable parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"all_address_lists_enabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_copy_contacts_to_device_address_book":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowCopyContactsToDeviceAddressBook parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_offline_on":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowOfflineOn parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_file_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_mime_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"allowed_file_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"allowed_mime_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"allowed_organization_account_domains":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedOrganizationAccountDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"attachments_offline_enabled_win":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AttachmentsOfflineEnabledWin parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"biz_bar_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BizBarEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"blocked_file_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"blocked_mime_types":                                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"blocked_file_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"blocked_mime_types":                                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"bookings_mailbox_creation_enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsMailboxCreationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"bookings_mailbox_domain":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingsMailboxDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"bulk_import_eml_enabled":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkImportEMLEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"calendar_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CalendarEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"change_password_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -ChangePasswordEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"change_settings_account_enabled":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ChangeSettingsAccountEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"change_settings_account_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ChangeSettingsAccountEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"classic_attachments_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassicAttachmentsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"conditional_access_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConditionalAccessPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"contacts_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ContactsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"default_client_language":                                    schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultClientLanguage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_theme":                                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultTheme parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"delegate_access_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DelegateAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"direct_file_access_on_private_computers_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DirectFileAccessOnPrivateComputersEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -201,36 +206,38 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"external_sp_my_site_host_url":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalSPMySiteHostURL parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"feedback_enabled":                                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FeedbackEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"force_save_attachment_filtering_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveAttachmentFilteringEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"force_save_file_types":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveFileTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"force_save_mime_types":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceSaveMimeTypes parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"force_save_file_types":                                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForceSaveFileTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"force_save_mime_types":                                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ForceSaveMimeTypes parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"force_wac_viewing_first_on_private_computers":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceWacViewingFirstOnPrivateComputers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"force_wac_viewing_first_on_public_computers":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceWacViewingFirstOnPublicComputers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"fre_cards_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FreCardsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"global_address_list_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -GlobalAddressListEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"group_creation_enabled":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -GroupCreationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"hide_classic_outlook_toggle_out":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HideClassicOutlookToggleOut parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"hide_classic_outlook_toggle_out":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HideClassicOutlookToggleOut parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"irm_enabled":                                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IRMEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"instant_messaging_enabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InstantMessagingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"instant_messaging_type":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InstantMessagingType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"interesting_calendars_enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InterestingCalendarsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"internal_sp_my_site_host_url":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InternalSPMySiteHostURL parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_default":                                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"items_to_other_accounts_enabled":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ItemsToOtherAccountsEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"items_to_other_accounts_enabled":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ItemsToOtherAccountsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"journal_enabled":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -JournalEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"linked_in_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkedInEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"local_events_enabled":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -LocalEventsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"logon_and_error_language":                                   schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -LogonAndErrorLanguage parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"message_previews_disabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessagePreviewsDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"monthly_updates_enabled":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MonthlyUpdatesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                                       schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"notes_enabled":                                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NotesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"nps_surveys_enabled":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -NpsSurveysEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_light_enabled":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWALightEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"offline_days_of_email_to_save":                              schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -OfflineDaysOfEmailToSave parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"offline_days_of_email_to_save_selection_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineDaysOfEmailToSaveSelectionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"offline_enabled_web":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineEnabledWeb parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"offline_enabled_win":                                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OfflineEnabledWin parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"on_send_addins_enabled":                                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OnSendAddinsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"one_drive_attachments_enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OneDriveAttachmentsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"one_win_native_outlook_enabled":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OneWinNativeOutlookEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"one_win_native_outlook_enabled":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OneWinNativeOutlookEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"organization_enabled":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"outbound_charset":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OutboundCharset parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"outlook_beta_toggle_enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookBetaToggleEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -239,7 +246,7 @@ func (r *owaMailboxPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			"outlook_newsletters_reactions":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookNewslettersReactions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"outlook_newsletters_show_more":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OutlookNewslettersShowMore parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"personal_account_calendars_enabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PersonalAccountCalendarsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"personal_accounts_enabled":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PersonalAccountsEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"personal_accounts_enabled":                                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PersonalAccountsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"personal_bookings_disabled":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PersonalBookingsDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"phonetic_support_enabled":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticSupportEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"places_enabled":                                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PlacesEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -298,9 +305,18 @@ func (r *owaMailboxPolicyResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	p := exo.NewOwaMailboxPolicyParams{
-		IsDefault: plan.IsDefault.ValueBool(),
-		Name:      plan.Name.ValueString(),
+	var config owaMailboxPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewOwaMailboxPolicyParams{}
+	if !config.IsDefault.IsNull() {
+		p.IsDefault = plan.IsDefault.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -352,166 +368,643 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetOwaMailboxPolicyParams{}
 	sp.Identity = id
-	sp.AccountTransferEnabled = plan.AccountTransferEnabled.ValueBool()
-	if v := plan.ActionForUnknownFileAndMIMETypes.ValueString(); v != "" {
-		sp.ActionForUnknownFileAndMIMETypes = v
+	var cur *owaMailboxPolicyModel
+	curRead := false
+	current := func() *owaMailboxPolicyModel {
+		if !curRead {
+			curRead = true
+			var m owaMailboxPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OwaMailboxPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.ActiveSyncIntegrationEnabled = plan.ActiveSyncIntegrationEnabled.ValueBool()
-	if v := plan.AdditionalAccountsEnabled.ValueString(); v != "" {
-		sp.AdditionalAccountsEnabled = v
+	if !plan.AccountTransferEnabled.Equal(state.AccountTransferEnabled) {
+		if !plan.AccountTransferEnabled.IsUnknown() {
+			sp.AccountTransferEnabled = plan.AccountTransferEnabled.ValueBoolPointer()
+		}
 	}
-	sp.AdditionalStorageProvidersAvailable = plan.AdditionalStorageProvidersAvailable.ValueBool()
-	sp.AllAddressListsEnabled = plan.AllAddressListsEnabled.ValueBool()
-	sp.AllowCopyContactsToDeviceAddressBook = plan.AllowCopyContactsToDeviceAddressBook.ValueBool()
-	if v := plan.AllowOfflineOn.ValueString(); v != "" {
-		sp.AllowOfflineOn = v
+	if !plan.ActionForUnknownFileAndMIMETypes.Equal(state.ActionForUnknownFileAndMIMETypes) {
+		if v := plan.ActionForUnknownFileAndMIMETypes.ValueString(); v != "" {
+			sp.ActionForUnknownFileAndMIMETypes = objectParam(v)
+		}
 	}
-	if v := plan.AllowedFileTypes.ValueString(); v != "" {
-		sp.AllowedFileTypes = v
+	if !plan.ActiveSyncIntegrationEnabled.Equal(state.ActiveSyncIntegrationEnabled) {
+		if !plan.ActiveSyncIntegrationEnabled.IsUnknown() {
+			sp.ActiveSyncIntegrationEnabled = plan.ActiveSyncIntegrationEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.AllowedMimeTypes.ValueString(); v != "" {
-		sp.AllowedMimeTypes = v
+	if !plan.AdditionalAccountsEnabled.Equal(state.AdditionalAccountsEnabled) {
+		if !plan.AdditionalAccountsEnabled.IsUnknown() {
+			sp.AdditionalAccountsEnabled = plan.AdditionalAccountsEnabled.ValueBoolPointer()
+		}
 	}
-	sp.AllowedOrganizationAccountDomains = toStringSlice(ctx, plan.AllowedOrganizationAccountDomains, &resp.Diagnostics)
-	sp.AttachmentsOfflineEnabledWin = plan.AttachmentsOfflineEnabledWin.ValueBool()
-	sp.BizBarEnabled = plan.BizBarEnabled.ValueBool()
-	if v := plan.BlockedFileTypes.ValueString(); v != "" {
-		sp.BlockedFileTypes = v
+	if !plan.AdditionalStorageProvidersAvailable.Equal(state.AdditionalStorageProvidersAvailable) {
+		if !plan.AdditionalStorageProvidersAvailable.IsUnknown() {
+			sp.AdditionalStorageProvidersAvailable = plan.AdditionalStorageProvidersAvailable.ValueBoolPointer()
+		}
 	}
-	if v := plan.BlockedMimeTypes.ValueString(); v != "" {
-		sp.BlockedMimeTypes = v
+	if !plan.AllAddressListsEnabled.Equal(state.AllAddressListsEnabled) {
+		if !plan.AllAddressListsEnabled.IsUnknown() {
+			sp.AllAddressListsEnabled = plan.AllAddressListsEnabled.ValueBoolPointer()
+		}
 	}
-	sp.BookingsMailboxCreationEnabled = plan.BookingsMailboxCreationEnabled.ValueBool()
-	sp.BookingsMailboxDomain = plan.BookingsMailboxDomain.ValueString()
-	if v := plan.BulkImportEMLEnabled.ValueString(); v != "" {
-		sp.BulkImportEMLEnabled = v
+	if !plan.AllowCopyContactsToDeviceAddressBook.Equal(state.AllowCopyContactsToDeviceAddressBook) {
+		if !plan.AllowCopyContactsToDeviceAddressBook.IsUnknown() {
+			sp.AllowCopyContactsToDeviceAddressBook = plan.AllowCopyContactsToDeviceAddressBook.ValueBoolPointer()
+		}
 	}
-	sp.CalendarEnabled = plan.CalendarEnabled.ValueBool()
-	sp.ChangePasswordEnabled = plan.ChangePasswordEnabled.ValueBool()
-	if v := plan.ChangeSettingsAccountEnabled.ValueString(); v != "" {
-		sp.ChangeSettingsAccountEnabled = v
+	if !plan.AllowOfflineOn.Equal(state.AllowOfflineOn) {
+		if v := plan.AllowOfflineOn.ValueString(); v != "" {
+			sp.AllowOfflineOn = objectParam(v)
+		}
 	}
-	sp.ClassicAttachmentsEnabled = plan.ClassicAttachmentsEnabled.ValueBool()
-	if v := plan.ConditionalAccessPolicy.ValueString(); v != "" {
-		sp.ConditionalAccessPolicy = v
+	if !plan.AllowedFileTypes.Equal(state.AllowedFileTypes) {
+		if !plan.AllowedFileTypes.IsNull() && !plan.AllowedFileTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AllowedFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.ContactsEnabled = plan.ContactsEnabled.ValueBool()
-	sp.DefaultTheme = plan.DefaultTheme.ValueString()
-	sp.DelegateAccessEnabled = plan.DelegateAccessEnabled.ValueBool()
-	sp.DirectFileAccessOnPrivateComputersEnabled = plan.DirectFileAccessOnPrivateComputersEnabled.ValueBool()
-	sp.DirectFileAccessOnPublicComputersEnabled = plan.DirectFileAccessOnPublicComputersEnabled.ValueBool()
-	sp.DisableFacebook = plan.DisableFacebook.ValueBool()
-	sp.DisplayPhotosEnabled = plan.DisplayPhotosEnabled.ValueBool()
-	sp.EmptyStateEnabled = plan.EmptyStateEnabled.ValueBool()
-	sp.ExplicitLogonEnabled = plan.ExplicitLogonEnabled.ValueBool()
-	sp.ExternalContentSettingsAllowed = toStringSlice(ctx, plan.ExternalContentSettingsAllowed, &resp.Diagnostics)
-	sp.ExternalImageProxyEnabled = plan.ExternalImageProxyEnabled.ValueBool()
-	sp.ExternalSPMySiteHostURL = plan.ExternalSPMySiteHostURL.ValueString()
-	sp.FeedbackEnabled = plan.FeedbackEnabled.ValueBool()
-	sp.ForceSaveAttachmentFilteringEnabled = plan.ForceSaveAttachmentFilteringEnabled.ValueBool()
-	if v := plan.ForceSaveFileTypes.ValueString(); v != "" {
-		sp.ForceSaveFileTypes = v
+	if !plan.AllowedMimeTypes.Equal(state.AllowedMimeTypes) {
+		if !plan.AllowedMimeTypes.IsNull() && !plan.AllowedMimeTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AllowedMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ForceSaveMimeTypes.ValueString(); v != "" {
-		sp.ForceSaveMimeTypes = v
+	if !plan.AllowedOrganizationAccountDomains.Equal(state.AllowedOrganizationAccountDomains) {
+		if !plan.AllowedOrganizationAccountDomains.IsNull() && !plan.AllowedOrganizationAccountDomains.IsUnknown() {
+			sp.AllowedOrganizationAccountDomains = append([]string{}, toStringSlice(ctx, plan.AllowedOrganizationAccountDomains, &resp.Diagnostics)...)
+		}
 	}
-	sp.ForceWacViewingFirstOnPrivateComputers = plan.ForceWacViewingFirstOnPrivateComputers.ValueBool()
-	sp.ForceWacViewingFirstOnPublicComputers = plan.ForceWacViewingFirstOnPublicComputers.ValueBool()
-	sp.FreCardsEnabled = plan.FreCardsEnabled.ValueBool()
-	sp.GlobalAddressListEnabled = plan.GlobalAddressListEnabled.ValueBool()
-	sp.GroupCreationEnabled = plan.GroupCreationEnabled.ValueBool()
-	if v := plan.HideClassicOutlookToggleOut.ValueString(); v != "" {
-		sp.HideClassicOutlookToggleOut = v
+	if !plan.AttachmentsOfflineEnabledWin.Equal(state.AttachmentsOfflineEnabledWin) {
+		if !plan.AttachmentsOfflineEnabledWin.IsUnknown() {
+			sp.AttachmentsOfflineEnabledWin = plan.AttachmentsOfflineEnabledWin.ValueBoolPointer()
+		}
 	}
-	sp.IRMEnabled = plan.IRMEnabled.ValueBool()
-	sp.InstantMessagingEnabled = plan.InstantMessagingEnabled.ValueBool()
-	if v := plan.InstantMessagingType.ValueString(); v != "" {
-		sp.InstantMessagingType = v
+	if !plan.BizBarEnabled.Equal(state.BizBarEnabled) {
+		if !plan.BizBarEnabled.IsUnknown() {
+			sp.BizBarEnabled = plan.BizBarEnabled.ValueBoolPointer()
+		}
 	}
-	sp.InterestingCalendarsEnabled = plan.InterestingCalendarsEnabled.ValueBool()
-	sp.InternalSPMySiteHostURL = plan.InternalSPMySiteHostURL.ValueString()
-	sp.IsDefault = plan.IsDefault.ValueBool()
-	if v := plan.ItemsToOtherAccountsEnabled.ValueString(); v != "" {
-		sp.ItemsToOtherAccountsEnabled = v
+	if !plan.BlockedFileTypes.Equal(state.BlockedFileTypes) {
+		if !plan.BlockedFileTypes.IsNull() && !plan.BlockedFileTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.JournalEnabled = plan.JournalEnabled.ValueBool()
-	sp.LinkedInEnabled = plan.LinkedInEnabled.ValueBool()
-	sp.LocalEventsEnabled = plan.LocalEventsEnabled.ValueBool()
-	sp.MessagePreviewsDisabled = plan.MessagePreviewsDisabled.ValueBool()
-	sp.MonthlyUpdatesEnabled = plan.MonthlyUpdatesEnabled.ValueBool()
-	sp.NotesEnabled = plan.NotesEnabled.ValueBool()
-	sp.NpsSurveysEnabled = plan.NpsSurveysEnabled.ValueBool()
-	sp.OWALightEnabled = plan.OWALightEnabled.ValueBool()
-	sp.OfflineDaysOfEmailToSaveSelectionEnabled = plan.OfflineDaysOfEmailToSaveSelectionEnabled.ValueBool()
-	sp.OfflineEnabledWeb = plan.OfflineEnabledWeb.ValueBool()
-	sp.OfflineEnabledWin = plan.OfflineEnabledWin.ValueBool()
-	sp.OnSendAddinsEnabled = plan.OnSendAddinsEnabled.ValueBool()
-	sp.OneDriveAttachmentsEnabled = plan.OneDriveAttachmentsEnabled.ValueBool()
-	if v := plan.OneWinNativeOutlookEnabled.ValueString(); v != "" {
-		sp.OneWinNativeOutlookEnabled = v
+	if !plan.BlockedMimeTypes.Equal(state.BlockedMimeTypes) {
+		if !plan.BlockedMimeTypes.IsNull() && !plan.BlockedMimeTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.OrganizationEnabled = plan.OrganizationEnabled.ValueBool()
-	if v := plan.OutboundCharset.ValueString(); v != "" {
-		sp.OutboundCharset = v
+	if !plan.BookingsMailboxCreationEnabled.Equal(state.BookingsMailboxCreationEnabled) {
+		if !plan.BookingsMailboxCreationEnabled.IsUnknown() {
+			sp.BookingsMailboxCreationEnabled = plan.BookingsMailboxCreationEnabled.ValueBoolPointer()
+		}
 	}
-	sp.OutlookBetaToggleEnabled = plan.OutlookBetaToggleEnabled.ValueBool()
-	if v := plan.OutlookDataFile.ValueString(); v != "" {
-		sp.OutlookDataFile = v
+	if !plan.BookingsMailboxDomain.Equal(state.BookingsMailboxDomain) {
+		sp.BookingsMailboxDomain = plan.BookingsMailboxDomain.ValueString()
 	}
-	if v := plan.OutlookNewslettersAccessLevel.ValueString(); v != "" {
-		sp.OutlookNewslettersAccessLevel = v
+	if !plan.BulkImportEMLEnabled.Equal(state.BulkImportEMLEnabled) {
+		if v := plan.BulkImportEMLEnabled.ValueString(); v != "" {
+			sp.BulkImportEMLEnabled = objectParam(v)
+		}
 	}
-	if v := plan.OutlookNewslettersReactions.ValueString(); v != "" {
-		sp.OutlookNewslettersReactions = v
+	if !plan.CalendarEnabled.Equal(state.CalendarEnabled) {
+		if !plan.CalendarEnabled.IsUnknown() {
+			sp.CalendarEnabled = plan.CalendarEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.OutlookNewslettersShowMore.ValueString(); v != "" {
-		sp.OutlookNewslettersShowMore = v
+	if !plan.ChangePasswordEnabled.Equal(state.ChangePasswordEnabled) {
+		if !plan.ChangePasswordEnabled.IsUnknown() {
+			sp.ChangePasswordEnabled = plan.ChangePasswordEnabled.ValueBoolPointer()
+		}
 	}
-	sp.PersonalAccountCalendarsEnabled = plan.PersonalAccountCalendarsEnabled.ValueBool()
-	if v := plan.PersonalAccountsEnabled.ValueString(); v != "" {
-		sp.PersonalAccountsEnabled = v
+	if !plan.ChangeSettingsAccountEnabled.Equal(state.ChangeSettingsAccountEnabled) {
+		if !plan.ChangeSettingsAccountEnabled.IsUnknown() {
+			sp.ChangeSettingsAccountEnabled = plan.ChangeSettingsAccountEnabled.ValueBoolPointer()
+		}
 	}
-	sp.PersonalBookingsDisabled = plan.PersonalBookingsDisabled.ValueBool()
-	sp.PhoneticSupportEnabled = plan.PhoneticSupportEnabled.ValueBool()
-	sp.PlacesEnabled = plan.PlacesEnabled.ValueBool()
-	sp.PremiumClientEnabled = plan.PremiumClientEnabled.ValueBool()
-	sp.PrintWithoutDownloadEnabled = plan.PrintWithoutDownloadEnabled.ValueBool()
-	sp.ProjectMocaEnabled = plan.ProjectMocaEnabled.ValueBool()
-	sp.PublicFoldersEnabled = plan.PublicFoldersEnabled.ValueBool()
-	sp.RecoverDeletedItemsEnabled = plan.RecoverDeletedItemsEnabled.ValueBool()
-	sp.ReferenceAttachmentsEnabled = plan.ReferenceAttachmentsEnabled.ValueBool()
-	sp.RemindersAndNotificationsEnabled = plan.RemindersAndNotificationsEnabled.ValueBool()
-	sp.ReportJunkEmailEnabled = plan.ReportJunkEmailEnabled.ValueBool()
-	sp.RulesEnabled = plan.RulesEnabled.ValueBool()
-	sp.SMimeSuppressNameChecksEnabled = plan.SMimeSuppressNameChecksEnabled.ValueBool()
-	sp.SatisfactionEnabled = plan.SatisfactionEnabled.ValueBool()
-	sp.SaveAttachmentsToCloudEnabled = plan.SaveAttachmentsToCloudEnabled.ValueBool()
-	sp.SearchFoldersEnabled = plan.SearchFoldersEnabled.ValueBool()
-	sp.SetPhotoEnabled = plan.SetPhotoEnabled.ValueBool()
-	sp.SetPhotoURL = plan.SetPhotoURL.ValueString()
-	sp.ShowOnlineArchiveEnabled = plan.ShowOnlineArchiveEnabled.ValueBool()
-	sp.SignaturesEnabled = plan.SignaturesEnabled.ValueBool()
-	sp.SilverlightEnabled = plan.SilverlightEnabled.ValueBool()
-	sp.SkipCreateUnifiedGroupCustomSharepointClassification = plan.SkipCreateUnifiedGroupCustomSharepointClassification.ValueBool()
-	sp.SpellCheckerEnabled = plan.SpellCheckerEnabled.ValueBool()
-	sp.TasksEnabled = plan.TasksEnabled.ValueBool()
-	sp.TeamsnapCalendarsEnabled = plan.TeamsnapCalendarsEnabled.ValueBool()
-	sp.TextMessagingEnabled = plan.TextMessagingEnabled.ValueBool()
-	sp.ThemeSelectionEnabled = plan.ThemeSelectionEnabled.ValueBool()
-	sp.UMIntegrationEnabled = plan.UMIntegrationEnabled.ValueBool()
-	sp.UseGB18030 = plan.UseGB18030.ValueBool()
-	sp.UseISO885915 = plan.UseISO885915.ValueBool()
-	sp.UserVoiceEnabled = plan.UserVoiceEnabled.ValueBool()
-	sp.WSSAccessOnPrivateComputersEnabled = plan.WSSAccessOnPrivateComputersEnabled.ValueBool()
-	sp.WSSAccessOnPublicComputersEnabled = plan.WSSAccessOnPublicComputersEnabled.ValueBool()
-	sp.WacEditingEnabled = plan.WacEditingEnabled.ValueBool()
-	sp.WacExternalServicesEnabled = plan.WacExternalServicesEnabled.ValueBool()
-	sp.WacOMEXEnabled = plan.WacOMEXEnabled.ValueBool()
-	sp.WacViewingOnPrivateComputersEnabled = plan.WacViewingOnPrivateComputersEnabled.ValueBool()
-	sp.WacViewingOnPublicComputersEnabled = plan.WacViewingOnPublicComputersEnabled.ValueBool()
-	sp.WeatherEnabled = plan.WeatherEnabled.ValueBool()
-	if v := plan.WebPartsFrameOptionsType.ValueString(); v != "" {
-		sp.WebPartsFrameOptionsType = v
+	if !plan.ClassicAttachmentsEnabled.Equal(state.ClassicAttachmentsEnabled) {
+		if !plan.ClassicAttachmentsEnabled.IsUnknown() {
+			sp.ClassicAttachmentsEnabled = plan.ClassicAttachmentsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ConditionalAccessPolicy.Equal(state.ConditionalAccessPolicy) {
+		if v := plan.ConditionalAccessPolicy.ValueString(); v != "" {
+			sp.ConditionalAccessPolicy = objectParam(v)
+		}
+	}
+	if !plan.ContactsEnabled.Equal(state.ContactsEnabled) {
+		if !plan.ContactsEnabled.IsUnknown() {
+			sp.ContactsEnabled = plan.ContactsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DefaultClientLanguage.Equal(state.DefaultClientLanguage) {
+		if !plan.DefaultClientLanguage.IsUnknown() {
+			sp.DefaultClientLanguage = plan.DefaultClientLanguage.ValueInt64Pointer()
+		}
+	}
+	if !plan.DefaultTheme.Equal(state.DefaultTheme) {
+		sp.DefaultTheme = plan.DefaultTheme.ValueString()
+	}
+	if !plan.DelegateAccessEnabled.Equal(state.DelegateAccessEnabled) {
+		if !plan.DelegateAccessEnabled.IsUnknown() {
+			sp.DelegateAccessEnabled = plan.DelegateAccessEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DirectFileAccessOnPrivateComputersEnabled.Equal(state.DirectFileAccessOnPrivateComputersEnabled) {
+		if !plan.DirectFileAccessOnPrivateComputersEnabled.IsUnknown() {
+			sp.DirectFileAccessOnPrivateComputersEnabled = plan.DirectFileAccessOnPrivateComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DirectFileAccessOnPublicComputersEnabled.Equal(state.DirectFileAccessOnPublicComputersEnabled) {
+		if !plan.DirectFileAccessOnPublicComputersEnabled.IsUnknown() {
+			sp.DirectFileAccessOnPublicComputersEnabled = plan.DirectFileAccessOnPublicComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DisableFacebook.Equal(state.DisableFacebook) {
+		sp.DisableFacebook = plan.DisableFacebook.ValueBool()
+	}
+	if !plan.DisplayPhotosEnabled.Equal(state.DisplayPhotosEnabled) {
+		if !plan.DisplayPhotosEnabled.IsUnknown() {
+			sp.DisplayPhotosEnabled = plan.DisplayPhotosEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EmptyStateEnabled.Equal(state.EmptyStateEnabled) {
+		if !plan.EmptyStateEnabled.IsUnknown() {
+			sp.EmptyStateEnabled = plan.EmptyStateEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExplicitLogonEnabled.Equal(state.ExplicitLogonEnabled) {
+		if !plan.ExplicitLogonEnabled.IsUnknown() {
+			sp.ExplicitLogonEnabled = plan.ExplicitLogonEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExternalContentSettingsAllowed.Equal(state.ExternalContentSettingsAllowed) {
+		if !plan.ExternalContentSettingsAllowed.IsNull() && !plan.ExternalContentSettingsAllowed.IsUnknown() {
+			sp.ExternalContentSettingsAllowed = append([]string{}, toStringSlice(ctx, plan.ExternalContentSettingsAllowed, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExternalImageProxyEnabled.Equal(state.ExternalImageProxyEnabled) {
+		if !plan.ExternalImageProxyEnabled.IsUnknown() {
+			sp.ExternalImageProxyEnabled = plan.ExternalImageProxyEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ExternalSPMySiteHostURL.Equal(state.ExternalSPMySiteHostURL) {
+		sp.ExternalSPMySiteHostURL = plan.ExternalSPMySiteHostURL.ValueString()
+	}
+	if !plan.FeedbackEnabled.Equal(state.FeedbackEnabled) {
+		if !plan.FeedbackEnabled.IsUnknown() {
+			sp.FeedbackEnabled = plan.FeedbackEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ForceSaveAttachmentFilteringEnabled.Equal(state.ForceSaveAttachmentFilteringEnabled) {
+		if !plan.ForceSaveAttachmentFilteringEnabled.IsUnknown() {
+			sp.ForceSaveAttachmentFilteringEnabled = plan.ForceSaveAttachmentFilteringEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ForceSaveFileTypes.Equal(state.ForceSaveFileTypes) {
+		if !plan.ForceSaveFileTypes.IsNull() && !plan.ForceSaveFileTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ForceSaveFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ForceSaveFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ForceSaveFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ForceSaveFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ForceSaveMimeTypes.Equal(state.ForceSaveMimeTypes) {
+		if !plan.ForceSaveMimeTypes.IsNull() && !plan.ForceSaveMimeTypes.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ForceSaveMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ForceSaveMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ForceSaveMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ForceSaveMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ForceWacViewingFirstOnPrivateComputers.Equal(state.ForceWacViewingFirstOnPrivateComputers) {
+		if !plan.ForceWacViewingFirstOnPrivateComputers.IsUnknown() {
+			sp.ForceWacViewingFirstOnPrivateComputers = plan.ForceWacViewingFirstOnPrivateComputers.ValueBoolPointer()
+		}
+	}
+	if !plan.ForceWacViewingFirstOnPublicComputers.Equal(state.ForceWacViewingFirstOnPublicComputers) {
+		if !plan.ForceWacViewingFirstOnPublicComputers.IsUnknown() {
+			sp.ForceWacViewingFirstOnPublicComputers = plan.ForceWacViewingFirstOnPublicComputers.ValueBoolPointer()
+		}
+	}
+	if !plan.FreCardsEnabled.Equal(state.FreCardsEnabled) {
+		if !plan.FreCardsEnabled.IsUnknown() {
+			sp.FreCardsEnabled = plan.FreCardsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.GlobalAddressListEnabled.Equal(state.GlobalAddressListEnabled) {
+		if !plan.GlobalAddressListEnabled.IsUnknown() {
+			sp.GlobalAddressListEnabled = plan.GlobalAddressListEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.GroupCreationEnabled.Equal(state.GroupCreationEnabled) {
+		if !plan.GroupCreationEnabled.IsUnknown() {
+			sp.GroupCreationEnabled = plan.GroupCreationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.HideClassicOutlookToggleOut.Equal(state.HideClassicOutlookToggleOut) {
+		if !plan.HideClassicOutlookToggleOut.IsUnknown() {
+			sp.HideClassicOutlookToggleOut = plan.HideClassicOutlookToggleOut.ValueBoolPointer()
+		}
+	}
+	if !plan.IRMEnabled.Equal(state.IRMEnabled) {
+		if !plan.IRMEnabled.IsUnknown() {
+			sp.IRMEnabled = plan.IRMEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.InstantMessagingEnabled.Equal(state.InstantMessagingEnabled) {
+		if !plan.InstantMessagingEnabled.IsUnknown() {
+			sp.InstantMessagingEnabled = plan.InstantMessagingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.InstantMessagingType.Equal(state.InstantMessagingType) {
+		if v := plan.InstantMessagingType.ValueString(); v != "" {
+			sp.InstantMessagingType = objectParam(v)
+		}
+	}
+	if !plan.InterestingCalendarsEnabled.Equal(state.InterestingCalendarsEnabled) {
+		if !plan.InterestingCalendarsEnabled.IsUnknown() {
+			sp.InterestingCalendarsEnabled = plan.InterestingCalendarsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.InternalSPMySiteHostURL.Equal(state.InternalSPMySiteHostURL) {
+		sp.InternalSPMySiteHostURL = plan.InternalSPMySiteHostURL.ValueString()
+	}
+	if !plan.IsDefault.Equal(state.IsDefault) {
+		sp.IsDefault = plan.IsDefault.ValueBool()
+	}
+	if !plan.ItemsToOtherAccountsEnabled.Equal(state.ItemsToOtherAccountsEnabled) {
+		if !plan.ItemsToOtherAccountsEnabled.IsUnknown() {
+			sp.ItemsToOtherAccountsEnabled = plan.ItemsToOtherAccountsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.JournalEnabled.Equal(state.JournalEnabled) {
+		if !plan.JournalEnabled.IsUnknown() {
+			sp.JournalEnabled = plan.JournalEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LinkedInEnabled.Equal(state.LinkedInEnabled) {
+		if !plan.LinkedInEnabled.IsUnknown() {
+			sp.LinkedInEnabled = plan.LinkedInEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LocalEventsEnabled.Equal(state.LocalEventsEnabled) {
+		if !plan.LocalEventsEnabled.IsUnknown() {
+			sp.LocalEventsEnabled = plan.LocalEventsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LogonAndErrorLanguage.Equal(state.LogonAndErrorLanguage) {
+		if !plan.LogonAndErrorLanguage.IsUnknown() {
+			sp.LogonAndErrorLanguage = plan.LogonAndErrorLanguage.ValueInt64Pointer()
+		}
+	}
+	if !plan.MessagePreviewsDisabled.Equal(state.MessagePreviewsDisabled) {
+		if !plan.MessagePreviewsDisabled.IsUnknown() {
+			sp.MessagePreviewsDisabled = plan.MessagePreviewsDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.MonthlyUpdatesEnabled.Equal(state.MonthlyUpdatesEnabled) {
+		if !plan.MonthlyUpdatesEnabled.IsUnknown() {
+			sp.MonthlyUpdatesEnabled = plan.MonthlyUpdatesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NotesEnabled.Equal(state.NotesEnabled) {
+		if !plan.NotesEnabled.IsUnknown() {
+			sp.NotesEnabled = plan.NotesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.NpsSurveysEnabled.Equal(state.NpsSurveysEnabled) {
+		if !plan.NpsSurveysEnabled.IsUnknown() {
+			sp.NpsSurveysEnabled = plan.NpsSurveysEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OWALightEnabled.Equal(state.OWALightEnabled) {
+		if !plan.OWALightEnabled.IsUnknown() {
+			sp.OWALightEnabled = plan.OWALightEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OfflineDaysOfEmailToSave.Equal(state.OfflineDaysOfEmailToSave) {
+		if !plan.OfflineDaysOfEmailToSave.IsUnknown() {
+			sp.OfflineDaysOfEmailToSave = plan.OfflineDaysOfEmailToSave.ValueInt64Pointer()
+		}
+	}
+	if !plan.OfflineDaysOfEmailToSaveSelectionEnabled.Equal(state.OfflineDaysOfEmailToSaveSelectionEnabled) {
+		if !plan.OfflineDaysOfEmailToSaveSelectionEnabled.IsUnknown() {
+			sp.OfflineDaysOfEmailToSaveSelectionEnabled = plan.OfflineDaysOfEmailToSaveSelectionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OfflineEnabledWeb.Equal(state.OfflineEnabledWeb) {
+		if !plan.OfflineEnabledWeb.IsUnknown() {
+			sp.OfflineEnabledWeb = plan.OfflineEnabledWeb.ValueBoolPointer()
+		}
+	}
+	if !plan.OfflineEnabledWin.Equal(state.OfflineEnabledWin) {
+		if !plan.OfflineEnabledWin.IsUnknown() {
+			sp.OfflineEnabledWin = plan.OfflineEnabledWin.ValueBoolPointer()
+		}
+	}
+	if !plan.OnSendAddinsEnabled.Equal(state.OnSendAddinsEnabled) {
+		if !plan.OnSendAddinsEnabled.IsUnknown() {
+			sp.OnSendAddinsEnabled = plan.OnSendAddinsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OneDriveAttachmentsEnabled.Equal(state.OneDriveAttachmentsEnabled) {
+		if !plan.OneDriveAttachmentsEnabled.IsUnknown() {
+			sp.OneDriveAttachmentsEnabled = plan.OneDriveAttachmentsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OneWinNativeOutlookEnabled.Equal(state.OneWinNativeOutlookEnabled) {
+		if !plan.OneWinNativeOutlookEnabled.IsUnknown() {
+			sp.OneWinNativeOutlookEnabled = plan.OneWinNativeOutlookEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OrganizationEnabled.Equal(state.OrganizationEnabled) {
+		if !plan.OrganizationEnabled.IsUnknown() {
+			sp.OrganizationEnabled = plan.OrganizationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutboundCharset.Equal(state.OutboundCharset) {
+		if v := plan.OutboundCharset.ValueString(); v != "" {
+			sp.OutboundCharset = objectParam(v)
+		}
+	}
+	if !plan.OutlookBetaToggleEnabled.Equal(state.OutlookBetaToggleEnabled) {
+		if !plan.OutlookBetaToggleEnabled.IsUnknown() {
+			sp.OutlookBetaToggleEnabled = plan.OutlookBetaToggleEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.OutlookDataFile.Equal(state.OutlookDataFile) {
+		if v := plan.OutlookDataFile.ValueString(); v != "" {
+			sp.OutlookDataFile = objectParam(v)
+		}
+	}
+	if !plan.OutlookNewslettersAccessLevel.Equal(state.OutlookNewslettersAccessLevel) {
+		if v := plan.OutlookNewslettersAccessLevel.ValueString(); v != "" {
+			sp.OutlookNewslettersAccessLevel = objectParam(v)
+		}
+	}
+	if !plan.OutlookNewslettersReactions.Equal(state.OutlookNewslettersReactions) {
+		if v := plan.OutlookNewslettersReactions.ValueString(); v != "" {
+			sp.OutlookNewslettersReactions = objectParam(v)
+		}
+	}
+	if !plan.OutlookNewslettersShowMore.Equal(state.OutlookNewslettersShowMore) {
+		if v := plan.OutlookNewslettersShowMore.ValueString(); v != "" {
+			sp.OutlookNewslettersShowMore = objectParam(v)
+		}
+	}
+	if !plan.PersonalAccountCalendarsEnabled.Equal(state.PersonalAccountCalendarsEnabled) {
+		if !plan.PersonalAccountCalendarsEnabled.IsUnknown() {
+			sp.PersonalAccountCalendarsEnabled = plan.PersonalAccountCalendarsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PersonalAccountsEnabled.Equal(state.PersonalAccountsEnabled) {
+		if !plan.PersonalAccountsEnabled.IsUnknown() {
+			sp.PersonalAccountsEnabled = plan.PersonalAccountsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PersonalBookingsDisabled.Equal(state.PersonalBookingsDisabled) {
+		if !plan.PersonalBookingsDisabled.IsUnknown() {
+			sp.PersonalBookingsDisabled = plan.PersonalBookingsDisabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PhoneticSupportEnabled.Equal(state.PhoneticSupportEnabled) {
+		if !plan.PhoneticSupportEnabled.IsUnknown() {
+			sp.PhoneticSupportEnabled = plan.PhoneticSupportEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PlacesEnabled.Equal(state.PlacesEnabled) {
+		if !plan.PlacesEnabled.IsUnknown() {
+			sp.PlacesEnabled = plan.PlacesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PremiumClientEnabled.Equal(state.PremiumClientEnabled) {
+		if !plan.PremiumClientEnabled.IsUnknown() {
+			sp.PremiumClientEnabled = plan.PremiumClientEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PrintWithoutDownloadEnabled.Equal(state.PrintWithoutDownloadEnabled) {
+		if !plan.PrintWithoutDownloadEnabled.IsUnknown() {
+			sp.PrintWithoutDownloadEnabled = plan.PrintWithoutDownloadEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ProjectMocaEnabled.Equal(state.ProjectMocaEnabled) {
+		if !plan.ProjectMocaEnabled.IsUnknown() {
+			sp.ProjectMocaEnabled = plan.ProjectMocaEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PublicFoldersEnabled.Equal(state.PublicFoldersEnabled) {
+		if !plan.PublicFoldersEnabled.IsUnknown() {
+			sp.PublicFoldersEnabled = plan.PublicFoldersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RecoverDeletedItemsEnabled.Equal(state.RecoverDeletedItemsEnabled) {
+		if !plan.RecoverDeletedItemsEnabled.IsUnknown() {
+			sp.RecoverDeletedItemsEnabled = plan.RecoverDeletedItemsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ReferenceAttachmentsEnabled.Equal(state.ReferenceAttachmentsEnabled) {
+		if !plan.ReferenceAttachmentsEnabled.IsUnknown() {
+			sp.ReferenceAttachmentsEnabled = plan.ReferenceAttachmentsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RemindersAndNotificationsEnabled.Equal(state.RemindersAndNotificationsEnabled) {
+		if !plan.RemindersAndNotificationsEnabled.IsUnknown() {
+			sp.RemindersAndNotificationsEnabled = plan.RemindersAndNotificationsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ReportJunkEmailEnabled.Equal(state.ReportJunkEmailEnabled) {
+		if !plan.ReportJunkEmailEnabled.IsUnknown() {
+			sp.ReportJunkEmailEnabled = plan.ReportJunkEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RulesEnabled.Equal(state.RulesEnabled) {
+		if !plan.RulesEnabled.IsUnknown() {
+			sp.RulesEnabled = plan.RulesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SMimeSuppressNameChecksEnabled.Equal(state.SMimeSuppressNameChecksEnabled) {
+		if !plan.SMimeSuppressNameChecksEnabled.IsUnknown() {
+			sp.SMimeSuppressNameChecksEnabled = plan.SMimeSuppressNameChecksEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SatisfactionEnabled.Equal(state.SatisfactionEnabled) {
+		if !plan.SatisfactionEnabled.IsUnknown() {
+			sp.SatisfactionEnabled = plan.SatisfactionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SaveAttachmentsToCloudEnabled.Equal(state.SaveAttachmentsToCloudEnabled) {
+		if !plan.SaveAttachmentsToCloudEnabled.IsUnknown() {
+			sp.SaveAttachmentsToCloudEnabled = plan.SaveAttachmentsToCloudEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SearchFoldersEnabled.Equal(state.SearchFoldersEnabled) {
+		if !plan.SearchFoldersEnabled.IsUnknown() {
+			sp.SearchFoldersEnabled = plan.SearchFoldersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SetPhotoEnabled.Equal(state.SetPhotoEnabled) {
+		if !plan.SetPhotoEnabled.IsUnknown() {
+			sp.SetPhotoEnabled = plan.SetPhotoEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SetPhotoURL.Equal(state.SetPhotoURL) {
+		sp.SetPhotoURL = plan.SetPhotoURL.ValueString()
+	}
+	if !plan.ShowOnlineArchiveEnabled.Equal(state.ShowOnlineArchiveEnabled) {
+		if !plan.ShowOnlineArchiveEnabled.IsUnknown() {
+			sp.ShowOnlineArchiveEnabled = plan.ShowOnlineArchiveEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SignaturesEnabled.Equal(state.SignaturesEnabled) {
+		if !plan.SignaturesEnabled.IsUnknown() {
+			sp.SignaturesEnabled = plan.SignaturesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SilverlightEnabled.Equal(state.SilverlightEnabled) {
+		if !plan.SilverlightEnabled.IsUnknown() {
+			sp.SilverlightEnabled = plan.SilverlightEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SkipCreateUnifiedGroupCustomSharepointClassification.Equal(state.SkipCreateUnifiedGroupCustomSharepointClassification) {
+		if !plan.SkipCreateUnifiedGroupCustomSharepointClassification.IsUnknown() {
+			sp.SkipCreateUnifiedGroupCustomSharepointClassification = plan.SkipCreateUnifiedGroupCustomSharepointClassification.ValueBoolPointer()
+		}
+	}
+	if !plan.SpellCheckerEnabled.Equal(state.SpellCheckerEnabled) {
+		if !plan.SpellCheckerEnabled.IsUnknown() {
+			sp.SpellCheckerEnabled = plan.SpellCheckerEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TasksEnabled.Equal(state.TasksEnabled) {
+		if !plan.TasksEnabled.IsUnknown() {
+			sp.TasksEnabled = plan.TasksEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TeamsnapCalendarsEnabled.Equal(state.TeamsnapCalendarsEnabled) {
+		if !plan.TeamsnapCalendarsEnabled.IsUnknown() {
+			sp.TeamsnapCalendarsEnabled = plan.TeamsnapCalendarsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TextMessagingEnabled.Equal(state.TextMessagingEnabled) {
+		if !plan.TextMessagingEnabled.IsUnknown() {
+			sp.TextMessagingEnabled = plan.TextMessagingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ThemeSelectionEnabled.Equal(state.ThemeSelectionEnabled) {
+		if !plan.ThemeSelectionEnabled.IsUnknown() {
+			sp.ThemeSelectionEnabled = plan.ThemeSelectionEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.UMIntegrationEnabled.Equal(state.UMIntegrationEnabled) {
+		if !plan.UMIntegrationEnabled.IsUnknown() {
+			sp.UMIntegrationEnabled = plan.UMIntegrationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.UseGB18030.Equal(state.UseGB18030) {
+		if !plan.UseGB18030.IsUnknown() {
+			sp.UseGB18030 = plan.UseGB18030.ValueBoolPointer()
+		}
+	}
+	if !plan.UseISO885915.Equal(state.UseISO885915) {
+		if !plan.UseISO885915.IsUnknown() {
+			sp.UseISO885915 = plan.UseISO885915.ValueBoolPointer()
+		}
+	}
+	if !plan.UserVoiceEnabled.Equal(state.UserVoiceEnabled) {
+		if !plan.UserVoiceEnabled.IsUnknown() {
+			sp.UserVoiceEnabled = plan.UserVoiceEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WSSAccessOnPrivateComputersEnabled.Equal(state.WSSAccessOnPrivateComputersEnabled) {
+		if !plan.WSSAccessOnPrivateComputersEnabled.IsUnknown() {
+			sp.WSSAccessOnPrivateComputersEnabled = plan.WSSAccessOnPrivateComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WSSAccessOnPublicComputersEnabled.Equal(state.WSSAccessOnPublicComputersEnabled) {
+		if !plan.WSSAccessOnPublicComputersEnabled.IsUnknown() {
+			sp.WSSAccessOnPublicComputersEnabled = plan.WSSAccessOnPublicComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WacEditingEnabled.Equal(state.WacEditingEnabled) {
+		if !plan.WacEditingEnabled.IsUnknown() {
+			sp.WacEditingEnabled = plan.WacEditingEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WacExternalServicesEnabled.Equal(state.WacExternalServicesEnabled) {
+		if !plan.WacExternalServicesEnabled.IsUnknown() {
+			sp.WacExternalServicesEnabled = plan.WacExternalServicesEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WacOMEXEnabled.Equal(state.WacOMEXEnabled) {
+		if !plan.WacOMEXEnabled.IsUnknown() {
+			sp.WacOMEXEnabled = plan.WacOMEXEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WacViewingOnPrivateComputersEnabled.Equal(state.WacViewingOnPrivateComputersEnabled) {
+		if !plan.WacViewingOnPrivateComputersEnabled.IsUnknown() {
+			sp.WacViewingOnPrivateComputersEnabled = plan.WacViewingOnPrivateComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WacViewingOnPublicComputersEnabled.Equal(state.WacViewingOnPublicComputersEnabled) {
+		if !plan.WacViewingOnPublicComputersEnabled.IsUnknown() {
+			sp.WacViewingOnPublicComputersEnabled = plan.WacViewingOnPublicComputersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WeatherEnabled.Equal(state.WeatherEnabled) {
+		if !plan.WeatherEnabled.IsUnknown() {
+			sp.WeatherEnabled = plan.WeatherEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WebPartsFrameOptionsType.Equal(state.WebPartsFrameOptionsType) {
+		if v := plan.WebPartsFrameOptionsType.ValueString(); v != "" {
+			sp.WebPartsFrameOptionsType = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -522,34 +1015,11 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ActionForUnknownFileAndMIMETypes": cfg.ActionForUnknownFileAndMIMETypes,
-		"AdditionalAccountsEnabled":        cfg.AdditionalAccountsEnabled,
-		"AllowOfflineOn":                   cfg.AllowOfflineOn,
-		"AllowedFileTypes":                 cfg.AllowedFileTypes,
-		"AllowedMimeTypes":                 cfg.AllowedMimeTypes,
-		"BlockedFileTypes":                 cfg.BlockedFileTypes,
-		"BlockedMimeTypes":                 cfg.BlockedMimeTypes,
-		"BookingsMailboxDomain":            cfg.BookingsMailboxDomain,
-		"BulkImportEMLEnabled":             cfg.BulkImportEMLEnabled,
-		"ChangeSettingsAccountEnabled":     cfg.ChangeSettingsAccountEnabled,
-		"ConditionalAccessPolicy":          cfg.ConditionalAccessPolicy,
-		"DefaultTheme":                     cfg.DefaultTheme,
-		"ExternalSPMySiteHostURL":          cfg.ExternalSPMySiteHostURL,
-		"ForceSaveFileTypes":               cfg.ForceSaveFileTypes,
-		"ForceSaveMimeTypes":               cfg.ForceSaveMimeTypes,
-		"HideClassicOutlookToggleOut":      cfg.HideClassicOutlookToggleOut,
-		"InstantMessagingType":             cfg.InstantMessagingType,
-		"InternalSPMySiteHostURL":          cfg.InternalSPMySiteHostURL,
-		"ItemsToOtherAccountsEnabled":      cfg.ItemsToOtherAccountsEnabled,
-		"OneWinNativeOutlookEnabled":       cfg.OneWinNativeOutlookEnabled,
-		"OutboundCharset":                  cfg.OutboundCharset,
-		"OutlookDataFile":                  cfg.OutlookDataFile,
-		"OutlookNewslettersAccessLevel":    cfg.OutlookNewslettersAccessLevel,
-		"OutlookNewslettersReactions":      cfg.OutlookNewslettersReactions,
-		"OutlookNewslettersShowMore":       cfg.OutlookNewslettersShowMore,
-		"PersonalAccountsEnabled":          cfg.PersonalAccountsEnabled,
-		"SetPhotoURL":                      cfg.SetPhotoURL,
-		"WebPartsFrameOptionsType":         cfg.WebPartsFrameOptionsType,
+		"BookingsMailboxDomain":   cfg.BookingsMailboxDomain,
+		"DefaultTheme":            cfg.DefaultTheme,
+		"ExternalSPMySiteHostURL": cfg.ExternalSPMySiteHostURL,
+		"InternalSPMySiteHostURL": cfg.InternalSPMySiteHostURL,
+		"SetPhotoURL":             cfg.SetPhotoURL,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -612,29 +1082,30 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AccountTransferEnabled = types.BoolValue(getBool(obj, "AccountTransferEnabled"))
-	m.ActionForUnknownFileAndMIMETypes = types.StringValue(getString(obj, "ActionForUnknownFileAndMIMETypes"))
+	m.ActionForUnknownFileAndMIMETypes = types.StringValue(getObjectJSON(obj, "ActionForUnknownFileAndMIMETypes"))
 	m.ActiveSyncIntegrationEnabled = types.BoolValue(getBool(obj, "ActiveSyncIntegrationEnabled"))
-	m.AdditionalAccountsEnabled = types.StringValue(getString(obj, "AdditionalAccountsEnabled"))
+	m.AdditionalAccountsEnabled = types.BoolValue(getBool(obj, "AdditionalAccountsEnabled"))
 	m.AdditionalStorageProvidersAvailable = types.BoolValue(getBool(obj, "AdditionalStorageProvidersAvailable"))
 	m.AllAddressListsEnabled = types.BoolValue(getBool(obj, "AllAddressListsEnabled"))
 	m.AllowCopyContactsToDeviceAddressBook = types.BoolValue(getBool(obj, "AllowCopyContactsToDeviceAddressBook"))
-	m.AllowOfflineOn = types.StringValue(getString(obj, "AllowOfflineOn"))
-	m.AllowedFileTypes = types.StringValue(getString(obj, "AllowedFileTypes"))
-	m.AllowedMimeTypes = types.StringValue(getString(obj, "AllowedMimeTypes"))
+	m.AllowOfflineOn = types.StringValue(getObjectJSON(obj, "AllowOfflineOn"))
+	m.AllowedFileTypes = stringSetValue(ctx, getStringSlice(obj, "AllowedFileTypes"))
+	m.AllowedMimeTypes = stringSetValue(ctx, getStringSlice(obj, "AllowedMimeTypes"))
 	m.AllowedOrganizationAccountDomains = stringSetValue(ctx, getStringSlice(obj, "AllowedOrganizationAccountDomains"))
 	m.AttachmentsOfflineEnabledWin = types.BoolValue(getBool(obj, "AttachmentsOfflineEnabledWin"))
 	m.BizBarEnabled = types.BoolValue(getBool(obj, "BizBarEnabled"))
-	m.BlockedFileTypes = types.StringValue(getString(obj, "BlockedFileTypes"))
-	m.BlockedMimeTypes = types.StringValue(getString(obj, "BlockedMimeTypes"))
+	m.BlockedFileTypes = stringSetValue(ctx, getStringSlice(obj, "BlockedFileTypes"))
+	m.BlockedMimeTypes = stringSetValue(ctx, getStringSlice(obj, "BlockedMimeTypes"))
 	m.BookingsMailboxCreationEnabled = types.BoolValue(getBool(obj, "BookingsMailboxCreationEnabled"))
 	m.BookingsMailboxDomain = types.StringValue(getString(obj, "BookingsMailboxDomain"))
-	m.BulkImportEMLEnabled = types.StringValue(getString(obj, "BulkImportEMLEnabled"))
+	m.BulkImportEMLEnabled = types.StringValue(getObjectJSON(obj, "BulkImportEMLEnabled"))
 	m.CalendarEnabled = types.BoolValue(getBool(obj, "CalendarEnabled"))
 	m.ChangePasswordEnabled = types.BoolValue(getBool(obj, "ChangePasswordEnabled"))
-	m.ChangeSettingsAccountEnabled = types.StringValue(getString(obj, "ChangeSettingsAccountEnabled"))
+	m.ChangeSettingsAccountEnabled = types.BoolValue(getBool(obj, "ChangeSettingsAccountEnabled"))
 	m.ClassicAttachmentsEnabled = types.BoolValue(getBool(obj, "ClassicAttachmentsEnabled"))
-	m.ConditionalAccessPolicy = types.StringValue(getString(obj, "ConditionalAccessPolicy"))
+	m.ConditionalAccessPolicy = types.StringValue(getObjectJSON(obj, "ConditionalAccessPolicy"))
 	m.ContactsEnabled = types.BoolValue(getBool(obj, "ContactsEnabled"))
+	m.DefaultClientLanguage = types.Int64Value(getInt(obj, "DefaultClientLanguage"))
 	m.DefaultTheme = types.StringValue(getString(obj, "DefaultTheme"))
 	m.DelegateAccessEnabled = types.BoolValue(getBool(obj, "DelegateAccessEnabled"))
 	m.DirectFileAccessOnPrivateComputersEnabled = types.BoolValue(getBool(obj, "DirectFileAccessOnPrivateComputersEnabled"))
@@ -648,45 +1119,47 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.ExternalSPMySiteHostURL = types.StringValue(getString(obj, "ExternalSPMySiteHostURL"))
 	m.FeedbackEnabled = types.BoolValue(getBool(obj, "FeedbackEnabled"))
 	m.ForceSaveAttachmentFilteringEnabled = types.BoolValue(getBool(obj, "ForceSaveAttachmentFilteringEnabled"))
-	m.ForceSaveFileTypes = types.StringValue(getString(obj, "ForceSaveFileTypes"))
-	m.ForceSaveMimeTypes = types.StringValue(getString(obj, "ForceSaveMimeTypes"))
+	m.ForceSaveFileTypes = stringSetValue(ctx, getStringSlice(obj, "ForceSaveFileTypes"))
+	m.ForceSaveMimeTypes = stringSetValue(ctx, getStringSlice(obj, "ForceSaveMimeTypes"))
 	m.ForceWacViewingFirstOnPrivateComputers = types.BoolValue(getBool(obj, "ForceWacViewingFirstOnPrivateComputers"))
 	m.ForceWacViewingFirstOnPublicComputers = types.BoolValue(getBool(obj, "ForceWacViewingFirstOnPublicComputers"))
 	m.FreCardsEnabled = types.BoolValue(getBool(obj, "FreCardsEnabled"))
 	m.GlobalAddressListEnabled = types.BoolValue(getBool(obj, "GlobalAddressListEnabled"))
 	m.GroupCreationEnabled = types.BoolValue(getBool(obj, "GroupCreationEnabled"))
-	m.HideClassicOutlookToggleOut = types.StringValue(getString(obj, "HideClassicOutlookToggleOut"))
+	m.HideClassicOutlookToggleOut = types.BoolValue(getBool(obj, "HideClassicOutlookToggleOut"))
 	m.IRMEnabled = types.BoolValue(getBool(obj, "IRMEnabled"))
 	m.InstantMessagingEnabled = types.BoolValue(getBool(obj, "InstantMessagingEnabled"))
-	m.InstantMessagingType = types.StringValue(getString(obj, "InstantMessagingType"))
+	m.InstantMessagingType = types.StringValue(getObjectJSON(obj, "InstantMessagingType"))
 	m.InterestingCalendarsEnabled = types.BoolValue(getBool(obj, "InterestingCalendarsEnabled"))
 	m.InternalSPMySiteHostURL = types.StringValue(getString(obj, "InternalSPMySiteHostURL"))
 	m.IsDefault = types.BoolValue(getBool(obj, "IsDefault"))
-	m.ItemsToOtherAccountsEnabled = types.StringValue(getString(obj, "ItemsToOtherAccountsEnabled"))
+	m.ItemsToOtherAccountsEnabled = types.BoolValue(getBool(obj, "ItemsToOtherAccountsEnabled"))
 	m.JournalEnabled = types.BoolValue(getBool(obj, "JournalEnabled"))
 	m.LinkedInEnabled = types.BoolValue(getBool(obj, "LinkedInEnabled"))
 	m.LocalEventsEnabled = types.BoolValue(getBool(obj, "LocalEventsEnabled"))
+	m.LogonAndErrorLanguage = types.Int64Value(getInt(obj, "LogonAndErrorLanguage"))
 	m.MessagePreviewsDisabled = types.BoolValue(getBool(obj, "MessagePreviewsDisabled"))
 	m.MonthlyUpdatesEnabled = types.BoolValue(getBool(obj, "MonthlyUpdatesEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NotesEnabled = types.BoolValue(getBool(obj, "NotesEnabled"))
 	m.NpsSurveysEnabled = types.BoolValue(getBool(obj, "NpsSurveysEnabled"))
 	m.OWALightEnabled = types.BoolValue(getBool(obj, "OWALightEnabled"))
+	m.OfflineDaysOfEmailToSave = types.Int64Value(getInt(obj, "OfflineDaysOfEmailToSave"))
 	m.OfflineDaysOfEmailToSaveSelectionEnabled = types.BoolValue(getBool(obj, "OfflineDaysOfEmailToSaveSelectionEnabled"))
 	m.OfflineEnabledWeb = types.BoolValue(getBool(obj, "OfflineEnabledWeb"))
 	m.OfflineEnabledWin = types.BoolValue(getBool(obj, "OfflineEnabledWin"))
 	m.OnSendAddinsEnabled = types.BoolValue(getBool(obj, "OnSendAddinsEnabled"))
 	m.OneDriveAttachmentsEnabled = types.BoolValue(getBool(obj, "OneDriveAttachmentsEnabled"))
-	m.OneWinNativeOutlookEnabled = types.StringValue(getString(obj, "OneWinNativeOutlookEnabled"))
+	m.OneWinNativeOutlookEnabled = types.BoolValue(getBool(obj, "OneWinNativeOutlookEnabled"))
 	m.OrganizationEnabled = types.BoolValue(getBool(obj, "OrganizationEnabled"))
-	m.OutboundCharset = types.StringValue(getString(obj, "OutboundCharset"))
+	m.OutboundCharset = types.StringValue(getObjectJSON(obj, "OutboundCharset"))
 	m.OutlookBetaToggleEnabled = types.BoolValue(getBool(obj, "OutlookBetaToggleEnabled"))
-	m.OutlookDataFile = types.StringValue(getString(obj, "OutlookDataFile"))
-	m.OutlookNewslettersAccessLevel = types.StringValue(getString(obj, "OutlookNewslettersAccessLevel"))
-	m.OutlookNewslettersReactions = types.StringValue(getString(obj, "OutlookNewslettersReactions"))
-	m.OutlookNewslettersShowMore = types.StringValue(getString(obj, "OutlookNewslettersShowMore"))
+	m.OutlookDataFile = types.StringValue(getObjectJSON(obj, "OutlookDataFile"))
+	m.OutlookNewslettersAccessLevel = types.StringValue(getObjectJSON(obj, "OutlookNewslettersAccessLevel"))
+	m.OutlookNewslettersReactions = types.StringValue(getObjectJSON(obj, "OutlookNewslettersReactions"))
+	m.OutlookNewslettersShowMore = types.StringValue(getObjectJSON(obj, "OutlookNewslettersShowMore"))
 	m.PersonalAccountCalendarsEnabled = types.BoolValue(getBool(obj, "PersonalAccountCalendarsEnabled"))
-	m.PersonalAccountsEnabled = types.StringValue(getString(obj, "PersonalAccountsEnabled"))
+	m.PersonalAccountsEnabled = types.BoolValue(getBool(obj, "PersonalAccountsEnabled"))
 	m.PersonalBookingsDisabled = types.BoolValue(getBool(obj, "PersonalBookingsDisabled"))
 	m.PhoneticSupportEnabled = types.BoolValue(getBool(obj, "PhoneticSupportEnabled"))
 	m.PlacesEnabled = types.BoolValue(getBool(obj, "PlacesEnabled"))
@@ -726,7 +1199,7 @@ func readOwaMailboxPolicy(ctx context.Context, obj map[string]any, m *owaMailbox
 	m.WacViewingOnPrivateComputersEnabled = types.BoolValue(getBool(obj, "WacViewingOnPrivateComputersEnabled"))
 	m.WacViewingOnPublicComputersEnabled = types.BoolValue(getBool(obj, "WacViewingOnPublicComputersEnabled"))
 	m.WeatherEnabled = types.BoolValue(getBool(obj, "WeatherEnabled"))
-	m.WebPartsFrameOptionsType = types.StringValue(getString(obj, "WebPartsFrameOptionsType"))
+	m.WebPartsFrameOptionsType = types.StringValue(getObjectJSON(obj, "WebPartsFrameOptionsType"))
 	_ = ctx
 }
 
@@ -734,27 +1207,28 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.AccountTransferEnabled = reconcile.KeepBool(cfg.AccountTransferEnabled, read.AccountTransferEnabled)
 	read.ActionForUnknownFileAndMIMETypes = reconcile.KeepStr(cfg.ActionForUnknownFileAndMIMETypes, read.ActionForUnknownFileAndMIMETypes)
 	read.ActiveSyncIntegrationEnabled = reconcile.KeepBool(cfg.ActiveSyncIntegrationEnabled, read.ActiveSyncIntegrationEnabled)
-	read.AdditionalAccountsEnabled = reconcile.KeepStr(cfg.AdditionalAccountsEnabled, read.AdditionalAccountsEnabled)
+	read.AdditionalAccountsEnabled = reconcile.KeepBool(cfg.AdditionalAccountsEnabled, read.AdditionalAccountsEnabled)
 	read.AdditionalStorageProvidersAvailable = reconcile.KeepBool(cfg.AdditionalStorageProvidersAvailable, read.AdditionalStorageProvidersAvailable)
 	read.AllAddressListsEnabled = reconcile.KeepBool(cfg.AllAddressListsEnabled, read.AllAddressListsEnabled)
 	read.AllowCopyContactsToDeviceAddressBook = reconcile.KeepBool(cfg.AllowCopyContactsToDeviceAddressBook, read.AllowCopyContactsToDeviceAddressBook)
 	read.AllowOfflineOn = reconcile.KeepStr(cfg.AllowOfflineOn, read.AllowOfflineOn)
-	read.AllowedFileTypes = reconcile.KeepStr(cfg.AllowedFileTypes, read.AllowedFileTypes)
-	read.AllowedMimeTypes = reconcile.KeepStr(cfg.AllowedMimeTypes, read.AllowedMimeTypes)
+	read.AllowedFileTypes = reconcile.KeepSet(cfg.AllowedFileTypes, read.AllowedFileTypes)
+	read.AllowedMimeTypes = reconcile.KeepSet(cfg.AllowedMimeTypes, read.AllowedMimeTypes)
 	read.AllowedOrganizationAccountDomains = reconcile.KeepSet(cfg.AllowedOrganizationAccountDomains, read.AllowedOrganizationAccountDomains)
 	read.AttachmentsOfflineEnabledWin = reconcile.KeepBool(cfg.AttachmentsOfflineEnabledWin, read.AttachmentsOfflineEnabledWin)
 	read.BizBarEnabled = reconcile.KeepBool(cfg.BizBarEnabled, read.BizBarEnabled)
-	read.BlockedFileTypes = reconcile.KeepStr(cfg.BlockedFileTypes, read.BlockedFileTypes)
-	read.BlockedMimeTypes = reconcile.KeepStr(cfg.BlockedMimeTypes, read.BlockedMimeTypes)
+	read.BlockedFileTypes = reconcile.KeepSet(cfg.BlockedFileTypes, read.BlockedFileTypes)
+	read.BlockedMimeTypes = reconcile.KeepSet(cfg.BlockedMimeTypes, read.BlockedMimeTypes)
 	read.BookingsMailboxCreationEnabled = reconcile.KeepBool(cfg.BookingsMailboxCreationEnabled, read.BookingsMailboxCreationEnabled)
 	read.BookingsMailboxDomain = reconcile.KeepStr(cfg.BookingsMailboxDomain, read.BookingsMailboxDomain)
 	read.BulkImportEMLEnabled = reconcile.KeepStr(cfg.BulkImportEMLEnabled, read.BulkImportEMLEnabled)
 	read.CalendarEnabled = reconcile.KeepBool(cfg.CalendarEnabled, read.CalendarEnabled)
 	read.ChangePasswordEnabled = reconcile.KeepBool(cfg.ChangePasswordEnabled, read.ChangePasswordEnabled)
-	read.ChangeSettingsAccountEnabled = reconcile.KeepStr(cfg.ChangeSettingsAccountEnabled, read.ChangeSettingsAccountEnabled)
+	read.ChangeSettingsAccountEnabled = reconcile.KeepBool(cfg.ChangeSettingsAccountEnabled, read.ChangeSettingsAccountEnabled)
 	read.ClassicAttachmentsEnabled = reconcile.KeepBool(cfg.ClassicAttachmentsEnabled, read.ClassicAttachmentsEnabled)
 	read.ConditionalAccessPolicy = reconcile.KeepStr(cfg.ConditionalAccessPolicy, read.ConditionalAccessPolicy)
 	read.ContactsEnabled = reconcile.KeepBool(cfg.ContactsEnabled, read.ContactsEnabled)
+	read.DefaultClientLanguage = reconcile.KeepInt64(cfg.DefaultClientLanguage, read.DefaultClientLanguage)
 	read.DefaultTheme = reconcile.KeepStr(cfg.DefaultTheme, read.DefaultTheme)
 	read.DelegateAccessEnabled = reconcile.KeepBool(cfg.DelegateAccessEnabled, read.DelegateAccessEnabled)
 	read.DirectFileAccessOnPrivateComputersEnabled = reconcile.KeepBool(cfg.DirectFileAccessOnPrivateComputersEnabled, read.DirectFileAccessOnPrivateComputersEnabled)
@@ -768,36 +1242,38 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.ExternalSPMySiteHostURL = reconcile.KeepStr(cfg.ExternalSPMySiteHostURL, read.ExternalSPMySiteHostURL)
 	read.FeedbackEnabled = reconcile.KeepBool(cfg.FeedbackEnabled, read.FeedbackEnabled)
 	read.ForceSaveAttachmentFilteringEnabled = reconcile.KeepBool(cfg.ForceSaveAttachmentFilteringEnabled, read.ForceSaveAttachmentFilteringEnabled)
-	read.ForceSaveFileTypes = reconcile.KeepStr(cfg.ForceSaveFileTypes, read.ForceSaveFileTypes)
-	read.ForceSaveMimeTypes = reconcile.KeepStr(cfg.ForceSaveMimeTypes, read.ForceSaveMimeTypes)
+	read.ForceSaveFileTypes = reconcile.KeepSet(cfg.ForceSaveFileTypes, read.ForceSaveFileTypes)
+	read.ForceSaveMimeTypes = reconcile.KeepSet(cfg.ForceSaveMimeTypes, read.ForceSaveMimeTypes)
 	read.ForceWacViewingFirstOnPrivateComputers = reconcile.KeepBool(cfg.ForceWacViewingFirstOnPrivateComputers, read.ForceWacViewingFirstOnPrivateComputers)
 	read.ForceWacViewingFirstOnPublicComputers = reconcile.KeepBool(cfg.ForceWacViewingFirstOnPublicComputers, read.ForceWacViewingFirstOnPublicComputers)
 	read.FreCardsEnabled = reconcile.KeepBool(cfg.FreCardsEnabled, read.FreCardsEnabled)
 	read.GlobalAddressListEnabled = reconcile.KeepBool(cfg.GlobalAddressListEnabled, read.GlobalAddressListEnabled)
 	read.GroupCreationEnabled = reconcile.KeepBool(cfg.GroupCreationEnabled, read.GroupCreationEnabled)
-	read.HideClassicOutlookToggleOut = reconcile.KeepStr(cfg.HideClassicOutlookToggleOut, read.HideClassicOutlookToggleOut)
+	read.HideClassicOutlookToggleOut = reconcile.KeepBool(cfg.HideClassicOutlookToggleOut, read.HideClassicOutlookToggleOut)
 	read.IRMEnabled = reconcile.KeepBool(cfg.IRMEnabled, read.IRMEnabled)
 	read.InstantMessagingEnabled = reconcile.KeepBool(cfg.InstantMessagingEnabled, read.InstantMessagingEnabled)
 	read.InstantMessagingType = reconcile.KeepStr(cfg.InstantMessagingType, read.InstantMessagingType)
 	read.InterestingCalendarsEnabled = reconcile.KeepBool(cfg.InterestingCalendarsEnabled, read.InterestingCalendarsEnabled)
 	read.InternalSPMySiteHostURL = reconcile.KeepStr(cfg.InternalSPMySiteHostURL, read.InternalSPMySiteHostURL)
 	read.IsDefault = reconcile.KeepBool(cfg.IsDefault, read.IsDefault)
-	read.ItemsToOtherAccountsEnabled = reconcile.KeepStr(cfg.ItemsToOtherAccountsEnabled, read.ItemsToOtherAccountsEnabled)
+	read.ItemsToOtherAccountsEnabled = reconcile.KeepBool(cfg.ItemsToOtherAccountsEnabled, read.ItemsToOtherAccountsEnabled)
 	read.JournalEnabled = reconcile.KeepBool(cfg.JournalEnabled, read.JournalEnabled)
 	read.LinkedInEnabled = reconcile.KeepBool(cfg.LinkedInEnabled, read.LinkedInEnabled)
 	read.LocalEventsEnabled = reconcile.KeepBool(cfg.LocalEventsEnabled, read.LocalEventsEnabled)
+	read.LogonAndErrorLanguage = reconcile.KeepInt64(cfg.LogonAndErrorLanguage, read.LogonAndErrorLanguage)
 	read.MessagePreviewsDisabled = reconcile.KeepBool(cfg.MessagePreviewsDisabled, read.MessagePreviewsDisabled)
 	read.MonthlyUpdatesEnabled = reconcile.KeepBool(cfg.MonthlyUpdatesEnabled, read.MonthlyUpdatesEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NotesEnabled = reconcile.KeepBool(cfg.NotesEnabled, read.NotesEnabled)
 	read.NpsSurveysEnabled = reconcile.KeepBool(cfg.NpsSurveysEnabled, read.NpsSurveysEnabled)
 	read.OWALightEnabled = reconcile.KeepBool(cfg.OWALightEnabled, read.OWALightEnabled)
+	read.OfflineDaysOfEmailToSave = reconcile.KeepInt64(cfg.OfflineDaysOfEmailToSave, read.OfflineDaysOfEmailToSave)
 	read.OfflineDaysOfEmailToSaveSelectionEnabled = reconcile.KeepBool(cfg.OfflineDaysOfEmailToSaveSelectionEnabled, read.OfflineDaysOfEmailToSaveSelectionEnabled)
 	read.OfflineEnabledWeb = reconcile.KeepBool(cfg.OfflineEnabledWeb, read.OfflineEnabledWeb)
 	read.OfflineEnabledWin = reconcile.KeepBool(cfg.OfflineEnabledWin, read.OfflineEnabledWin)
 	read.OnSendAddinsEnabled = reconcile.KeepBool(cfg.OnSendAddinsEnabled, read.OnSendAddinsEnabled)
 	read.OneDriveAttachmentsEnabled = reconcile.KeepBool(cfg.OneDriveAttachmentsEnabled, read.OneDriveAttachmentsEnabled)
-	read.OneWinNativeOutlookEnabled = reconcile.KeepStr(cfg.OneWinNativeOutlookEnabled, read.OneWinNativeOutlookEnabled)
+	read.OneWinNativeOutlookEnabled = reconcile.KeepBool(cfg.OneWinNativeOutlookEnabled, read.OneWinNativeOutlookEnabled)
 	read.OrganizationEnabled = reconcile.KeepBool(cfg.OrganizationEnabled, read.OrganizationEnabled)
 	read.OutboundCharset = reconcile.KeepStr(cfg.OutboundCharset, read.OutboundCharset)
 	read.OutlookBetaToggleEnabled = reconcile.KeepBool(cfg.OutlookBetaToggleEnabled, read.OutlookBetaToggleEnabled)
@@ -806,7 +1282,7 @@ func (r *owaMailboxPolicyResource) reconcileState(cfg, read *owaMailboxPolicyMod
 	read.OutlookNewslettersReactions = reconcile.KeepStr(cfg.OutlookNewslettersReactions, read.OutlookNewslettersReactions)
 	read.OutlookNewslettersShowMore = reconcile.KeepStr(cfg.OutlookNewslettersShowMore, read.OutlookNewslettersShowMore)
 	read.PersonalAccountCalendarsEnabled = reconcile.KeepBool(cfg.PersonalAccountCalendarsEnabled, read.PersonalAccountCalendarsEnabled)
-	read.PersonalAccountsEnabled = reconcile.KeepStr(cfg.PersonalAccountsEnabled, read.PersonalAccountsEnabled)
+	read.PersonalAccountsEnabled = reconcile.KeepBool(cfg.PersonalAccountsEnabled, read.PersonalAccountsEnabled)
 	read.PersonalBookingsDisabled = reconcile.KeepBool(cfg.PersonalBookingsDisabled, read.PersonalBookingsDisabled)
 	read.PhoneticSupportEnabled = reconcile.KeepBool(cfg.PhoneticSupportEnabled, read.PhoneticSupportEnabled)
 	read.PlacesEnabled = reconcile.KeepBool(cfg.PlacesEnabled, read.PlacesEnabled)

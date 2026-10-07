@@ -26,7 +26,7 @@ Read-Only:
 
 - `classification_rule_collection_identity` (String) Maps to the -ClassificationRuleCollectionIdentity parameter.
 - `description` (String) Maps to the -Description parameter.
-- `fingerprints` (String) Maps to the -Fingerprints parameter.
+- `fingerprints` (Set of String) Maps to the -Fingerprints parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `is_default` (Boolean) Maps to the -IsDefault parameter.

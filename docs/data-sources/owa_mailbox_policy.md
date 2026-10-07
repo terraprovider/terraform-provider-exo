@@ -25,27 +25,28 @@ Look up an existing OwaMailboxPolicy object. Set identity or name to select it.
 - `account_transfer_enabled` (Boolean) Maps to the -AccountTransferEnabled parameter.
 - `action_for_unknown_file_and_mime_types` (String) Maps to the -ActionForUnknownFileAndMIMETypes parameter.
 - `active_sync_integration_enabled` (Boolean) Maps to the -ActiveSyncIntegrationEnabled parameter.
-- `additional_accounts_enabled` (String) Maps to the -AdditionalAccountsEnabled parameter.
+- `additional_accounts_enabled` (Boolean) Maps to the -AdditionalAccountsEnabled parameter.
 - `additional_storage_providers_available` (Boolean) Maps to the -AdditionalStorageProvidersAvailable parameter.
 - `all_address_lists_enabled` (Boolean) Maps to the -AllAddressListsEnabled parameter.
 - `allow_copy_contacts_to_device_address_book` (Boolean) Maps to the -AllowCopyContactsToDeviceAddressBook parameter.
 - `allow_offline_on` (String) Maps to the -AllowOfflineOn parameter.
-- `allowed_file_types` (String) Maps to the -AllowedFileTypes parameter.
-- `allowed_mime_types` (String) Maps to the -AllowedMimeTypes parameter.
+- `allowed_file_types` (Set of String) Maps to the -AllowedFileTypes parameter.
+- `allowed_mime_types` (Set of String) Maps to the -AllowedMimeTypes parameter.
 - `allowed_organization_account_domains` (Set of String) Maps to the -AllowedOrganizationAccountDomains parameter.
 - `attachments_offline_enabled_win` (Boolean) Maps to the -AttachmentsOfflineEnabledWin parameter.
 - `biz_bar_enabled` (Boolean) Maps to the -BizBarEnabled parameter.
-- `blocked_file_types` (String) Maps to the -BlockedFileTypes parameter.
-- `blocked_mime_types` (String) Maps to the -BlockedMimeTypes parameter.
+- `blocked_file_types` (Set of String) Maps to the -BlockedFileTypes parameter.
+- `blocked_mime_types` (Set of String) Maps to the -BlockedMimeTypes parameter.
 - `bookings_mailbox_creation_enabled` (Boolean) Maps to the -BookingsMailboxCreationEnabled parameter.
 - `bookings_mailbox_domain` (String) Maps to the -BookingsMailboxDomain parameter.
 - `bulk_import_eml_enabled` (String) Maps to the -BulkImportEMLEnabled parameter.
 - `calendar_enabled` (Boolean) Maps to the -CalendarEnabled parameter.
 - `change_password_enabled` (Boolean, Sensitive) Maps to the -ChangePasswordEnabled parameter.
-- `change_settings_account_enabled` (String) Maps to the -ChangeSettingsAccountEnabled parameter.
+- `change_settings_account_enabled` (Boolean) Maps to the -ChangeSettingsAccountEnabled parameter.
 - `classic_attachments_enabled` (Boolean) Maps to the -ClassicAttachmentsEnabled parameter.
 - `conditional_access_policy` (String) Maps to the -ConditionalAccessPolicy parameter.
 - `contacts_enabled` (Boolean) Maps to the -ContactsEnabled parameter.
+- `default_client_language` (Number) Maps to the -DefaultClientLanguage parameter.
 - `default_theme` (String) Maps to the -DefaultTheme parameter.
 - `delegate_access_enabled` (Boolean) Maps to the -DelegateAccessEnabled parameter.
 - `direct_file_access_on_private_computers_enabled` (Boolean) Maps to the -DirectFileAccessOnPrivateComputersEnabled parameter.
@@ -59,14 +60,14 @@ Look up an existing OwaMailboxPolicy object. Set identity or name to select it.
 - `external_sp_my_site_host_url` (String) Maps to the -ExternalSPMySiteHostURL parameter.
 - `feedback_enabled` (Boolean) Maps to the -FeedbackEnabled parameter.
 - `force_save_attachment_filtering_enabled` (Boolean) Maps to the -ForceSaveAttachmentFilteringEnabled parameter.
-- `force_save_file_types` (String) Maps to the -ForceSaveFileTypes parameter.
-- `force_save_mime_types` (String) Maps to the -ForceSaveMimeTypes parameter.
+- `force_save_file_types` (Set of String) Maps to the -ForceSaveFileTypes parameter.
+- `force_save_mime_types` (Set of String) Maps to the -ForceSaveMimeTypes parameter.
 - `force_wac_viewing_first_on_private_computers` (Boolean) Maps to the -ForceWacViewingFirstOnPrivateComputers parameter.
 - `force_wac_viewing_first_on_public_computers` (Boolean) Maps to the -ForceWacViewingFirstOnPublicComputers parameter.
 - `fre_cards_enabled` (Boolean) Maps to the -FreCardsEnabled parameter.
 - `global_address_list_enabled` (Boolean) Maps to the -GlobalAddressListEnabled parameter.
 - `group_creation_enabled` (Boolean) Maps to the -GroupCreationEnabled parameter.
-- `hide_classic_outlook_toggle_out` (String) Maps to the -HideClassicOutlookToggleOut parameter.
+- `hide_classic_outlook_toggle_out` (Boolean) Maps to the -HideClassicOutlookToggleOut parameter.
 - `id` (String) Object identifier (GUID).
 - `instant_messaging_enabled` (Boolean) Maps to the -InstantMessagingEnabled parameter.
 - `instant_messaging_type` (String) Maps to the -InstantMessagingType parameter.
@@ -74,20 +75,22 @@ Look up an existing OwaMailboxPolicy object. Set identity or name to select it.
 - `internal_sp_my_site_host_url` (String) Maps to the -InternalSPMySiteHostURL parameter.
 - `irm_enabled` (Boolean) Maps to the -IRMEnabled parameter.
 - `is_default` (Boolean) Maps to the -IsDefault parameter.
-- `items_to_other_accounts_enabled` (String) Maps to the -ItemsToOtherAccountsEnabled parameter.
+- `items_to_other_accounts_enabled` (Boolean) Maps to the -ItemsToOtherAccountsEnabled parameter.
 - `journal_enabled` (Boolean) Maps to the -JournalEnabled parameter.
 - `linked_in_enabled` (Boolean) Maps to the -LinkedInEnabled parameter.
 - `local_events_enabled` (Boolean) Maps to the -LocalEventsEnabled parameter.
+- `logon_and_error_language` (Number) Maps to the -LogonAndErrorLanguage parameter.
 - `message_previews_disabled` (Boolean) Maps to the -MessagePreviewsDisabled parameter.
 - `monthly_updates_enabled` (Boolean) Maps to the -MonthlyUpdatesEnabled parameter.
 - `notes_enabled` (Boolean) Maps to the -NotesEnabled parameter.
 - `nps_surveys_enabled` (Boolean) Maps to the -NpsSurveysEnabled parameter.
+- `offline_days_of_email_to_save` (Number) Maps to the -OfflineDaysOfEmailToSave parameter.
 - `offline_days_of_email_to_save_selection_enabled` (Boolean) Maps to the -OfflineDaysOfEmailToSaveSelectionEnabled parameter.
 - `offline_enabled_web` (Boolean) Maps to the -OfflineEnabledWeb parameter.
 - `offline_enabled_win` (Boolean) Maps to the -OfflineEnabledWin parameter.
 - `on_send_addins_enabled` (Boolean) Maps to the -OnSendAddinsEnabled parameter.
 - `one_drive_attachments_enabled` (Boolean) Maps to the -OneDriveAttachmentsEnabled parameter.
-- `one_win_native_outlook_enabled` (String) Maps to the -OneWinNativeOutlookEnabled parameter.
+- `one_win_native_outlook_enabled` (Boolean) Maps to the -OneWinNativeOutlookEnabled parameter.
 - `organization_enabled` (Boolean) Maps to the -OrganizationEnabled parameter.
 - `outbound_charset` (String) Maps to the -OutboundCharset parameter.
 - `outlook_beta_toggle_enabled` (Boolean) Maps to the -OutlookBetaToggleEnabled parameter.
@@ -97,7 +100,7 @@ Look up an existing OwaMailboxPolicy object. Set identity or name to select it.
 - `outlook_newsletters_show_more` (String) Maps to the -OutlookNewslettersShowMore parameter.
 - `owa_light_enabled` (Boolean) Maps to the -OWALightEnabled parameter.
 - `personal_account_calendars_enabled` (Boolean) Maps to the -PersonalAccountCalendarsEnabled parameter.
-- `personal_accounts_enabled` (String) Maps to the -PersonalAccountsEnabled parameter.
+- `personal_accounts_enabled` (Boolean) Maps to the -PersonalAccountsEnabled parameter.
 - `personal_bookings_disabled` (Boolean) Maps to the -PersonalBookingsDisabled parameter.
 - `phonetic_support_enabled` (Boolean) Maps to the -PhoneticSupportEnabled parameter.
 - `places_enabled` (Boolean) Maps to the -PlacesEnabled parameter.

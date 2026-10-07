@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -35,7 +36,7 @@ func (d *sharingPolicyDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity": schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
 			"default":  schema.BoolAttribute{Computed: true, Description: "Maps to the -Default parameter."},
-			"domains":  schema.StringAttribute{Computed: true, Description: "Maps to the -Domains parameter."},
+			"domains":  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Domains parameter."},
 			"enabled":  schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"name":     schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 		},

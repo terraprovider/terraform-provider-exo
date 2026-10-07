@@ -40,7 +40,7 @@ func (d *emailAddressPolicyListDataSource) Schema(_ context.Context, _ datasourc
 			"email_address_policies": schema.ListNestedAttribute{Computed: true, Description: "All EmailAddressPolicy objects.", NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 				"id":                                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity":                              schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
-				"enabled_email_address_templates":       schema.StringAttribute{Computed: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter."},
+				"enabled_email_address_templates":       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter."},
 				"enabled_primary_smtp_address_template": schema.StringAttribute{Computed: true, Description: "Maps to the -EnabledPrimarySMTPAddressTemplate parameter."},
 				"force_upgrade":                         schema.BoolAttribute{Computed: true, Description: "Maps to the -ForceUpgrade parameter."},
 				"include_unified_group_recipients":      schema.BoolAttribute{Computed: true, Description: "Maps to the -IncludeUnifiedGroupRecipients parameter."},

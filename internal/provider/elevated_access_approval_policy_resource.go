@@ -52,7 +52,7 @@ func (r *elevatedAccessApprovalPolicyResource) Schema(_ context.Context, _ resou
 		Description: "Manages the ElevatedAccessApprovalPolicy object via New-ElevatedAccessApprovalPolicy / Get-ElevatedAccessApprovalPolicy / Set-ElevatedAccessApprovalPolicy / Remove-ElevatedAccessApprovalPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"approval_type":  schema.StringAttribute{Required: true, Description: "Maps to the -ApprovalType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"approver_group": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApproverGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"role":           schema.StringAttribute{Required: true, Description: "Maps to the -Role parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -76,21 +76,27 @@ func (r *elevatedAccessApprovalPolicyResource) Create(ctx context.Context, req r
 		return
 	}
 
+	var config elevatedAccessApprovalPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	p := exo.NewElevatedAccessApprovalPolicyParams{}
-	if v := plan.ApprovalType.ValueString(); v != "" {
-		p.ApprovalType = v
+	if v := config.ApprovalType.ValueString(); v != "" {
+		p.ApprovalType = objectParam(v)
 	}
-	if v := plan.ApproverGroup.ValueString(); v != "" {
-		p.ApproverGroup = v
+	if v := config.ApproverGroup.ValueString(); v != "" {
+		p.ApproverGroup = objectParam(v)
 	}
-	if v := plan.Role.ValueString(); v != "" {
-		p.Role = v
+	if v := config.Role.ValueString(); v != "" {
+		p.Role = objectParam(v)
 	}
-	if v := plan.RoleGroup.ValueString(); v != "" {
-		p.RoleGroup = v
+	if v := config.RoleGroup.ValueString(); v != "" {
+		p.RoleGroup = objectParam(v)
 	}
-	if v := plan.Task.ValueString(); v != "" {
-		p.Task = v
+	if v := config.Task.ValueString(); v != "" {
+		p.Task = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -142,8 +148,10 @@ func (r *elevatedAccessApprovalPolicyResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetElevatedAccessApprovalPolicyParams{}
 	sp.Identity = id
-	if v := plan.ApproverGroup.ValueString(); v != "" {
-		sp.ApproverGroup = v
+	if !plan.ApproverGroup.Equal(state.ApproverGroup) {
+		if v := plan.ApproverGroup.ValueString(); v != "" {
+			sp.ApproverGroup = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,9 +161,7 @@ func (r *elevatedAccessApprovalPolicyResource) Update(ctx context.Context, req r
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"ApproverGroup": cfg.ApproverGroup,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -216,11 +222,11 @@ func (r *elevatedAccessApprovalPolicyResource) refresh(ctx context.Context, iden
 func readElevatedAccessApprovalPolicy(ctx context.Context, obj map[string]any, m *elevatedAccessApprovalPolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.ApprovalType = types.StringValue(getString(obj, "ApprovalType"))
-	m.ApproverGroup = types.StringValue(getString(obj, "ApproverGroup"))
-	m.Role = types.StringValue(getString(obj, "Role"))
-	m.RoleGroup = types.StringValue(getString(obj, "RoleGroup"))
-	m.Task = types.StringValue(getString(obj, "Task"))
+	m.ApprovalType = types.StringValue(getObjectJSON(obj, "ApprovalType"))
+	m.ApproverGroup = types.StringValue(getObjectJSON(obj, "ApproverGroup"))
+	m.Role = types.StringValue(getObjectJSON(obj, "Role"))
+	m.RoleGroup = types.StringValue(getObjectJSON(obj, "RoleGroup"))
+	m.Task = types.StringValue(getObjectJSON(obj, "Task"))
 	_ = ctx
 }
 

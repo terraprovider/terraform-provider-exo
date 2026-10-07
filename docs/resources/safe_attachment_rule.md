@@ -27,6 +27,7 @@ Manages the SafeAttachmentRule object via New-SafeAttachmentRule / Get-SafeAttac
 - `except_if_recipient_domain_is` (Set of String) Maps to the -ExceptIfRecipientDomainIs parameter.
 - `except_if_sent_to` (Set of String) Maps to the -ExceptIfSentTo parameter.
 - `except_if_sent_to_member_of` (Set of String) Maps to the -ExceptIfSentToMemberOf parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `recipient_domain_is` (Set of String) Maps to the -RecipientDomainIs parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_member_of` (Set of String) Maps to the -SentToMemberOf parameter.

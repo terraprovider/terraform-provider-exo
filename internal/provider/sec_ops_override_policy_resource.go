@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,12 +36,12 @@ func NewSecOpsOverridePolicyResource() resource.Resource { return &secOpsOverrid
 type secOpsOverridePolicyModel struct {
 	ID           types.String `tfsdk:"id"`
 	Identity     types.String `tfsdk:"identity"`
-	AddSentTo    types.String `tfsdk:"add_sent_to"`
+	AddSentTo    types.Set    `tfsdk:"add_sent_to"`
 	Comment      types.String `tfsdk:"comment"`
 	Enabled      types.Bool   `tfsdk:"enabled"`
 	Name         types.String `tfsdk:"name"`
-	RemoveSentTo types.String `tfsdk:"remove_sent_to"`
-	SentTo       types.String `tfsdk:"sent_to"`
+	RemoveSentTo types.Set    `tfsdk:"remove_sent_to"`
+	SentTo       types.Set    `tfsdk:"sent_to"`
 }
 
 func (r *secOpsOverridePolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -52,13 +53,13 @@ func (r *secOpsOverridePolicyResource) Schema(_ context.Context, _ resource.Sche
 		Description: "Manages the SecOpsOverridePolicy object via New-SecOpsOverridePolicy / Get-SecOpsOverridePolicy / Set-SecOpsOverridePolicy / Remove-SecOpsOverridePolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"add_sent_to":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddSentTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"add_sent_to":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AddSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"comment":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":           schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"remove_sent_to": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveSentTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"sent_to":        schema.StringAttribute{Required: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"remove_sent_to": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"sent_to":        schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 		},
 	}
 }
@@ -77,13 +78,28 @@ func (r *secOpsOverridePolicyResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	p := exo.NewSecOpsOverridePolicyParams{
-		Comment: plan.Comment.ValueString(),
-		Enabled: plan.Enabled.ValueBool(),
-		Name:    plan.Name.ValueString(),
+	var config secOpsOverridePolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.SentTo.ValueString(); v != "" {
-		p.SentTo = v
+
+	p := exo.NewSecOpsOverridePolicyParams{}
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -135,13 +151,53 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetSecOpsOverridePolicyParams{}
 	sp.Identity = id
-	if v := plan.AddSentTo.ValueString(); v != "" {
-		sp.AddSentTo = v
+	var cur *secOpsOverridePolicyModel
+	curRead := false
+	current := func() *secOpsOverridePolicyModel {
+		if !curRead {
+			curRead = true
+			var m secOpsOverridePolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-SecOpsOverridePolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.Comment = plan.Comment.ValueString()
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.RemoveSentTo.ValueString(); v != "" {
-		sp.RemoveSentTo = v
+	if !plan.AddSentTo.Equal(state.AddSentTo) {
+		if !plan.AddSentTo.IsNull() && !plan.AddSentTo.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AddSentTo, &resp.Diagnostics); len(v) > 0 {
+				sp.AddSentTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AddSentTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.AddSentToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveSentTo.Equal(state.RemoveSentTo) {
+		if !plan.RemoveSentTo.IsNull() && !plan.RemoveSentTo.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RemoveSentTo, &resp.Diagnostics); len(v) > 0 {
+				sp.RemoveSentTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemoveSentTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemoveSentToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -152,9 +208,7 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AddSentTo":    cfg.AddSentTo,
-		"Comment":      cfg.Comment,
-		"RemoveSentTo": cfg.RemoveSentTo,
+		"Comment": cfg.Comment,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -216,20 +270,20 @@ func (r *secOpsOverridePolicyResource) refresh(ctx context.Context, identity str
 func readSecOpsOverridePolicy(ctx context.Context, obj map[string]any, m *secOpsOverridePolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AddSentTo = types.StringValue(getString(obj, "AddSentTo"))
+	m.AddSentTo = stringSetValue(ctx, getStringSlice(obj, "AddSentTo"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.RemoveSentTo = types.StringValue(getString(obj, "RemoveSentTo"))
-	m.SentTo = types.StringValue(getString(obj, "SentTo"))
+	m.RemoveSentTo = stringSetValue(ctx, getStringSlice(obj, "RemoveSentTo"))
+	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	_ = ctx
 }
 
 func (r *secOpsOverridePolicyResource) reconcileState(cfg, read *secOpsOverridePolicyModel) {
-	read.AddSentTo = reconcile.KeepStr(cfg.AddSentTo, read.AddSentTo)
+	read.AddSentTo = reconcile.KeepSet(cfg.AddSentTo, read.AddSentTo)
 	read.Comment = reconcile.KeepStr(cfg.Comment, read.Comment)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
-	read.RemoveSentTo = reconcile.KeepStr(cfg.RemoveSentTo, read.RemoveSentTo)
-	read.SentTo = reconcile.KeepStr(cfg.SentTo, read.SentTo)
+	read.RemoveSentTo = reconcile.KeepSet(cfg.RemoveSentTo, read.RemoveSentTo)
+	read.SentTo = reconcile.KeepSet(cfg.SentTo, read.SentTo)
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -41,7 +40,7 @@ func (d *dlpPolicyDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"parameters":    schema.StringAttribute{Computed: true, Description: "Maps to the -Parameters parameter."},
 			"state":         schema.StringAttribute{Computed: true, Description: "Maps to the -State parameter."},
 			"template":      schema.StringAttribute{Computed: true, Description: "Maps to the -Template parameter."},
-			"template_data": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TemplateData parameter."},
+			"template_data": schema.StringAttribute{Computed: true, Description: "Maps to the -TemplateData parameter."},
 		},
 	}
 }

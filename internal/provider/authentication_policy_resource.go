@@ -59,7 +59,7 @@ func (r *authenticationPolicyResource) Schema(_ context.Context, _ resource.Sche
 		Description: "Manages the AuthenticationPolicy object via New-AuthenticationPolicy / Get-AuthenticationPolicy / Set-AuthenticationPolicy / Remove-AuthenticationPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                      schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                                schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"allow_basic_auth_active_sync":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowBasicAuthActiveSync parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_basic_auth_autodiscover":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowBasicAuthAutodiscover parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_basic_auth_imap":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowBasicAuthImap parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -91,20 +91,51 @@ func (r *authenticationPolicyResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	p := exo.NewAuthenticationPolicyParams{
-		AllowBasicAuthActiveSync:           plan.AllowBasicAuthActiveSync.ValueBool(),
-		AllowBasicAuthAutodiscover:         plan.AllowBasicAuthAutodiscover.ValueBool(),
-		AllowBasicAuthImap:                 plan.AllowBasicAuthImap.ValueBool(),
-		AllowBasicAuthMapi:                 plan.AllowBasicAuthMapi.ValueBool(),
-		AllowBasicAuthOfflineAddressBook:   plan.AllowBasicAuthOfflineAddressBook.ValueBool(),
-		AllowBasicAuthOutlookService:       plan.AllowBasicAuthOutlookService.ValueBool(),
-		AllowBasicAuthPop:                  plan.AllowBasicAuthPop.ValueBool(),
-		AllowBasicAuthPowershell:           plan.AllowBasicAuthPowershell.ValueBool(),
-		AllowBasicAuthReportingWebServices: plan.AllowBasicAuthReportingWebServices.ValueBool(),
-		AllowBasicAuthRpc:                  plan.AllowBasicAuthRpc.ValueBool(),
-		AllowBasicAuthSmtp:                 plan.AllowBasicAuthSmtp.ValueBool(),
-		AllowBasicAuthWebServices:          plan.AllowBasicAuthWebServices.ValueBool(),
-		Name:                               plan.Name.ValueString(),
+	var config authenticationPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewAuthenticationPolicyParams{}
+	if !config.AllowBasicAuthActiveSync.IsNull() {
+		p.AllowBasicAuthActiveSync = plan.AllowBasicAuthActiveSync.ValueBool()
+	}
+	if !config.AllowBasicAuthAutodiscover.IsNull() {
+		p.AllowBasicAuthAutodiscover = plan.AllowBasicAuthAutodiscover.ValueBool()
+	}
+	if !config.AllowBasicAuthImap.IsNull() {
+		p.AllowBasicAuthImap = plan.AllowBasicAuthImap.ValueBool()
+	}
+	if !config.AllowBasicAuthMapi.IsNull() {
+		p.AllowBasicAuthMapi = plan.AllowBasicAuthMapi.ValueBool()
+	}
+	if !config.AllowBasicAuthOfflineAddressBook.IsNull() {
+		p.AllowBasicAuthOfflineAddressBook = plan.AllowBasicAuthOfflineAddressBook.ValueBool()
+	}
+	if !config.AllowBasicAuthOutlookService.IsNull() {
+		p.AllowBasicAuthOutlookService = plan.AllowBasicAuthOutlookService.ValueBool()
+	}
+	if !config.AllowBasicAuthPop.IsNull() {
+		p.AllowBasicAuthPop = plan.AllowBasicAuthPop.ValueBool()
+	}
+	if !config.AllowBasicAuthPowershell.IsNull() {
+		p.AllowBasicAuthPowershell = plan.AllowBasicAuthPowershell.ValueBool()
+	}
+	if !config.AllowBasicAuthReportingWebServices.IsNull() {
+		p.AllowBasicAuthReportingWebServices = plan.AllowBasicAuthReportingWebServices.ValueBool()
+	}
+	if !config.AllowBasicAuthRpc.IsNull() {
+		p.AllowBasicAuthRpc = plan.AllowBasicAuthRpc.ValueBool()
+	}
+	if !config.AllowBasicAuthSmtp.IsNull() {
+		p.AllowBasicAuthSmtp = plan.AllowBasicAuthSmtp.ValueBool()
+	}
+	if !config.AllowBasicAuthWebServices.IsNull() {
+		p.AllowBasicAuthWebServices = plan.AllowBasicAuthWebServices.ValueBool()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -156,18 +187,42 @@ func (r *authenticationPolicyResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetAuthenticationPolicyParams{}
 	sp.Identity = id
-	sp.AllowBasicAuthActiveSync = plan.AllowBasicAuthActiveSync.ValueBool()
-	sp.AllowBasicAuthAutodiscover = plan.AllowBasicAuthAutodiscover.ValueBool()
-	sp.AllowBasicAuthImap = plan.AllowBasicAuthImap.ValueBool()
-	sp.AllowBasicAuthMapi = plan.AllowBasicAuthMapi.ValueBool()
-	sp.AllowBasicAuthOfflineAddressBook = plan.AllowBasicAuthOfflineAddressBook.ValueBool()
-	sp.AllowBasicAuthOutlookService = plan.AllowBasicAuthOutlookService.ValueBool()
-	sp.AllowBasicAuthPop = plan.AllowBasicAuthPop.ValueBool()
-	sp.AllowBasicAuthPowershell = plan.AllowBasicAuthPowershell.ValueBool()
-	sp.AllowBasicAuthReportingWebServices = plan.AllowBasicAuthReportingWebServices.ValueBool()
-	sp.AllowBasicAuthRpc = plan.AllowBasicAuthRpc.ValueBool()
-	sp.AllowBasicAuthSmtp = plan.AllowBasicAuthSmtp.ValueBool()
-	sp.AllowBasicAuthWebServices = plan.AllowBasicAuthWebServices.ValueBool()
+	if !plan.AllowBasicAuthActiveSync.Equal(state.AllowBasicAuthActiveSync) {
+		sp.AllowBasicAuthActiveSync = plan.AllowBasicAuthActiveSync.ValueBool()
+	}
+	if !plan.AllowBasicAuthAutodiscover.Equal(state.AllowBasicAuthAutodiscover) {
+		sp.AllowBasicAuthAutodiscover = plan.AllowBasicAuthAutodiscover.ValueBool()
+	}
+	if !plan.AllowBasicAuthImap.Equal(state.AllowBasicAuthImap) {
+		sp.AllowBasicAuthImap = plan.AllowBasicAuthImap.ValueBool()
+	}
+	if !plan.AllowBasicAuthMapi.Equal(state.AllowBasicAuthMapi) {
+		sp.AllowBasicAuthMapi = plan.AllowBasicAuthMapi.ValueBool()
+	}
+	if !plan.AllowBasicAuthOfflineAddressBook.Equal(state.AllowBasicAuthOfflineAddressBook) {
+		sp.AllowBasicAuthOfflineAddressBook = plan.AllowBasicAuthOfflineAddressBook.ValueBool()
+	}
+	if !plan.AllowBasicAuthOutlookService.Equal(state.AllowBasicAuthOutlookService) {
+		sp.AllowBasicAuthOutlookService = plan.AllowBasicAuthOutlookService.ValueBool()
+	}
+	if !plan.AllowBasicAuthPop.Equal(state.AllowBasicAuthPop) {
+		sp.AllowBasicAuthPop = plan.AllowBasicAuthPop.ValueBool()
+	}
+	if !plan.AllowBasicAuthPowershell.Equal(state.AllowBasicAuthPowershell) {
+		sp.AllowBasicAuthPowershell = plan.AllowBasicAuthPowershell.ValueBool()
+	}
+	if !plan.AllowBasicAuthReportingWebServices.Equal(state.AllowBasicAuthReportingWebServices) {
+		sp.AllowBasicAuthReportingWebServices = plan.AllowBasicAuthReportingWebServices.ValueBool()
+	}
+	if !plan.AllowBasicAuthRpc.Equal(state.AllowBasicAuthRpc) {
+		sp.AllowBasicAuthRpc = plan.AllowBasicAuthRpc.ValueBool()
+	}
+	if !plan.AllowBasicAuthSmtp.Equal(state.AllowBasicAuthSmtp) {
+		sp.AllowBasicAuthSmtp = plan.AllowBasicAuthSmtp.ValueBool()
+	}
+	if !plan.AllowBasicAuthWebServices.Equal(state.AllowBasicAuthWebServices) {
+		sp.AllowBasicAuthWebServices = plan.AllowBasicAuthWebServices.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

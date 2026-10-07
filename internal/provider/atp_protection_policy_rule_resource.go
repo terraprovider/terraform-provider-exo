@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -44,6 +45,7 @@ type aTPProtectionPolicyRuleModel struct {
 	ExceptIfSentTo            types.Set    `tfsdk:"except_if_sent_to"`
 	ExceptIfSentToMemberOf    types.Set    `tfsdk:"except_if_sent_to_member_of"`
 	Name                      types.String `tfsdk:"name"`
+	Priority                  types.Int64  `tfsdk:"priority"`
 	RecipientDomainIs         types.Set    `tfsdk:"recipient_domain_is"`
 	SafeAttachmentPolicy      types.String `tfsdk:"safe_attachment_policy"`
 	SafeLinksPolicy           types.String `tfsdk:"safe_links_policy"`
@@ -60,13 +62,14 @@ func (r *aTPProtectionPolicyRuleResource) Schema(_ context.Context, _ resource.S
 		Description: "Manages the ATPProtectionPolicyRule object via New-ATPProtectionPolicyRule / Get-ATPProtectionPolicyRule / Set-ATPProtectionPolicyRule / Remove-ATPProtectionPolicyRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comments":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"except_if_recipient_domain_is": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"safe_attachment_policy":        schema.StringAttribute{Required: true, Description: "Maps to the -SafeAttachmentPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"safe_links_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -SafeLinksPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -90,22 +93,64 @@ func (r *aTPProtectionPolicyRuleResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	p := exo.NewATPProtectionPolicyRuleParams{
-		Comments:                  plan.Comments.ValueString(),
-		Enabled:                   plan.Enabled.ValueBool(),
-		ExceptIfRecipientDomainIs: toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics),
-		ExceptIfSentTo:            toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics),
-		ExceptIfSentToMemberOf:    toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics),
-		Name:                      plan.Name.ValueString(),
-		RecipientDomainIs:         toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics),
-		SentTo:                    toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
-		SentToMemberOf:            toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics),
+	var config aTPProtectionPolicyRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.SafeAttachmentPolicy.ValueString(); v != "" {
-		p.SafeAttachmentPolicy = v
+
+	p := exo.NewATPProtectionPolicyRuleParams{}
+	if !config.Comments.IsNull() {
+		p.Comments = plan.Comments.ValueString()
 	}
-	if v := plan.SafeLinksPolicy.ValueString(); v != "" {
-		p.SafeLinksPolicy = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.ExceptIfRecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfRecipientDomainIs = v
+		}
+	}
+	if !config.ExceptIfSentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentTo = v
+		}
+	}
+	if !config.ExceptIfSentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.ExceptIfSentToMemberOf = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.Priority.IsNull() {
+		if !plan.Priority.IsUnknown() {
+			p.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !config.RecipientDomainIs.IsNull() {
+		if v := toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics); len(v) > 0 {
+			p.RecipientDomainIs = v
+		}
+	}
+	if v := config.SafeAttachmentPolicy.ValueString(); v != "" {
+		p.SafeAttachmentPolicy = objectParam(v)
+	}
+	if v := config.SafeLinksPolicy.ValueString(); v != "" {
+		p.SafeLinksPolicy = objectParam(v)
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
+	}
+	if !config.SentToMemberOf.IsNull() {
+		if v := toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics); len(v) > 0 {
+			p.SentToMemberOf = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -157,13 +202,44 @@ func (r *aTPProtectionPolicyRuleResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetATPProtectionPolicyRuleParams{}
 	sp.Identity = id
-	sp.Comments = plan.Comments.ValueString()
-	sp.ExceptIfRecipientDomainIs = toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)
-	sp.ExceptIfSentTo = toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)
-	sp.ExceptIfSentToMemberOf = toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)
-	sp.RecipientDomainIs = toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)
-	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
-	sp.SentToMemberOf = toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)
+	if !plan.Comments.Equal(state.Comments) {
+		sp.Comments = plan.Comments.ValueString()
+	}
+	if !plan.ExceptIfRecipientDomainIs.Equal(state.ExceptIfRecipientDomainIs) {
+		if !plan.ExceptIfRecipientDomainIs.IsNull() && !plan.ExceptIfRecipientDomainIs.IsUnknown() {
+			sp.ExceptIfRecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSentTo.Equal(state.ExceptIfSentTo) {
+		if !plan.ExceptIfSentTo.IsNull() && !plan.ExceptIfSentTo.IsUnknown() {
+			sp.ExceptIfSentTo = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ExceptIfSentToMemberOf.Equal(state.ExceptIfSentToMemberOf) {
+		if !plan.ExceptIfSentToMemberOf.IsNull() && !plan.ExceptIfSentToMemberOf.IsUnknown() {
+			sp.ExceptIfSentToMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.Priority.Equal(state.Priority) {
+		if !plan.Priority.IsUnknown() {
+			sp.Priority = plan.Priority.ValueInt64Pointer()
+		}
+	}
+	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
+		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
+			sp.RecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentTo.Equal(state.SentTo) {
+		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
+			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SentToMemberOf.Equal(state.SentToMemberOf) {
+		if !plan.SentToMemberOf.IsNull() && !plan.SentToMemberOf.IsUnknown() {
+			sp.SentToMemberOf = append([]string{}, toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -241,9 +317,10 @@ func readATPProtectionPolicyRule(ctx context.Context, obj map[string]any, m *aTP
 	m.ExceptIfSentTo = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentTo"))
 	m.ExceptIfSentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "ExceptIfSentToMemberOf"))
 	m.Name = types.StringValue(getString(obj, "Name"))
+	m.Priority = types.Int64Value(getInt(obj, "Priority"))
 	m.RecipientDomainIs = stringSetValue(ctx, getStringSlice(obj, "RecipientDomainIs"))
-	m.SafeAttachmentPolicy = types.StringValue(getString(obj, "SafeAttachmentPolicy"))
-	m.SafeLinksPolicy = types.StringValue(getString(obj, "SafeLinksPolicy"))
+	m.SafeAttachmentPolicy = types.StringValue(getObjectJSON(obj, "SafeAttachmentPolicy"))
+	m.SafeLinksPolicy = types.StringValue(getObjectJSON(obj, "SafeLinksPolicy"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	m.SentToMemberOf = stringSetValue(ctx, getStringSlice(obj, "SentToMemberOf"))
 	_ = ctx
@@ -256,6 +333,7 @@ func (r *aTPProtectionPolicyRuleResource) reconcileState(cfg, read *aTPProtectio
 	read.ExceptIfSentTo = reconcile.KeepSet(cfg.ExceptIfSentTo, read.ExceptIfSentTo)
 	read.ExceptIfSentToMemberOf = reconcile.KeepSet(cfg.ExceptIfSentToMemberOf, read.ExceptIfSentToMemberOf)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
+	read.Priority = reconcile.KeepInt64(cfg.Priority, read.Priority)
 	read.RecipientDomainIs = reconcile.KeepSet(cfg.RecipientDomainIs, read.RecipientDomainIs)
 	read.SafeAttachmentPolicy = reconcile.KeepStr(cfg.SafeAttachmentPolicy, read.SafeAttachmentPolicy)
 	read.SafeLinksPolicy = reconcile.KeepStr(cfg.SafeLinksPolicy, read.SafeLinksPolicy)

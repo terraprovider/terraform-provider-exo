@@ -39,7 +39,7 @@ func (d *sharingPolicyListDataSource) Schema(_ context.Context, _ datasource.Sch
 				"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 				"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object."},
 				"default":  schema.BoolAttribute{Computed: true, Description: "Maps to the -Default parameter."},
-				"domains":  schema.StringAttribute{Computed: true, Description: "Maps to the -Domains parameter."},
+				"domains":  schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Domains parameter."},
 				"enabled":  schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 				"name":     schema.StringAttribute{Computed: true, Description: "Maps to the -Name parameter."},
 			}}},

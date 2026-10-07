@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -37,7 +36,7 @@ func NewClassificationRuleCollectionResource() resource.Resource {
 type classificationRuleCollectionModel struct {
 	ID       types.String `tfsdk:"id"`
 	Identity types.String `tfsdk:"identity"`
-	FileData types.Set    `tfsdk:"file_data"`
+	FileData types.String `tfsdk:"file_data"`
 }
 
 func (r *classificationRuleCollectionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -49,8 +48,8 @@ func (r *classificationRuleCollectionResource) Schema(_ context.Context, _ resou
 		Description: "Manages the ClassificationRuleCollection object via New-ClassificationRuleCollection / Get-ClassificationRuleCollection / Set-ClassificationRuleCollection / Remove-ClassificationRuleCollection.",
 		Attributes: map[string]schema.Attribute{
 			"id":        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"file_data": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"file_data": schema.StringAttribute{Required: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
 }
@@ -69,8 +68,15 @@ func (r *classificationRuleCollectionResource) Create(ctx context.Context, req r
 		return
 	}
 
-	p := exo.NewClassificationRuleCollectionParams{
-		FileData: toStringSlice(ctx, plan.FileData, &resp.Diagnostics),
+	var config classificationRuleCollectionModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewClassificationRuleCollectionParams{}
+	if v := config.FileData.ValueString(); v != "" {
+		p.FileData = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -190,10 +196,10 @@ func (r *classificationRuleCollectionResource) refresh(ctx context.Context, iden
 func readClassificationRuleCollection(ctx context.Context, obj map[string]any, m *classificationRuleCollectionModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.FileData = stringSetValue(ctx, getStringSlice(obj, "FileData"))
+	m.FileData = types.StringValue(getObjectJSON(obj, "FileData"))
 	_ = ctx
 }
 
 func (r *classificationRuleCollectionResource) reconcileState(cfg, read *classificationRuleCollectionModel) {
-	read.FileData = reconcile.KeepSet(cfg.FileData, read.FileData)
+	read.FileData = reconcile.KeepStr(cfg.FileData, read.FileData)
 }

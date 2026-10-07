@@ -33,6 +33,7 @@ Manages the MailboxMessageConfiguration configuration via Set-MailboxMessageConf
 - `default_font_color` (String) Maps to the -DefaultFontColor parameter.
 - `default_font_flags` (String) Maps to the -DefaultFontFlags parameter.
 - `default_font_name` (String) Maps to the -DefaultFontName parameter.
+- `default_font_size` (Number) Maps to the -DefaultFontSize parameter.
 - `default_format` (String) Maps to the -DefaultFormat parameter.
 - `default_signature` (String) Maps to the -DefaultSignature parameter.
 - `default_signature_on_reply` (String) Maps to the -DefaultSignatureOnReply parameter.
@@ -41,6 +42,7 @@ Manages the MailboxMessageConfiguration configuration via Set-MailboxMessageConf
 - `echo_group_message_back_to_subscribed_sender` (Boolean) Maps to the -EchoGroupMessageBackToSubscribedSender parameter.
 - `email_compose_mode` (String) Maps to the -EmailComposeMode parameter.
 - `empty_deleted_items_on_logoff` (Boolean) Maps to the -EmptyDeletedItemsOnLogoff parameter.
+- `favorites_bit_flags` (Number) Maps to the -FavoritesBitFlags parameter.
 - `global_reading_pane_position` (String) Maps to the -GlobalReadingPanePosition parameter.
 - `hide_deleted_items` (Boolean) Maps to the -HideDeletedItems parameter.
 - `is_dark_mode_theme` (Boolean) Maps to the -IsDarkModeTheme parameter.
@@ -50,12 +52,15 @@ Manages the MailboxMessageConfiguration configuration via Set-MailboxMessageConf
 - `is_reply_all_the_default_response` (Boolean) Maps to the -IsReplyAllTheDefaultResponse parameter.
 - `link_preview_enabled` (Boolean) Maps to the -LinkPreviewEnabled parameter.
 - `mail_folder_pane_expanded` (Boolean) Maps to the -MailFolderPaneExpanded parameter.
+- `mail_send_undo_interval` (Number) Maps to the -MailSendUndoInterval parameter.
 - `manually_pick_certificate` (Boolean) Maps to the -ManuallyPickCertificate parameter.
+- `navigation_bar_width` (Number) Maps to the -NavigationBarWidth parameter.
 - `navigation_pane_view_option` (String) Maps to the -NavigationPaneViewOption parameter.
 - `new_enabled_ponts` (String) Maps to the -NewEnabledPonts parameter.
 - `new_item_notification` (String) Maps to the -NewItemNotification parameter.
 - `prefer_accessible_content` (Boolean) Maps to the -PreferAccessibleContent parameter.
 - `preview_mark_as_read_behavior` (String) Maps to the -PreviewMarkAsReadBehavior parameter.
+- `preview_mark_as_read_delaytime` (Number) Maps to the -PreviewMarkAsReadDelaytime parameter.
 - `read_receipt_response` (String) Maps to the -ReadReceiptResponse parameter.
 - `report_junk_selected` (Boolean) Maps to the -ReportJunkSelected parameter.
 - `send_address_default` (String) Maps to the -SendAddressDefault parameter.

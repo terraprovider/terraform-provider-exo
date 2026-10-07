@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &hVEAccountBillingPolicyResource{}
 	_ resource.ResourceWithConfigure   = &hVEAccountBillingPolicyResource{}
 	_ resource.ResourceWithImportState = &hVEAccountBillingPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &hVEAccountBillingPolicyResource{}
 )
 
 type hVEAccountBillingPolicyResource struct{ client *clients.Client }
@@ -67,9 +68,16 @@ func (r *hVEAccountBillingPolicyResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config hVEAccountBillingPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetHVEAccountBillingPolicyParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.BillingPolicyId = plan.BillingPolicyId.ValueString()
+	if !config.BillingPolicyId.IsNull() {
+		sp.BillingPolicyId = plan.BillingPolicyId.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -109,7 +117,9 @@ func (r *hVEAccountBillingPolicyResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetHVEAccountBillingPolicyParams{}
 	sp.Identity = id
-	sp.BillingPolicyId = plan.BillingPolicyId.ValueString()
+	if !plan.BillingPolicyId.Equal(state.BillingPolicyId) {
+		sp.BillingPolicyId = plan.BillingPolicyId.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -133,6 +143,41 @@ func (r *hVEAccountBillingPolicyResource) Delete(_ context.Context, _ resource.D
 func (r *hVEAccountBillingPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *hVEAccountBillingPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan hVEAccountBillingPolicyModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetHVEAccountBillingPolicy(ctx, exo.GetHVEAccountBillingPolicyParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur hVEAccountBillingPolicyModel
+	readHVEAccountBillingPolicy(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.BillingPolicyId.IsUnknown() {
+		plan.BillingPolicyId = cur.BillingPolicyId
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *hVEAccountBillingPolicyResource) identityOf(m hVEAccountBillingPolicyModel) string {

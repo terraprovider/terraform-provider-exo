@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -36,7 +37,7 @@ func (d *dataClassificationDataSource) Schema(_ context.Context, _ datasource.Sc
 			"identity": schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
 			"classification_rule_collection_identity": schema.StringAttribute{Computed: true, Description: "Maps to the -ClassificationRuleCollectionIdentity parameter."},
 			"description":  schema.StringAttribute{Computed: true, Description: "Maps to the -Description parameter."},
-			"fingerprints": schema.StringAttribute{Computed: true, Description: "Maps to the -Fingerprints parameter."},
+			"fingerprints": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Fingerprints parameter."},
 			"is_default":   schema.BoolAttribute{Computed: true, Description: "Maps to the -IsDefault parameter."},
 			"locale":       schema.StringAttribute{Computed: true, Description: "Maps to the -Locale parameter."},
 			"name":         schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},

@@ -21,5 +21,5 @@ Look up an existing PerimeterConfig object. Set identity to select it.
 
 ### Read-Only
 
-- `gateway_ip_addresses` (String) Maps to the -GatewayIPAddresses parameter.
+- `gateway_ip_addresses` (Set of String) Maps to the -GatewayIPAddresses parameter.
 - `id` (String) Object identifier (GUID).

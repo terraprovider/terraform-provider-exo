@@ -44,7 +44,7 @@ type moveRequestModel struct {
 	CompletedRequestAgeLimit    types.String `tfsdk:"completed_request_age_limit"`
 	ForceOffline                types.Bool   `tfsdk:"force_offline"`
 	IncrementalSyncInterval     types.String `tfsdk:"incremental_sync_interval"`
-	MoveOptions                 types.String `tfsdk:"move_options"`
+	MoveOptions                 types.Set    `tfsdk:"move_options"`
 	Outbound                    types.Bool   `tfsdk:"outbound"`
 	PreventCompletion           types.Bool   `tfsdk:"prevent_completion"`
 	PrimaryOnly                 types.Bool   `tfsdk:"primary_only"`
@@ -75,7 +75,7 @@ func (r *moveRequestResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Manages the MoveRequest object via New-MoveRequest / Get-MoveRequest / Set-MoveRequest / Remove-MoveRequest.",
 		Attributes: map[string]schema.Attribute{
 			"id":                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"accept_large_data_loss":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptLargeDataLoss parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"archive_domain":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"archive_only":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -84,9 +84,9 @@ func (r *moveRequestResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"completed_request_age_limit":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CompletedRequestAgeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"force_offline":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceOffline parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"incremental_sync_interval":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IncrementalSyncInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"move_options":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MoveOptions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"move_options":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MoveOptions parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"outbound":                       schema.BoolAttribute{Required: true, Description: "Maps to the -Outbound parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"prevent_completion":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreventCompletion parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"prevent_completion":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreventCompletion parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"primary_only":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimaryOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"proxy_to_mailbox":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProxyToMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"remote":                         schema.BoolAttribute{Required: true, Description: "Maps to the -Remote parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -102,7 +102,7 @@ func (r *moveRequestResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"start_after":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StartAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"suspend":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Suspend parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"suspend_comment":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SuspendComment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"suspend_when_ready_to_complete": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SuspendWhenReadyToComplete parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"suspend_when_ready_to_complete": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SuspendWhenReadyToComplete parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"target_delivery_domain":         schema.StringAttribute{Required: true, Description: "Maps to the -TargetDeliveryDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
@@ -122,58 +122,97 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	p := exo.NewMoveRequestParams{
-		AcceptLargeDataLoss:         plan.AcceptLargeDataLoss.ValueBool(),
-		ArchiveDomain:               plan.ArchiveDomain.ValueString(),
-		ArchiveOnly:                 plan.ArchiveOnly.ValueBool(),
-		BatchName:                   plan.BatchName.ValueString(),
-		ForceOffline:                plan.ForceOffline.ValueBool(),
-		Outbound:                    plan.Outbound.ValueBool(),
-		PreventCompletion:           plan.PreventCompletion.ValueBool(),
-		PrimaryOnly:                 plan.PrimaryOnly.ValueBool(),
-		Remote:                      plan.Remote.ValueBool(),
-		RemoteArchiveTargetDatabase: plan.RemoteArchiveTargetDatabase.ValueString(),
-		RemoteTargetDatabase:        plan.RemoteTargetDatabase.ValueString(),
-		SkipMoving:                  toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics),
-		Suspend:                     plan.Suspend.ValueBool(),
-		SuspendComment:              plan.SuspendComment.ValueString(),
-		SuspendWhenReadyToComplete:  plan.SuspendWhenReadyToComplete.ValueBool(),
+	var config moveRequestModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		p.CompleteAfter = v
+
+	p := exo.NewMoveRequestParams{}
+	if !config.AcceptLargeDataLoss.IsNull() {
+		p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
 	}
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		p.CompletedRequestAgeLimit = v
+	if !config.ArchiveDomain.IsNull() {
+		p.ArchiveDomain = plan.ArchiveDomain.ValueString()
 	}
-	if v := plan.IncrementalSyncInterval.ValueString(); v != "" {
-		p.IncrementalSyncInterval = v
+	if !config.ArchiveOnly.IsNull() {
+		p.ArchiveOnly = plan.ArchiveOnly.ValueBool()
 	}
-	if v := plan.MoveOptions.ValueString(); v != "" {
-		p.MoveOptions = v
+	if !config.BatchName.IsNull() {
+		p.BatchName = plan.BatchName.ValueString()
 	}
-	if v := plan.ProxyToMailbox.ValueString(); v != "" {
-		p.ProxyToMailbox = v
+	if v := config.CompleteAfter.ValueString(); v != "" {
+		p.CompleteAfter = objectParam(v)
 	}
-	if v := plan.RemoteCredential.ValueString(); v != "" {
-		p.RemoteCredential = v
+	if v := config.CompletedRequestAgeLimit.ValueString(); v != "" {
+		p.CompletedRequestAgeLimit = objectParam(v)
 	}
-	if v := plan.RemoteGlobalCatalog.ValueString(); v != "" {
-		p.RemoteGlobalCatalog = v
+	if !config.ForceOffline.IsNull() {
+		p.ForceOffline = plan.ForceOffline.ValueBool()
 	}
-	if v := plan.RemoteHostName.ValueString(); v != "" {
-		p.RemoteHostName = v
+	if v := config.IncrementalSyncInterval.ValueString(); v != "" {
+		p.IncrementalSyncInterval = objectParam(v)
 	}
-	if v := plan.RequestExpiryInterval.ValueString(); v != "" {
-		p.RequestExpiryInterval = v
+	if !config.MoveOptions.IsNull() {
+		if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+			p.MoveOptions = v
+		}
 	}
-	if v := plan.SourceEndpoint.ValueString(); v != "" {
-		p.SourceEndpoint = v
+	if !config.Outbound.IsNull() {
+		p.Outbound = plan.Outbound.ValueBool()
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		p.StartAfter = v
+	if !config.PreventCompletion.IsNull() {
+		p.PreventCompletion = plan.PreventCompletion.ValueBool()
 	}
-	if v := plan.TargetDeliveryDomain.ValueString(); v != "" {
-		p.TargetDeliveryDomain = v
+	if !config.PrimaryOnly.IsNull() {
+		p.PrimaryOnly = plan.PrimaryOnly.ValueBool()
+	}
+	if v := config.ProxyToMailbox.ValueString(); v != "" {
+		p.ProxyToMailbox = objectParam(v)
+	}
+	if !config.Remote.IsNull() {
+		p.Remote = plan.Remote.ValueBool()
+	}
+	if !config.RemoteArchiveTargetDatabase.IsNull() {
+		p.RemoteArchiveTargetDatabase = plan.RemoteArchiveTargetDatabase.ValueString()
+	}
+	if v := config.RemoteCredential.ValueString(); v != "" {
+		p.RemoteCredential = objectParam(v)
+	}
+	if v := config.RemoteGlobalCatalog.ValueString(); v != "" {
+		p.RemoteGlobalCatalog = objectParam(v)
+	}
+	if v := config.RemoteHostName.ValueString(); v != "" {
+		p.RemoteHostName = objectParam(v)
+	}
+	if !config.RemoteTargetDatabase.IsNull() {
+		p.RemoteTargetDatabase = plan.RemoteTargetDatabase.ValueString()
+	}
+	if v := config.RequestExpiryInterval.ValueString(); v != "" {
+		p.RequestExpiryInterval = objectParam(v)
+	}
+	if !config.SkipMoving.IsNull() {
+		if v := toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics); len(v) > 0 {
+			p.SkipMoving = v
+		}
+	}
+	if v := config.SourceEndpoint.ValueString(); v != "" {
+		p.SourceEndpoint = objectParam(v)
+	}
+	if v := config.StartAfter.ValueString(); v != "" {
+		p.StartAfter = objectParam(v)
+	}
+	if !config.Suspend.IsNull() {
+		p.Suspend = plan.Suspend.ValueBool()
+	}
+	if !config.SuspendComment.IsNull() {
+		p.SuspendComment = plan.SuspendComment.ValueString()
+	}
+	if !config.SuspendWhenReadyToComplete.IsNull() {
+		p.SuspendWhenReadyToComplete = plan.SuspendWhenReadyToComplete.ValueBool()
+	}
+	if v := config.TargetDeliveryDomain.ValueString(); v != "" {
+		p.TargetDeliveryDomain = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -225,38 +264,84 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetMoveRequestParams{}
 	sp.Identity = id
-	sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
-	sp.BatchName = plan.BatchName.ValueString()
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = v
+	var cur *moveRequestModel
+	curRead := false
+	current := func() *moveRequestModel {
+		if !curRead {
+			curRead = true
+			var m moveRequestModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MoveRequest failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		sp.CompletedRequestAgeLimit = v
+	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
 	}
-	if v := plan.IncrementalSyncInterval.ValueString(); v != "" {
-		sp.IncrementalSyncInterval = v
+	if !plan.BatchName.Equal(state.BatchName) {
+		sp.BatchName = plan.BatchName.ValueString()
 	}
-	if v := plan.MoveOptions.ValueString(); v != "" {
-		sp.MoveOptions = v
+	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
+		if v := plan.CompleteAfter.ValueString(); v != "" {
+			sp.CompleteAfter = objectParam(v)
+		}
 	}
-	sp.PreventCompletion = plan.PreventCompletion.ValueBool()
-	if v := plan.ProxyToMailbox.ValueString(); v != "" {
-		sp.ProxyToMailbox = v
+	if !plan.CompletedRequestAgeLimit.Equal(state.CompletedRequestAgeLimit) {
+		if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
+			sp.CompletedRequestAgeLimit = objectParam(v)
+		}
 	}
-	if v := plan.RequestExpiryInterval.ValueString(); v != "" {
-		sp.RequestExpiryInterval = v
+	if !plan.IncrementalSyncInterval.Equal(state.IncrementalSyncInterval) {
+		if v := plan.IncrementalSyncInterval.ValueString(); v != "" {
+			sp.IncrementalSyncInterval = objectParam(v)
+		}
 	}
-	sp.SkipMoving = toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics)
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = v
+	if !plan.MoveOptions.Equal(state.MoveOptions) {
+		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+				sp.MoveOptions = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MoveOptions, &resp.Diagnostics); len(rm) > 0 {
+						sp.MoveOptionsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.SourceEndpoint.ValueString(); v != "" {
-		sp.SourceEndpoint = v
+	if !plan.ProxyToMailbox.Equal(state.ProxyToMailbox) {
+		if v := plan.ProxyToMailbox.ValueString(); v != "" {
+			sp.ProxyToMailbox = objectParam(v)
+		}
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = v
+	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
+		if v := plan.RequestExpiryInterval.ValueString(); v != "" {
+			sp.RequestExpiryInterval = objectParam(v)
+		}
 	}
-	sp.SuspendWhenReadyToComplete = plan.SuspendWhenReadyToComplete.ValueBool()
+	if !plan.SkipMoving.Equal(state.SkipMoving) {
+		if !plan.SkipMoving.IsNull() && !plan.SkipMoving.IsUnknown() {
+			sp.SkipMoving = append([]string{}, toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SkippedItemApprovalTime.Equal(state.SkippedItemApprovalTime) {
+		if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
+			sp.SkippedItemApprovalTime = objectParam(v)
+		}
+	}
+	if !plan.SourceEndpoint.Equal(state.SourceEndpoint) {
+		if v := plan.SourceEndpoint.ValueString(); v != "" {
+			sp.SourceEndpoint = objectParam(v)
+		}
+	}
+	if !plan.StartAfter.Equal(state.StartAfter) {
+		if v := plan.StartAfter.ValueString(); v != "" {
+			sp.StartAfter = objectParam(v)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -266,16 +351,7 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"BatchName":                cfg.BatchName,
-		"CompleteAfter":            cfg.CompleteAfter,
-		"CompletedRequestAgeLimit": cfg.CompletedRequestAgeLimit,
-		"IncrementalSyncInterval":  cfg.IncrementalSyncInterval,
-		"MoveOptions":              cfg.MoveOptions,
-		"ProxyToMailbox":           cfg.ProxyToMailbox,
-		"RequestExpiryInterval":    cfg.RequestExpiryInterval,
-		"SkippedItemApprovalTime":  cfg.SkippedItemApprovalTime,
-		"SourceEndpoint":           cfg.SourceEndpoint,
-		"StartAfter":               cfg.StartAfter,
+		"BatchName": cfg.BatchName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -341,30 +417,30 @@ func readMoveRequest(ctx context.Context, obj map[string]any, m *moveRequestMode
 	m.ArchiveDomain = types.StringValue(getString(obj, "ArchiveDomain"))
 	m.ArchiveOnly = types.BoolValue(getBool(obj, "ArchiveOnly"))
 	m.BatchName = types.StringValue(getString(obj, "BatchName"))
-	m.CompleteAfter = types.StringValue(getString(obj, "CompleteAfter"))
-	m.CompletedRequestAgeLimit = types.StringValue(getString(obj, "CompletedRequestAgeLimit"))
+	m.CompleteAfter = types.StringValue(getObjectJSON(obj, "CompleteAfter"))
+	m.CompletedRequestAgeLimit = types.StringValue(getObjectJSON(obj, "CompletedRequestAgeLimit"))
 	m.ForceOffline = types.BoolValue(getBool(obj, "ForceOffline"))
-	m.IncrementalSyncInterval = types.StringValue(getString(obj, "IncrementalSyncInterval"))
-	m.MoveOptions = types.StringValue(getString(obj, "MoveOptions"))
+	m.IncrementalSyncInterval = types.StringValue(getObjectJSON(obj, "IncrementalSyncInterval"))
+	m.MoveOptions = stringSetValue(ctx, getStringSlice(obj, "MoveOptions"))
 	m.Outbound = types.BoolValue(getBool(obj, "Outbound"))
 	m.PreventCompletion = types.BoolValue(getBool(obj, "PreventCompletion"))
 	m.PrimaryOnly = types.BoolValue(getBool(obj, "PrimaryOnly"))
-	m.ProxyToMailbox = types.StringValue(getString(obj, "ProxyToMailbox"))
+	m.ProxyToMailbox = types.StringValue(getObjectJSON(obj, "ProxyToMailbox"))
 	m.Remote = types.BoolValue(getBool(obj, "Remote"))
 	m.RemoteArchiveTargetDatabase = types.StringValue(getString(obj, "RemoteArchiveTargetDatabase"))
-	m.RemoteCredential = types.StringValue(getString(obj, "RemoteCredential"))
-	m.RemoteGlobalCatalog = types.StringValue(getString(obj, "RemoteGlobalCatalog"))
-	m.RemoteHostName = types.StringValue(getString(obj, "RemoteHostName"))
+	m.RemoteCredential = types.StringValue(getObjectJSON(obj, "RemoteCredential"))
+	m.RemoteGlobalCatalog = types.StringValue(getObjectJSON(obj, "RemoteGlobalCatalog"))
+	m.RemoteHostName = types.StringValue(getObjectJSON(obj, "RemoteHostName"))
 	m.RemoteTargetDatabase = types.StringValue(getString(obj, "RemoteTargetDatabase"))
-	m.RequestExpiryInterval = types.StringValue(getString(obj, "RequestExpiryInterval"))
+	m.RequestExpiryInterval = types.StringValue(getObjectJSON(obj, "RequestExpiryInterval"))
 	m.SkipMoving = stringSetValue(ctx, getStringSlice(obj, "SkipMoving"))
-	m.SkippedItemApprovalTime = types.StringValue(getString(obj, "SkippedItemApprovalTime"))
-	m.SourceEndpoint = types.StringValue(getString(obj, "SourceEndpoint"))
-	m.StartAfter = types.StringValue(getString(obj, "StartAfter"))
+	m.SkippedItemApprovalTime = types.StringValue(getObjectJSON(obj, "SkippedItemApprovalTime"))
+	m.SourceEndpoint = types.StringValue(getObjectJSON(obj, "SourceEndpoint"))
+	m.StartAfter = types.StringValue(getObjectJSON(obj, "StartAfter"))
 	m.Suspend = types.BoolValue(getBool(obj, "Suspend"))
 	m.SuspendComment = types.StringValue(getString(obj, "SuspendComment"))
 	m.SuspendWhenReadyToComplete = types.BoolValue(getBool(obj, "SuspendWhenReadyToComplete"))
-	m.TargetDeliveryDomain = types.StringValue(getString(obj, "TargetDeliveryDomain"))
+	m.TargetDeliveryDomain = types.StringValue(getObjectJSON(obj, "TargetDeliveryDomain"))
 	_ = ctx
 }
 
@@ -377,7 +453,7 @@ func (r *moveRequestResource) reconcileState(cfg, read *moveRequestModel) {
 	read.CompletedRequestAgeLimit = reconcile.KeepStr(cfg.CompletedRequestAgeLimit, read.CompletedRequestAgeLimit)
 	read.ForceOffline = reconcile.KeepBool(cfg.ForceOffline, read.ForceOffline)
 	read.IncrementalSyncInterval = reconcile.KeepStr(cfg.IncrementalSyncInterval, read.IncrementalSyncInterval)
-	read.MoveOptions = reconcile.KeepStr(cfg.MoveOptions, read.MoveOptions)
+	read.MoveOptions = reconcile.KeepSet(cfg.MoveOptions, read.MoveOptions)
 	read.Outbound = reconcile.KeepBool(cfg.Outbound, read.Outbound)
 	read.PreventCompletion = reconcile.KeepBool(cfg.PreventCompletion, read.PreventCompletion)
 	read.PrimaryOnly = reconcile.KeepBool(cfg.PrimaryOnly, read.PrimaryOnly)

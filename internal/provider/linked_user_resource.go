@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -24,6 +25,7 @@ var (
 	_ resource.Resource                = &linkedUserResource{}
 	_ resource.ResourceWithConfigure   = &linkedUserResource{}
 	_ resource.ResourceWithImportState = &linkedUserResource{}
+	_ resource.ResourceWithModifyPlan  = &linkedUserResource{}
 )
 
 type linkedUserResource struct{ client *clients.Client }
@@ -34,7 +36,7 @@ func NewLinkedUserResource() resource.Resource { return &linkedUserResource{} }
 type linkedUserModel struct {
 	ID                 types.String `tfsdk:"id"`
 	Identity           types.String `tfsdk:"identity"`
-	CertificateSubject types.String `tfsdk:"certificate_subject"`
+	CertificateSubject types.Set    `tfsdk:"certificate_subject"`
 }
 
 func (r *linkedUserResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,7 +49,7 @@ func (r *linkedUserResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":            schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"certificate_subject": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CertificateSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"certificate_subject": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -CertificateSubject parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -65,10 +67,39 @@ func (r *linkedUserResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config linkedUserModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.CertificateSubject.ValueString(); v != "" {
-		sp.CertificateSubject = v
+	var cur *linkedUserModel
+	curRead := false
+	current := func() *linkedUserModel {
+		if !curRead {
+			curRead = true
+			var m linkedUserModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-LinkedUser failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
+	if !config.CertificateSubject.IsNull() {
+		if !plan.CertificateSubject.IsNull() && !plan.CertificateSubject.IsUnknown() {
+			if v := toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.CertificateSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.CertificateSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.CertificateSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -109,8 +140,32 @@ func (r *linkedUserResource) Update(ctx context.Context, req resource.UpdateRequ
 	id := r.identityOf(state)
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = id
-	if v := plan.CertificateSubject.ValueString(); v != "" {
-		sp.CertificateSubject = v
+	var cur *linkedUserModel
+	curRead := false
+	current := func() *linkedUserModel {
+		if !curRead {
+			curRead = true
+			var m linkedUserModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-LinkedUser failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
+	if !plan.CertificateSubject.Equal(state.CertificateSubject) {
+		if !plan.CertificateSubject.IsNull() && !plan.CertificateSubject.IsUnknown() {
+			if v := toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.CertificateSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.CertificateSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.CertificateSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,9 +175,7 @@ func (r *linkedUserResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"CertificateSubject": cfg.CertificateSubject,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -135,6 +188,41 @@ func (r *linkedUserResource) Delete(_ context.Context, _ resource.DeleteRequest,
 func (r *linkedUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *linkedUserResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan linkedUserModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetLinkedUser(ctx, exo.GetLinkedUserParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur linkedUserModel
+	readLinkedUser(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.CertificateSubject.IsUnknown() {
+		plan.CertificateSubject = cur.CertificateSubject
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *linkedUserResource) identityOf(m linkedUserModel) string {
@@ -173,10 +261,10 @@ func (r *linkedUserResource) refresh(ctx context.Context, identity string, m *li
 
 func readLinkedUser(ctx context.Context, obj map[string]any, m *linkedUserModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.CertificateSubject = types.StringValue(getString(obj, "CertificateSubject"))
+	m.CertificateSubject = stringSetValue(ctx, getStringSlice(obj, "CertificateSubject"))
 	_ = ctx
 }
 
 func (r *linkedUserResource) reconcileState(cfg, read *linkedUserModel) {
-	read.CertificateSubject = reconcile.KeepStr(cfg.CertificateSubject, read.CertificateSubject)
+	read.CertificateSubject = reconcile.KeepSet(cfg.CertificateSubject, read.CertificateSubject)
 }

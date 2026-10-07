@@ -18,7 +18,7 @@ Manages the TransportConfig configuration via Set-TransportConfig.
 ### Optional
 
 - `address_book_policy_routing_enabled` (Boolean) Maps to the -AddressBookPolicyRoutingEnabled parameter.
-- `allow_legacy_tls_clients` (String) Maps to the -AllowLegacyTLSClients parameter.
+- `allow_legacy_tls_clients` (Boolean) Maps to the -AllowLegacyTLSClients parameter.
 - `clear_categories` (Boolean) Maps to the -ClearCategories parameter.
 - `convert_disclaimer_wrapper_to_eml` (Boolean) Maps to the -ConvertDisclaimerWrapperToEml parameter.
 - `dsn_conversion_mode` (String) Maps to the -DSNConversionMode parameter.
@@ -34,10 +34,14 @@ Manages the TransportConfig configuration via Set-TransportConfig.
 - `internal_dsn_language_detection_enabled` (Boolean) Maps to the -InternalDsnLanguageDetectionEnabled parameter.
 - `internal_dsn_reporting_authority` (String) Maps to the -InternalDsnReportingAuthority parameter.
 - `internal_dsn_send_html` (Boolean) Maps to the -InternalDsnSendHtml parameter.
+- `journal_message_expiration_days` (Number) Maps to the -JournalMessageExpirationDays parameter.
 - `journaling_report_ndr_to` (String) Maps to the -JournalingReportNdrTo parameter.
 - `max_recipient_envelope_limit` (String) Maps to the -MaxRecipientEnvelopeLimit parameter.
 - `message_expiration` (String) Maps to the -MessageExpiration parameter.
 - `prevent_duplicate_journaling_enabled` (Boolean) Maps to the -PreventDuplicateJournalingEnabled parameter.
+- `reply_all_storm_block_duration_hours` (Number) Maps to the -ReplyAllStormBlockDurationHours parameter.
+- `reply_all_storm_detection_minimum_recipients` (Number) Maps to the -ReplyAllStormDetectionMinimumRecipients parameter.
+- `reply_all_storm_detection_minimum_replies` (Number) Maps to the -ReplyAllStormDetectionMinimumReplies parameter.
 - `reply_all_storm_protection_enabled` (Boolean) Maps to the -ReplyAllStormProtectionEnabled parameter.
 - `rfc2231_encoding_enabled` (Boolean) Maps to the -Rfc2231EncodingEnabled parameter.
 - `smtp_client_authentication_disabled` (Boolean) Maps to the -SmtpClientAuthenticationDisabled parameter.

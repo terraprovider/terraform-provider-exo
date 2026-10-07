@@ -48,7 +48,7 @@ type migrationBatchModel struct {
 	AutoProvisioning           types.Bool   `tfsdk:"auto_provisioning"`
 	AutoStart                  types.Bool   `tfsdk:"auto_start"`
 	AvoidMergeOverlap          types.Bool   `tfsdk:"avoid_merge_overlap"`
-	CSVData                    types.Set    `tfsdk:"csv_data"`
+	CSVData                    types.String `tfsdk:"csv_data"`
 	CompleteAfter              types.String `tfsdk:"complete_after"`
 	ConnectionLogicalId        types.String `tfsdk:"connection_logical_id"`
 	ContentFilter              types.String `tfsdk:"content_filter"`
@@ -57,17 +57,17 @@ type migrationBatchModel struct {
 	DataFusion                 types.Bool   `tfsdk:"data_fusion"`
 	DisableOnCopy              types.Bool   `tfsdk:"disable_on_copy"`
 	ExcludeDumpsters           types.Bool   `tfsdk:"exclude_dumpsters"`
-	ExcludeFolders             types.String `tfsdk:"exclude_folders"`
+	ExcludeFolders             types.Set    `tfsdk:"exclude_folders"`
 	Format                     types.String `tfsdk:"format"`
 	ForwardingDisposition      types.String `tfsdk:"forwarding_disposition"`
 	GoogleResource             types.Bool   `tfsdk:"google_resource"`
-	IncludeFolders             types.String `tfsdk:"include_folders"`
+	IncludeFolders             types.Set    `tfsdk:"include_folders"`
 	IncludeOtherContacts       types.Bool   `tfsdk:"include_other_contacts"`
 	ManagedGmailTeams          types.Bool   `tfsdk:"managed_gmail_teams"`
 	MigrateTasks               types.Bool   `tfsdk:"migrate_tasks"`
-	MoveOptions                types.String `tfsdk:"move_options"`
+	MoveOptions                types.Set    `tfsdk:"move_options"`
 	Name                       types.String `tfsdk:"name"`
-	NotificationEmails         types.String `tfsdk:"notification_emails"`
+	NotificationEmails         types.Set    `tfsdk:"notification_emails"`
 	Partition                  types.String `tfsdk:"partition"`
 	PrimaryOnly                types.Bool   `tfsdk:"primary_only"`
 	PublicFolderToUnifiedGroup types.Bool   `tfsdk:"public_folder_to_unified_group"`
@@ -81,30 +81,30 @@ type migrationBatchModel struct {
 	SkipDelegates              types.Bool   `tfsdk:"skip_delegates"`
 	SkipDetails                types.Bool   `tfsdk:"skip_details"`
 	SkipMail                   types.Bool   `tfsdk:"skip_mail"`
-	SkipMerging                types.String `tfsdk:"skip_merging"`
-	SkipMoving                 types.String `tfsdk:"skip_moving"`
+	SkipMerging                types.Set    `tfsdk:"skip_merging"`
+	SkipMoving                 types.Set    `tfsdk:"skip_moving"`
 	SkipProvisioning           types.Bool   `tfsdk:"skip_provisioning"`
 	SkipReports                types.Bool   `tfsdk:"skip_reports"`
 	SkipRules                  types.Bool   `tfsdk:"skip_rules"`
 	SlackPublicDataConnector   types.Bool   `tfsdk:"slack_public_data_connector"`
 	SlackWorkspaceId           types.String `tfsdk:"slack_workspace_id"`
 	SourceEndpoint             types.String `tfsdk:"source_endpoint"`
-	SourceMappings             types.Set    `tfsdk:"source_mappings"`
+	SourceMappings             types.String `tfsdk:"source_mappings"`
 	SourcePFPrimaryMailboxGuid types.String `tfsdk:"source_pf_primary_mailbox_guid"`
 	StagedRollOutGroupId       types.String `tfsdk:"staged_roll_out_group_id"`
 	StartAfter                 types.String `tfsdk:"start_after"`
 	SyncNow                    types.Bool   `tfsdk:"sync_now"`
-	TargetArchiveDatabases     types.String `tfsdk:"target_archive_databases"`
-	TargetDatabases            types.String `tfsdk:"target_databases"`
+	TargetArchiveDatabases     types.Set    `tfsdk:"target_archive_databases"`
+	TargetDatabases            types.Set    `tfsdk:"target_databases"`
 	TargetDeliveryDomain       types.String `tfsdk:"target_delivery_domain"`
 	TargetEndpoint             types.String `tfsdk:"target_endpoint"`
 	TimeZone                   types.String `tfsdk:"time_zone"`
 	Update                     types.Bool   `tfsdk:"update"`
-	UserIds                    types.String `tfsdk:"user_ids"`
-	Users                      types.String `tfsdk:"users"`
+	UserIds                    types.Set    `tfsdk:"user_ids"`
+	Users                      types.Set    `tfsdk:"users"`
 	WorkflowControlFlags       types.String `tfsdk:"workflow_control_flags"`
 	WorkflowTemplate           types.String `tfsdk:"workflow_template"`
-	XMLData                    types.Set    `tfsdk:"xml_data"`
+	XMLData                    types.String `tfsdk:"xml_data"`
 }
 
 func (r *migrationBatchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -116,7 +116,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Description: "Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / Set-MigrationBatch / Remove-MigrationBatch.",
 		Attributes: map[string]schema.Attribute{
 			"id":                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"aad_identity_type":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AADIdentityType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"add_users":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddUsers parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"adopt_preexisting":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AdoptPreexisting parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -129,7 +129,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"auto_provisioning":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoProvisioning parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"auto_start":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoStart parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"avoid_merge_overlap":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AvoidMergeOverlap parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"csv_data":                       schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -CSVData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"csv_data":                       schema.StringAttribute{Required: true, Description: "Maps to the -CSVData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"complete_after":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CompleteAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"connection_logical_id":          schema.StringAttribute{Required: true, Description: "Maps to the -ConnectionLogicalId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"content_filter":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ContentFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -138,17 +138,17 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"data_fusion":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DataFusion parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"disable_on_copy":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DisableOnCopy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"exclude_dumpsters":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeDumpsters parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"exclude_folders":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFolders parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"exclude_folders":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludeFolders parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"format":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Format parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_disposition":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingDisposition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"google_resource":                schema.BoolAttribute{Required: true, Description: "Maps to the -GoogleResource parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"include_folders":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IncludeFolders parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"include_folders":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -IncludeFolders parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"include_other_contacts":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IncludeOtherContacts parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"managed_gmail_teams":            schema.BoolAttribute{Required: true, Description: "Maps to the -ManagedGmailTeams parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"migrate_tasks":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MigrateTasks parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"move_options":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MoveOptions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"move_options":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MoveOptions parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                           schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"notification_emails":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NotificationEmails parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"notification_emails":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NotificationEmails parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"partition":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"primary_only":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimaryOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"public_folder_to_unified_group": schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolderToUnifiedGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -162,30 +162,30 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"skip_delegates":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipDelegates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"skip_details":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipDetails parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"skip_mail":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipMail parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"skip_merging":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipMerging parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"skip_moving":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipMoving parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"skip_merging":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SkipMerging parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"skip_moving":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SkipMoving parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"skip_provisioning":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipProvisioning parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"skip_reports":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipReports parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"skip_reports":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipReports parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"skip_rules":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipRules parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"slack_public_data_connector":    schema.BoolAttribute{Required: true, Description: "Maps to the -SlackPublicDataConnector parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"slack_workspace_id":             schema.StringAttribute{Required: true, Description: "Maps to the -SlackWorkspaceId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"source_endpoint":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourceEndpoint parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"source_mappings":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SourceMappings parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"source_mappings":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourceMappings parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"source_pf_primary_mailbox_guid": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourcePFPrimaryMailboxGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"staged_roll_out_group_id":       schema.StringAttribute{Required: true, Description: "Maps to the -StagedRollOutGroupId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"start_after":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StartAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"sync_now":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SyncNow parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"target_archive_databases":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetArchiveDatabases parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"target_databases":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetDatabases parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"target_archive_databases":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetArchiveDatabases parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"target_databases":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TargetDatabases parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"target_delivery_domain":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetDeliveryDomain parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"target_endpoint":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetEndpoint parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"time_zone":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TimeZone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"update":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Update parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"user_ids":                       schema.StringAttribute{Required: true, Description: "Maps to the -UserIds parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"users":                          schema.StringAttribute{Required: true, Description: "Maps to the -Users parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"user_ids":                       schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -UserIds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"users":                          schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Users parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"workflow_control_flags":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkflowControlFlags parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"workflow_template":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkflowTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"xml_data":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -XMLData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"xml_data":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -XMLData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -204,118 +204,229 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	p := exo.NewMigrationBatchParams{
-		AdoptPreexisting:           plan.AdoptPreexisting.ValueBool(),
-		AllowUnknownColumnsInCSV:   plan.AllowUnknownColumnsInCSV.ValueBool(),
-		Analyze:                    plan.Analyze.ValueBool(),
-		ArchiveDomain:              plan.ArchiveDomain.ValueString(),
-		ArchiveOnly:                plan.ArchiveOnly.ValueBool(),
-		AutoComplete:               plan.AutoComplete.ValueBool(),
-		AutoProvisioning:           plan.AutoProvisioning.ValueBool(),
-		AutoStart:                  plan.AutoStart.ValueBool(),
-		AvoidMergeOverlap:          plan.AvoidMergeOverlap.ValueBool(),
-		CSVData:                    toStringSlice(ctx, plan.CSVData, &resp.Diagnostics),
-		ConnectionLogicalId:        plan.ConnectionLogicalId.ValueString(),
-		ContentFilter:              plan.ContentFilter.ValueString(),
-		Daily:                      plan.Daily.ValueBool(),
-		DataFusion:                 plan.DataFusion.ValueBool(),
-		DisableOnCopy:              plan.DisableOnCopy.ValueBool(),
-		ExcludeDumpsters:           plan.ExcludeDumpsters.ValueBool(),
-		Format:                     plan.Format.ValueString(),
-		GoogleResource:             plan.GoogleResource.ValueBool(),
-		IncludeOtherContacts:       plan.IncludeOtherContacts.ValueBool(),
-		ManagedGmailTeams:          plan.ManagedGmailTeams.ValueBool(),
-		MigrateTasks:               plan.MigrateTasks.ValueBool(),
-		Name:                       plan.Name.ValueString(),
-		PrimaryOnly:                plan.PrimaryOnly.ValueBool(),
-		PublicFolderToUnifiedGroup: plan.PublicFolderToUnifiedGroup.ValueBool(),
-		RemoveOnCopy:               plan.RemoveOnCopy.ValueBool(),
-		RenamePrimaryCalendar:      plan.RenamePrimaryCalendar.ValueBool(),
-		Restore:                    plan.Restore.ValueBool(),
-		SimplifiedSwitchOver:       plan.SimplifiedSwitchOver.ValueBool(),
-		SkipCalendar:               plan.SkipCalendar.ValueBool(),
-		SkipContacts:               plan.SkipContacts.ValueBool(),
-		SkipDelegates:              plan.SkipDelegates.ValueBool(),
-		SkipDetails:                plan.SkipDetails.ValueBool(),
-		SkipMail:                   plan.SkipMail.ValueBool(),
-		SkipProvisioning:           plan.SkipProvisioning.ValueBool(),
-		SkipReports:                plan.SkipReports.ValueBool(),
-		SkipRules:                  plan.SkipRules.ValueBool(),
-		SlackPublicDataConnector:   plan.SlackPublicDataConnector.ValueBool(),
-		SlackWorkspaceId:           plan.SlackWorkspaceId.ValueString(),
-		SourceMappings:             toStringSlice(ctx, plan.SourceMappings, &resp.Diagnostics),
-		StagedRollOutGroupId:       plan.StagedRollOutGroupId.ValueString(),
-		WorkflowTemplate:           plan.WorkflowTemplate.ValueString(),
-		XMLData:                    toStringSlice(ctx, plan.XMLData, &resp.Diagnostics),
+	var config migrationBatchModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AADIdentityType.ValueString(); v != "" {
-		p.AADIdentityType = v
+
+	p := exo.NewMigrationBatchParams{}
+	if v := config.AADIdentityType.ValueString(); v != "" {
+		p.AADIdentityType = objectParam(v)
 	}
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		p.CompleteAfter = v
+	if !config.AdoptPreexisting.IsNull() {
+		p.AdoptPreexisting = plan.AdoptPreexisting.ValueBool()
 	}
-	if v := plan.ContentFilterLanguage.ValueString(); v != "" {
-		p.ContentFilterLanguage = v
+	if !config.AllowUnknownColumnsInCSV.IsNull() {
+		if !plan.AllowUnknownColumnsInCSV.IsUnknown() {
+			p.AllowUnknownColumnsInCSV = plan.AllowUnknownColumnsInCSV.ValueBoolPointer()
+		}
 	}
-	if v := plan.ExcludeFolders.ValueString(); v != "" {
-		p.ExcludeFolders = v
+	if !config.Analyze.IsNull() {
+		p.Analyze = plan.Analyze.ValueBool()
 	}
-	if v := plan.ForwardingDisposition.ValueString(); v != "" {
-		p.ForwardingDisposition = v
+	if !config.ArchiveDomain.IsNull() {
+		p.ArchiveDomain = plan.ArchiveDomain.ValueString()
 	}
-	if v := plan.IncludeFolders.ValueString(); v != "" {
-		p.IncludeFolders = v
+	if !config.ArchiveOnly.IsNull() {
+		p.ArchiveOnly = plan.ArchiveOnly.ValueBool()
 	}
-	if v := plan.MoveOptions.ValueString(); v != "" {
-		p.MoveOptions = v
+	if !config.AutoComplete.IsNull() {
+		p.AutoComplete = plan.AutoComplete.ValueBool()
 	}
-	if v := plan.NotificationEmails.ValueString(); v != "" {
-		p.NotificationEmails = v
+	if !config.AutoProvisioning.IsNull() {
+		p.AutoProvisioning = plan.AutoProvisioning.ValueBool()
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		p.Partition = v
+	if !config.AutoStart.IsNull() {
+		p.AutoStart = plan.AutoStart.ValueBool()
 	}
-	if v := plan.ReportInterval.ValueString(); v != "" {
-		p.ReportInterval = v
+	if !config.AvoidMergeOverlap.IsNull() {
+		p.AvoidMergeOverlap = plan.AvoidMergeOverlap.ValueBool()
 	}
-	if v := plan.SkipMerging.ValueString(); v != "" {
-		p.SkipMerging = v
+	if v := config.CSVData.ValueString(); v != "" {
+		p.CSVData = objectParam(v)
 	}
-	if v := plan.SkipMoving.ValueString(); v != "" {
-		p.SkipMoving = v
+	if v := config.CompleteAfter.ValueString(); v != "" {
+		p.CompleteAfter = objectParam(v)
 	}
-	if v := plan.SourceEndpoint.ValueString(); v != "" {
-		p.SourceEndpoint = v
+	if !config.ConnectionLogicalId.IsNull() {
+		p.ConnectionLogicalId = plan.ConnectionLogicalId.ValueString()
 	}
-	if v := plan.SourcePFPrimaryMailboxGuid.ValueString(); v != "" {
-		p.SourcePFPrimaryMailboxGuid = v
+	if !config.ContentFilter.IsNull() {
+		p.ContentFilter = plan.ContentFilter.ValueString()
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		p.StartAfter = v
+	if v := config.ContentFilterLanguage.ValueString(); v != "" {
+		p.ContentFilterLanguage = objectParam(v)
 	}
-	if v := plan.TargetArchiveDatabases.ValueString(); v != "" {
-		p.TargetArchiveDatabases = v
+	if !config.Daily.IsNull() {
+		p.Daily = plan.Daily.ValueBool()
 	}
-	if v := plan.TargetDatabases.ValueString(); v != "" {
-		p.TargetDatabases = v
+	if !config.DataFusion.IsNull() {
+		p.DataFusion = plan.DataFusion.ValueBool()
 	}
-	if v := plan.TargetDeliveryDomain.ValueString(); v != "" {
-		p.TargetDeliveryDomain = v
+	if !config.DisableOnCopy.IsNull() {
+		p.DisableOnCopy = plan.DisableOnCopy.ValueBool()
 	}
-	if v := plan.TargetEndpoint.ValueString(); v != "" {
-		p.TargetEndpoint = v
+	if !config.ExcludeDumpsters.IsNull() {
+		p.ExcludeDumpsters = plan.ExcludeDumpsters.ValueBool()
 	}
-	if v := plan.TimeZone.ValueString(); v != "" {
-		p.TimeZone = v
+	if !config.ExcludeFolders.IsNull() {
+		if v := toStringSlice(ctx, plan.ExcludeFolders, &resp.Diagnostics); len(v) > 0 {
+			p.ExcludeFolders = v
+		}
 	}
-	if v := plan.UserIds.ValueString(); v != "" {
-		p.UserIds = v
+	if !config.Format.IsNull() {
+		p.Format = plan.Format.ValueString()
 	}
-	if v := plan.Users.ValueString(); v != "" {
-		p.Users = v
+	if v := config.ForwardingDisposition.ValueString(); v != "" {
+		p.ForwardingDisposition = objectParam(v)
 	}
-	if v := plan.WorkflowControlFlags.ValueString(); v != "" {
-		p.WorkflowControlFlags = v
+	if !config.GoogleResource.IsNull() {
+		p.GoogleResource = plan.GoogleResource.ValueBool()
+	}
+	if !config.IncludeFolders.IsNull() {
+		if v := toStringSlice(ctx, plan.IncludeFolders, &resp.Diagnostics); len(v) > 0 {
+			p.IncludeFolders = v
+		}
+	}
+	if !config.IncludeOtherContacts.IsNull() {
+		p.IncludeOtherContacts = plan.IncludeOtherContacts.ValueBool()
+	}
+	if !config.ManagedGmailTeams.IsNull() {
+		p.ManagedGmailTeams = plan.ManagedGmailTeams.ValueBool()
+	}
+	if !config.MigrateTasks.IsNull() {
+		p.MigrateTasks = plan.MigrateTasks.ValueBool()
+	}
+	if !config.MoveOptions.IsNull() {
+		if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+			p.MoveOptions = v
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.NotificationEmails.IsNull() {
+		if v := toStringSlice(ctx, plan.NotificationEmails, &resp.Diagnostics); len(v) > 0 {
+			p.NotificationEmails = v
+		}
+	}
+	if v := config.Partition.ValueString(); v != "" {
+		p.Partition = objectParam(v)
+	}
+	if !config.PrimaryOnly.IsNull() {
+		p.PrimaryOnly = plan.PrimaryOnly.ValueBool()
+	}
+	if !config.PublicFolderToUnifiedGroup.IsNull() {
+		p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBool()
+	}
+	if !config.RemoveOnCopy.IsNull() {
+		p.RemoveOnCopy = plan.RemoveOnCopy.ValueBool()
+	}
+	if !config.RenamePrimaryCalendar.IsNull() {
+		p.RenamePrimaryCalendar = plan.RenamePrimaryCalendar.ValueBool()
+	}
+	if v := config.ReportInterval.ValueString(); v != "" {
+		p.ReportInterval = objectParam(v)
+	}
+	if !config.Restore.IsNull() {
+		p.Restore = plan.Restore.ValueBool()
+	}
+	if !config.SimplifiedSwitchOver.IsNull() {
+		p.SimplifiedSwitchOver = plan.SimplifiedSwitchOver.ValueBool()
+	}
+	if !config.SkipCalendar.IsNull() {
+		p.SkipCalendar = plan.SkipCalendar.ValueBool()
+	}
+	if !config.SkipContacts.IsNull() {
+		p.SkipContacts = plan.SkipContacts.ValueBool()
+	}
+	if !config.SkipDelegates.IsNull() {
+		p.SkipDelegates = plan.SkipDelegates.ValueBool()
+	}
+	if !config.SkipDetails.IsNull() {
+		p.SkipDetails = plan.SkipDetails.ValueBool()
+	}
+	if !config.SkipMail.IsNull() {
+		p.SkipMail = plan.SkipMail.ValueBool()
+	}
+	if !config.SkipMerging.IsNull() {
+		if v := toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics); len(v) > 0 {
+			p.SkipMerging = v
+		}
+	}
+	if !config.SkipMoving.IsNull() {
+		if v := toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics); len(v) > 0 {
+			p.SkipMoving = v
+		}
+	}
+	if !config.SkipProvisioning.IsNull() {
+		p.SkipProvisioning = plan.SkipProvisioning.ValueBool()
+	}
+	if !config.SkipReports.IsNull() {
+		p.SkipReports = plan.SkipReports.ValueBool()
+	}
+	if !config.SkipRules.IsNull() {
+		p.SkipRules = plan.SkipRules.ValueBool()
+	}
+	if !config.SlackPublicDataConnector.IsNull() {
+		p.SlackPublicDataConnector = plan.SlackPublicDataConnector.ValueBool()
+	}
+	if !config.SlackWorkspaceId.IsNull() {
+		p.SlackWorkspaceId = plan.SlackWorkspaceId.ValueString()
+	}
+	if v := config.SourceEndpoint.ValueString(); v != "" {
+		p.SourceEndpoint = objectParam(v)
+	}
+	if v := config.SourceMappings.ValueString(); v != "" {
+		p.SourceMappings = objectParam(v)
+	}
+	if !config.SourcePFPrimaryMailboxGuid.IsNull() {
+		p.SourcePFPrimaryMailboxGuid = plan.SourcePFPrimaryMailboxGuid.ValueString()
+	}
+	if !config.StagedRollOutGroupId.IsNull() {
+		p.StagedRollOutGroupId = plan.StagedRollOutGroupId.ValueString()
+	}
+	if v := config.StartAfter.ValueString(); v != "" {
+		p.StartAfter = objectParam(v)
+	}
+	if !config.TargetArchiveDatabases.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetArchiveDatabases, &resp.Diagnostics); len(v) > 0 {
+			p.TargetArchiveDatabases = v
+		}
+	}
+	if !config.TargetDatabases.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetDatabases, &resp.Diagnostics); len(v) > 0 {
+			p.TargetDatabases = v
+		}
+	}
+	if v := config.TargetDeliveryDomain.ValueString(); v != "" {
+		p.TargetDeliveryDomain = objectParam(v)
+	}
+	if v := config.TargetEndpoint.ValueString(); v != "" {
+		p.TargetEndpoint = objectParam(v)
+	}
+	if v := config.TimeZone.ValueString(); v != "" {
+		p.TimeZone = objectParam(v)
+	}
+	if !config.UserIds.IsNull() {
+		if v := toStringSlice(ctx, plan.UserIds, &resp.Diagnostics); len(v) > 0 {
+			p.UserIds = v
+		}
+	}
+	if !config.Users.IsNull() {
+		if v := toStringSlice(ctx, plan.Users, &resp.Diagnostics); len(v) > 0 {
+			p.Users = v
+		}
+	}
+	if v := config.WorkflowControlFlags.ValueString(); v != "" {
+		p.WorkflowControlFlags = objectParam(v)
+	}
+	if !config.WorkflowTemplate.IsNull() {
+		p.WorkflowTemplate = plan.WorkflowTemplate.ValueString()
+	}
+	if v := config.XMLData.ValueString(); v != "" {
+		p.XMLData = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -367,36 +478,109 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetMigrationBatchParams{}
 	sp.Identity = id
-	sp.AddUsers = plan.AddUsers.ValueBool()
-	sp.AllowUnknownColumnsInCSV = plan.AllowUnknownColumnsInCSV.ValueBool()
-	sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = v
+	var cur *migrationBatchModel
+	curRead := false
+	current := func() *migrationBatchModel {
+		if !curRead {
+			curRead = true
+			var m migrationBatchModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MigrationBatch failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.MoveOptions.ValueString(); v != "" {
-		sp.MoveOptions = v
+	if !plan.AddUsers.Equal(state.AddUsers) {
+		sp.AddUsers = plan.AddUsers.ValueBool()
 	}
-	if v := plan.NotificationEmails.ValueString(); v != "" {
-		sp.NotificationEmails = v
+	if !plan.AllowUnknownColumnsInCSV.Equal(state.AllowUnknownColumnsInCSV) {
+		if !plan.AllowUnknownColumnsInCSV.IsUnknown() {
+			sp.AllowUnknownColumnsInCSV = plan.AllowUnknownColumnsInCSV.ValueBoolPointer()
+		}
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
+		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
 	}
-	if v := plan.ReportInterval.ValueString(); v != "" {
-		sp.ReportInterval = v
+	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
+		if v := plan.CompleteAfter.ValueString(); v != "" {
+			sp.CompleteAfter = objectParam(v)
+		}
 	}
-	if v := plan.SkipMerging.ValueString(); v != "" {
-		sp.SkipMerging = v
+	if !plan.MoveOptions.Equal(state.MoveOptions) {
+		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+				sp.MoveOptions = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MoveOptions, &resp.Diagnostics); len(rm) > 0 {
+						sp.MoveOptionsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.SkipMoving.ValueString(); v != "" {
-		sp.SkipMoving = v
+	if !plan.NotificationEmails.Equal(state.NotificationEmails) {
+		if !plan.NotificationEmails.IsNull() && !plan.NotificationEmails.IsUnknown() {
+			if v := toStringSlice(ctx, plan.NotificationEmails, &resp.Diagnostics); len(v) > 0 {
+				sp.NotificationEmails = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NotificationEmails, &resp.Diagnostics); len(rm) > 0 {
+						sp.NotificationEmailsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.SkipReports = plan.SkipReports.ValueBool()
-	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = v
+	if !plan.Partition.Equal(state.Partition) {
+		if v := plan.Partition.ValueString(); v != "" {
+			sp.Partition = objectParam(v)
+		}
 	}
-	sp.SyncNow = plan.SyncNow.ValueBool()
-	sp.Update = plan.Update.ValueBool()
+	if !plan.ReportInterval.Equal(state.ReportInterval) {
+		if v := plan.ReportInterval.ValueString(); v != "" {
+			sp.ReportInterval = objectParam(v)
+		}
+	}
+	if !plan.SkipMerging.Equal(state.SkipMerging) {
+		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics); len(v) > 0 {
+				sp.SkipMerging = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SkipMerging, &resp.Diagnostics); len(rm) > 0 {
+						sp.SkipMergingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.SkipMoving.Equal(state.SkipMoving) {
+		if !plan.SkipMoving.IsNull() && !plan.SkipMoving.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics); len(v) > 0 {
+				sp.SkipMoving = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SkipMoving, &resp.Diagnostics); len(rm) > 0 {
+						sp.SkipMovingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.StartAfter.Equal(state.StartAfter) {
+		if v := plan.StartAfter.ValueString(); v != "" {
+			sp.StartAfter = objectParam(v)
+		}
+	}
+	if !plan.SyncNow.Equal(state.SyncNow) {
+		sp.SyncNow = plan.SyncNow.ValueBool()
+	}
+	if !plan.Update.Equal(state.Update) {
+		sp.Update = plan.Update.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -405,16 +589,7 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"CompleteAfter":      cfg.CompleteAfter,
-		"MoveOptions":        cfg.MoveOptions,
-		"NotificationEmails": cfg.NotificationEmails,
-		"Partition":          cfg.Partition,
-		"ReportInterval":     cfg.ReportInterval,
-		"SkipMerging":        cfg.SkipMerging,
-		"SkipMoving":         cfg.SkipMoving,
-		"StartAfter":         cfg.StartAfter,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -475,7 +650,7 @@ func (r *migrationBatchResource) refresh(ctx context.Context, identity string, m
 func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBatchModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AADIdentityType = types.StringValue(getString(obj, "AADIdentityType"))
+	m.AADIdentityType = types.StringValue(getObjectJSON(obj, "AADIdentityType"))
 	m.AddUsers = types.BoolValue(getBool(obj, "AddUsers"))
 	m.AdoptPreexisting = types.BoolValue(getBool(obj, "AdoptPreexisting"))
 	m.AllowUnknownColumnsInCSV = types.BoolValue(getBool(obj, "AllowUnknownColumnsInCSV"))
@@ -487,32 +662,32 @@ func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBat
 	m.AutoProvisioning = types.BoolValue(getBool(obj, "AutoProvisioning"))
 	m.AutoStart = types.BoolValue(getBool(obj, "AutoStart"))
 	m.AvoidMergeOverlap = types.BoolValue(getBool(obj, "AvoidMergeOverlap"))
-	m.CSVData = stringSetValue(ctx, getStringSlice(obj, "CSVData"))
-	m.CompleteAfter = types.StringValue(getString(obj, "CompleteAfter"))
+	m.CSVData = types.StringValue(getObjectJSON(obj, "CSVData"))
+	m.CompleteAfter = types.StringValue(getObjectJSON(obj, "CompleteAfter"))
 	m.ConnectionLogicalId = types.StringValue(getString(obj, "ConnectionLogicalId"))
 	m.ContentFilter = types.StringValue(getString(obj, "ContentFilter"))
-	m.ContentFilterLanguage = types.StringValue(getString(obj, "ContentFilterLanguage"))
+	m.ContentFilterLanguage = types.StringValue(getObjectJSON(obj, "ContentFilterLanguage"))
 	m.Daily = types.BoolValue(getBool(obj, "Daily"))
 	m.DataFusion = types.BoolValue(getBool(obj, "DataFusion"))
 	m.DisableOnCopy = types.BoolValue(getBool(obj, "DisableOnCopy"))
 	m.ExcludeDumpsters = types.BoolValue(getBool(obj, "ExcludeDumpsters"))
-	m.ExcludeFolders = types.StringValue(getString(obj, "ExcludeFolders"))
+	m.ExcludeFolders = stringSetValue(ctx, getStringSlice(obj, "ExcludeFolders"))
 	m.Format = types.StringValue(getString(obj, "Format"))
-	m.ForwardingDisposition = types.StringValue(getString(obj, "ForwardingDisposition"))
+	m.ForwardingDisposition = types.StringValue(getObjectJSON(obj, "ForwardingDisposition"))
 	m.GoogleResource = types.BoolValue(getBool(obj, "GoogleResource"))
-	m.IncludeFolders = types.StringValue(getString(obj, "IncludeFolders"))
+	m.IncludeFolders = stringSetValue(ctx, getStringSlice(obj, "IncludeFolders"))
 	m.IncludeOtherContacts = types.BoolValue(getBool(obj, "IncludeOtherContacts"))
 	m.ManagedGmailTeams = types.BoolValue(getBool(obj, "ManagedGmailTeams"))
 	m.MigrateTasks = types.BoolValue(getBool(obj, "MigrateTasks"))
-	m.MoveOptions = types.StringValue(getString(obj, "MoveOptions"))
+	m.MoveOptions = stringSetValue(ctx, getStringSlice(obj, "MoveOptions"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.NotificationEmails = types.StringValue(getString(obj, "NotificationEmails"))
-	m.Partition = types.StringValue(getString(obj, "Partition"))
+	m.NotificationEmails = stringSetValue(ctx, getStringSlice(obj, "NotificationEmails"))
+	m.Partition = types.StringValue(getObjectJSON(obj, "Partition"))
 	m.PrimaryOnly = types.BoolValue(getBool(obj, "PrimaryOnly"))
 	m.PublicFolderToUnifiedGroup = types.BoolValue(getBool(obj, "PublicFolderToUnifiedGroup"))
 	m.RemoveOnCopy = types.BoolValue(getBool(obj, "RemoveOnCopy"))
 	m.RenamePrimaryCalendar = types.BoolValue(getBool(obj, "RenamePrimaryCalendar"))
-	m.ReportInterval = types.StringValue(getString(obj, "ReportInterval"))
+	m.ReportInterval = types.StringValue(getObjectJSON(obj, "ReportInterval"))
 	m.Restore = types.BoolValue(getBool(obj, "Restore"))
 	m.SimplifiedSwitchOver = types.BoolValue(getBool(obj, "SimplifiedSwitchOver"))
 	m.SkipCalendar = types.BoolValue(getBool(obj, "SkipCalendar"))
@@ -520,30 +695,30 @@ func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBat
 	m.SkipDelegates = types.BoolValue(getBool(obj, "SkipDelegates"))
 	m.SkipDetails = types.BoolValue(getBool(obj, "SkipDetails"))
 	m.SkipMail = types.BoolValue(getBool(obj, "SkipMail"))
-	m.SkipMerging = types.StringValue(getString(obj, "SkipMerging"))
-	m.SkipMoving = types.StringValue(getString(obj, "SkipMoving"))
+	m.SkipMerging = stringSetValue(ctx, getStringSlice(obj, "SkipMerging"))
+	m.SkipMoving = stringSetValue(ctx, getStringSlice(obj, "SkipMoving"))
 	m.SkipProvisioning = types.BoolValue(getBool(obj, "SkipProvisioning"))
 	m.SkipReports = types.BoolValue(getBool(obj, "SkipReports"))
 	m.SkipRules = types.BoolValue(getBool(obj, "SkipRules"))
 	m.SlackPublicDataConnector = types.BoolValue(getBool(obj, "SlackPublicDataConnector"))
 	m.SlackWorkspaceId = types.StringValue(getString(obj, "SlackWorkspaceId"))
-	m.SourceEndpoint = types.StringValue(getString(obj, "SourceEndpoint"))
-	m.SourceMappings = stringSetValue(ctx, getStringSlice(obj, "SourceMappings"))
+	m.SourceEndpoint = types.StringValue(getObjectJSON(obj, "SourceEndpoint"))
+	m.SourceMappings = types.StringValue(getObjectJSON(obj, "SourceMappings"))
 	m.SourcePFPrimaryMailboxGuid = types.StringValue(getString(obj, "SourcePFPrimaryMailboxGuid"))
 	m.StagedRollOutGroupId = types.StringValue(getString(obj, "StagedRollOutGroupId"))
-	m.StartAfter = types.StringValue(getString(obj, "StartAfter"))
+	m.StartAfter = types.StringValue(getObjectJSON(obj, "StartAfter"))
 	m.SyncNow = types.BoolValue(getBool(obj, "SyncNow"))
-	m.TargetArchiveDatabases = types.StringValue(getString(obj, "TargetArchiveDatabases"))
-	m.TargetDatabases = types.StringValue(getString(obj, "TargetDatabases"))
-	m.TargetDeliveryDomain = types.StringValue(getString(obj, "TargetDeliveryDomain"))
-	m.TargetEndpoint = types.StringValue(getString(obj, "TargetEndpoint"))
-	m.TimeZone = types.StringValue(getString(obj, "TimeZone"))
+	m.TargetArchiveDatabases = stringSetValue(ctx, getStringSlice(obj, "TargetArchiveDatabases"))
+	m.TargetDatabases = stringSetValue(ctx, getStringSlice(obj, "TargetDatabases"))
+	m.TargetDeliveryDomain = types.StringValue(getObjectJSON(obj, "TargetDeliveryDomain"))
+	m.TargetEndpoint = types.StringValue(getObjectJSON(obj, "TargetEndpoint"))
+	m.TimeZone = types.StringValue(getObjectJSON(obj, "TimeZone"))
 	m.Update = types.BoolValue(getBool(obj, "Update"))
-	m.UserIds = types.StringValue(getString(obj, "UserIds"))
-	m.Users = types.StringValue(getString(obj, "Users"))
-	m.WorkflowControlFlags = types.StringValue(getString(obj, "WorkflowControlFlags"))
+	m.UserIds = stringSetValue(ctx, getStringSlice(obj, "UserIds"))
+	m.Users = stringSetValue(ctx, getStringSlice(obj, "Users"))
+	m.WorkflowControlFlags = types.StringValue(getObjectJSON(obj, "WorkflowControlFlags"))
 	m.WorkflowTemplate = types.StringValue(getString(obj, "WorkflowTemplate"))
-	m.XMLData = stringSetValue(ctx, getStringSlice(obj, "XMLData"))
+	m.XMLData = types.StringValue(getObjectJSON(obj, "XMLData"))
 	_ = ctx
 }
 
@@ -560,7 +735,7 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.AutoProvisioning = reconcile.KeepBool(cfg.AutoProvisioning, read.AutoProvisioning)
 	read.AutoStart = reconcile.KeepBool(cfg.AutoStart, read.AutoStart)
 	read.AvoidMergeOverlap = reconcile.KeepBool(cfg.AvoidMergeOverlap, read.AvoidMergeOverlap)
-	read.CSVData = reconcile.KeepSet(cfg.CSVData, read.CSVData)
+	read.CSVData = reconcile.KeepStr(cfg.CSVData, read.CSVData)
 	read.CompleteAfter = reconcile.KeepStr(cfg.CompleteAfter, read.CompleteAfter)
 	read.ConnectionLogicalId = reconcile.KeepStr(cfg.ConnectionLogicalId, read.ConnectionLogicalId)
 	read.ContentFilter = reconcile.KeepStr(cfg.ContentFilter, read.ContentFilter)
@@ -569,17 +744,17 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.DataFusion = reconcile.KeepBool(cfg.DataFusion, read.DataFusion)
 	read.DisableOnCopy = reconcile.KeepBool(cfg.DisableOnCopy, read.DisableOnCopy)
 	read.ExcludeDumpsters = reconcile.KeepBool(cfg.ExcludeDumpsters, read.ExcludeDumpsters)
-	read.ExcludeFolders = reconcile.KeepStr(cfg.ExcludeFolders, read.ExcludeFolders)
+	read.ExcludeFolders = reconcile.KeepSet(cfg.ExcludeFolders, read.ExcludeFolders)
 	read.Format = reconcile.KeepStr(cfg.Format, read.Format)
 	read.ForwardingDisposition = reconcile.KeepStr(cfg.ForwardingDisposition, read.ForwardingDisposition)
 	read.GoogleResource = reconcile.KeepBool(cfg.GoogleResource, read.GoogleResource)
-	read.IncludeFolders = reconcile.KeepStr(cfg.IncludeFolders, read.IncludeFolders)
+	read.IncludeFolders = reconcile.KeepSet(cfg.IncludeFolders, read.IncludeFolders)
 	read.IncludeOtherContacts = reconcile.KeepBool(cfg.IncludeOtherContacts, read.IncludeOtherContacts)
 	read.ManagedGmailTeams = reconcile.KeepBool(cfg.ManagedGmailTeams, read.ManagedGmailTeams)
 	read.MigrateTasks = reconcile.KeepBool(cfg.MigrateTasks, read.MigrateTasks)
-	read.MoveOptions = reconcile.KeepStr(cfg.MoveOptions, read.MoveOptions)
+	read.MoveOptions = reconcile.KeepSet(cfg.MoveOptions, read.MoveOptions)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
-	read.NotificationEmails = reconcile.KeepStr(cfg.NotificationEmails, read.NotificationEmails)
+	read.NotificationEmails = reconcile.KeepSet(cfg.NotificationEmails, read.NotificationEmails)
 	read.Partition = reconcile.KeepStr(cfg.Partition, read.Partition)
 	read.PrimaryOnly = reconcile.KeepBool(cfg.PrimaryOnly, read.PrimaryOnly)
 	read.PublicFolderToUnifiedGroup = reconcile.KeepBool(cfg.PublicFolderToUnifiedGroup, read.PublicFolderToUnifiedGroup)
@@ -593,28 +768,28 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.SkipDelegates = reconcile.KeepBool(cfg.SkipDelegates, read.SkipDelegates)
 	read.SkipDetails = reconcile.KeepBool(cfg.SkipDetails, read.SkipDetails)
 	read.SkipMail = reconcile.KeepBool(cfg.SkipMail, read.SkipMail)
-	read.SkipMerging = reconcile.KeepStr(cfg.SkipMerging, read.SkipMerging)
-	read.SkipMoving = reconcile.KeepStr(cfg.SkipMoving, read.SkipMoving)
+	read.SkipMerging = reconcile.KeepSet(cfg.SkipMerging, read.SkipMerging)
+	read.SkipMoving = reconcile.KeepSet(cfg.SkipMoving, read.SkipMoving)
 	read.SkipProvisioning = reconcile.KeepBool(cfg.SkipProvisioning, read.SkipProvisioning)
 	read.SkipReports = reconcile.KeepBool(cfg.SkipReports, read.SkipReports)
 	read.SkipRules = reconcile.KeepBool(cfg.SkipRules, read.SkipRules)
 	read.SlackPublicDataConnector = reconcile.KeepBool(cfg.SlackPublicDataConnector, read.SlackPublicDataConnector)
 	read.SlackWorkspaceId = reconcile.KeepStr(cfg.SlackWorkspaceId, read.SlackWorkspaceId)
 	read.SourceEndpoint = reconcile.KeepStr(cfg.SourceEndpoint, read.SourceEndpoint)
-	read.SourceMappings = reconcile.KeepSet(cfg.SourceMappings, read.SourceMappings)
+	read.SourceMappings = reconcile.KeepStr(cfg.SourceMappings, read.SourceMappings)
 	read.SourcePFPrimaryMailboxGuid = reconcile.KeepStr(cfg.SourcePFPrimaryMailboxGuid, read.SourcePFPrimaryMailboxGuid)
 	read.StagedRollOutGroupId = reconcile.KeepStr(cfg.StagedRollOutGroupId, read.StagedRollOutGroupId)
 	read.StartAfter = reconcile.KeepStr(cfg.StartAfter, read.StartAfter)
 	read.SyncNow = reconcile.KeepBool(cfg.SyncNow, read.SyncNow)
-	read.TargetArchiveDatabases = reconcile.KeepStr(cfg.TargetArchiveDatabases, read.TargetArchiveDatabases)
-	read.TargetDatabases = reconcile.KeepStr(cfg.TargetDatabases, read.TargetDatabases)
+	read.TargetArchiveDatabases = reconcile.KeepSet(cfg.TargetArchiveDatabases, read.TargetArchiveDatabases)
+	read.TargetDatabases = reconcile.KeepSet(cfg.TargetDatabases, read.TargetDatabases)
 	read.TargetDeliveryDomain = reconcile.KeepStr(cfg.TargetDeliveryDomain, read.TargetDeliveryDomain)
 	read.TargetEndpoint = reconcile.KeepStr(cfg.TargetEndpoint, read.TargetEndpoint)
 	read.TimeZone = reconcile.KeepStr(cfg.TimeZone, read.TimeZone)
 	read.Update = reconcile.KeepBool(cfg.Update, read.Update)
-	read.UserIds = reconcile.KeepStr(cfg.UserIds, read.UserIds)
-	read.Users = reconcile.KeepStr(cfg.Users, read.Users)
+	read.UserIds = reconcile.KeepSet(cfg.UserIds, read.UserIds)
+	read.Users = reconcile.KeepSet(cfg.Users, read.Users)
 	read.WorkflowControlFlags = reconcile.KeepStr(cfg.WorkflowControlFlags, read.WorkflowControlFlags)
 	read.WorkflowTemplate = reconcile.KeepStr(cfg.WorkflowTemplate, read.WorkflowTemplate)
-	read.XMLData = reconcile.KeepSet(cfg.XMLData, read.XMLData)
+	read.XMLData = reconcile.KeepStr(cfg.XMLData, read.XMLData)
 }

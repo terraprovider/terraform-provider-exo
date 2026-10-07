@@ -29,5 +29,5 @@ Read-Only:
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `name` (String) Maps to the -Name parameter.
-- `target_address_domains` (String) Maps to the -TargetAddressDomains parameter.
+- `target_address_domains` (Set of String) Maps to the -TargetAddressDomains parameter.
 - `target_sharing_epr` (String) Maps to the -TargetSharingEpr parameter.

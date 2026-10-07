@@ -47,8 +47,8 @@ Read-Only:
 - `owa_triple_wrap_signed_encrypted_mail` (Boolean) Maps to the -OWATripleWrapSignedEncryptedMail parameter.
 - `owa_use_key_identifier` (Boolean) Maps to the -OWAUseKeyIdentifier parameter.
 - `owa_use_secondary_proxies_when_finding_certificates` (Boolean) Maps to the -OWAUseSecondaryProxiesWhenFindingCertificates parameter.
-- `owabcc_encrypted_email_forking` (String) Maps to the -OWABCCEncryptedEmailForking parameter.
-- `owacrl_connection_timeout` (String) Maps to the -OWACRLConnectionTimeout parameter.
-- `owacrl_retrieval_timeout` (String) Maps to the -OWACRLRetrievalTimeout parameter.
-- `owadl_expansion_timeout` (String) Maps to the -OWADLExpansionTimeout parameter.
-- `smime_certificate_issuing_ca` (Set of String) Maps to the -SMIMECertificateIssuingCA parameter.
+- `owabcc_encrypted_email_forking` (Number) Maps to the -OWABCCEncryptedEmailForking parameter.
+- `owacrl_connection_timeout` (Number) Maps to the -OWACRLConnectionTimeout parameter.
+- `owacrl_retrieval_timeout` (Number) Maps to the -OWACRLRetrievalTimeout parameter.
+- `owadl_expansion_timeout` (Number) Maps to the -OWADLExpansionTimeout parameter.
+- `smime_certificate_issuing_ca` (String) Maps to the -SMIMECertificateIssuingCA parameter.

@@ -23,11 +23,11 @@ Look up an existing Place object. Set identity to select it.
 
 - `audio_device_name` (String) Maps to the -AudioDeviceName parameter.
 - `building` (String) Maps to the -Building parameter.
-- `capacity` (String) Maps to the -Capacity parameter.
+- `capacity` (Number) Maps to the -Capacity parameter.
 - `city` (String) Maps to the -City parameter.
 - `country_or_region` (String) Maps to the -CountryOrRegion parameter.
 - `display_device_name` (String) Maps to the -DisplayDeviceName parameter.
-- `floor` (String) Maps to the -Floor parameter.
+- `floor` (Number) Maps to the -Floor parameter.
 - `floor_label` (String) Maps to the -FloorLabel parameter.
 - `geo_coordinates` (String) Maps to the -GeoCoordinates parameter.
 - `id` (String) Object identifier (GUID).

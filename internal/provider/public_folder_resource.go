@@ -38,7 +38,7 @@ type publicFolderModel struct {
 	AgeLimit                types.String `tfsdk:"age_limit"`
 	EformsLocaleId          types.String `tfsdk:"eforms_locale_id"`
 	IssueWarningQuota       types.String `tfsdk:"issue_warning_quota"`
-	MailEnabled             types.String `tfsdk:"mail_enabled"`
+	MailEnabled             types.Bool   `tfsdk:"mail_enabled"`
 	MailRecipientGuid       types.String `tfsdk:"mail_recipient_guid"`
 	Mailbox                 types.String `tfsdk:"mailbox"`
 	MaxItemSize             types.String `tfsdk:"max_item_size"`
@@ -58,11 +58,11 @@ func (r *publicFolderResource) Schema(_ context.Context, _ resource.SchemaReques
 		Description: "Manages the PublicFolder object via New-PublicFolder / Get-PublicFolder / Set-PublicFolder / Remove-PublicFolder.",
 		Attributes: map[string]schema.Attribute{
 			"id":                          schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                    schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                    schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"age_limit":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AgeLimit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"eforms_locale_id":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EformsLocaleId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"issue_warning_quota":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IssueWarningQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_enabled":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_recipient_guid":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailRecipientGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mailbox":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"max_item_size":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxItemSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -89,17 +89,24 @@ func (r *publicFolderResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	p := exo.NewPublicFolderParams{
-		Name: plan.Name.ValueString(),
+	var config publicFolderModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.EformsLocaleId.ValueString(); v != "" {
-		p.EformsLocaleId = v
+
+	p := exo.NewPublicFolderParams{}
+	if v := config.EformsLocaleId.ValueString(); v != "" {
+		p.EformsLocaleId = objectParam(v)
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		p.Mailbox = v
+	if v := config.Mailbox.ValueString(); v != "" {
+		p.Mailbox = objectParam(v)
 	}
-	if v := plan.Path.ValueString(); v != "" {
-		p.Path = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Path.ValueString(); v != "" {
+		p.Path = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -151,33 +158,55 @@ func (r *publicFolderResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetPublicFolderParams{}
 	sp.Identity = id
-	if v := plan.AgeLimit.ValueString(); v != "" {
-		sp.AgeLimit = v
+	if !plan.AgeLimit.Equal(state.AgeLimit) {
+		if v := plan.AgeLimit.ValueString(); v != "" {
+			sp.AgeLimit = objectParam(v)
+		}
 	}
-	if v := plan.EformsLocaleId.ValueString(); v != "" {
-		sp.EformsLocaleId = v
+	if !plan.EformsLocaleId.Equal(state.EformsLocaleId) {
+		if v := plan.EformsLocaleId.ValueString(); v != "" {
+			sp.EformsLocaleId = objectParam(v)
+		}
 	}
-	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = v
+	if !plan.IssueWarningQuota.Equal(state.IssueWarningQuota) {
+		if v := plan.IssueWarningQuota.ValueString(); v != "" {
+			sp.IssueWarningQuota = objectParam(v)
+		}
 	}
-	if v := plan.MailEnabled.ValueString(); v != "" {
-		sp.MailEnabled = v
+	if !plan.MailEnabled.Equal(state.MailEnabled) {
+		if !plan.MailEnabled.IsUnknown() {
+			sp.MailEnabled = plan.MailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailRecipientGuid.ValueString(); v != "" {
-		sp.MailRecipientGuid = v
+	if !plan.MailRecipientGuid.Equal(state.MailRecipientGuid) {
+		if v := plan.MailRecipientGuid.ValueString(); v != "" {
+			sp.MailRecipientGuid = objectParam(v)
+		}
 	}
-	if v := plan.MaxItemSize.ValueString(); v != "" {
-		sp.MaxItemSize = v
+	if !plan.MaxItemSize.Equal(state.MaxItemSize) {
+		if v := plan.MaxItemSize.ValueString(); v != "" {
+			sp.MaxItemSize = objectParam(v)
+		}
 	}
-	if v := plan.Path.ValueString(); v != "" {
-		sp.Path = v
+	if !plan.Path.Equal(state.Path) {
+		if v := plan.Path.ValueString(); v != "" {
+			sp.Path = objectParam(v)
+		}
 	}
-	sp.PerUserReadStateEnabled = plan.PerUserReadStateEnabled.ValueBool()
-	if v := plan.ProhibitPostQuota.ValueString(); v != "" {
-		sp.ProhibitPostQuota = v
+	if !plan.PerUserReadStateEnabled.Equal(state.PerUserReadStateEnabled) {
+		if !plan.PerUserReadStateEnabled.IsUnknown() {
+			sp.PerUserReadStateEnabled = plan.PerUserReadStateEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = v
+	if !plan.ProhibitPostQuota.Equal(state.ProhibitPostQuota) {
+		if v := plan.ProhibitPostQuota.ValueString(); v != "" {
+			sp.ProhibitPostQuota = objectParam(v)
+		}
+	}
+	if !plan.RetainDeletedItemsFor.Equal(state.RetainDeletedItemsFor) {
+		if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
+			sp.RetainDeletedItemsFor = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,17 +216,7 @@ func (r *publicFolderResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AgeLimit":              cfg.AgeLimit,
-		"EformsLocaleId":        cfg.EformsLocaleId,
-		"IssueWarningQuota":     cfg.IssueWarningQuota,
-		"MailEnabled":           cfg.MailEnabled,
-		"MailRecipientGuid":     cfg.MailRecipientGuid,
-		"MaxItemSize":           cfg.MaxItemSize,
-		"Path":                  cfg.Path,
-		"ProhibitPostQuota":     cfg.ProhibitPostQuota,
-		"RetainDeletedItemsFor": cfg.RetainDeletedItemsFor,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -258,18 +277,18 @@ func (r *publicFolderResource) refresh(ctx context.Context, identity string, m *
 func readPublicFolder(ctx context.Context, obj map[string]any, m *publicFolderModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AgeLimit = types.StringValue(getString(obj, "AgeLimit"))
-	m.EformsLocaleId = types.StringValue(getString(obj, "EformsLocaleId"))
-	m.IssueWarningQuota = types.StringValue(getString(obj, "IssueWarningQuota"))
-	m.MailEnabled = types.StringValue(getString(obj, "MailEnabled"))
-	m.MailRecipientGuid = types.StringValue(getString(obj, "MailRecipientGuid"))
-	m.Mailbox = types.StringValue(getString(obj, "Mailbox"))
-	m.MaxItemSize = types.StringValue(getString(obj, "MaxItemSize"))
+	m.AgeLimit = types.StringValue(getObjectJSON(obj, "AgeLimit"))
+	m.EformsLocaleId = types.StringValue(getObjectJSON(obj, "EformsLocaleId"))
+	m.IssueWarningQuota = types.StringValue(getObjectJSON(obj, "IssueWarningQuota"))
+	m.MailEnabled = types.BoolValue(getBool(obj, "MailEnabled"))
+	m.MailRecipientGuid = types.StringValue(getObjectJSON(obj, "MailRecipientGuid"))
+	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
+	m.MaxItemSize = types.StringValue(getObjectJSON(obj, "MaxItemSize"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Path = types.StringValue(getString(obj, "Path"))
+	m.Path = types.StringValue(getObjectJSON(obj, "Path"))
 	m.PerUserReadStateEnabled = types.BoolValue(getBool(obj, "PerUserReadStateEnabled"))
-	m.ProhibitPostQuota = types.StringValue(getString(obj, "ProhibitPostQuota"))
-	m.RetainDeletedItemsFor = types.StringValue(getString(obj, "RetainDeletedItemsFor"))
+	m.ProhibitPostQuota = types.StringValue(getObjectJSON(obj, "ProhibitPostQuota"))
+	m.RetainDeletedItemsFor = types.StringValue(getObjectJSON(obj, "RetainDeletedItemsFor"))
 	_ = ctx
 }
 
@@ -277,7 +296,7 @@ func (r *publicFolderResource) reconcileState(cfg, read *publicFolderModel) {
 	read.AgeLimit = reconcile.KeepStr(cfg.AgeLimit, read.AgeLimit)
 	read.EformsLocaleId = reconcile.KeepStr(cfg.EformsLocaleId, read.EformsLocaleId)
 	read.IssueWarningQuota = reconcile.KeepStr(cfg.IssueWarningQuota, read.IssueWarningQuota)
-	read.MailEnabled = reconcile.KeepStr(cfg.MailEnabled, read.MailEnabled)
+	read.MailEnabled = reconcile.KeepBool(cfg.MailEnabled, read.MailEnabled)
 	read.MailRecipientGuid = reconcile.KeepStr(cfg.MailRecipientGuid, read.MailRecipientGuid)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
 	read.MaxItemSize = reconcile.KeepStr(cfg.MaxItemSize, read.MaxItemSize)

@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &emailTenantSettingsResource{}
 	_ resource.ResourceWithConfigure   = &emailTenantSettingsResource{}
 	_ resource.ResourceWithImportState = &emailTenantSettingsResource{}
+	_ resource.ResourceWithModifyPlan  = &emailTenantSettingsResource{}
 )
 
 type emailTenantSettingsResource struct{ client *clients.Client }
@@ -68,10 +69,21 @@ func (r *emailTenantSettingsResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config emailTenantSettingsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetEmailTenantSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.EnablePriorityAccountProtection = plan.EnablePriorityAccountProtection.ValueBool()
-	sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+	if !config.EnablePriorityAccountProtection.IsNull() {
+		if !plan.EnablePriorityAccountProtection.IsUnknown() {
+			sp.EnablePriorityAccountProtection = plan.EnablePriorityAccountProtection.ValueBoolPointer()
+		}
+	}
+	if !config.IgnoreDehydratedFlag.IsNull() {
+		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,8 +123,14 @@ func (r *emailTenantSettingsResource) Update(ctx context.Context, req resource.U
 	id := r.identityOf(state)
 	sp := exo.SetEmailTenantSettingsParams{}
 	sp.Identity = id
-	sp.EnablePriorityAccountProtection = plan.EnablePriorityAccountProtection.ValueBool()
-	sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+	if !plan.EnablePriorityAccountProtection.Equal(state.EnablePriorityAccountProtection) {
+		if !plan.EnablePriorityAccountProtection.IsUnknown() {
+			sp.EnablePriorityAccountProtection = plan.EnablePriorityAccountProtection.ValueBoolPointer()
+		}
+	}
+	if !plan.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
+		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -134,6 +152,44 @@ func (r *emailTenantSettingsResource) Delete(_ context.Context, _ resource.Delet
 func (r *emailTenantSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *emailTenantSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan emailTenantSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetEmailTenantSettings(ctx, exo.GetEmailTenantSettingsParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur emailTenantSettingsModel
+	readEmailTenantSettings(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.EnablePriorityAccountProtection.IsUnknown() {
+		plan.EnablePriorityAccountProtection = cur.EnablePriorityAccountProtection
+	}
+	if plan.IgnoreDehydratedFlag.IsUnknown() {
+		plan.IgnoreDehydratedFlag = cur.IgnoreDehydratedFlag
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *emailTenantSettingsResource) identityOf(m emailTenantSettingsModel) string {

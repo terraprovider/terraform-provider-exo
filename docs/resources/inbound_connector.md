@@ -18,30 +18,30 @@ Manages the InboundConnector object via New-InboundConnector / Get-InboundConnec
 ### Required
 
 - `name` (String) Maps to the -Name parameter.
-- `sender_domains` (String) Maps to the -SenderDomains parameter.
+- `sender_domains` (Set of String) Maps to the -SenderDomains parameter.
 
 ### Optional
 
-- `associated_accepted_domains` (String) Maps to the -AssociatedAcceptedDomains parameter.
-- `client_host_names` (String) Maps to the -ClientHostNames parameter.
+- `associated_accepted_domains` (Set of String) Maps to the -AssociatedAcceptedDomains parameter.
+- `client_host_names` (Set of String) Maps to the -ClientHostNames parameter.
 - `cloud_services_mail_enabled` (Boolean) Maps to the -CloudServicesMailEnabled parameter.
 - `comment` (String) Maps to the -Comment parameter.
 - `connector_source` (String) Maps to the -ConnectorSource parameter.
 - `connector_type` (String) Maps to the -ConnectorType parameter.
-- `ef_skip_i_ps` (String) Maps to the -EFSkipIPs parameter.
+- `ef_skip_i_ps` (Set of String) Maps to the -EFSkipIPs parameter.
 - `ef_skip_last_ip` (Boolean) Maps to the -EFSkipLastIP parameter.
-- `ef_skip_mail_gateway` (String) Maps to the -EFSkipMailGateway parameter.
+- `ef_skip_mail_gateway` (Set of String) Maps to the -EFSkipMailGateway parameter.
 - `ef_test_mode` (Boolean) Maps to the -EFTestMode parameter.
-- `ef_users` (String) Maps to the -EFUsers parameter.
+- `ef_users` (Set of String) Maps to the -EFUsers parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `require_tls` (Boolean) Maps to the -RequireTls parameter.
 - `restrict_domains_to_certificate` (Boolean) Maps to the -RestrictDomainsToCertificate parameter.
 - `restrict_domains_to_ip_addresses` (Boolean) Maps to the -RestrictDomainsToIPAddresses parameter.
-- `scan_and_drop_recipients` (String) Maps to the -ScanAndDropRecipients parameter.
-- `sender_ip_addresses` (String) Maps to the -SenderIPAddresses parameter.
+- `scan_and_drop_recipients` (Set of String) Maps to the -ScanAndDropRecipients parameter.
+- `sender_ip_addresses` (Set of String) Maps to the -SenderIPAddresses parameter.
 - `tls_sender_certificate_name` (String) Maps to the -TlsSenderCertificateName parameter.
 - `treat_messages_as_internal` (Boolean) Maps to the -TreatMessagesAsInternal parameter.
-- `trusted_organizations` (String) Maps to the -TrustedOrganizations parameter.
+- `trusted_organizations` (Set of String) Maps to the -TrustedOrganizations parameter.
 
 ### Read-Only
 

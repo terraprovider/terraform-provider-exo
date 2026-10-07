@@ -36,7 +36,7 @@ resource "exo_role_group" "compliance_readers" {
 - `custom_recipient_write_scope` (String) Maps to the -CustomRecipientWriteScope parameter.
 - `description` (String) Maps to the -Description parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
-- `managed_by` (String) Maps to the -ManagedBy parameter.
+- `managed_by` (Set of String) Maps to the -ManagedBy parameter.
 - `members` (Set of String) Members of the RoleGroup, managed via Update-RoleGroupMember.
 - `roles` (Set of String) Maps to the -Roles parameter.
 - `well_known_object` (String) Maps to the -WellKnownObject parameter.

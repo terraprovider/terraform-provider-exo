@@ -22,4 +22,4 @@ Look up an existing ResourceConfig object. Set identity to select it.
 ### Read-Only
 
 - `id` (String) Object identifier (GUID).
-- `resource_property_schema` (String) Maps to the -ResourcePropertySchema parameter.
+- `resource_property_schema` (Set of String) Maps to the -ResourcePropertySchema parameter.

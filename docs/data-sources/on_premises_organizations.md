@@ -25,7 +25,7 @@ List every OnPremisesOrganization object (Get-OnPremisesOrganization).
 Read-Only:
 
 - `comment` (String) Maps to the -Comment parameter.
-- `hybrid_domains` (String) Maps to the -HybridDomains parameter.
+- `hybrid_domains` (Set of String) Maps to the -HybridDomains parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `inbound_connector` (String) Maps to the -InboundConnector parameter.

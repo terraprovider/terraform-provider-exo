@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &adminAuditLogConfigResource{}
 	_ resource.ResourceWithConfigure   = &adminAuditLogConfigResource{}
 	_ resource.ResourceWithImportState = &adminAuditLogConfigResource{}
+	_ resource.ResourceWithModifyPlan  = &adminAuditLogConfigResource{}
 )
 
 type adminAuditLogConfigResource struct{ client *clients.Client }
@@ -47,7 +48,7 @@ func (r *adminAuditLogConfigResource) Schema(_ context.Context, _ resource.Schem
 		Description: "Manages the AdminAuditLogConfig configuration via Set-AdminAuditLogConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"unified_audit_log_ingestion_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UnifiedAuditLogIngestionEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -66,8 +67,17 @@ func (r *adminAuditLogConfigResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config adminAuditLogConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetAdminAuditLogConfigParams{}
-	sp.UnifiedAuditLogIngestionEnabled = plan.UnifiedAuditLogIngestionEnabled.ValueBool()
+	if !config.UnifiedAuditLogIngestionEnabled.IsNull() {
+		if !plan.UnifiedAuditLogIngestionEnabled.IsUnknown() {
+			sp.UnifiedAuditLogIngestionEnabled = plan.UnifiedAuditLogIngestionEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -106,7 +116,11 @@ func (r *adminAuditLogConfigResource) Update(ctx context.Context, req resource.U
 	}
 	id := r.identityOf(state)
 	sp := exo.SetAdminAuditLogConfigParams{}
-	sp.UnifiedAuditLogIngestionEnabled = plan.UnifiedAuditLogIngestionEnabled.ValueBool()
+	if !plan.UnifiedAuditLogIngestionEnabled.Equal(state.UnifiedAuditLogIngestionEnabled) {
+		if !plan.UnifiedAuditLogIngestionEnabled.IsUnknown() {
+			sp.UnifiedAuditLogIngestionEnabled = plan.UnifiedAuditLogIngestionEnabled.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -128,6 +142,37 @@ func (r *adminAuditLogConfigResource) Delete(_ context.Context, _ resource.Delet
 func (r *adminAuditLogConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *adminAuditLogConfigResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan adminAuditLogConfigModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetAdminAuditLogConfig(ctx, exo.GetAdminAuditLogConfigParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur adminAuditLogConfigModel
+	readAdminAuditLogConfig(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.UnifiedAuditLogIngestionEnabled.IsUnknown() {
+		plan.UnifiedAuditLogIngestionEnabled = cur.UnifiedAuditLogIngestionEnabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *adminAuditLogConfigResource) identityOf(m adminAuditLogConfigModel) string {

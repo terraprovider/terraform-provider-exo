@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,28 +36,28 @@ func NewInboundConnectorResource() resource.Resource { return &inboundConnectorR
 type inboundConnectorModel struct {
 	ID                           types.String `tfsdk:"id"`
 	Identity                     types.String `tfsdk:"identity"`
-	AssociatedAcceptedDomains    types.String `tfsdk:"associated_accepted_domains"`
-	ClientHostNames              types.String `tfsdk:"client_host_names"`
+	AssociatedAcceptedDomains    types.Set    `tfsdk:"associated_accepted_domains"`
+	ClientHostNames              types.Set    `tfsdk:"client_host_names"`
 	CloudServicesMailEnabled     types.Bool   `tfsdk:"cloud_services_mail_enabled"`
 	Comment                      types.String `tfsdk:"comment"`
 	ConnectorSource              types.String `tfsdk:"connector_source"`
 	ConnectorType                types.String `tfsdk:"connector_type"`
-	EFSkipIPs                    types.String `tfsdk:"ef_skip_i_ps"`
+	EFSkipIPs                    types.Set    `tfsdk:"ef_skip_i_ps"`
 	EFSkipLastIP                 types.Bool   `tfsdk:"ef_skip_last_ip"`
-	EFSkipMailGateway            types.String `tfsdk:"ef_skip_mail_gateway"`
+	EFSkipMailGateway            types.Set    `tfsdk:"ef_skip_mail_gateway"`
 	EFTestMode                   types.Bool   `tfsdk:"ef_test_mode"`
-	EFUsers                      types.String `tfsdk:"ef_users"`
+	EFUsers                      types.Set    `tfsdk:"ef_users"`
 	Enabled                      types.Bool   `tfsdk:"enabled"`
 	Name                         types.String `tfsdk:"name"`
 	RequireTls                   types.Bool   `tfsdk:"require_tls"`
 	RestrictDomainsToCertificate types.Bool   `tfsdk:"restrict_domains_to_certificate"`
 	RestrictDomainsToIPAddresses types.Bool   `tfsdk:"restrict_domains_to_ip_addresses"`
-	ScanAndDropRecipients        types.String `tfsdk:"scan_and_drop_recipients"`
-	SenderDomains                types.String `tfsdk:"sender_domains"`
-	SenderIPAddresses            types.String `tfsdk:"sender_ip_addresses"`
+	ScanAndDropRecipients        types.Set    `tfsdk:"scan_and_drop_recipients"`
+	SenderDomains                types.Set    `tfsdk:"sender_domains"`
+	SenderIPAddresses            types.Set    `tfsdk:"sender_ip_addresses"`
 	TlsSenderCertificateName     types.String `tfsdk:"tls_sender_certificate_name"`
 	TreatMessagesAsInternal      types.Bool   `tfsdk:"treat_messages_as_internal"`
-	TrustedOrganizations         types.String `tfsdk:"trusted_organizations"`
+	TrustedOrganizations         types.Set    `tfsdk:"trusted_organizations"`
 }
 
 func (r *inboundConnectorResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -68,29 +69,29 @@ func (r *inboundConnectorResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Manages the InboundConnector object via New-InboundConnector / Get-InboundConnector / Set-InboundConnector / Remove-InboundConnector.",
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
-			"associated_accepted_domains":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AssociatedAcceptedDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"client_host_names":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ClientHostNames parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"associated_accepted_domains":      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AssociatedAcceptedDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"client_host_names":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ClientHostNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 			"cloud_services_mail_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CloudServicesMailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"comment":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"connector_source":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConnectorSource parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"connector_type":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ConnectorType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"ef_skip_i_ps":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EFSkipIPs parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ef_skip_i_ps":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EFSkipIPs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"ef_skip_last_ip":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EFSkipLastIP parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ef_skip_mail_gateway":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EFSkipMailGateway parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ef_skip_mail_gateway":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EFSkipMailGateway parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"ef_test_mode":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EFTestMode parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"ef_users":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EFUsers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"ef_users":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EFUsers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"require_tls":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireTls parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"restrict_domains_to_certificate":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RestrictDomainsToCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"restrict_domains_to_ip_addresses": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RestrictDomainsToIPAddresses parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"scan_and_drop_recipients":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ScanAndDropRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"sender_domains":                   schema.StringAttribute{Required: true, Description: "Maps to the -SenderDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"sender_ip_addresses":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderIPAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"scan_and_drop_recipients":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ScanAndDropRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"sender_domains":                   schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SenderDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"sender_ip_addresses":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderIPAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"tls_sender_certificate_name":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TlsSenderCertificateName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"treat_messages_as_internal":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TreatMessagesAsInternal parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"trusted_organizations":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedOrganizations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"trusted_organizations":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TrustedOrganizations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -109,53 +110,112 @@ func (r *inboundConnectorResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	p := exo.NewInboundConnectorParams{
-		CloudServicesMailEnabled:     plan.CloudServicesMailEnabled.ValueBool(),
-		Comment:                      plan.Comment.ValueString(),
-		EFSkipLastIP:                 plan.EFSkipLastIP.ValueBool(),
-		EFTestMode:                   plan.EFTestMode.ValueBool(),
-		Enabled:                      plan.Enabled.ValueBool(),
-		Name:                         plan.Name.ValueString(),
-		RequireTls:                   plan.RequireTls.ValueBool(),
-		RestrictDomainsToCertificate: plan.RestrictDomainsToCertificate.ValueBool(),
-		RestrictDomainsToIPAddresses: plan.RestrictDomainsToIPAddresses.ValueBool(),
-		TreatMessagesAsInternal:      plan.TreatMessagesAsInternal.ValueBool(),
+	var config inboundConnectorModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AssociatedAcceptedDomains.ValueString(); v != "" {
-		p.AssociatedAcceptedDomains = v
+
+	p := exo.NewInboundConnectorParams{}
+	if !config.AssociatedAcceptedDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.AssociatedAcceptedDomains, &resp.Diagnostics); len(v) > 0 {
+			p.AssociatedAcceptedDomains = v
+		}
 	}
-	if v := plan.ClientHostNames.ValueString(); v != "" {
-		p.ClientHostNames = v
+	if !config.ClientHostNames.IsNull() {
+		if v := toStringSlice(ctx, plan.ClientHostNames, &resp.Diagnostics); len(v) > 0 {
+			p.ClientHostNames = v
+		}
 	}
-	if v := plan.ConnectorSource.ValueString(); v != "" {
-		p.ConnectorSource = v
+	if !config.CloudServicesMailEnabled.IsNull() {
+		if !plan.CloudServicesMailEnabled.IsUnknown() {
+			p.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.ConnectorType.ValueString(); v != "" {
-		p.ConnectorType = v
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.EFSkipIPs.ValueString(); v != "" {
-		p.EFSkipIPs = v
+	if v := config.ConnectorSource.ValueString(); v != "" {
+		p.ConnectorSource = objectParam(v)
 	}
-	if v := plan.EFSkipMailGateway.ValueString(); v != "" {
-		p.EFSkipMailGateway = v
+	if v := config.ConnectorType.ValueString(); v != "" {
+		p.ConnectorType = objectParam(v)
 	}
-	if v := plan.EFUsers.ValueString(); v != "" {
-		p.EFUsers = v
+	if !config.EFSkipIPs.IsNull() {
+		if v := toStringSlice(ctx, plan.EFSkipIPs, &resp.Diagnostics); len(v) > 0 {
+			p.EFSkipIPs = v
+		}
 	}
-	if v := plan.ScanAndDropRecipients.ValueString(); v != "" {
-		p.ScanAndDropRecipients = v
+	if !config.EFSkipLastIP.IsNull() {
+		if !plan.EFSkipLastIP.IsUnknown() {
+			p.EFSkipLastIP = plan.EFSkipLastIP.ValueBoolPointer()
+		}
 	}
-	if v := plan.SenderDomains.ValueString(); v != "" {
-		p.SenderDomains = v
+	if !config.EFSkipMailGateway.IsNull() {
+		if v := toStringSlice(ctx, plan.EFSkipMailGateway, &resp.Diagnostics); len(v) > 0 {
+			p.EFSkipMailGateway = v
+		}
 	}
-	if v := plan.SenderIPAddresses.ValueString(); v != "" {
-		p.SenderIPAddresses = v
+	if !config.EFTestMode.IsNull() {
+		if !plan.EFTestMode.IsUnknown() {
+			p.EFTestMode = plan.EFTestMode.ValueBoolPointer()
+		}
 	}
-	if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
-		p.TlsSenderCertificateName = v
+	if !config.EFUsers.IsNull() {
+		if v := toStringSlice(ctx, plan.EFUsers, &resp.Diagnostics); len(v) > 0 {
+			p.EFUsers = v
+		}
 	}
-	if v := plan.TrustedOrganizations.ValueString(); v != "" {
-		p.TrustedOrganizations = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.RequireTls.IsNull() {
+		if !plan.RequireTls.IsUnknown() {
+			p.RequireTls = plan.RequireTls.ValueBoolPointer()
+		}
+	}
+	if !config.RestrictDomainsToCertificate.IsNull() {
+		if !plan.RestrictDomainsToCertificate.IsUnknown() {
+			p.RestrictDomainsToCertificate = plan.RestrictDomainsToCertificate.ValueBoolPointer()
+		}
+	}
+	if !config.RestrictDomainsToIPAddresses.IsNull() {
+		if !plan.RestrictDomainsToIPAddresses.IsUnknown() {
+			p.RestrictDomainsToIPAddresses = plan.RestrictDomainsToIPAddresses.ValueBoolPointer()
+		}
+	}
+	if !config.ScanAndDropRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.ScanAndDropRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.ScanAndDropRecipients = v
+		}
+	}
+	if !config.SenderDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderDomains, &resp.Diagnostics); len(v) > 0 {
+			p.SenderDomains = v
+		}
+	}
+	if !config.SenderIPAddresses.IsNull() {
+		if v := toStringSlice(ctx, plan.SenderIPAddresses, &resp.Diagnostics); len(v) > 0 {
+			p.SenderIPAddresses = v
+		}
+	}
+	if v := config.TlsSenderCertificateName.ValueString(); v != "" {
+		p.TlsSenderCertificateName = objectParam(v)
+	}
+	if !config.TreatMessagesAsInternal.IsNull() {
+		if !plan.TreatMessagesAsInternal.IsUnknown() {
+			p.TreatMessagesAsInternal = plan.TreatMessagesAsInternal.ValueBoolPointer()
+		}
+	}
+	if !config.TrustedOrganizations.IsNull() {
+		if v := toStringSlice(ctx, plan.TrustedOrganizations, &resp.Diagnostics); len(v) > 0 {
+			p.TrustedOrganizations = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -207,44 +267,168 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetInboundConnectorParams{}
 	sp.Identity = id
-	if v := plan.AssociatedAcceptedDomains.ValueString(); v != "" {
-		sp.AssociatedAcceptedDomains = v
+	var cur *inboundConnectorModel
+	curRead := false
+	current := func() *inboundConnectorModel {
+		if !curRead {
+			curRead = true
+			var m inboundConnectorModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-InboundConnector failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBool()
-	sp.Comment = plan.Comment.ValueString()
-	if v := plan.ConnectorSource.ValueString(); v != "" {
-		sp.ConnectorSource = v
+	if !plan.AssociatedAcceptedDomains.Equal(state.AssociatedAcceptedDomains) {
+		if !plan.AssociatedAcceptedDomains.IsNull() && !plan.AssociatedAcceptedDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AssociatedAcceptedDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.AssociatedAcceptedDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AssociatedAcceptedDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.AssociatedAcceptedDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ConnectorType.ValueString(); v != "" {
-		sp.ConnectorType = v
+	if !plan.CloudServicesMailEnabled.Equal(state.CloudServicesMailEnabled) {
+		if !plan.CloudServicesMailEnabled.IsUnknown() {
+			sp.CloudServicesMailEnabled = plan.CloudServicesMailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.EFSkipIPs.ValueString(); v != "" {
-		sp.EFSkipIPs = v
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
 	}
-	sp.EFSkipLastIP = plan.EFSkipLastIP.ValueBool()
-	if v := plan.EFSkipMailGateway.ValueString(); v != "" {
-		sp.EFSkipMailGateway = v
+	if !plan.ConnectorSource.Equal(state.ConnectorSource) {
+		if v := plan.ConnectorSource.ValueString(); v != "" {
+			sp.ConnectorSource = objectParam(v)
+		}
 	}
-	sp.EFTestMode = plan.EFTestMode.ValueBool()
-	if v := plan.EFUsers.ValueString(); v != "" {
-		sp.EFUsers = v
+	if !plan.ConnectorType.Equal(state.ConnectorType) {
+		if v := plan.ConnectorType.ValueString(); v != "" {
+			sp.ConnectorType = objectParam(v)
+		}
 	}
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.RequireTls = plan.RequireTls.ValueBool()
-	sp.RestrictDomainsToCertificate = plan.RestrictDomainsToCertificate.ValueBool()
-	sp.RestrictDomainsToIPAddresses = plan.RestrictDomainsToIPAddresses.ValueBool()
-	if v := plan.ScanAndDropRecipients.ValueString(); v != "" {
-		sp.ScanAndDropRecipients = v
+	if !plan.EFSkipIPs.Equal(state.EFSkipIPs) {
+		if !plan.EFSkipIPs.IsNull() && !plan.EFSkipIPs.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EFSkipIPs, &resp.Diagnostics); len(v) > 0 {
+				sp.EFSkipIPs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFSkipIPs, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFSkipIPsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.SenderIPAddresses.ValueString(); v != "" {
-		sp.SenderIPAddresses = v
+	if !plan.EFSkipLastIP.Equal(state.EFSkipLastIP) {
+		if !plan.EFSkipLastIP.IsUnknown() {
+			sp.EFSkipLastIP = plan.EFSkipLastIP.ValueBoolPointer()
+		}
 	}
-	if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
-		sp.TlsSenderCertificateName = v
+	if !plan.EFSkipMailGateway.Equal(state.EFSkipMailGateway) {
+		if !plan.EFSkipMailGateway.IsNull() && !plan.EFSkipMailGateway.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EFSkipMailGateway, &resp.Diagnostics); len(v) > 0 {
+				sp.EFSkipMailGateway = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFSkipMailGateway, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFSkipMailGatewayDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.TreatMessagesAsInternal = plan.TreatMessagesAsInternal.ValueBool()
-	if v := plan.TrustedOrganizations.ValueString(); v != "" {
-		sp.TrustedOrganizations = v
+	if !plan.EFTestMode.Equal(state.EFTestMode) {
+		if !plan.EFTestMode.IsUnknown() {
+			sp.EFTestMode = plan.EFTestMode.ValueBoolPointer()
+		}
+	}
+	if !plan.EFUsers.Equal(state.EFUsers) {
+		if !plan.EFUsers.IsNull() && !plan.EFUsers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.EFUsers, &resp.Diagnostics); len(v) > 0 {
+				sp.EFUsers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFUsers, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFUsersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RequireTls.Equal(state.RequireTls) {
+		if !plan.RequireTls.IsUnknown() {
+			sp.RequireTls = plan.RequireTls.ValueBoolPointer()
+		}
+	}
+	if !plan.RestrictDomainsToCertificate.Equal(state.RestrictDomainsToCertificate) {
+		if !plan.RestrictDomainsToCertificate.IsUnknown() {
+			sp.RestrictDomainsToCertificate = plan.RestrictDomainsToCertificate.ValueBoolPointer()
+		}
+	}
+	if !plan.RestrictDomainsToIPAddresses.Equal(state.RestrictDomainsToIPAddresses) {
+		if !plan.RestrictDomainsToIPAddresses.IsUnknown() {
+			sp.RestrictDomainsToIPAddresses = plan.RestrictDomainsToIPAddresses.ValueBoolPointer()
+		}
+	}
+	if !plan.ScanAndDropRecipients.Equal(state.ScanAndDropRecipients) {
+		if !plan.ScanAndDropRecipients.IsNull() && !plan.ScanAndDropRecipients.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ScanAndDropRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ScanAndDropRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ScanAndDropRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ScanAndDropRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.SenderIPAddresses.Equal(state.SenderIPAddresses) {
+		if !plan.SenderIPAddresses.IsNull() && !plan.SenderIPAddresses.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SenderIPAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.SenderIPAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SenderIPAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.SenderIPAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.TlsSenderCertificateName.Equal(state.TlsSenderCertificateName) {
+		if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
+			sp.TlsSenderCertificateName = objectParam(v)
+		}
+	}
+	if !plan.TreatMessagesAsInternal.Equal(state.TreatMessagesAsInternal) {
+		if !plan.TreatMessagesAsInternal.IsUnknown() {
+			sp.TreatMessagesAsInternal = plan.TreatMessagesAsInternal.ValueBoolPointer()
+		}
+	}
+	if !plan.TrustedOrganizations.Equal(state.TrustedOrganizations) {
+		if !plan.TrustedOrganizations.IsNull() && !plan.TrustedOrganizations.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TrustedOrganizations, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedOrganizations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedOrganizations, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedOrganizationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -255,17 +439,7 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AssociatedAcceptedDomains": cfg.AssociatedAcceptedDomains,
-		"Comment":                   cfg.Comment,
-		"ConnectorSource":           cfg.ConnectorSource,
-		"ConnectorType":             cfg.ConnectorType,
-		"EFSkipIPs":                 cfg.EFSkipIPs,
-		"EFSkipMailGateway":         cfg.EFSkipMailGateway,
-		"EFUsers":                   cfg.EFUsers,
-		"ScanAndDropRecipients":     cfg.ScanAndDropRecipients,
-		"SenderIPAddresses":         cfg.SenderIPAddresses,
-		"TlsSenderCertificateName":  cfg.TlsSenderCertificateName,
-		"TrustedOrganizations":      cfg.TrustedOrganizations,
+		"Comment": cfg.Comment,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -327,52 +501,52 @@ func (r *inboundConnectorResource) refresh(ctx context.Context, identity string,
 func readInboundConnector(ctx context.Context, obj map[string]any, m *inboundConnectorModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.AssociatedAcceptedDomains = types.StringValue(getString(obj, "AssociatedAcceptedDomains"))
-	m.ClientHostNames = types.StringValue(getString(obj, "ClientHostNames"))
+	m.AssociatedAcceptedDomains = stringSetValue(ctx, getStringSlice(obj, "AssociatedAcceptedDomains"))
+	m.ClientHostNames = stringSetValue(ctx, getStringSlice(obj, "ClientHostNames"))
 	m.CloudServicesMailEnabled = types.BoolValue(getBool(obj, "CloudServicesMailEnabled"))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
-	m.ConnectorSource = types.StringValue(getString(obj, "ConnectorSource"))
-	m.ConnectorType = types.StringValue(getString(obj, "ConnectorType"))
-	m.EFSkipIPs = types.StringValue(getString(obj, "EFSkipIPs"))
+	m.ConnectorSource = types.StringValue(getObjectJSON(obj, "ConnectorSource"))
+	m.ConnectorType = types.StringValue(getObjectJSON(obj, "ConnectorType"))
+	m.EFSkipIPs = stringSetValue(ctx, getStringSlice(obj, "EFSkipIPs"))
 	m.EFSkipLastIP = types.BoolValue(getBool(obj, "EFSkipLastIP"))
-	m.EFSkipMailGateway = types.StringValue(getString(obj, "EFSkipMailGateway"))
+	m.EFSkipMailGateway = stringSetValue(ctx, getStringSlice(obj, "EFSkipMailGateway"))
 	m.EFTestMode = types.BoolValue(getBool(obj, "EFTestMode"))
-	m.EFUsers = types.StringValue(getString(obj, "EFUsers"))
+	m.EFUsers = stringSetValue(ctx, getStringSlice(obj, "EFUsers"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.RequireTls = types.BoolValue(getBool(obj, "RequireTls"))
 	m.RestrictDomainsToCertificate = types.BoolValue(getBool(obj, "RestrictDomainsToCertificate"))
 	m.RestrictDomainsToIPAddresses = types.BoolValue(getBool(obj, "RestrictDomainsToIPAddresses"))
-	m.ScanAndDropRecipients = types.StringValue(getString(obj, "ScanAndDropRecipients"))
-	m.SenderDomains = types.StringValue(getString(obj, "SenderDomains"))
-	m.SenderIPAddresses = types.StringValue(getString(obj, "SenderIPAddresses"))
-	m.TlsSenderCertificateName = types.StringValue(getString(obj, "TlsSenderCertificateName"))
+	m.ScanAndDropRecipients = stringSetValue(ctx, getStringSlice(obj, "ScanAndDropRecipients"))
+	m.SenderDomains = stringSetValue(ctx, getStringSlice(obj, "SenderDomains"))
+	m.SenderIPAddresses = stringSetValue(ctx, getStringSlice(obj, "SenderIPAddresses"))
+	m.TlsSenderCertificateName = types.StringValue(getObjectJSON(obj, "TlsSenderCertificateName"))
 	m.TreatMessagesAsInternal = types.BoolValue(getBool(obj, "TreatMessagesAsInternal"))
-	m.TrustedOrganizations = types.StringValue(getString(obj, "TrustedOrganizations"))
+	m.TrustedOrganizations = stringSetValue(ctx, getStringSlice(obj, "TrustedOrganizations"))
 	_ = ctx
 }
 
 func (r *inboundConnectorResource) reconcileState(cfg, read *inboundConnectorModel) {
-	read.AssociatedAcceptedDomains = reconcile.KeepStr(cfg.AssociatedAcceptedDomains, read.AssociatedAcceptedDomains)
-	read.ClientHostNames = reconcile.KeepStr(cfg.ClientHostNames, read.ClientHostNames)
+	read.AssociatedAcceptedDomains = reconcile.KeepSet(cfg.AssociatedAcceptedDomains, read.AssociatedAcceptedDomains)
+	read.ClientHostNames = reconcile.KeepSet(cfg.ClientHostNames, read.ClientHostNames)
 	read.CloudServicesMailEnabled = reconcile.KeepBool(cfg.CloudServicesMailEnabled, read.CloudServicesMailEnabled)
 	read.Comment = reconcile.KeepStr(cfg.Comment, read.Comment)
 	read.ConnectorSource = reconcile.KeepStr(cfg.ConnectorSource, read.ConnectorSource)
 	read.ConnectorType = reconcile.KeepStr(cfg.ConnectorType, read.ConnectorType)
-	read.EFSkipIPs = reconcile.KeepStr(cfg.EFSkipIPs, read.EFSkipIPs)
+	read.EFSkipIPs = reconcile.KeepSet(cfg.EFSkipIPs, read.EFSkipIPs)
 	read.EFSkipLastIP = reconcile.KeepBool(cfg.EFSkipLastIP, read.EFSkipLastIP)
-	read.EFSkipMailGateway = reconcile.KeepStr(cfg.EFSkipMailGateway, read.EFSkipMailGateway)
+	read.EFSkipMailGateway = reconcile.KeepSet(cfg.EFSkipMailGateway, read.EFSkipMailGateway)
 	read.EFTestMode = reconcile.KeepBool(cfg.EFTestMode, read.EFTestMode)
-	read.EFUsers = reconcile.KeepStr(cfg.EFUsers, read.EFUsers)
+	read.EFUsers = reconcile.KeepSet(cfg.EFUsers, read.EFUsers)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.RequireTls = reconcile.KeepBool(cfg.RequireTls, read.RequireTls)
 	read.RestrictDomainsToCertificate = reconcile.KeepBool(cfg.RestrictDomainsToCertificate, read.RestrictDomainsToCertificate)
 	read.RestrictDomainsToIPAddresses = reconcile.KeepBool(cfg.RestrictDomainsToIPAddresses, read.RestrictDomainsToIPAddresses)
-	read.ScanAndDropRecipients = reconcile.KeepStr(cfg.ScanAndDropRecipients, read.ScanAndDropRecipients)
-	read.SenderDomains = reconcile.KeepStr(cfg.SenderDomains, read.SenderDomains)
-	read.SenderIPAddresses = reconcile.KeepStr(cfg.SenderIPAddresses, read.SenderIPAddresses)
+	read.ScanAndDropRecipients = reconcile.KeepSet(cfg.ScanAndDropRecipients, read.ScanAndDropRecipients)
+	read.SenderDomains = reconcile.KeepSet(cfg.SenderDomains, read.SenderDomains)
+	read.SenderIPAddresses = reconcile.KeepSet(cfg.SenderIPAddresses, read.SenderIPAddresses)
 	read.TlsSenderCertificateName = reconcile.KeepStr(cfg.TlsSenderCertificateName, read.TlsSenderCertificateName)
 	read.TreatMessagesAsInternal = reconcile.KeepBool(cfg.TreatMessagesAsInternal, read.TreatMessagesAsInternal)
-	read.TrustedOrganizations = reconcile.KeepStr(cfg.TrustedOrganizations, read.TrustedOrganizations)
+	read.TrustedOrganizations = reconcile.KeepSet(cfg.TrustedOrganizations, read.TrustedOrganizations)
 }

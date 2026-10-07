@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +27,7 @@ var (
 	_ resource.Resource                = &mailboxCalendarConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxCalendarConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxCalendarConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxCalendarConfigurationResource{}
 )
 
 type mailboxCalendarConfigurationResource struct{ client *clients.Client }
@@ -47,6 +50,9 @@ type mailboxCalendarConfigurationModel struct {
 	ConversationalSchedulingEnabled          types.Bool   `tfsdk:"conversational_scheduling_enabled"`
 	CreateEventsFromEmailAsPrivate           types.Bool   `tfsdk:"create_events_from_email_as_private"`
 	DailyAgendaMailSchedule                  types.String `tfsdk:"daily_agenda_mail_schedule"`
+	DefaultMeetingDuration                   types.Int64  `tfsdk:"default_meeting_duration"`
+	DefaultMinutesToReduceLongEventsBy       types.Int64  `tfsdk:"default_minutes_to_reduce_long_events_by"`
+	DefaultMinutesToReduceShortEventsBy      types.Int64  `tfsdk:"default_minutes_to_reduce_short_events_by"`
 	DefaultOnlineMeetingProvider             types.String `tfsdk:"default_online_meeting_provider"`
 	DefaultReminderTime                      types.String `tfsdk:"default_reminder_time"`
 	DeleteMeetingRequestOnRespond            types.Bool   `tfsdk:"delete_meeting_request_on_respond"`
@@ -59,7 +65,7 @@ type mailboxCalendarConfigurationModel struct {
 	InvoiceEventsFromEmailEnabled            types.Bool   `tfsdk:"invoice_events_from_email_enabled"`
 	LocationDetailsInFreeBusy                types.String `tfsdk:"location_details_in_free_busy"`
 	MailboxLocation                          types.String `tfsdk:"mailbox_location"`
-	OnlineMeetingsByDefaultEnabled           types.String `tfsdk:"online_meetings_by_default_enabled"`
+	OnlineMeetingsByDefaultEnabled           types.Bool   `tfsdk:"online_meetings_by_default_enabled"`
 	PackageDeliveryEventsFromEmailEnabled    types.Bool   `tfsdk:"package_delivery_events_from_email_enabled"`
 	PreserveDeclinedMeetings                 types.Bool   `tfsdk:"preserve_declined_meetings"`
 	ReminderSoundEnabled                     types.Bool   `tfsdk:"reminder_sound_enabled"`
@@ -71,15 +77,16 @@ type mailboxCalendarConfigurationModel struct {
 	SkipAgendaMailOnFreeDays                 types.Bool   `tfsdk:"skip_agenda_mail_on_free_days"`
 	TimeIncrement                            types.String `tfsdk:"time_increment"`
 	UseBrightCalendarColorThemeInOwa         types.Bool   `tfsdk:"use_bright_calendar_color_theme_in_owa"`
-	WeatherEnabled                           types.String `tfsdk:"weather_enabled"`
-	WeatherLocations                         types.String `tfsdk:"weather_locations"`
+	WeatherEnabled                           types.Bool   `tfsdk:"weather_enabled"`
+	WeatherLocationBookmark                  types.Int64  `tfsdk:"weather_location_bookmark"`
+	WeatherLocations                         types.Set    `tfsdk:"weather_locations"`
 	WeatherUnit                              types.String `tfsdk:"weather_unit"`
 	WeekStartDay                             types.String `tfsdk:"week_start_day"`
 	WorkDays                                 types.String `tfsdk:"work_days"`
 	WorkingHoursEndTime                      types.String `tfsdk:"working_hours_end_time"`
 	WorkingHoursStartTime                    types.String `tfsdk:"working_hours_start_time"`
 	WorkingHoursTimeZone                     types.String `tfsdk:"working_hours_time_zone"`
-	WorkspaceUserEnabled                     types.String `tfsdk:"workspace_user_enabled"`
+	WorkspaceUserEnabled                     types.Bool   `tfsdk:"workspace_user_enabled"`
 }
 
 func (r *mailboxCalendarConfigurationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -102,6 +109,9 @@ func (r *mailboxCalendarConfigurationResource) Schema(_ context.Context, _ resou
 			"conversational_scheduling_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ConversationalSchedulingEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"create_events_from_email_as_private":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -CreateEventsFromEmailAsPrivate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"daily_agenda_mail_schedule":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DailyAgendaMailSchedule parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"default_meeting_duration":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMeetingDuration parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_long_events_by":      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceLongEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"default_minutes_to_reduce_short_events_by":     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -DefaultMinutesToReduceShortEventsBy parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"default_online_meeting_provider":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultOnlineMeetingProvider parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default_reminder_time":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultReminderTime parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"delete_meeting_request_on_respond":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteMeetingRequestOnRespond parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -114,7 +124,7 @@ func (r *mailboxCalendarConfigurationResource) Schema(_ context.Context, _ resou
 			"invoice_events_from_email_enabled":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InvoiceEventsFromEmailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"location_details_in_free_busy":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LocationDetailsInFreeBusy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mailbox_location":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailboxLocation parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"online_meetings_by_default_enabled":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OnlineMeetingsByDefaultEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"online_meetings_by_default_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OnlineMeetingsByDefaultEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"package_delivery_events_from_email_enabled":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PackageDeliveryEventsFromEmailEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"preserve_declined_meetings":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PreserveDeclinedMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reminder_sound_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ReminderSoundEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -126,15 +136,16 @@ func (r *mailboxCalendarConfigurationResource) Schema(_ context.Context, _ resou
 			"skip_agenda_mail_on_free_days":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipAgendaMailOnFreeDays parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"time_increment":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TimeIncrement parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"use_bright_calendar_color_theme_in_owa":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -UseBrightCalendarColorThemeInOwa parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"weather_enabled":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"weather_locations":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherLocations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"weather_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"weather_location_bookmark":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -WeatherLocationBookmark parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"weather_locations":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -WeatherLocations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"weather_unit":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeatherUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"week_start_day":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WeekStartDay parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"work_days":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkDays parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"working_hours_end_time":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkingHoursEndTime parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"working_hours_start_time":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkingHoursStartTime parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"working_hours_time_zone":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkingHoursTimeZone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"workspace_user_enabled":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkspaceUserEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"workspace_user_enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkspaceUserEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -152,86 +163,235 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxCalendarConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBool()
-	sp.AgendaMailIntroductionEnabled = plan.AgendaMailIntroductionEnabled.ValueBool()
-	sp.AgendaPaneEnabled = plan.AgendaPaneEnabled.ValueBool()
-	sp.AutoDeclineWhenBusy = plan.AutoDeclineWhenBusy.ValueBool()
-	sp.CalendarFeedsPreferredLanguage = plan.CalendarFeedsPreferredLanguage.ValueString()
-	sp.CalendarFeedsPreferredRegion = plan.CalendarFeedsPreferredRegion.ValueString()
-	sp.CalendarFeedsRootPageId = plan.CalendarFeedsRootPageId.ValueString()
-	sp.ConversationalSchedulingEnabled = plan.ConversationalSchedulingEnabled.ValueBool()
-	sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBool()
-	if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
-		sp.DailyAgendaMailSchedule = v
+	var cur *mailboxCalendarConfigurationModel
+	curRead := false
+	current := func() *mailboxCalendarConfigurationModel {
+		if !curRead {
+			curRead = true
+			var m mailboxCalendarConfigurationModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxCalendarConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
-		sp.DefaultOnlineMeetingProvider = v
+	if !config.AgendaMailEnabled.IsNull() {
+		if !plan.AgendaMailEnabled.IsUnknown() {
+			sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultReminderTime.ValueString(); v != "" {
-		sp.DefaultReminderTime = v
+	if !config.AgendaMailIntroductionEnabled.IsNull() {
+		if !plan.AgendaMailIntroductionEnabled.IsUnknown() {
+			sp.AgendaMailIntroductionEnabled = plan.AgendaMailIntroductionEnabled.ValueBoolPointer()
+		}
 	}
-	sp.DeleteMeetingRequestOnRespond = plan.DeleteMeetingRequestOnRespond.ValueBool()
-	sp.DiningEventsFromEmailEnabled = plan.DiningEventsFromEmailEnabled.ValueBool()
-	sp.EntertainmentEventsFromEmailEnabled = plan.EntertainmentEventsFromEmailEnabled.ValueBool()
-	sp.EventsFromEmailEnabled = plan.EventsFromEmailEnabled.ValueBool()
-	if v := plan.FirstWeekOfYear.ValueString(); v != "" {
-		sp.FirstWeekOfYear = v
+	if !config.AgendaPaneEnabled.IsNull() {
+		if !plan.AgendaPaneEnabled.IsUnknown() {
+			sp.AgendaPaneEnabled = plan.AgendaPaneEnabled.ValueBoolPointer()
+		}
 	}
-	sp.FlightEventsFromEmailEnabled = plan.FlightEventsFromEmailEnabled.ValueBool()
-	sp.HotelEventsFromEmailEnabled = plan.HotelEventsFromEmailEnabled.ValueBool()
-	sp.InvoiceEventsFromEmailEnabled = plan.InvoiceEventsFromEmailEnabled.ValueBool()
-	if v := plan.LocationDetailsInFreeBusy.ValueString(); v != "" {
-		sp.LocationDetailsInFreeBusy = v
+	if !config.AutoDeclineWhenBusy.IsNull() {
+		if !plan.AutoDeclineWhenBusy.IsUnknown() {
+			sp.AutoDeclineWhenBusy = plan.AutoDeclineWhenBusy.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = v
+	if !config.CalendarFeedsPreferredLanguage.IsNull() {
+		sp.CalendarFeedsPreferredLanguage = plan.CalendarFeedsPreferredLanguage.ValueString()
 	}
-	if v := plan.OnlineMeetingsByDefaultEnabled.ValueString(); v != "" {
-		sp.OnlineMeetingsByDefaultEnabled = v
+	if !config.CalendarFeedsPreferredRegion.IsNull() {
+		sp.CalendarFeedsPreferredRegion = plan.CalendarFeedsPreferredRegion.ValueString()
 	}
-	sp.PackageDeliveryEventsFromEmailEnabled = plan.PackageDeliveryEventsFromEmailEnabled.ValueBool()
-	sp.PreserveDeclinedMeetings = plan.PreserveDeclinedMeetings.ValueBool()
-	sp.ReminderSoundEnabled = plan.ReminderSoundEnabled.ValueBool()
-	sp.RemindersEnabled = plan.RemindersEnabled.ValueBool()
-	sp.RentalCarEventsFromEmailEnabled = plan.RentalCarEventsFromEmailEnabled.ValueBool()
-	sp.ServiceAppointmentEventsFromEmailEnabled = plan.ServiceAppointmentEventsFromEmailEnabled.ValueBool()
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = v
+	if !config.CalendarFeedsRootPageId.IsNull() {
+		sp.CalendarFeedsRootPageId = plan.CalendarFeedsRootPageId.ValueString()
 	}
-	sp.ShowWeekNumbers = plan.ShowWeekNumbers.ValueBool()
-	sp.SkipAgendaMailOnFreeDays = plan.SkipAgendaMailOnFreeDays.ValueBool()
-	if v := plan.TimeIncrement.ValueString(); v != "" {
-		sp.TimeIncrement = v
+	if !config.ConversationalSchedulingEnabled.IsNull() {
+		if !plan.ConversationalSchedulingEnabled.IsUnknown() {
+			sp.ConversationalSchedulingEnabled = plan.ConversationalSchedulingEnabled.ValueBoolPointer()
+		}
 	}
-	sp.UseBrightCalendarColorThemeInOwa = plan.UseBrightCalendarColorThemeInOwa.ValueBool()
-	if v := plan.WeatherEnabled.ValueString(); v != "" {
-		sp.WeatherEnabled = v
+	if !config.CreateEventsFromEmailAsPrivate.IsNull() {
+		if !plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+			sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBoolPointer()
+		}
 	}
-	if v := plan.WeatherLocations.ValueString(); v != "" {
-		sp.WeatherLocations = v
+	if v := config.DailyAgendaMailSchedule.ValueString(); v != "" {
+		sp.DailyAgendaMailSchedule = objectParam(v)
 	}
-	if v := plan.WeatherUnit.ValueString(); v != "" {
-		sp.WeatherUnit = v
+	if !config.DefaultMeetingDuration.IsNull() {
+		if !plan.DefaultMeetingDuration.IsUnknown() {
+			sp.DefaultMeetingDuration = plan.DefaultMeetingDuration.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WeekStartDay.ValueString(); v != "" {
-		sp.WeekStartDay = v
+	if !config.DefaultMinutesToReduceLongEventsBy.IsNull() {
+		if !plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceLongEventsBy = plan.DefaultMinutesToReduceLongEventsBy.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WorkDays.ValueString(); v != "" {
-		sp.WorkDays = v
+	if !config.DefaultMinutesToReduceShortEventsBy.IsNull() {
+		if !plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WorkingHoursEndTime.ValueString(); v != "" {
-		sp.WorkingHoursEndTime = v
+	if v := config.DefaultOnlineMeetingProvider.ValueString(); v != "" {
+		sp.DefaultOnlineMeetingProvider = objectParam(v)
 	}
-	if v := plan.WorkingHoursStartTime.ValueString(); v != "" {
-		sp.WorkingHoursStartTime = v
+	if v := config.DefaultReminderTime.ValueString(); v != "" {
+		sp.DefaultReminderTime = objectParam(v)
 	}
-	if v := plan.WorkingHoursTimeZone.ValueString(); v != "" {
-		sp.WorkingHoursTimeZone = v
+	if !config.DeleteMeetingRequestOnRespond.IsNull() {
+		if !plan.DeleteMeetingRequestOnRespond.IsUnknown() {
+			sp.DeleteMeetingRequestOnRespond = plan.DeleteMeetingRequestOnRespond.ValueBoolPointer()
+		}
 	}
-	if v := plan.WorkspaceUserEnabled.ValueString(); v != "" {
-		sp.WorkspaceUserEnabled = v
+	if !config.DiningEventsFromEmailEnabled.IsNull() {
+		if !plan.DiningEventsFromEmailEnabled.IsUnknown() {
+			sp.DiningEventsFromEmailEnabled = plan.DiningEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.EntertainmentEventsFromEmailEnabled.IsNull() {
+		if !plan.EntertainmentEventsFromEmailEnabled.IsUnknown() {
+			sp.EntertainmentEventsFromEmailEnabled = plan.EntertainmentEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.EventsFromEmailEnabled.IsNull() {
+		if !plan.EventsFromEmailEnabled.IsUnknown() {
+			sp.EventsFromEmailEnabled = plan.EventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.FirstWeekOfYear.ValueString(); v != "" {
+		sp.FirstWeekOfYear = objectParam(v)
+	}
+	if !config.FlightEventsFromEmailEnabled.IsNull() {
+		if !plan.FlightEventsFromEmailEnabled.IsUnknown() {
+			sp.FlightEventsFromEmailEnabled = plan.FlightEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.HotelEventsFromEmailEnabled.IsNull() {
+		if !plan.HotelEventsFromEmailEnabled.IsUnknown() {
+			sp.HotelEventsFromEmailEnabled = plan.HotelEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.InvoiceEventsFromEmailEnabled.IsNull() {
+		if !plan.InvoiceEventsFromEmailEnabled.IsUnknown() {
+			sp.InvoiceEventsFromEmailEnabled = plan.InvoiceEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.LocationDetailsInFreeBusy.ValueString(); v != "" {
+		sp.LocationDetailsInFreeBusy = objectParam(v)
+	}
+	if v := config.MailboxLocation.ValueString(); v != "" {
+		sp.MailboxLocation = objectParam(v)
+	}
+	if !config.OnlineMeetingsByDefaultEnabled.IsNull() {
+		if !plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+			sp.OnlineMeetingsByDefaultEnabled = plan.OnlineMeetingsByDefaultEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PackageDeliveryEventsFromEmailEnabled.IsNull() {
+		if !plan.PackageDeliveryEventsFromEmailEnabled.IsUnknown() {
+			sp.PackageDeliveryEventsFromEmailEnabled = plan.PackageDeliveryEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PreserveDeclinedMeetings.IsNull() {
+		if !plan.PreserveDeclinedMeetings.IsUnknown() {
+			sp.PreserveDeclinedMeetings = plan.PreserveDeclinedMeetings.ValueBoolPointer()
+		}
+	}
+	if !config.ReminderSoundEnabled.IsNull() {
+		if !plan.ReminderSoundEnabled.IsUnknown() {
+			sp.ReminderSoundEnabled = plan.ReminderSoundEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RemindersEnabled.IsNull() {
+		if !plan.RemindersEnabled.IsUnknown() {
+			sp.RemindersEnabled = plan.RemindersEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.RentalCarEventsFromEmailEnabled.IsNull() {
+		if !plan.RentalCarEventsFromEmailEnabled.IsUnknown() {
+			sp.RentalCarEventsFromEmailEnabled = plan.RentalCarEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ServiceAppointmentEventsFromEmailEnabled.IsNull() {
+		if !plan.ServiceAppointmentEventsFromEmailEnabled.IsUnknown() {
+			sp.ServiceAppointmentEventsFromEmailEnabled = plan.ServiceAppointmentEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.ShortenEventScopeDefault.ValueString(); v != "" {
+		sp.ShortenEventScopeDefault = objectParam(v)
+	}
+	if !config.ShowWeekNumbers.IsNull() {
+		if !plan.ShowWeekNumbers.IsUnknown() {
+			sp.ShowWeekNumbers = plan.ShowWeekNumbers.ValueBoolPointer()
+		}
+	}
+	if !config.SkipAgendaMailOnFreeDays.IsNull() {
+		if !plan.SkipAgendaMailOnFreeDays.IsUnknown() {
+			sp.SkipAgendaMailOnFreeDays = plan.SkipAgendaMailOnFreeDays.ValueBoolPointer()
+		}
+	}
+	if v := config.TimeIncrement.ValueString(); v != "" {
+		sp.TimeIncrement = objectParam(v)
+	}
+	if !config.UseBrightCalendarColorThemeInOwa.IsNull() {
+		if !plan.UseBrightCalendarColorThemeInOwa.IsUnknown() {
+			sp.UseBrightCalendarColorThemeInOwa = plan.UseBrightCalendarColorThemeInOwa.ValueBoolPointer()
+		}
+	}
+	if !config.WeatherEnabled.IsNull() {
+		if !plan.WeatherEnabled.IsUnknown() {
+			sp.WeatherEnabled = plan.WeatherEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.WeatherLocationBookmark.IsNull() {
+		if !plan.WeatherLocationBookmark.IsUnknown() {
+			sp.WeatherLocationBookmark = plan.WeatherLocationBookmark.ValueInt64Pointer()
+		}
+	}
+	if !config.WeatherLocations.IsNull() {
+		if !plan.WeatherLocations.IsNull() && !plan.WeatherLocations.IsUnknown() {
+			if v := toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics); len(v) > 0 {
+				sp.WeatherLocations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.WeatherLocations, &resp.Diagnostics); len(rm) > 0 {
+						sp.WeatherLocationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if v := config.WeatherUnit.ValueString(); v != "" {
+		sp.WeatherUnit = objectParam(v)
+	}
+	if v := config.WeekStartDay.ValueString(); v != "" {
+		sp.WeekStartDay = objectParam(v)
+	}
+	if v := config.WorkDays.ValueString(); v != "" {
+		sp.WorkDays = objectParam(v)
+	}
+	if v := config.WorkingHoursEndTime.ValueString(); v != "" {
+		sp.WorkingHoursEndTime = objectParam(v)
+	}
+	if v := config.WorkingHoursStartTime.ValueString(); v != "" {
+		sp.WorkingHoursStartTime = objectParam(v)
+	}
+	if v := config.WorkingHoursTimeZone.ValueString(); v != "" {
+		sp.WorkingHoursTimeZone = objectParam(v)
+	}
+	if !config.WorkspaceUserEnabled.IsNull() {
+		if !plan.WorkspaceUserEnabled.IsUnknown() {
+			sp.WorkspaceUserEnabled = plan.WorkspaceUserEnabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -272,84 +432,256 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = id
-	sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBool()
-	sp.AgendaMailIntroductionEnabled = plan.AgendaMailIntroductionEnabled.ValueBool()
-	sp.AgendaPaneEnabled = plan.AgendaPaneEnabled.ValueBool()
-	sp.AutoDeclineWhenBusy = plan.AutoDeclineWhenBusy.ValueBool()
-	sp.CalendarFeedsPreferredLanguage = plan.CalendarFeedsPreferredLanguage.ValueString()
-	sp.CalendarFeedsPreferredRegion = plan.CalendarFeedsPreferredRegion.ValueString()
-	sp.CalendarFeedsRootPageId = plan.CalendarFeedsRootPageId.ValueString()
-	sp.ConversationalSchedulingEnabled = plan.ConversationalSchedulingEnabled.ValueBool()
-	sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBool()
-	if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
-		sp.DailyAgendaMailSchedule = v
+	var cur *mailboxCalendarConfigurationModel
+	curRead := false
+	current := func() *mailboxCalendarConfigurationModel {
+		if !curRead {
+			curRead = true
+			var m mailboxCalendarConfigurationModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxCalendarConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
-		sp.DefaultOnlineMeetingProvider = v
+	if !plan.AgendaMailEnabled.Equal(state.AgendaMailEnabled) {
+		if !plan.AgendaMailEnabled.IsUnknown() {
+			sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.DefaultReminderTime.ValueString(); v != "" {
-		sp.DefaultReminderTime = v
+	if !plan.AgendaMailIntroductionEnabled.Equal(state.AgendaMailIntroductionEnabled) {
+		if !plan.AgendaMailIntroductionEnabled.IsUnknown() {
+			sp.AgendaMailIntroductionEnabled = plan.AgendaMailIntroductionEnabled.ValueBoolPointer()
+		}
 	}
-	sp.DeleteMeetingRequestOnRespond = plan.DeleteMeetingRequestOnRespond.ValueBool()
-	sp.DiningEventsFromEmailEnabled = plan.DiningEventsFromEmailEnabled.ValueBool()
-	sp.EntertainmentEventsFromEmailEnabled = plan.EntertainmentEventsFromEmailEnabled.ValueBool()
-	sp.EventsFromEmailEnabled = plan.EventsFromEmailEnabled.ValueBool()
-	if v := plan.FirstWeekOfYear.ValueString(); v != "" {
-		sp.FirstWeekOfYear = v
+	if !plan.AgendaPaneEnabled.Equal(state.AgendaPaneEnabled) {
+		if !plan.AgendaPaneEnabled.IsUnknown() {
+			sp.AgendaPaneEnabled = plan.AgendaPaneEnabled.ValueBoolPointer()
+		}
 	}
-	sp.FlightEventsFromEmailEnabled = plan.FlightEventsFromEmailEnabled.ValueBool()
-	sp.HotelEventsFromEmailEnabled = plan.HotelEventsFromEmailEnabled.ValueBool()
-	sp.InvoiceEventsFromEmailEnabled = plan.InvoiceEventsFromEmailEnabled.ValueBool()
-	if v := plan.LocationDetailsInFreeBusy.ValueString(); v != "" {
-		sp.LocationDetailsInFreeBusy = v
+	if !plan.AutoDeclineWhenBusy.Equal(state.AutoDeclineWhenBusy) {
+		if !plan.AutoDeclineWhenBusy.IsUnknown() {
+			sp.AutoDeclineWhenBusy = plan.AutoDeclineWhenBusy.ValueBoolPointer()
+		}
 	}
-	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = v
+	if !plan.CalendarFeedsPreferredLanguage.Equal(state.CalendarFeedsPreferredLanguage) {
+		sp.CalendarFeedsPreferredLanguage = plan.CalendarFeedsPreferredLanguage.ValueString()
 	}
-	if v := plan.OnlineMeetingsByDefaultEnabled.ValueString(); v != "" {
-		sp.OnlineMeetingsByDefaultEnabled = v
+	if !plan.CalendarFeedsPreferredRegion.Equal(state.CalendarFeedsPreferredRegion) {
+		sp.CalendarFeedsPreferredRegion = plan.CalendarFeedsPreferredRegion.ValueString()
 	}
-	sp.PackageDeliveryEventsFromEmailEnabled = plan.PackageDeliveryEventsFromEmailEnabled.ValueBool()
-	sp.PreserveDeclinedMeetings = plan.PreserveDeclinedMeetings.ValueBool()
-	sp.ReminderSoundEnabled = plan.ReminderSoundEnabled.ValueBool()
-	sp.RemindersEnabled = plan.RemindersEnabled.ValueBool()
-	sp.RentalCarEventsFromEmailEnabled = plan.RentalCarEventsFromEmailEnabled.ValueBool()
-	sp.ServiceAppointmentEventsFromEmailEnabled = plan.ServiceAppointmentEventsFromEmailEnabled.ValueBool()
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = v
+	if !plan.CalendarFeedsRootPageId.Equal(state.CalendarFeedsRootPageId) {
+		sp.CalendarFeedsRootPageId = plan.CalendarFeedsRootPageId.ValueString()
 	}
-	sp.ShowWeekNumbers = plan.ShowWeekNumbers.ValueBool()
-	sp.SkipAgendaMailOnFreeDays = plan.SkipAgendaMailOnFreeDays.ValueBool()
-	if v := plan.TimeIncrement.ValueString(); v != "" {
-		sp.TimeIncrement = v
+	if !plan.ConversationalSchedulingEnabled.Equal(state.ConversationalSchedulingEnabled) {
+		if !plan.ConversationalSchedulingEnabled.IsUnknown() {
+			sp.ConversationalSchedulingEnabled = plan.ConversationalSchedulingEnabled.ValueBoolPointer()
+		}
 	}
-	sp.UseBrightCalendarColorThemeInOwa = plan.UseBrightCalendarColorThemeInOwa.ValueBool()
-	if v := plan.WeatherEnabled.ValueString(); v != "" {
-		sp.WeatherEnabled = v
+	if !plan.CreateEventsFromEmailAsPrivate.Equal(state.CreateEventsFromEmailAsPrivate) {
+		if !plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+			sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBoolPointer()
+		}
 	}
-	if v := plan.WeatherLocations.ValueString(); v != "" {
-		sp.WeatherLocations = v
+	if !plan.DailyAgendaMailSchedule.Equal(state.DailyAgendaMailSchedule) {
+		if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
+			sp.DailyAgendaMailSchedule = objectParam(v)
+		}
 	}
-	if v := plan.WeatherUnit.ValueString(); v != "" {
-		sp.WeatherUnit = v
+	if !plan.DefaultMeetingDuration.Equal(state.DefaultMeetingDuration) {
+		if !plan.DefaultMeetingDuration.IsUnknown() {
+			sp.DefaultMeetingDuration = plan.DefaultMeetingDuration.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WeekStartDay.ValueString(); v != "" {
-		sp.WeekStartDay = v
+	if !plan.DefaultMinutesToReduceLongEventsBy.Equal(state.DefaultMinutesToReduceLongEventsBy) {
+		if !plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceLongEventsBy = plan.DefaultMinutesToReduceLongEventsBy.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WorkDays.ValueString(); v != "" {
-		sp.WorkDays = v
+	if !plan.DefaultMinutesToReduceShortEventsBy.Equal(state.DefaultMinutesToReduceShortEventsBy) {
+		if !plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
+		}
 	}
-	if v := plan.WorkingHoursEndTime.ValueString(); v != "" {
-		sp.WorkingHoursEndTime = v
+	if !plan.DefaultOnlineMeetingProvider.Equal(state.DefaultOnlineMeetingProvider) {
+		if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
+			sp.DefaultOnlineMeetingProvider = objectParam(v)
+		}
 	}
-	if v := plan.WorkingHoursStartTime.ValueString(); v != "" {
-		sp.WorkingHoursStartTime = v
+	if !plan.DefaultReminderTime.Equal(state.DefaultReminderTime) {
+		if v := plan.DefaultReminderTime.ValueString(); v != "" {
+			sp.DefaultReminderTime = objectParam(v)
+		}
 	}
-	if v := plan.WorkingHoursTimeZone.ValueString(); v != "" {
-		sp.WorkingHoursTimeZone = v
+	if !plan.DeleteMeetingRequestOnRespond.Equal(state.DeleteMeetingRequestOnRespond) {
+		if !plan.DeleteMeetingRequestOnRespond.IsUnknown() {
+			sp.DeleteMeetingRequestOnRespond = plan.DeleteMeetingRequestOnRespond.ValueBoolPointer()
+		}
 	}
-	if v := plan.WorkspaceUserEnabled.ValueString(); v != "" {
-		sp.WorkspaceUserEnabled = v
+	if !plan.DiningEventsFromEmailEnabled.Equal(state.DiningEventsFromEmailEnabled) {
+		if !plan.DiningEventsFromEmailEnabled.IsUnknown() {
+			sp.DiningEventsFromEmailEnabled = plan.DiningEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EntertainmentEventsFromEmailEnabled.Equal(state.EntertainmentEventsFromEmailEnabled) {
+		if !plan.EntertainmentEventsFromEmailEnabled.IsUnknown() {
+			sp.EntertainmentEventsFromEmailEnabled = plan.EntertainmentEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EventsFromEmailEnabled.Equal(state.EventsFromEmailEnabled) {
+		if !plan.EventsFromEmailEnabled.IsUnknown() {
+			sp.EventsFromEmailEnabled = plan.EventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FirstWeekOfYear.Equal(state.FirstWeekOfYear) {
+		if v := plan.FirstWeekOfYear.ValueString(); v != "" {
+			sp.FirstWeekOfYear = objectParam(v)
+		}
+	}
+	if !plan.FlightEventsFromEmailEnabled.Equal(state.FlightEventsFromEmailEnabled) {
+		if !plan.FlightEventsFromEmailEnabled.IsUnknown() {
+			sp.FlightEventsFromEmailEnabled = plan.FlightEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.HotelEventsFromEmailEnabled.Equal(state.HotelEventsFromEmailEnabled) {
+		if !plan.HotelEventsFromEmailEnabled.IsUnknown() {
+			sp.HotelEventsFromEmailEnabled = plan.HotelEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.InvoiceEventsFromEmailEnabled.Equal(state.InvoiceEventsFromEmailEnabled) {
+		if !plan.InvoiceEventsFromEmailEnabled.IsUnknown() {
+			sp.InvoiceEventsFromEmailEnabled = plan.InvoiceEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.LocationDetailsInFreeBusy.Equal(state.LocationDetailsInFreeBusy) {
+		if v := plan.LocationDetailsInFreeBusy.ValueString(); v != "" {
+			sp.LocationDetailsInFreeBusy = objectParam(v)
+		}
+	}
+	if !plan.MailboxLocation.Equal(state.MailboxLocation) {
+		if v := plan.MailboxLocation.ValueString(); v != "" {
+			sp.MailboxLocation = objectParam(v)
+		}
+	}
+	if !plan.OnlineMeetingsByDefaultEnabled.Equal(state.OnlineMeetingsByDefaultEnabled) {
+		if !plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+			sp.OnlineMeetingsByDefaultEnabled = plan.OnlineMeetingsByDefaultEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PackageDeliveryEventsFromEmailEnabled.Equal(state.PackageDeliveryEventsFromEmailEnabled) {
+		if !plan.PackageDeliveryEventsFromEmailEnabled.IsUnknown() {
+			sp.PackageDeliveryEventsFromEmailEnabled = plan.PackageDeliveryEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PreserveDeclinedMeetings.Equal(state.PreserveDeclinedMeetings) {
+		if !plan.PreserveDeclinedMeetings.IsUnknown() {
+			sp.PreserveDeclinedMeetings = plan.PreserveDeclinedMeetings.ValueBoolPointer()
+		}
+	}
+	if !plan.ReminderSoundEnabled.Equal(state.ReminderSoundEnabled) {
+		if !plan.ReminderSoundEnabled.IsUnknown() {
+			sp.ReminderSoundEnabled = plan.ReminderSoundEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RemindersEnabled.Equal(state.RemindersEnabled) {
+		if !plan.RemindersEnabled.IsUnknown() {
+			sp.RemindersEnabled = plan.RemindersEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.RentalCarEventsFromEmailEnabled.Equal(state.RentalCarEventsFromEmailEnabled) {
+		if !plan.RentalCarEventsFromEmailEnabled.IsUnknown() {
+			sp.RentalCarEventsFromEmailEnabled = plan.RentalCarEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ServiceAppointmentEventsFromEmailEnabled.Equal(state.ServiceAppointmentEventsFromEmailEnabled) {
+		if !plan.ServiceAppointmentEventsFromEmailEnabled.IsUnknown() {
+			sp.ServiceAppointmentEventsFromEmailEnabled = plan.ServiceAppointmentEventsFromEmailEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ShortenEventScopeDefault.Equal(state.ShortenEventScopeDefault) {
+		if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
+			sp.ShortenEventScopeDefault = objectParam(v)
+		}
+	}
+	if !plan.ShowWeekNumbers.Equal(state.ShowWeekNumbers) {
+		if !plan.ShowWeekNumbers.IsUnknown() {
+			sp.ShowWeekNumbers = plan.ShowWeekNumbers.ValueBoolPointer()
+		}
+	}
+	if !plan.SkipAgendaMailOnFreeDays.Equal(state.SkipAgendaMailOnFreeDays) {
+		if !plan.SkipAgendaMailOnFreeDays.IsUnknown() {
+			sp.SkipAgendaMailOnFreeDays = plan.SkipAgendaMailOnFreeDays.ValueBoolPointer()
+		}
+	}
+	if !plan.TimeIncrement.Equal(state.TimeIncrement) {
+		if v := plan.TimeIncrement.ValueString(); v != "" {
+			sp.TimeIncrement = objectParam(v)
+		}
+	}
+	if !plan.UseBrightCalendarColorThemeInOwa.Equal(state.UseBrightCalendarColorThemeInOwa) {
+		if !plan.UseBrightCalendarColorThemeInOwa.IsUnknown() {
+			sp.UseBrightCalendarColorThemeInOwa = plan.UseBrightCalendarColorThemeInOwa.ValueBoolPointer()
+		}
+	}
+	if !plan.WeatherEnabled.Equal(state.WeatherEnabled) {
+		if !plan.WeatherEnabled.IsUnknown() {
+			sp.WeatherEnabled = plan.WeatherEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.WeatherLocationBookmark.Equal(state.WeatherLocationBookmark) {
+		if !plan.WeatherLocationBookmark.IsUnknown() {
+			sp.WeatherLocationBookmark = plan.WeatherLocationBookmark.ValueInt64Pointer()
+		}
+	}
+	if !plan.WeatherLocations.Equal(state.WeatherLocations) {
+		if !plan.WeatherLocations.IsNull() && !plan.WeatherLocations.IsUnknown() {
+			if v := toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics); len(v) > 0 {
+				sp.WeatherLocations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.WeatherLocations, &resp.Diagnostics); len(rm) > 0 {
+						sp.WeatherLocationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.WeatherUnit.Equal(state.WeatherUnit) {
+		if v := plan.WeatherUnit.ValueString(); v != "" {
+			sp.WeatherUnit = objectParam(v)
+		}
+	}
+	if !plan.WeekStartDay.Equal(state.WeekStartDay) {
+		if v := plan.WeekStartDay.ValueString(); v != "" {
+			sp.WeekStartDay = objectParam(v)
+		}
+	}
+	if !plan.WorkDays.Equal(state.WorkDays) {
+		if v := plan.WorkDays.ValueString(); v != "" {
+			sp.WorkDays = objectParam(v)
+		}
+	}
+	if !plan.WorkingHoursEndTime.Equal(state.WorkingHoursEndTime) {
+		if v := plan.WorkingHoursEndTime.ValueString(); v != "" {
+			sp.WorkingHoursEndTime = objectParam(v)
+		}
+	}
+	if !plan.WorkingHoursStartTime.Equal(state.WorkingHoursStartTime) {
+		if v := plan.WorkingHoursStartTime.ValueString(); v != "" {
+			sp.WorkingHoursStartTime = objectParam(v)
+		}
+	}
+	if !plan.WorkingHoursTimeZone.Equal(state.WorkingHoursTimeZone) {
+		if v := plan.WorkingHoursTimeZone.ValueString(); v != "" {
+			sp.WorkingHoursTimeZone = objectParam(v)
+		}
+	}
+	if !plan.WorkspaceUserEnabled.Equal(state.WorkspaceUserEnabled) {
+		if !plan.WorkspaceUserEnabled.IsUnknown() {
+			sp.WorkspaceUserEnabled = plan.WorkspaceUserEnabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -363,24 +695,6 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 		"CalendarFeedsPreferredLanguage": cfg.CalendarFeedsPreferredLanguage,
 		"CalendarFeedsPreferredRegion":   cfg.CalendarFeedsPreferredRegion,
 		"CalendarFeedsRootPageId":        cfg.CalendarFeedsRootPageId,
-		"DailyAgendaMailSchedule":        cfg.DailyAgendaMailSchedule,
-		"DefaultOnlineMeetingProvider":   cfg.DefaultOnlineMeetingProvider,
-		"DefaultReminderTime":            cfg.DefaultReminderTime,
-		"FirstWeekOfYear":                cfg.FirstWeekOfYear,
-		"LocationDetailsInFreeBusy":      cfg.LocationDetailsInFreeBusy,
-		"MailboxLocation":                cfg.MailboxLocation,
-		"OnlineMeetingsByDefaultEnabled": cfg.OnlineMeetingsByDefaultEnabled,
-		"ShortenEventScopeDefault":       cfg.ShortenEventScopeDefault,
-		"TimeIncrement":                  cfg.TimeIncrement,
-		"WeatherEnabled":                 cfg.WeatherEnabled,
-		"WeatherLocations":               cfg.WeatherLocations,
-		"WeatherUnit":                    cfg.WeatherUnit,
-		"WeekStartDay":                   cfg.WeekStartDay,
-		"WorkDays":                       cfg.WorkDays,
-		"WorkingHoursEndTime":            cfg.WorkingHoursEndTime,
-		"WorkingHoursStartTime":          cfg.WorkingHoursStartTime,
-		"WorkingHoursTimeZone":           cfg.WorkingHoursTimeZone,
-		"WorkspaceUserEnabled":           cfg.WorkspaceUserEnabled,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -394,6 +708,179 @@ func (r *mailboxCalendarConfigurationResource) Delete(_ context.Context, _ resou
 func (r *mailboxCalendarConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxCalendarConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxCalendarConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxCalendarConfiguration(ctx, exo.GetMailboxCalendarConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxCalendarConfigurationModel
+	readMailboxCalendarConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AgendaMailEnabled.IsUnknown() {
+		plan.AgendaMailEnabled = cur.AgendaMailEnabled
+	}
+	if plan.AgendaMailIntroductionEnabled.IsUnknown() {
+		plan.AgendaMailIntroductionEnabled = cur.AgendaMailIntroductionEnabled
+	}
+	if plan.AgendaPaneEnabled.IsUnknown() {
+		plan.AgendaPaneEnabled = cur.AgendaPaneEnabled
+	}
+	if plan.AutoDeclineWhenBusy.IsUnknown() {
+		plan.AutoDeclineWhenBusy = cur.AutoDeclineWhenBusy
+	}
+	if plan.CalendarFeedsPreferredLanguage.IsUnknown() {
+		plan.CalendarFeedsPreferredLanguage = cur.CalendarFeedsPreferredLanguage
+	}
+	if plan.CalendarFeedsPreferredRegion.IsUnknown() {
+		plan.CalendarFeedsPreferredRegion = cur.CalendarFeedsPreferredRegion
+	}
+	if plan.CalendarFeedsRootPageId.IsUnknown() {
+		plan.CalendarFeedsRootPageId = cur.CalendarFeedsRootPageId
+	}
+	if plan.ConversationalSchedulingEnabled.IsUnknown() {
+		plan.ConversationalSchedulingEnabled = cur.ConversationalSchedulingEnabled
+	}
+	if plan.CreateEventsFromEmailAsPrivate.IsUnknown() {
+		plan.CreateEventsFromEmailAsPrivate = cur.CreateEventsFromEmailAsPrivate
+	}
+	if plan.DailyAgendaMailSchedule.IsUnknown() {
+		plan.DailyAgendaMailSchedule = cur.DailyAgendaMailSchedule
+	}
+	if plan.DefaultMeetingDuration.IsUnknown() {
+		plan.DefaultMeetingDuration = cur.DefaultMeetingDuration
+	}
+	if plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
+		plan.DefaultMinutesToReduceLongEventsBy = cur.DefaultMinutesToReduceLongEventsBy
+	}
+	if plan.DefaultMinutesToReduceShortEventsBy.IsUnknown() {
+		plan.DefaultMinutesToReduceShortEventsBy = cur.DefaultMinutesToReduceShortEventsBy
+	}
+	if plan.DefaultOnlineMeetingProvider.IsUnknown() {
+		plan.DefaultOnlineMeetingProvider = cur.DefaultOnlineMeetingProvider
+	}
+	if plan.DefaultReminderTime.IsUnknown() {
+		plan.DefaultReminderTime = cur.DefaultReminderTime
+	}
+	if plan.DeleteMeetingRequestOnRespond.IsUnknown() {
+		plan.DeleteMeetingRequestOnRespond = cur.DeleteMeetingRequestOnRespond
+	}
+	if plan.DiningEventsFromEmailEnabled.IsUnknown() {
+		plan.DiningEventsFromEmailEnabled = cur.DiningEventsFromEmailEnabled
+	}
+	if plan.EntertainmentEventsFromEmailEnabled.IsUnknown() {
+		plan.EntertainmentEventsFromEmailEnabled = cur.EntertainmentEventsFromEmailEnabled
+	}
+	if plan.EventsFromEmailEnabled.IsUnknown() {
+		plan.EventsFromEmailEnabled = cur.EventsFromEmailEnabled
+	}
+	if plan.FirstWeekOfYear.IsUnknown() {
+		plan.FirstWeekOfYear = cur.FirstWeekOfYear
+	}
+	if plan.FlightEventsFromEmailEnabled.IsUnknown() {
+		plan.FlightEventsFromEmailEnabled = cur.FlightEventsFromEmailEnabled
+	}
+	if plan.HotelEventsFromEmailEnabled.IsUnknown() {
+		plan.HotelEventsFromEmailEnabled = cur.HotelEventsFromEmailEnabled
+	}
+	if plan.InvoiceEventsFromEmailEnabled.IsUnknown() {
+		plan.InvoiceEventsFromEmailEnabled = cur.InvoiceEventsFromEmailEnabled
+	}
+	if plan.LocationDetailsInFreeBusy.IsUnknown() {
+		plan.LocationDetailsInFreeBusy = cur.LocationDetailsInFreeBusy
+	}
+	if plan.MailboxLocation.IsUnknown() {
+		plan.MailboxLocation = cur.MailboxLocation
+	}
+	if plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
+		plan.OnlineMeetingsByDefaultEnabled = cur.OnlineMeetingsByDefaultEnabled
+	}
+	if plan.PackageDeliveryEventsFromEmailEnabled.IsUnknown() {
+		plan.PackageDeliveryEventsFromEmailEnabled = cur.PackageDeliveryEventsFromEmailEnabled
+	}
+	if plan.PreserveDeclinedMeetings.IsUnknown() {
+		plan.PreserveDeclinedMeetings = cur.PreserveDeclinedMeetings
+	}
+	if plan.ReminderSoundEnabled.IsUnknown() {
+		plan.ReminderSoundEnabled = cur.ReminderSoundEnabled
+	}
+	if plan.RemindersEnabled.IsUnknown() {
+		plan.RemindersEnabled = cur.RemindersEnabled
+	}
+	if plan.RentalCarEventsFromEmailEnabled.IsUnknown() {
+		plan.RentalCarEventsFromEmailEnabled = cur.RentalCarEventsFromEmailEnabled
+	}
+	if plan.ServiceAppointmentEventsFromEmailEnabled.IsUnknown() {
+		plan.ServiceAppointmentEventsFromEmailEnabled = cur.ServiceAppointmentEventsFromEmailEnabled
+	}
+	if plan.ShortenEventScopeDefault.IsUnknown() {
+		plan.ShortenEventScopeDefault = cur.ShortenEventScopeDefault
+	}
+	if plan.ShowWeekNumbers.IsUnknown() {
+		plan.ShowWeekNumbers = cur.ShowWeekNumbers
+	}
+	if plan.SkipAgendaMailOnFreeDays.IsUnknown() {
+		plan.SkipAgendaMailOnFreeDays = cur.SkipAgendaMailOnFreeDays
+	}
+	if plan.TimeIncrement.IsUnknown() {
+		plan.TimeIncrement = cur.TimeIncrement
+	}
+	if plan.UseBrightCalendarColorThemeInOwa.IsUnknown() {
+		plan.UseBrightCalendarColorThemeInOwa = cur.UseBrightCalendarColorThemeInOwa
+	}
+	if plan.WeatherEnabled.IsUnknown() {
+		plan.WeatherEnabled = cur.WeatherEnabled
+	}
+	if plan.WeatherLocationBookmark.IsUnknown() {
+		plan.WeatherLocationBookmark = cur.WeatherLocationBookmark
+	}
+	if plan.WeatherLocations.IsUnknown() {
+		plan.WeatherLocations = cur.WeatherLocations
+	}
+	if plan.WeatherUnit.IsUnknown() {
+		plan.WeatherUnit = cur.WeatherUnit
+	}
+	if plan.WeekStartDay.IsUnknown() {
+		plan.WeekStartDay = cur.WeekStartDay
+	}
+	if plan.WorkDays.IsUnknown() {
+		plan.WorkDays = cur.WorkDays
+	}
+	if plan.WorkingHoursEndTime.IsUnknown() {
+		plan.WorkingHoursEndTime = cur.WorkingHoursEndTime
+	}
+	if plan.WorkingHoursStartTime.IsUnknown() {
+		plan.WorkingHoursStartTime = cur.WorkingHoursStartTime
+	}
+	if plan.WorkingHoursTimeZone.IsUnknown() {
+		plan.WorkingHoursTimeZone = cur.WorkingHoursTimeZone
+	}
+	if plan.WorkspaceUserEnabled.IsUnknown() {
+		plan.WorkspaceUserEnabled = cur.WorkspaceUserEnabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxCalendarConfigurationResource) identityOf(m mailboxCalendarConfigurationModel) string {
@@ -441,40 +928,44 @@ func readMailboxCalendarConfiguration(ctx context.Context, obj map[string]any, m
 	m.CalendarFeedsRootPageId = types.StringValue(getString(obj, "CalendarFeedsRootPageId"))
 	m.ConversationalSchedulingEnabled = types.BoolValue(getBool(obj, "ConversationalSchedulingEnabled"))
 	m.CreateEventsFromEmailAsPrivate = types.BoolValue(getBool(obj, "CreateEventsFromEmailAsPrivate"))
-	m.DailyAgendaMailSchedule = types.StringValue(getString(obj, "DailyAgendaMailSchedule"))
-	m.DefaultOnlineMeetingProvider = types.StringValue(getString(obj, "DefaultOnlineMeetingProvider"))
-	m.DefaultReminderTime = types.StringValue(getString(obj, "DefaultReminderTime"))
+	m.DailyAgendaMailSchedule = types.StringValue(getObjectJSON(obj, "DailyAgendaMailSchedule"))
+	m.DefaultMeetingDuration = types.Int64Value(getInt(obj, "DefaultMeetingDuration"))
+	m.DefaultMinutesToReduceLongEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceLongEventsBy"))
+	m.DefaultMinutesToReduceShortEventsBy = types.Int64Value(getInt(obj, "DefaultMinutesToReduceShortEventsBy"))
+	m.DefaultOnlineMeetingProvider = types.StringValue(getObjectJSON(obj, "DefaultOnlineMeetingProvider"))
+	m.DefaultReminderTime = types.StringValue(getObjectJSON(obj, "DefaultReminderTime"))
 	m.DeleteMeetingRequestOnRespond = types.BoolValue(getBool(obj, "DeleteMeetingRequestOnRespond"))
 	m.DiningEventsFromEmailEnabled = types.BoolValue(getBool(obj, "DiningEventsFromEmailEnabled"))
 	m.EntertainmentEventsFromEmailEnabled = types.BoolValue(getBool(obj, "EntertainmentEventsFromEmailEnabled"))
 	m.EventsFromEmailEnabled = types.BoolValue(getBool(obj, "EventsFromEmailEnabled"))
-	m.FirstWeekOfYear = types.StringValue(getString(obj, "FirstWeekOfYear"))
+	m.FirstWeekOfYear = types.StringValue(getObjectJSON(obj, "FirstWeekOfYear"))
 	m.FlightEventsFromEmailEnabled = types.BoolValue(getBool(obj, "FlightEventsFromEmailEnabled"))
 	m.HotelEventsFromEmailEnabled = types.BoolValue(getBool(obj, "HotelEventsFromEmailEnabled"))
 	m.InvoiceEventsFromEmailEnabled = types.BoolValue(getBool(obj, "InvoiceEventsFromEmailEnabled"))
-	m.LocationDetailsInFreeBusy = types.StringValue(getString(obj, "LocationDetailsInFreeBusy"))
-	m.MailboxLocation = types.StringValue(getString(obj, "MailboxLocation"))
-	m.OnlineMeetingsByDefaultEnabled = types.StringValue(getString(obj, "OnlineMeetingsByDefaultEnabled"))
+	m.LocationDetailsInFreeBusy = types.StringValue(getObjectJSON(obj, "LocationDetailsInFreeBusy"))
+	m.MailboxLocation = types.StringValue(getObjectJSON(obj, "MailboxLocation"))
+	m.OnlineMeetingsByDefaultEnabled = types.BoolValue(getBool(obj, "OnlineMeetingsByDefaultEnabled"))
 	m.PackageDeliveryEventsFromEmailEnabled = types.BoolValue(getBool(obj, "PackageDeliveryEventsFromEmailEnabled"))
 	m.PreserveDeclinedMeetings = types.BoolValue(getBool(obj, "PreserveDeclinedMeetings"))
 	m.ReminderSoundEnabled = types.BoolValue(getBool(obj, "ReminderSoundEnabled"))
 	m.RemindersEnabled = types.BoolValue(getBool(obj, "RemindersEnabled"))
 	m.RentalCarEventsFromEmailEnabled = types.BoolValue(getBool(obj, "RentalCarEventsFromEmailEnabled"))
 	m.ServiceAppointmentEventsFromEmailEnabled = types.BoolValue(getBool(obj, "ServiceAppointmentEventsFromEmailEnabled"))
-	m.ShortenEventScopeDefault = types.StringValue(getString(obj, "ShortenEventScopeDefault"))
+	m.ShortenEventScopeDefault = types.StringValue(getObjectJSON(obj, "ShortenEventScopeDefault"))
 	m.ShowWeekNumbers = types.BoolValue(getBool(obj, "ShowWeekNumbers"))
 	m.SkipAgendaMailOnFreeDays = types.BoolValue(getBool(obj, "SkipAgendaMailOnFreeDays"))
-	m.TimeIncrement = types.StringValue(getString(obj, "TimeIncrement"))
+	m.TimeIncrement = types.StringValue(getObjectJSON(obj, "TimeIncrement"))
 	m.UseBrightCalendarColorThemeInOwa = types.BoolValue(getBool(obj, "UseBrightCalendarColorThemeInOwa"))
-	m.WeatherEnabled = types.StringValue(getString(obj, "WeatherEnabled"))
-	m.WeatherLocations = types.StringValue(getString(obj, "WeatherLocations"))
-	m.WeatherUnit = types.StringValue(getString(obj, "WeatherUnit"))
-	m.WeekStartDay = types.StringValue(getString(obj, "WeekStartDay"))
-	m.WorkDays = types.StringValue(getString(obj, "WorkDays"))
-	m.WorkingHoursEndTime = types.StringValue(getString(obj, "WorkingHoursEndTime"))
-	m.WorkingHoursStartTime = types.StringValue(getString(obj, "WorkingHoursStartTime"))
-	m.WorkingHoursTimeZone = types.StringValue(getString(obj, "WorkingHoursTimeZone"))
-	m.WorkspaceUserEnabled = types.StringValue(getString(obj, "WorkspaceUserEnabled"))
+	m.WeatherEnabled = types.BoolValue(getBool(obj, "WeatherEnabled"))
+	m.WeatherLocationBookmark = types.Int64Value(getInt(obj, "WeatherLocationBookmark"))
+	m.WeatherLocations = stringSetValue(ctx, getStringSlice(obj, "WeatherLocations"))
+	m.WeatherUnit = types.StringValue(getObjectJSON(obj, "WeatherUnit"))
+	m.WeekStartDay = types.StringValue(getObjectJSON(obj, "WeekStartDay"))
+	m.WorkDays = types.StringValue(getObjectJSON(obj, "WorkDays"))
+	m.WorkingHoursEndTime = types.StringValue(getObjectJSON(obj, "WorkingHoursEndTime"))
+	m.WorkingHoursStartTime = types.StringValue(getObjectJSON(obj, "WorkingHoursStartTime"))
+	m.WorkingHoursTimeZone = types.StringValue(getObjectJSON(obj, "WorkingHoursTimeZone"))
+	m.WorkspaceUserEnabled = types.BoolValue(getBool(obj, "WorkspaceUserEnabled"))
 	_ = ctx
 }
 
@@ -489,6 +980,9 @@ func (r *mailboxCalendarConfigurationResource) reconcileState(cfg, read *mailbox
 	read.ConversationalSchedulingEnabled = reconcile.KeepBool(cfg.ConversationalSchedulingEnabled, read.ConversationalSchedulingEnabled)
 	read.CreateEventsFromEmailAsPrivate = reconcile.KeepBool(cfg.CreateEventsFromEmailAsPrivate, read.CreateEventsFromEmailAsPrivate)
 	read.DailyAgendaMailSchedule = reconcile.KeepStr(cfg.DailyAgendaMailSchedule, read.DailyAgendaMailSchedule)
+	read.DefaultMeetingDuration = reconcile.KeepInt64(cfg.DefaultMeetingDuration, read.DefaultMeetingDuration)
+	read.DefaultMinutesToReduceLongEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceLongEventsBy, read.DefaultMinutesToReduceLongEventsBy)
+	read.DefaultMinutesToReduceShortEventsBy = reconcile.KeepInt64(cfg.DefaultMinutesToReduceShortEventsBy, read.DefaultMinutesToReduceShortEventsBy)
 	read.DefaultOnlineMeetingProvider = reconcile.KeepStr(cfg.DefaultOnlineMeetingProvider, read.DefaultOnlineMeetingProvider)
 	read.DefaultReminderTime = reconcile.KeepStr(cfg.DefaultReminderTime, read.DefaultReminderTime)
 	read.DeleteMeetingRequestOnRespond = reconcile.KeepBool(cfg.DeleteMeetingRequestOnRespond, read.DeleteMeetingRequestOnRespond)
@@ -501,7 +995,7 @@ func (r *mailboxCalendarConfigurationResource) reconcileState(cfg, read *mailbox
 	read.InvoiceEventsFromEmailEnabled = reconcile.KeepBool(cfg.InvoiceEventsFromEmailEnabled, read.InvoiceEventsFromEmailEnabled)
 	read.LocationDetailsInFreeBusy = reconcile.KeepStr(cfg.LocationDetailsInFreeBusy, read.LocationDetailsInFreeBusy)
 	read.MailboxLocation = reconcile.KeepStr(cfg.MailboxLocation, read.MailboxLocation)
-	read.OnlineMeetingsByDefaultEnabled = reconcile.KeepStr(cfg.OnlineMeetingsByDefaultEnabled, read.OnlineMeetingsByDefaultEnabled)
+	read.OnlineMeetingsByDefaultEnabled = reconcile.KeepBool(cfg.OnlineMeetingsByDefaultEnabled, read.OnlineMeetingsByDefaultEnabled)
 	read.PackageDeliveryEventsFromEmailEnabled = reconcile.KeepBool(cfg.PackageDeliveryEventsFromEmailEnabled, read.PackageDeliveryEventsFromEmailEnabled)
 	read.PreserveDeclinedMeetings = reconcile.KeepBool(cfg.PreserveDeclinedMeetings, read.PreserveDeclinedMeetings)
 	read.ReminderSoundEnabled = reconcile.KeepBool(cfg.ReminderSoundEnabled, read.ReminderSoundEnabled)
@@ -513,13 +1007,14 @@ func (r *mailboxCalendarConfigurationResource) reconcileState(cfg, read *mailbox
 	read.SkipAgendaMailOnFreeDays = reconcile.KeepBool(cfg.SkipAgendaMailOnFreeDays, read.SkipAgendaMailOnFreeDays)
 	read.TimeIncrement = reconcile.KeepStr(cfg.TimeIncrement, read.TimeIncrement)
 	read.UseBrightCalendarColorThemeInOwa = reconcile.KeepBool(cfg.UseBrightCalendarColorThemeInOwa, read.UseBrightCalendarColorThemeInOwa)
-	read.WeatherEnabled = reconcile.KeepStr(cfg.WeatherEnabled, read.WeatherEnabled)
-	read.WeatherLocations = reconcile.KeepStr(cfg.WeatherLocations, read.WeatherLocations)
+	read.WeatherEnabled = reconcile.KeepBool(cfg.WeatherEnabled, read.WeatherEnabled)
+	read.WeatherLocationBookmark = reconcile.KeepInt64(cfg.WeatherLocationBookmark, read.WeatherLocationBookmark)
+	read.WeatherLocations = reconcile.KeepSet(cfg.WeatherLocations, read.WeatherLocations)
 	read.WeatherUnit = reconcile.KeepStr(cfg.WeatherUnit, read.WeatherUnit)
 	read.WeekStartDay = reconcile.KeepStr(cfg.WeekStartDay, read.WeekStartDay)
 	read.WorkDays = reconcile.KeepStr(cfg.WorkDays, read.WorkDays)
 	read.WorkingHoursEndTime = reconcile.KeepStr(cfg.WorkingHoursEndTime, read.WorkingHoursEndTime)
 	read.WorkingHoursStartTime = reconcile.KeepStr(cfg.WorkingHoursStartTime, read.WorkingHoursStartTime)
 	read.WorkingHoursTimeZone = reconcile.KeepStr(cfg.WorkingHoursTimeZone, read.WorkingHoursTimeZone)
-	read.WorkspaceUserEnabled = reconcile.KeepStr(cfg.WorkspaceUserEnabled, read.WorkspaceUserEnabled)
+	read.WorkspaceUserEnabled = reconcile.KeepBool(cfg.WorkspaceUserEnabled, read.WorkspaceUserEnabled)
 }

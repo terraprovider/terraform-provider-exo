@@ -24,6 +24,6 @@ List every ClassificationRuleCollection object (Get-ClassificationRuleCollection
 
 Read-Only:
 
-- `file_data` (Set of String) Maps to the -FileData parameter.
+- `file_data` (String) Maps to the -FileData parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.

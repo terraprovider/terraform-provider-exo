@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -26,6 +27,7 @@ var (
 	_ resource.Resource                = &placeResource{}
 	_ resource.ResourceWithConfigure   = &placeResource{}
 	_ resource.ResourceWithImportState = &placeResource{}
+	_ resource.ResourceWithModifyPlan  = &placeResource{}
 )
 
 type placeResource struct{ client *clients.Client }
@@ -38,11 +40,11 @@ type placeModel struct {
 	Identity               types.String `tfsdk:"identity"`
 	AudioDeviceName        types.String `tfsdk:"audio_device_name"`
 	Building               types.String `tfsdk:"building"`
-	Capacity               types.String `tfsdk:"capacity"`
+	Capacity               types.Int64  `tfsdk:"capacity"`
 	City                   types.String `tfsdk:"city"`
 	CountryOrRegion        types.String `tfsdk:"country_or_region"`
 	DisplayDeviceName      types.String `tfsdk:"display_device_name"`
-	Floor                  types.String `tfsdk:"floor"`
+	Floor                  types.Int64  `tfsdk:"floor"`
 	FloorLabel             types.String `tfsdk:"floor_label"`
 	GeoCoordinates         types.String `tfsdk:"geo_coordinates"`
 	IsWheelChairAccessible types.Bool   `tfsdk:"is_wheel_chair_accessible"`
@@ -69,11 +71,11 @@ func (r *placeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"identity":                  schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"audio_device_name":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AudioDeviceName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"building":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Building parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"capacity":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Capacity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"capacity":                  schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Capacity parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"city":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -City parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"country_or_region":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CountryOrRegion parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"display_device_name":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayDeviceName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"floor":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Floor parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"floor":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Floor parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"floor_label":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FloorLabel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"geo_coordinates":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GeoCoordinates parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"is_wheel_chair_accessible": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsWheelChairAccessible parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -103,35 +105,80 @@ func (r *placeResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config placeModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetPlaceParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AudioDeviceName = plan.AudioDeviceName.ValueString()
-	sp.Building = plan.Building.ValueString()
-	if v := plan.Capacity.ValueString(); v != "" {
-		sp.Capacity = v
+	if !config.AudioDeviceName.IsNull() {
+		sp.AudioDeviceName = plan.AudioDeviceName.ValueString()
 	}
-	sp.City = plan.City.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	if !config.Building.IsNull() {
+		sp.Building = plan.Building.ValueString()
 	}
-	sp.DisplayDeviceName = plan.DisplayDeviceName.ValueString()
-	if v := plan.Floor.ValueString(); v != "" {
-		sp.Floor = v
+	if !config.Capacity.IsNull() {
+		if !plan.Capacity.IsUnknown() {
+			sp.Capacity = plan.Capacity.ValueInt64Pointer()
+		}
 	}
-	sp.FloorLabel = plan.FloorLabel.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !config.City.IsNull() {
+		sp.City = plan.City.ValueString()
 	}
-	sp.IsWheelChairAccessible = plan.IsWheelChairAccessible.ValueBool()
-	sp.Label = plan.Label.ValueString()
-	sp.MTREnabled = plan.MTREnabled.ValueBool()
-	sp.ParentId = plan.ParentId.ValueString()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PostalCode = plan.PostalCode.ValueString()
-	sp.State = plan.State.ValueString()
-	sp.Street = plan.Street.ValueString()
-	sp.Tags = toStringSlice(ctx, plan.Tags, &resp.Diagnostics)
-	sp.VideoDeviceName = plan.VideoDeviceName.ValueString()
+	if v := config.CountryOrRegion.ValueString(); v != "" {
+		sp.CountryOrRegion = objectParam(v)
+	}
+	if !config.DisplayDeviceName.IsNull() {
+		sp.DisplayDeviceName = plan.DisplayDeviceName.ValueString()
+	}
+	if !config.Floor.IsNull() {
+		if !plan.Floor.IsUnknown() {
+			sp.Floor = plan.Floor.ValueInt64Pointer()
+		}
+	}
+	if !config.FloorLabel.IsNull() {
+		sp.FloorLabel = plan.FloorLabel.ValueString()
+	}
+	if v := config.GeoCoordinates.ValueString(); v != "" {
+		sp.GeoCoordinates = objectParam(v)
+	}
+	if !config.IsWheelChairAccessible.IsNull() {
+		if !plan.IsWheelChairAccessible.IsUnknown() {
+			sp.IsWheelChairAccessible = plan.IsWheelChairAccessible.ValueBoolPointer()
+		}
+	}
+	if !config.Label.IsNull() {
+		sp.Label = plan.Label.ValueString()
+	}
+	if !config.MTREnabled.IsNull() {
+		if !plan.MTREnabled.IsUnknown() {
+			sp.MTREnabled = plan.MTREnabled.ValueBoolPointer()
+		}
+	}
+	if !config.ParentId.IsNull() {
+		sp.ParentId = plan.ParentId.ValueString()
+	}
+	if !config.Phone.IsNull() {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !config.PostalCode.IsNull() {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !config.State.IsNull() {
+		sp.State = plan.State.ValueString()
+	}
+	if !config.Street.IsNull() {
+		sp.Street = plan.Street.ValueString()
+	}
+	if !config.Tags.IsNull() {
+		if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
+			sp.Tags = append([]string{}, toStringSlice(ctx, plan.Tags, &resp.Diagnostics)...)
+		}
+	}
+	if !config.VideoDeviceName.IsNull() {
+		sp.VideoDeviceName = plan.VideoDeviceName.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -171,33 +218,77 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	id := r.identityOf(state)
 	sp := exo.SetPlaceParams{}
 	sp.Identity = id
-	sp.AudioDeviceName = plan.AudioDeviceName.ValueString()
-	sp.Building = plan.Building.ValueString()
-	if v := plan.Capacity.ValueString(); v != "" {
-		sp.Capacity = v
+	if !plan.AudioDeviceName.Equal(state.AudioDeviceName) {
+		sp.AudioDeviceName = plan.AudioDeviceName.ValueString()
 	}
-	sp.City = plan.City.ValueString()
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = v
+	if !plan.Building.Equal(state.Building) {
+		sp.Building = plan.Building.ValueString()
 	}
-	sp.DisplayDeviceName = plan.DisplayDeviceName.ValueString()
-	if v := plan.Floor.ValueString(); v != "" {
-		sp.Floor = v
+	if !plan.Capacity.Equal(state.Capacity) {
+		if !plan.Capacity.IsUnknown() {
+			sp.Capacity = plan.Capacity.ValueInt64Pointer()
+		}
 	}
-	sp.FloorLabel = plan.FloorLabel.ValueString()
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = v
+	if !plan.City.Equal(state.City) {
+		sp.City = plan.City.ValueString()
 	}
-	sp.IsWheelChairAccessible = plan.IsWheelChairAccessible.ValueBool()
-	sp.Label = plan.Label.ValueString()
-	sp.MTREnabled = plan.MTREnabled.ValueBool()
-	sp.ParentId = plan.ParentId.ValueString()
-	sp.Phone = plan.Phone.ValueString()
-	sp.PostalCode = plan.PostalCode.ValueString()
-	sp.State = plan.State.ValueString()
-	sp.Street = plan.Street.ValueString()
-	sp.Tags = toStringSlice(ctx, plan.Tags, &resp.Diagnostics)
-	sp.VideoDeviceName = plan.VideoDeviceName.ValueString()
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
+	}
+	if !plan.DisplayDeviceName.Equal(state.DisplayDeviceName) {
+		sp.DisplayDeviceName = plan.DisplayDeviceName.ValueString()
+	}
+	if !plan.Floor.Equal(state.Floor) {
+		if !plan.Floor.IsUnknown() {
+			sp.Floor = plan.Floor.ValueInt64Pointer()
+		}
+	}
+	if !plan.FloorLabel.Equal(state.FloorLabel) {
+		sp.FloorLabel = plan.FloorLabel.ValueString()
+	}
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
+	}
+	if !plan.IsWheelChairAccessible.Equal(state.IsWheelChairAccessible) {
+		if !plan.IsWheelChairAccessible.IsUnknown() {
+			sp.IsWheelChairAccessible = plan.IsWheelChairAccessible.ValueBoolPointer()
+		}
+	}
+	if !plan.Label.Equal(state.Label) {
+		sp.Label = plan.Label.ValueString()
+	}
+	if !plan.MTREnabled.Equal(state.MTREnabled) {
+		if !plan.MTREnabled.IsUnknown() {
+			sp.MTREnabled = plan.MTREnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.ParentId.Equal(state.ParentId) {
+		sp.ParentId = plan.ParentId.ValueString()
+	}
+	if !plan.Phone.Equal(state.Phone) {
+		sp.Phone = plan.Phone.ValueString()
+	}
+	if !plan.PostalCode.Equal(state.PostalCode) {
+		sp.PostalCode = plan.PostalCode.ValueString()
+	}
+	if !plan.State.Equal(state.State) {
+		sp.State = plan.State.ValueString()
+	}
+	if !plan.Street.Equal(state.Street) {
+		sp.Street = plan.Street.ValueString()
+	}
+	if !plan.Tags.Equal(state.Tags) {
+		if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
+			sp.Tags = append([]string{}, toStringSlice(ctx, plan.Tags, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.VideoDeviceName.Equal(state.VideoDeviceName) {
+		sp.VideoDeviceName = plan.VideoDeviceName.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -209,13 +300,9 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AudioDeviceName":   cfg.AudioDeviceName,
 		"Building":          cfg.Building,
-		"Capacity":          cfg.Capacity,
 		"City":              cfg.City,
-		"CountryOrRegion":   cfg.CountryOrRegion,
 		"DisplayDeviceName": cfg.DisplayDeviceName,
-		"Floor":             cfg.Floor,
 		"FloorLabel":        cfg.FloorLabel,
-		"GeoCoordinates":    cfg.GeoCoordinates,
 		"Label":             cfg.Label,
 		"ParentId":          cfg.ParentId,
 		"Phone":             cfg.Phone,
@@ -236,6 +323,95 @@ func (r *placeResource) Delete(_ context.Context, _ resource.DeleteRequest, resp
 func (r *placeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *placeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan placeModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetPlace(ctx, exo.GetPlaceParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur placeModel
+	readPlace(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AudioDeviceName.IsUnknown() {
+		plan.AudioDeviceName = cur.AudioDeviceName
+	}
+	if plan.Building.IsUnknown() {
+		plan.Building = cur.Building
+	}
+	if plan.Capacity.IsUnknown() {
+		plan.Capacity = cur.Capacity
+	}
+	if plan.City.IsUnknown() {
+		plan.City = cur.City
+	}
+	if plan.CountryOrRegion.IsUnknown() {
+		plan.CountryOrRegion = cur.CountryOrRegion
+	}
+	if plan.DisplayDeviceName.IsUnknown() {
+		plan.DisplayDeviceName = cur.DisplayDeviceName
+	}
+	if plan.Floor.IsUnknown() {
+		plan.Floor = cur.Floor
+	}
+	if plan.FloorLabel.IsUnknown() {
+		plan.FloorLabel = cur.FloorLabel
+	}
+	if plan.GeoCoordinates.IsUnknown() {
+		plan.GeoCoordinates = cur.GeoCoordinates
+	}
+	if plan.IsWheelChairAccessible.IsUnknown() {
+		plan.IsWheelChairAccessible = cur.IsWheelChairAccessible
+	}
+	if plan.Label.IsUnknown() {
+		plan.Label = cur.Label
+	}
+	if plan.MTREnabled.IsUnknown() {
+		plan.MTREnabled = cur.MTREnabled
+	}
+	if plan.ParentId.IsUnknown() {
+		plan.ParentId = cur.ParentId
+	}
+	if plan.Phone.IsUnknown() {
+		plan.Phone = cur.Phone
+	}
+	if plan.PostalCode.IsUnknown() {
+		plan.PostalCode = cur.PostalCode
+	}
+	if plan.State.IsUnknown() {
+		plan.State = cur.State
+	}
+	if plan.Street.IsUnknown() {
+		plan.Street = cur.Street
+	}
+	if plan.Tags.IsUnknown() {
+		plan.Tags = cur.Tags
+	}
+	if plan.VideoDeviceName.IsUnknown() {
+		plan.VideoDeviceName = cur.VideoDeviceName
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *placeResource) identityOf(m placeModel) string {
@@ -276,13 +452,13 @@ func readPlace(ctx context.Context, obj map[string]any, m *placeModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.AudioDeviceName = types.StringValue(getString(obj, "AudioDeviceName"))
 	m.Building = types.StringValue(getString(obj, "Building"))
-	m.Capacity = types.StringValue(getString(obj, "Capacity"))
+	m.Capacity = types.Int64Value(getInt(obj, "Capacity"))
 	m.City = types.StringValue(getString(obj, "City"))
-	m.CountryOrRegion = types.StringValue(getString(obj, "CountryOrRegion"))
+	m.CountryOrRegion = types.StringValue(getObjectJSON(obj, "CountryOrRegion"))
 	m.DisplayDeviceName = types.StringValue(getString(obj, "DisplayDeviceName"))
-	m.Floor = types.StringValue(getString(obj, "Floor"))
+	m.Floor = types.Int64Value(getInt(obj, "Floor"))
 	m.FloorLabel = types.StringValue(getString(obj, "FloorLabel"))
-	m.GeoCoordinates = types.StringValue(getString(obj, "GeoCoordinates"))
+	m.GeoCoordinates = types.StringValue(getObjectJSON(obj, "GeoCoordinates"))
 	m.IsWheelChairAccessible = types.BoolValue(getBool(obj, "IsWheelChairAccessible"))
 	m.Label = types.StringValue(getString(obj, "Label"))
 	m.MTREnabled = types.BoolValue(getBool(obj, "MTREnabled"))
@@ -299,11 +475,11 @@ func readPlace(ctx context.Context, obj map[string]any, m *placeModel) {
 func (r *placeResource) reconcileState(cfg, read *placeModel) {
 	read.AudioDeviceName = reconcile.KeepStr(cfg.AudioDeviceName, read.AudioDeviceName)
 	read.Building = reconcile.KeepStr(cfg.Building, read.Building)
-	read.Capacity = reconcile.KeepStr(cfg.Capacity, read.Capacity)
+	read.Capacity = reconcile.KeepInt64(cfg.Capacity, read.Capacity)
 	read.City = reconcile.KeepStr(cfg.City, read.City)
 	read.CountryOrRegion = reconcile.KeepStr(cfg.CountryOrRegion, read.CountryOrRegion)
 	read.DisplayDeviceName = reconcile.KeepStr(cfg.DisplayDeviceName, read.DisplayDeviceName)
-	read.Floor = reconcile.KeepStr(cfg.Floor, read.Floor)
+	read.Floor = reconcile.KeepInt64(cfg.Floor, read.Floor)
 	read.FloorLabel = reconcile.KeepStr(cfg.FloorLabel, read.FloorLabel)
 	read.GeoCoordinates = reconcile.KeepStr(cfg.GeoCoordinates, read.GeoCoordinates)
 	read.IsWheelChairAccessible = reconcile.KeepBool(cfg.IsWheelChairAccessible, read.IsWheelChairAccessible)

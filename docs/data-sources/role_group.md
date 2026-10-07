@@ -26,7 +26,7 @@ Look up an existing RoleGroup object. Set identity or name to select it.
 - `description` (String) Maps to the -Description parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `id` (String) Object identifier (GUID).
-- `managed_by` (String) Maps to the -ManagedBy parameter.
+- `managed_by` (Set of String) Maps to the -ManagedBy parameter.
 - `members` (Set of String) Members of the RoleGroup, managed via Update-RoleGroupMember.
 - `roles` (Set of String) Maps to the -Roles parameter.
 - `well_known_object` (String) Maps to the -WellKnownObject parameter.

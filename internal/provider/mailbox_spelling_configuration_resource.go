@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &mailboxSpellingConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxSpellingConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxSpellingConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxSpellingConfigurationResource{}
 )
 
 type mailboxSpellingConfigurationResource struct{ client *clients.Client }
@@ -74,14 +75,31 @@ func (r *mailboxSpellingConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxSpellingConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxSpellingConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.CheckBeforeSend = plan.CheckBeforeSend.ValueBool()
-	if v := plan.DictionaryLanguage.ValueString(); v != "" {
-		sp.DictionaryLanguage = v
+	if !config.CheckBeforeSend.IsNull() {
+		if !plan.CheckBeforeSend.IsUnknown() {
+			sp.CheckBeforeSend = plan.CheckBeforeSend.ValueBoolPointer()
+		}
 	}
-	sp.IgnoreMixedDigits = plan.IgnoreMixedDigits.ValueBool()
-	sp.IgnoreUppercase = plan.IgnoreUppercase.ValueBool()
+	if v := config.DictionaryLanguage.ValueString(); v != "" {
+		sp.DictionaryLanguage = objectParam(v)
+	}
+	if !config.IgnoreMixedDigits.IsNull() {
+		if !plan.IgnoreMixedDigits.IsUnknown() {
+			sp.IgnoreMixedDigits = plan.IgnoreMixedDigits.ValueBoolPointer()
+		}
+	}
+	if !config.IgnoreUppercase.IsNull() {
+		if !plan.IgnoreUppercase.IsUnknown() {
+			sp.IgnoreUppercase = plan.IgnoreUppercase.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -121,12 +139,26 @@ func (r *mailboxSpellingConfigurationResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetMailboxSpellingConfigurationParams{}
 	sp.Identity = id
-	sp.CheckBeforeSend = plan.CheckBeforeSend.ValueBool()
-	if v := plan.DictionaryLanguage.ValueString(); v != "" {
-		sp.DictionaryLanguage = v
+	if !plan.CheckBeforeSend.Equal(state.CheckBeforeSend) {
+		if !plan.CheckBeforeSend.IsUnknown() {
+			sp.CheckBeforeSend = plan.CheckBeforeSend.ValueBoolPointer()
+		}
 	}
-	sp.IgnoreMixedDigits = plan.IgnoreMixedDigits.ValueBool()
-	sp.IgnoreUppercase = plan.IgnoreUppercase.ValueBool()
+	if !plan.DictionaryLanguage.Equal(state.DictionaryLanguage) {
+		if v := plan.DictionaryLanguage.ValueString(); v != "" {
+			sp.DictionaryLanguage = objectParam(v)
+		}
+	}
+	if !plan.IgnoreMixedDigits.Equal(state.IgnoreMixedDigits) {
+		if !plan.IgnoreMixedDigits.IsUnknown() {
+			sp.IgnoreMixedDigits = plan.IgnoreMixedDigits.ValueBoolPointer()
+		}
+	}
+	if !plan.IgnoreUppercase.Equal(state.IgnoreUppercase) {
+		if !plan.IgnoreUppercase.IsUnknown() {
+			sp.IgnoreUppercase = plan.IgnoreUppercase.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,9 +167,7 @@ func (r *mailboxSpellingConfigurationResource) Update(ctx context.Context, req r
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DictionaryLanguage": cfg.DictionaryLanguage,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -150,6 +180,50 @@ func (r *mailboxSpellingConfigurationResource) Delete(_ context.Context, _ resou
 func (r *mailboxSpellingConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxSpellingConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxSpellingConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxSpellingConfiguration(ctx, exo.GetMailboxSpellingConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxSpellingConfigurationModel
+	readMailboxSpellingConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.CheckBeforeSend.IsUnknown() {
+		plan.CheckBeforeSend = cur.CheckBeforeSend
+	}
+	if plan.DictionaryLanguage.IsUnknown() {
+		plan.DictionaryLanguage = cur.DictionaryLanguage
+	}
+	if plan.IgnoreMixedDigits.IsUnknown() {
+		plan.IgnoreMixedDigits = cur.IgnoreMixedDigits
+	}
+	if plan.IgnoreUppercase.IsUnknown() {
+		plan.IgnoreUppercase = cur.IgnoreUppercase
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxSpellingConfigurationResource) identityOf(m mailboxSpellingConfigurationModel) string {
@@ -189,7 +263,7 @@ func (r *mailboxSpellingConfigurationResource) refresh(ctx context.Context, iden
 func readMailboxSpellingConfiguration(ctx context.Context, obj map[string]any, m *mailboxSpellingConfigurationModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.CheckBeforeSend = types.BoolValue(getBool(obj, "CheckBeforeSend"))
-	m.DictionaryLanguage = types.StringValue(getString(obj, "DictionaryLanguage"))
+	m.DictionaryLanguage = types.StringValue(getObjectJSON(obj, "DictionaryLanguage"))
 	m.IgnoreMixedDigits = types.BoolValue(getBool(obj, "IgnoreMixedDigits"))
 	m.IgnoreUppercase = types.BoolValue(getBool(obj, "IgnoreUppercase"))
 	_ = ctx

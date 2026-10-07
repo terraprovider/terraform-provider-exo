@@ -34,7 +34,7 @@ Read-Only:
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `incremental_sync_interval` (String) Maps to the -IncrementalSyncInterval parameter.
-- `move_options` (String) Maps to the -MoveOptions parameter.
+- `move_options` (Set of String) Maps to the -MoveOptions parameter.
 - `outbound` (Boolean) Maps to the -Outbound parameter.
 - `prevent_completion` (Boolean) Maps to the -PreventCompletion parameter.
 - `primary_only` (Boolean) Maps to the -PrimaryOnly parameter.

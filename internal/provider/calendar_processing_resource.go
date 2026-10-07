@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -26,6 +27,7 @@ var (
 	_ resource.Resource                = &calendarProcessingResource{}
 	_ resource.ResourceWithConfigure   = &calendarProcessingResource{}
 	_ resource.ResourceWithImportState = &calendarProcessingResource{}
+	_ resource.ResourceWithModifyPlan  = &calendarProcessingResource{}
 )
 
 type calendarProcessingResource struct{ client *clients.Client }
@@ -34,40 +36,46 @@ type calendarProcessingResource struct{ client *clients.Client }
 func NewCalendarProcessingResource() resource.Resource { return &calendarProcessingResource{} }
 
 type calendarProcessingModel struct {
-	ID                                  types.String `tfsdk:"id"`
-	Identity                            types.String `tfsdk:"identity"`
-	AddAdditionalResponse               types.Bool   `tfsdk:"add_additional_response"`
-	AddNewRequestsTentatively           types.Bool   `tfsdk:"add_new_requests_tentatively"`
-	AddOrganizerToSubject               types.Bool   `tfsdk:"add_organizer_to_subject"`
-	AdditionalResponse                  types.String `tfsdk:"additional_response"`
-	AllBookInPolicy                     types.Bool   `tfsdk:"all_book_in_policy"`
-	AllRequestInPolicy                  types.Bool   `tfsdk:"all_request_in_policy"`
-	AllRequestOutOfPolicy               types.Bool   `tfsdk:"all_request_out_of_policy"`
-	AllowConflicts                      types.Bool   `tfsdk:"allow_conflicts"`
-	AllowRecurringMeetings              types.Bool   `tfsdk:"allow_recurring_meetings"`
-	AutomateProcessing                  types.String `tfsdk:"automate_processing"`
-	BookInPolicy                        types.Set    `tfsdk:"book_in_policy"`
-	BookingType                         types.String `tfsdk:"booking_type"`
-	DeleteAttachments                   types.Bool   `tfsdk:"delete_attachments"`
-	DeleteComments                      types.Bool   `tfsdk:"delete_comments"`
-	DeleteNonCalendarItems              types.Bool   `tfsdk:"delete_non_calendar_items"`
-	DeleteSubject                       types.Bool   `tfsdk:"delete_subject"`
-	EnableAutoRelease                   types.Bool   `tfsdk:"enable_auto_release"`
-	EnableResponseDetails               types.Bool   `tfsdk:"enable_response_details"`
-	EnforceCapacity                     types.Bool   `tfsdk:"enforce_capacity"`
-	EnforceSchedulingHorizon            types.Bool   `tfsdk:"enforce_scheduling_horizon"`
-	ForwardRequestsToDelegates          types.Bool   `tfsdk:"forward_requests_to_delegates"`
-	OrganizerInfo                       types.Bool   `tfsdk:"organizer_info"`
-	ProcessExternalMeetingMessages      types.Bool   `tfsdk:"process_external_meeting_messages"`
-	RemoveCanceledMeetings              types.Bool   `tfsdk:"remove_canceled_meetings"`
-	RemoveForwardedMeetingNotifications types.Bool   `tfsdk:"remove_forwarded_meeting_notifications"`
-	RemoveOldMeetingMessages            types.Bool   `tfsdk:"remove_old_meeting_messages"`
-	RemovePrivateProperty               types.Bool   `tfsdk:"remove_private_property"`
-	RequestInPolicy                     types.Set    `tfsdk:"request_in_policy"`
-	RequestOutOfPolicy                  types.Set    `tfsdk:"request_out_of_policy"`
-	ResourceDelegates                   types.Set    `tfsdk:"resource_delegates"`
-	ScheduleOnlyDuringWorkHours         types.Bool   `tfsdk:"schedule_only_during_work_hours"`
-	TentativePendingApproval            types.Bool   `tfsdk:"tentative_pending_approval"`
+	ID                                   types.String `tfsdk:"id"`
+	Identity                             types.String `tfsdk:"identity"`
+	AddAdditionalResponse                types.Bool   `tfsdk:"add_additional_response"`
+	AddNewRequestsTentatively            types.Bool   `tfsdk:"add_new_requests_tentatively"`
+	AddOrganizerToSubject                types.Bool   `tfsdk:"add_organizer_to_subject"`
+	AdditionalResponse                   types.String `tfsdk:"additional_response"`
+	AllBookInPolicy                      types.Bool   `tfsdk:"all_book_in_policy"`
+	AllRequestInPolicy                   types.Bool   `tfsdk:"all_request_in_policy"`
+	AllRequestOutOfPolicy                types.Bool   `tfsdk:"all_request_out_of_policy"`
+	AllowConflicts                       types.Bool   `tfsdk:"allow_conflicts"`
+	AllowRecurringMeetings               types.Bool   `tfsdk:"allow_recurring_meetings"`
+	AutomateProcessing                   types.String `tfsdk:"automate_processing"`
+	BookInPolicy                         types.Set    `tfsdk:"book_in_policy"`
+	BookingType                          types.String `tfsdk:"booking_type"`
+	BookingWindowInDays                  types.Int64  `tfsdk:"booking_window_in_days"`
+	ConflictPercentageAllowed            types.Int64  `tfsdk:"conflict_percentage_allowed"`
+	DeleteAttachments                    types.Bool   `tfsdk:"delete_attachments"`
+	DeleteComments                       types.Bool   `tfsdk:"delete_comments"`
+	DeleteNonCalendarItems               types.Bool   `tfsdk:"delete_non_calendar_items"`
+	DeleteSubject                        types.Bool   `tfsdk:"delete_subject"`
+	EnableAutoRelease                    types.Bool   `tfsdk:"enable_auto_release"`
+	EnableResponseDetails                types.Bool   `tfsdk:"enable_response_details"`
+	EnforceCapacity                      types.Bool   `tfsdk:"enforce_capacity"`
+	EnforceSchedulingHorizon             types.Bool   `tfsdk:"enforce_scheduling_horizon"`
+	ForwardRequestsToDelegates           types.Bool   `tfsdk:"forward_requests_to_delegates"`
+	MaximumConflictInstances             types.Int64  `tfsdk:"maximum_conflict_instances"`
+	MaximumDurationInMinutes             types.Int64  `tfsdk:"maximum_duration_in_minutes"`
+	MinimumDurationInMinutes             types.Int64  `tfsdk:"minimum_duration_in_minutes"`
+	OrganizerInfo                        types.Bool   `tfsdk:"organizer_info"`
+	PostReservationMaxClaimTimeInMinutes types.Int64  `tfsdk:"post_reservation_max_claim_time_in_minutes"`
+	ProcessExternalMeetingMessages       types.Bool   `tfsdk:"process_external_meeting_messages"`
+	RemoveCanceledMeetings               types.Bool   `tfsdk:"remove_canceled_meetings"`
+	RemoveForwardedMeetingNotifications  types.Bool   `tfsdk:"remove_forwarded_meeting_notifications"`
+	RemoveOldMeetingMessages             types.Bool   `tfsdk:"remove_old_meeting_messages"`
+	RemovePrivateProperty                types.Bool   `tfsdk:"remove_private_property"`
+	RequestInPolicy                      types.Set    `tfsdk:"request_in_policy"`
+	RequestOutOfPolicy                   types.Set    `tfsdk:"request_out_of_policy"`
+	ResourceDelegates                    types.Set    `tfsdk:"resource_delegates"`
+	ScheduleOnlyDuringWorkHours          types.Bool   `tfsdk:"schedule_only_during_work_hours"`
+	TentativePendingApproval             types.Bool   `tfsdk:"tentative_pending_approval"`
 }
 
 func (r *calendarProcessingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -78,40 +86,46 @@ func (r *calendarProcessingResource) Schema(_ context.Context, _ resource.Schema
 	resp.Schema = schema.Schema{
 		Description: "Manages the CalendarProcessing configuration via Set-CalendarProcessing.",
 		Attributes: map[string]schema.Attribute{
-			"id":                                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                               schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"add_additional_response":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddAdditionalResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"add_new_requests_tentatively":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddNewRequestsTentatively parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"add_organizer_to_subject":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddOrganizerToSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"additional_response":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"all_book_in_policy":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllBookInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"all_request_in_policy":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"all_request_out_of_policy":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"allow_conflicts":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowConflicts parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"allow_recurring_meetings":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRecurringMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"automate_processing":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutomateProcessing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"book_in_policy":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BookInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"booking_type":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"delete_attachments":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteAttachments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_comments":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteComments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_non_calendar_items":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteNonCalendarItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"delete_subject":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enable_auto_release":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableAutoRelease parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enable_response_details":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableResponseDetails parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enforce_capacity":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceCapacity parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"enforce_scheduling_horizon":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceSchedulingHorizon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"forward_requests_to_delegates":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardRequestsToDelegates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"organizer_info":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizerInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"process_external_meeting_messages":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProcessExternalMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_canceled_meetings":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveCanceledMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_forwarded_meeting_notifications": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveForwardedMeetingNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_old_meeting_messages":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveOldMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remove_private_property":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemovePrivateProperty parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"request_in_policy":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"request_out_of_policy":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"resource_delegates":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourceDelegates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"schedule_only_during_work_hours":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ScheduleOnlyDuringWorkHours parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"tentative_pending_approval":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TentativePendingApproval parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"id":                                         schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"identity":                                   schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"add_additional_response":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddAdditionalResponse parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"add_new_requests_tentatively":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddNewRequestsTentatively parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"add_organizer_to_subject":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AddOrganizerToSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"additional_response":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdditionalResponse parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"all_book_in_policy":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllBookInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"all_request_in_policy":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestInPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"all_request_out_of_policy":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllRequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"allow_conflicts":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowConflicts parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"allow_recurring_meetings":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowRecurringMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"automate_processing":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AutomateProcessing parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"book_in_policy":                             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BookInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"booking_type":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BookingType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"booking_window_in_days":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -BookingWindowInDays parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"conflict_percentage_allowed":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ConflictPercentageAllowed parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"delete_attachments":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteAttachments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_comments":                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteComments parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_non_calendar_items":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteNonCalendarItems parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"delete_subject":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeleteSubject parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enable_auto_release":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableAutoRelease parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enable_response_details":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableResponseDetails parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enforce_capacity":                           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceCapacity parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"enforce_scheduling_horizon":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforceSchedulingHorizon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"forward_requests_to_delegates":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardRequestsToDelegates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"maximum_conflict_instances":                 schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MaximumConflictInstances parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"maximum_duration_in_minutes":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MaximumDurationInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"minimum_duration_in_minutes":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -MinimumDurationInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"organizer_info":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizerInfo parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"post_reservation_max_claim_time_in_minutes": schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -PostReservationMaxClaimTimeInMinutes parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"process_external_meeting_messages":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProcessExternalMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_canceled_meetings":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveCanceledMeetings parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_forwarded_meeting_notifications":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveForwardedMeetingNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_old_meeting_messages":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveOldMeetingMessages parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"remove_private_property":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemovePrivateProperty parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"request_in_policy":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestInPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"request_out_of_policy":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RequestOutOfPolicy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"resource_delegates":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ResourceDelegates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"schedule_only_during_work_hours":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ScheduleOnlyDuringWorkHours parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"tentative_pending_approval":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TentativePendingApproval parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -129,44 +143,197 @@ func (r *calendarProcessingResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config calendarProcessingModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetCalendarProcessingParams{}
 	sp.Identity = plan.Identity.ValueString()
-	sp.AddAdditionalResponse = plan.AddAdditionalResponse.ValueBool()
-	sp.AddNewRequestsTentatively = plan.AddNewRequestsTentatively.ValueBool()
-	sp.AddOrganizerToSubject = plan.AddOrganizerToSubject.ValueBool()
-	sp.AdditionalResponse = plan.AdditionalResponse.ValueString()
-	sp.AllBookInPolicy = plan.AllBookInPolicy.ValueBool()
-	sp.AllRequestInPolicy = plan.AllRequestInPolicy.ValueBool()
-	sp.AllRequestOutOfPolicy = plan.AllRequestOutOfPolicy.ValueBool()
-	sp.AllowConflicts = plan.AllowConflicts.ValueBool()
-	sp.AllowRecurringMeetings = plan.AllowRecurringMeetings.ValueBool()
-	if v := plan.AutomateProcessing.ValueString(); v != "" {
-		sp.AutomateProcessing = v
+	if !config.AddAdditionalResponse.IsNull() {
+		if !plan.AddAdditionalResponse.IsUnknown() {
+			sp.AddAdditionalResponse = plan.AddAdditionalResponse.ValueBoolPointer()
+		}
 	}
-	sp.BookInPolicy = toStringSlice(ctx, plan.BookInPolicy, &resp.Diagnostics)
-	if v := plan.BookingType.ValueString(); v != "" {
-		sp.BookingType = v
+	if !config.AddNewRequestsTentatively.IsNull() {
+		if !plan.AddNewRequestsTentatively.IsUnknown() {
+			sp.AddNewRequestsTentatively = plan.AddNewRequestsTentatively.ValueBoolPointer()
+		}
 	}
-	sp.DeleteAttachments = plan.DeleteAttachments.ValueBool()
-	sp.DeleteComments = plan.DeleteComments.ValueBool()
-	sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBool()
-	sp.DeleteSubject = plan.DeleteSubject.ValueBool()
-	sp.EnableAutoRelease = plan.EnableAutoRelease.ValueBool()
-	sp.EnableResponseDetails = plan.EnableResponseDetails.ValueBool()
-	sp.EnforceCapacity = plan.EnforceCapacity.ValueBool()
-	sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBool()
-	sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBool()
-	sp.OrganizerInfo = plan.OrganizerInfo.ValueBool()
-	sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBool()
-	sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBool()
-	sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBool()
-	sp.RemoveOldMeetingMessages = plan.RemoveOldMeetingMessages.ValueBool()
-	sp.RemovePrivateProperty = plan.RemovePrivateProperty.ValueBool()
-	sp.RequestInPolicy = toStringSlice(ctx, plan.RequestInPolicy, &resp.Diagnostics)
-	sp.RequestOutOfPolicy = toStringSlice(ctx, plan.RequestOutOfPolicy, &resp.Diagnostics)
-	sp.ResourceDelegates = toStringSlice(ctx, plan.ResourceDelegates, &resp.Diagnostics)
-	sp.ScheduleOnlyDuringWorkHours = plan.ScheduleOnlyDuringWorkHours.ValueBool()
-	sp.TentativePendingApproval = plan.TentativePendingApproval.ValueBool()
+	if !config.AddOrganizerToSubject.IsNull() {
+		if !plan.AddOrganizerToSubject.IsUnknown() {
+			sp.AddOrganizerToSubject = plan.AddOrganizerToSubject.ValueBoolPointer()
+		}
+	}
+	if !config.AdditionalResponse.IsNull() {
+		sp.AdditionalResponse = plan.AdditionalResponse.ValueString()
+	}
+	if !config.AllBookInPolicy.IsNull() {
+		if !plan.AllBookInPolicy.IsUnknown() {
+			sp.AllBookInPolicy = plan.AllBookInPolicy.ValueBoolPointer()
+		}
+	}
+	if !config.AllRequestInPolicy.IsNull() {
+		if !plan.AllRequestInPolicy.IsUnknown() {
+			sp.AllRequestInPolicy = plan.AllRequestInPolicy.ValueBoolPointer()
+		}
+	}
+	if !config.AllRequestOutOfPolicy.IsNull() {
+		if !plan.AllRequestOutOfPolicy.IsUnknown() {
+			sp.AllRequestOutOfPolicy = plan.AllRequestOutOfPolicy.ValueBoolPointer()
+		}
+	}
+	if !config.AllowConflicts.IsNull() {
+		if !plan.AllowConflicts.IsUnknown() {
+			sp.AllowConflicts = plan.AllowConflicts.ValueBoolPointer()
+		}
+	}
+	if !config.AllowRecurringMeetings.IsNull() {
+		if !plan.AllowRecurringMeetings.IsUnknown() {
+			sp.AllowRecurringMeetings = plan.AllowRecurringMeetings.ValueBoolPointer()
+		}
+	}
+	if v := config.AutomateProcessing.ValueString(); v != "" {
+		sp.AutomateProcessing = objectParam(v)
+	}
+	if !config.BookInPolicy.IsNull() {
+		if !plan.BookInPolicy.IsNull() && !plan.BookInPolicy.IsUnknown() {
+			sp.BookInPolicy = append([]string{}, toStringSlice(ctx, plan.BookInPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if v := config.BookingType.ValueString(); v != "" {
+		sp.BookingType = objectParam(v)
+	}
+	if !config.BookingWindowInDays.IsNull() {
+		if !plan.BookingWindowInDays.IsUnknown() {
+			sp.BookingWindowInDays = plan.BookingWindowInDays.ValueInt64Pointer()
+		}
+	}
+	if !config.ConflictPercentageAllowed.IsNull() {
+		if !plan.ConflictPercentageAllowed.IsUnknown() {
+			sp.ConflictPercentageAllowed = plan.ConflictPercentageAllowed.ValueInt64Pointer()
+		}
+	}
+	if !config.DeleteAttachments.IsNull() {
+		if !plan.DeleteAttachments.IsUnknown() {
+			sp.DeleteAttachments = plan.DeleteAttachments.ValueBoolPointer()
+		}
+	}
+	if !config.DeleteComments.IsNull() {
+		if !plan.DeleteComments.IsUnknown() {
+			sp.DeleteComments = plan.DeleteComments.ValueBoolPointer()
+		}
+	}
+	if !config.DeleteNonCalendarItems.IsNull() {
+		if !plan.DeleteNonCalendarItems.IsUnknown() {
+			sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBoolPointer()
+		}
+	}
+	if !config.DeleteSubject.IsNull() {
+		if !plan.DeleteSubject.IsUnknown() {
+			sp.DeleteSubject = plan.DeleteSubject.ValueBoolPointer()
+		}
+	}
+	if !config.EnableAutoRelease.IsNull() {
+		if !plan.EnableAutoRelease.IsUnknown() {
+			sp.EnableAutoRelease = plan.EnableAutoRelease.ValueBoolPointer()
+		}
+	}
+	if !config.EnableResponseDetails.IsNull() {
+		if !plan.EnableResponseDetails.IsUnknown() {
+			sp.EnableResponseDetails = plan.EnableResponseDetails.ValueBoolPointer()
+		}
+	}
+	if !config.EnforceCapacity.IsNull() {
+		if !plan.EnforceCapacity.IsUnknown() {
+			sp.EnforceCapacity = plan.EnforceCapacity.ValueBoolPointer()
+		}
+	}
+	if !config.EnforceSchedulingHorizon.IsNull() {
+		if !plan.EnforceSchedulingHorizon.IsUnknown() {
+			sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBoolPointer()
+		}
+	}
+	if !config.ForwardRequestsToDelegates.IsNull() {
+		if !plan.ForwardRequestsToDelegates.IsUnknown() {
+			sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBoolPointer()
+		}
+	}
+	if !config.MaximumConflictInstances.IsNull() {
+		if !plan.MaximumConflictInstances.IsUnknown() {
+			sp.MaximumConflictInstances = plan.MaximumConflictInstances.ValueInt64Pointer()
+		}
+	}
+	if !config.MaximumDurationInMinutes.IsNull() {
+		if !plan.MaximumDurationInMinutes.IsUnknown() {
+			sp.MaximumDurationInMinutes = plan.MaximumDurationInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !config.MinimumDurationInMinutes.IsNull() {
+		if !plan.MinimumDurationInMinutes.IsUnknown() {
+			sp.MinimumDurationInMinutes = plan.MinimumDurationInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !config.OrganizerInfo.IsNull() {
+		if !plan.OrganizerInfo.IsUnknown() {
+			sp.OrganizerInfo = plan.OrganizerInfo.ValueBoolPointer()
+		}
+	}
+	if !config.PostReservationMaxClaimTimeInMinutes.IsNull() {
+		if !plan.PostReservationMaxClaimTimeInMinutes.IsUnknown() {
+			sp.PostReservationMaxClaimTimeInMinutes = plan.PostReservationMaxClaimTimeInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !config.ProcessExternalMeetingMessages.IsNull() {
+		if !plan.ProcessExternalMeetingMessages.IsUnknown() {
+			sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveCanceledMeetings.IsNull() {
+		if !plan.RemoveCanceledMeetings.IsUnknown() {
+			sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveForwardedMeetingNotifications.IsNull() {
+		if !plan.RemoveForwardedMeetingNotifications.IsUnknown() {
+			sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBoolPointer()
+		}
+	}
+	if !config.RemoveOldMeetingMessages.IsNull() {
+		if !plan.RemoveOldMeetingMessages.IsUnknown() {
+			sp.RemoveOldMeetingMessages = plan.RemoveOldMeetingMessages.ValueBoolPointer()
+		}
+	}
+	if !config.RemovePrivateProperty.IsNull() {
+		if !plan.RemovePrivateProperty.IsUnknown() {
+			sp.RemovePrivateProperty = plan.RemovePrivateProperty.ValueBoolPointer()
+		}
+	}
+	if !config.RequestInPolicy.IsNull() {
+		if !plan.RequestInPolicy.IsNull() && !plan.RequestInPolicy.IsUnknown() {
+			sp.RequestInPolicy = append([]string{}, toStringSlice(ctx, plan.RequestInPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if !config.RequestOutOfPolicy.IsNull() {
+		if !plan.RequestOutOfPolicy.IsNull() && !plan.RequestOutOfPolicy.IsUnknown() {
+			sp.RequestOutOfPolicy = append([]string{}, toStringSlice(ctx, plan.RequestOutOfPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if !config.ResourceDelegates.IsNull() {
+		if !plan.ResourceDelegates.IsNull() && !plan.ResourceDelegates.IsUnknown() {
+			sp.ResourceDelegates = append([]string{}, toStringSlice(ctx, plan.ResourceDelegates, &resp.Diagnostics)...)
+		}
+	}
+	if !config.ScheduleOnlyDuringWorkHours.IsNull() {
+		if !plan.ScheduleOnlyDuringWorkHours.IsUnknown() {
+			sp.ScheduleOnlyDuringWorkHours = plan.ScheduleOnlyDuringWorkHours.ValueBoolPointer()
+		}
+	}
+	if !config.TentativePendingApproval.IsNull() {
+		if !plan.TentativePendingApproval.IsUnknown() {
+			sp.TentativePendingApproval = plan.TentativePendingApproval.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -206,42 +373,194 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetCalendarProcessingParams{}
 	sp.Identity = id
-	sp.AddAdditionalResponse = plan.AddAdditionalResponse.ValueBool()
-	sp.AddNewRequestsTentatively = plan.AddNewRequestsTentatively.ValueBool()
-	sp.AddOrganizerToSubject = plan.AddOrganizerToSubject.ValueBool()
-	sp.AdditionalResponse = plan.AdditionalResponse.ValueString()
-	sp.AllBookInPolicy = plan.AllBookInPolicy.ValueBool()
-	sp.AllRequestInPolicy = plan.AllRequestInPolicy.ValueBool()
-	sp.AllRequestOutOfPolicy = plan.AllRequestOutOfPolicy.ValueBool()
-	sp.AllowConflicts = plan.AllowConflicts.ValueBool()
-	sp.AllowRecurringMeetings = plan.AllowRecurringMeetings.ValueBool()
-	if v := plan.AutomateProcessing.ValueString(); v != "" {
-		sp.AutomateProcessing = v
+	if !plan.AddAdditionalResponse.Equal(state.AddAdditionalResponse) {
+		if !plan.AddAdditionalResponse.IsUnknown() {
+			sp.AddAdditionalResponse = plan.AddAdditionalResponse.ValueBoolPointer()
+		}
 	}
-	sp.BookInPolicy = toStringSlice(ctx, plan.BookInPolicy, &resp.Diagnostics)
-	if v := plan.BookingType.ValueString(); v != "" {
-		sp.BookingType = v
+	if !plan.AddNewRequestsTentatively.Equal(state.AddNewRequestsTentatively) {
+		if !plan.AddNewRequestsTentatively.IsUnknown() {
+			sp.AddNewRequestsTentatively = plan.AddNewRequestsTentatively.ValueBoolPointer()
+		}
 	}
-	sp.DeleteAttachments = plan.DeleteAttachments.ValueBool()
-	sp.DeleteComments = plan.DeleteComments.ValueBool()
-	sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBool()
-	sp.DeleteSubject = plan.DeleteSubject.ValueBool()
-	sp.EnableAutoRelease = plan.EnableAutoRelease.ValueBool()
-	sp.EnableResponseDetails = plan.EnableResponseDetails.ValueBool()
-	sp.EnforceCapacity = plan.EnforceCapacity.ValueBool()
-	sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBool()
-	sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBool()
-	sp.OrganizerInfo = plan.OrganizerInfo.ValueBool()
-	sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBool()
-	sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBool()
-	sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBool()
-	sp.RemoveOldMeetingMessages = plan.RemoveOldMeetingMessages.ValueBool()
-	sp.RemovePrivateProperty = plan.RemovePrivateProperty.ValueBool()
-	sp.RequestInPolicy = toStringSlice(ctx, plan.RequestInPolicy, &resp.Diagnostics)
-	sp.RequestOutOfPolicy = toStringSlice(ctx, plan.RequestOutOfPolicy, &resp.Diagnostics)
-	sp.ResourceDelegates = toStringSlice(ctx, plan.ResourceDelegates, &resp.Diagnostics)
-	sp.ScheduleOnlyDuringWorkHours = plan.ScheduleOnlyDuringWorkHours.ValueBool()
-	sp.TentativePendingApproval = plan.TentativePendingApproval.ValueBool()
+	if !plan.AddOrganizerToSubject.Equal(state.AddOrganizerToSubject) {
+		if !plan.AddOrganizerToSubject.IsUnknown() {
+			sp.AddOrganizerToSubject = plan.AddOrganizerToSubject.ValueBoolPointer()
+		}
+	}
+	if !plan.AdditionalResponse.Equal(state.AdditionalResponse) {
+		sp.AdditionalResponse = plan.AdditionalResponse.ValueString()
+	}
+	if !plan.AllBookInPolicy.Equal(state.AllBookInPolicy) {
+		if !plan.AllBookInPolicy.IsUnknown() {
+			sp.AllBookInPolicy = plan.AllBookInPolicy.ValueBoolPointer()
+		}
+	}
+	if !plan.AllRequestInPolicy.Equal(state.AllRequestInPolicy) {
+		if !plan.AllRequestInPolicy.IsUnknown() {
+			sp.AllRequestInPolicy = plan.AllRequestInPolicy.ValueBoolPointer()
+		}
+	}
+	if !plan.AllRequestOutOfPolicy.Equal(state.AllRequestOutOfPolicy) {
+		if !plan.AllRequestOutOfPolicy.IsUnknown() {
+			sp.AllRequestOutOfPolicy = plan.AllRequestOutOfPolicy.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowConflicts.Equal(state.AllowConflicts) {
+		if !plan.AllowConflicts.IsUnknown() {
+			sp.AllowConflicts = plan.AllowConflicts.ValueBoolPointer()
+		}
+	}
+	if !plan.AllowRecurringMeetings.Equal(state.AllowRecurringMeetings) {
+		if !plan.AllowRecurringMeetings.IsUnknown() {
+			sp.AllowRecurringMeetings = plan.AllowRecurringMeetings.ValueBoolPointer()
+		}
+	}
+	if !plan.AutomateProcessing.Equal(state.AutomateProcessing) {
+		if v := plan.AutomateProcessing.ValueString(); v != "" {
+			sp.AutomateProcessing = objectParam(v)
+		}
+	}
+	if !plan.BookInPolicy.Equal(state.BookInPolicy) {
+		if !plan.BookInPolicy.IsNull() && !plan.BookInPolicy.IsUnknown() {
+			sp.BookInPolicy = append([]string{}, toStringSlice(ctx, plan.BookInPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.BookingType.Equal(state.BookingType) {
+		if v := plan.BookingType.ValueString(); v != "" {
+			sp.BookingType = objectParam(v)
+		}
+	}
+	if !plan.BookingWindowInDays.Equal(state.BookingWindowInDays) {
+		if !plan.BookingWindowInDays.IsUnknown() {
+			sp.BookingWindowInDays = plan.BookingWindowInDays.ValueInt64Pointer()
+		}
+	}
+	if !plan.ConflictPercentageAllowed.Equal(state.ConflictPercentageAllowed) {
+		if !plan.ConflictPercentageAllowed.IsUnknown() {
+			sp.ConflictPercentageAllowed = plan.ConflictPercentageAllowed.ValueInt64Pointer()
+		}
+	}
+	if !plan.DeleteAttachments.Equal(state.DeleteAttachments) {
+		if !plan.DeleteAttachments.IsUnknown() {
+			sp.DeleteAttachments = plan.DeleteAttachments.ValueBoolPointer()
+		}
+	}
+	if !plan.DeleteComments.Equal(state.DeleteComments) {
+		if !plan.DeleteComments.IsUnknown() {
+			sp.DeleteComments = plan.DeleteComments.ValueBoolPointer()
+		}
+	}
+	if !plan.DeleteNonCalendarItems.Equal(state.DeleteNonCalendarItems) {
+		if !plan.DeleteNonCalendarItems.IsUnknown() {
+			sp.DeleteNonCalendarItems = plan.DeleteNonCalendarItems.ValueBoolPointer()
+		}
+	}
+	if !plan.DeleteSubject.Equal(state.DeleteSubject) {
+		if !plan.DeleteSubject.IsUnknown() {
+			sp.DeleteSubject = plan.DeleteSubject.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableAutoRelease.Equal(state.EnableAutoRelease) {
+		if !plan.EnableAutoRelease.IsUnknown() {
+			sp.EnableAutoRelease = plan.EnableAutoRelease.ValueBoolPointer()
+		}
+	}
+	if !plan.EnableResponseDetails.Equal(state.EnableResponseDetails) {
+		if !plan.EnableResponseDetails.IsUnknown() {
+			sp.EnableResponseDetails = plan.EnableResponseDetails.ValueBoolPointer()
+		}
+	}
+	if !plan.EnforceCapacity.Equal(state.EnforceCapacity) {
+		if !plan.EnforceCapacity.IsUnknown() {
+			sp.EnforceCapacity = plan.EnforceCapacity.ValueBoolPointer()
+		}
+	}
+	if !plan.EnforceSchedulingHorizon.Equal(state.EnforceSchedulingHorizon) {
+		if !plan.EnforceSchedulingHorizon.IsUnknown() {
+			sp.EnforceSchedulingHorizon = plan.EnforceSchedulingHorizon.ValueBoolPointer()
+		}
+	}
+	if !plan.ForwardRequestsToDelegates.Equal(state.ForwardRequestsToDelegates) {
+		if !plan.ForwardRequestsToDelegates.IsUnknown() {
+			sp.ForwardRequestsToDelegates = plan.ForwardRequestsToDelegates.ValueBoolPointer()
+		}
+	}
+	if !plan.MaximumConflictInstances.Equal(state.MaximumConflictInstances) {
+		if !plan.MaximumConflictInstances.IsUnknown() {
+			sp.MaximumConflictInstances = plan.MaximumConflictInstances.ValueInt64Pointer()
+		}
+	}
+	if !plan.MaximumDurationInMinutes.Equal(state.MaximumDurationInMinutes) {
+		if !plan.MaximumDurationInMinutes.IsUnknown() {
+			sp.MaximumDurationInMinutes = plan.MaximumDurationInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !plan.MinimumDurationInMinutes.Equal(state.MinimumDurationInMinutes) {
+		if !plan.MinimumDurationInMinutes.IsUnknown() {
+			sp.MinimumDurationInMinutes = plan.MinimumDurationInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !plan.OrganizerInfo.Equal(state.OrganizerInfo) {
+		if !plan.OrganizerInfo.IsUnknown() {
+			sp.OrganizerInfo = plan.OrganizerInfo.ValueBoolPointer()
+		}
+	}
+	if !plan.PostReservationMaxClaimTimeInMinutes.Equal(state.PostReservationMaxClaimTimeInMinutes) {
+		if !plan.PostReservationMaxClaimTimeInMinutes.IsUnknown() {
+			sp.PostReservationMaxClaimTimeInMinutes = plan.PostReservationMaxClaimTimeInMinutes.ValueInt64Pointer()
+		}
+	}
+	if !plan.ProcessExternalMeetingMessages.Equal(state.ProcessExternalMeetingMessages) {
+		if !plan.ProcessExternalMeetingMessages.IsUnknown() {
+			sp.ProcessExternalMeetingMessages = plan.ProcessExternalMeetingMessages.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveCanceledMeetings.Equal(state.RemoveCanceledMeetings) {
+		if !plan.RemoveCanceledMeetings.IsUnknown() {
+			sp.RemoveCanceledMeetings = plan.RemoveCanceledMeetings.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveForwardedMeetingNotifications.Equal(state.RemoveForwardedMeetingNotifications) {
+		if !plan.RemoveForwardedMeetingNotifications.IsUnknown() {
+			sp.RemoveForwardedMeetingNotifications = plan.RemoveForwardedMeetingNotifications.ValueBoolPointer()
+		}
+	}
+	if !plan.RemoveOldMeetingMessages.Equal(state.RemoveOldMeetingMessages) {
+		if !plan.RemoveOldMeetingMessages.IsUnknown() {
+			sp.RemoveOldMeetingMessages = plan.RemoveOldMeetingMessages.ValueBoolPointer()
+		}
+	}
+	if !plan.RemovePrivateProperty.Equal(state.RemovePrivateProperty) {
+		if !plan.RemovePrivateProperty.IsUnknown() {
+			sp.RemovePrivateProperty = plan.RemovePrivateProperty.ValueBoolPointer()
+		}
+	}
+	if !plan.RequestInPolicy.Equal(state.RequestInPolicy) {
+		if !plan.RequestInPolicy.IsNull() && !plan.RequestInPolicy.IsUnknown() {
+			sp.RequestInPolicy = append([]string{}, toStringSlice(ctx, plan.RequestInPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.RequestOutOfPolicy.Equal(state.RequestOutOfPolicy) {
+		if !plan.RequestOutOfPolicy.IsNull() && !plan.RequestOutOfPolicy.IsUnknown() {
+			sp.RequestOutOfPolicy = append([]string{}, toStringSlice(ctx, plan.RequestOutOfPolicy, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ResourceDelegates.Equal(state.ResourceDelegates) {
+		if !plan.ResourceDelegates.IsNull() && !plan.ResourceDelegates.IsUnknown() {
+			sp.ResourceDelegates = append([]string{}, toStringSlice(ctx, plan.ResourceDelegates, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.ScheduleOnlyDuringWorkHours.Equal(state.ScheduleOnlyDuringWorkHours) {
+		if !plan.ScheduleOnlyDuringWorkHours.IsUnknown() {
+			sp.ScheduleOnlyDuringWorkHours = plan.ScheduleOnlyDuringWorkHours.ValueBoolPointer()
+		}
+	}
+	if !plan.TentativePendingApproval.Equal(state.TentativePendingApproval) {
+		if !plan.TentativePendingApproval.IsUnknown() {
+			sp.TentativePendingApproval = plan.TentativePendingApproval.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -252,8 +571,6 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdditionalResponse": cfg.AdditionalResponse,
-		"AutomateProcessing": cfg.AutomateProcessing,
-		"BookingType":        cfg.BookingType,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -267,6 +584,152 @@ func (r *calendarProcessingResource) Delete(_ context.Context, _ resource.Delete
 func (r *calendarProcessingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *calendarProcessingResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan calendarProcessingModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetCalendarProcessing(ctx, exo.GetCalendarProcessingParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur calendarProcessingModel
+	readCalendarProcessing(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AddAdditionalResponse.IsUnknown() {
+		plan.AddAdditionalResponse = cur.AddAdditionalResponse
+	}
+	if plan.AddNewRequestsTentatively.IsUnknown() {
+		plan.AddNewRequestsTentatively = cur.AddNewRequestsTentatively
+	}
+	if plan.AddOrganizerToSubject.IsUnknown() {
+		plan.AddOrganizerToSubject = cur.AddOrganizerToSubject
+	}
+	if plan.AdditionalResponse.IsUnknown() {
+		plan.AdditionalResponse = cur.AdditionalResponse
+	}
+	if plan.AllBookInPolicy.IsUnknown() {
+		plan.AllBookInPolicy = cur.AllBookInPolicy
+	}
+	if plan.AllRequestInPolicy.IsUnknown() {
+		plan.AllRequestInPolicy = cur.AllRequestInPolicy
+	}
+	if plan.AllRequestOutOfPolicy.IsUnknown() {
+		plan.AllRequestOutOfPolicy = cur.AllRequestOutOfPolicy
+	}
+	if plan.AllowConflicts.IsUnknown() {
+		plan.AllowConflicts = cur.AllowConflicts
+	}
+	if plan.AllowRecurringMeetings.IsUnknown() {
+		plan.AllowRecurringMeetings = cur.AllowRecurringMeetings
+	}
+	if plan.AutomateProcessing.IsUnknown() {
+		plan.AutomateProcessing = cur.AutomateProcessing
+	}
+	if plan.BookInPolicy.IsUnknown() {
+		plan.BookInPolicy = cur.BookInPolicy
+	}
+	if plan.BookingType.IsUnknown() {
+		plan.BookingType = cur.BookingType
+	}
+	if plan.BookingWindowInDays.IsUnknown() {
+		plan.BookingWindowInDays = cur.BookingWindowInDays
+	}
+	if plan.ConflictPercentageAllowed.IsUnknown() {
+		plan.ConflictPercentageAllowed = cur.ConflictPercentageAllowed
+	}
+	if plan.DeleteAttachments.IsUnknown() {
+		plan.DeleteAttachments = cur.DeleteAttachments
+	}
+	if plan.DeleteComments.IsUnknown() {
+		plan.DeleteComments = cur.DeleteComments
+	}
+	if plan.DeleteNonCalendarItems.IsUnknown() {
+		plan.DeleteNonCalendarItems = cur.DeleteNonCalendarItems
+	}
+	if plan.DeleteSubject.IsUnknown() {
+		plan.DeleteSubject = cur.DeleteSubject
+	}
+	if plan.EnableAutoRelease.IsUnknown() {
+		plan.EnableAutoRelease = cur.EnableAutoRelease
+	}
+	if plan.EnableResponseDetails.IsUnknown() {
+		plan.EnableResponseDetails = cur.EnableResponseDetails
+	}
+	if plan.EnforceCapacity.IsUnknown() {
+		plan.EnforceCapacity = cur.EnforceCapacity
+	}
+	if plan.EnforceSchedulingHorizon.IsUnknown() {
+		plan.EnforceSchedulingHorizon = cur.EnforceSchedulingHorizon
+	}
+	if plan.ForwardRequestsToDelegates.IsUnknown() {
+		plan.ForwardRequestsToDelegates = cur.ForwardRequestsToDelegates
+	}
+	if plan.MaximumConflictInstances.IsUnknown() {
+		plan.MaximumConflictInstances = cur.MaximumConflictInstances
+	}
+	if plan.MaximumDurationInMinutes.IsUnknown() {
+		plan.MaximumDurationInMinutes = cur.MaximumDurationInMinutes
+	}
+	if plan.MinimumDurationInMinutes.IsUnknown() {
+		plan.MinimumDurationInMinutes = cur.MinimumDurationInMinutes
+	}
+	if plan.OrganizerInfo.IsUnknown() {
+		plan.OrganizerInfo = cur.OrganizerInfo
+	}
+	if plan.PostReservationMaxClaimTimeInMinutes.IsUnknown() {
+		plan.PostReservationMaxClaimTimeInMinutes = cur.PostReservationMaxClaimTimeInMinutes
+	}
+	if plan.ProcessExternalMeetingMessages.IsUnknown() {
+		plan.ProcessExternalMeetingMessages = cur.ProcessExternalMeetingMessages
+	}
+	if plan.RemoveCanceledMeetings.IsUnknown() {
+		plan.RemoveCanceledMeetings = cur.RemoveCanceledMeetings
+	}
+	if plan.RemoveForwardedMeetingNotifications.IsUnknown() {
+		plan.RemoveForwardedMeetingNotifications = cur.RemoveForwardedMeetingNotifications
+	}
+	if plan.RemoveOldMeetingMessages.IsUnknown() {
+		plan.RemoveOldMeetingMessages = cur.RemoveOldMeetingMessages
+	}
+	if plan.RemovePrivateProperty.IsUnknown() {
+		plan.RemovePrivateProperty = cur.RemovePrivateProperty
+	}
+	if plan.RequestInPolicy.IsUnknown() {
+		plan.RequestInPolicy = cur.RequestInPolicy
+	}
+	if plan.RequestOutOfPolicy.IsUnknown() {
+		plan.RequestOutOfPolicy = cur.RequestOutOfPolicy
+	}
+	if plan.ResourceDelegates.IsUnknown() {
+		plan.ResourceDelegates = cur.ResourceDelegates
+	}
+	if plan.ScheduleOnlyDuringWorkHours.IsUnknown() {
+		plan.ScheduleOnlyDuringWorkHours = cur.ScheduleOnlyDuringWorkHours
+	}
+	if plan.TentativePendingApproval.IsUnknown() {
+		plan.TentativePendingApproval = cur.TentativePendingApproval
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *calendarProcessingResource) identityOf(m calendarProcessingModel) string {
@@ -314,9 +777,11 @@ func readCalendarProcessing(ctx context.Context, obj map[string]any, m *calendar
 	m.AllRequestOutOfPolicy = types.BoolValue(getBool(obj, "AllRequestOutOfPolicy"))
 	m.AllowConflicts = types.BoolValue(getBool(obj, "AllowConflicts"))
 	m.AllowRecurringMeetings = types.BoolValue(getBool(obj, "AllowRecurringMeetings"))
-	m.AutomateProcessing = types.StringValue(getString(obj, "AutomateProcessing"))
+	m.AutomateProcessing = types.StringValue(getObjectJSON(obj, "AutomateProcessing"))
 	m.BookInPolicy = stringSetValue(ctx, getStringSlice(obj, "BookInPolicy"))
-	m.BookingType = types.StringValue(getString(obj, "BookingType"))
+	m.BookingType = types.StringValue(getObjectJSON(obj, "BookingType"))
+	m.BookingWindowInDays = types.Int64Value(getInt(obj, "BookingWindowInDays"))
+	m.ConflictPercentageAllowed = types.Int64Value(getInt(obj, "ConflictPercentageAllowed"))
 	m.DeleteAttachments = types.BoolValue(getBool(obj, "DeleteAttachments"))
 	m.DeleteComments = types.BoolValue(getBool(obj, "DeleteComments"))
 	m.DeleteNonCalendarItems = types.BoolValue(getBool(obj, "DeleteNonCalendarItems"))
@@ -326,7 +791,11 @@ func readCalendarProcessing(ctx context.Context, obj map[string]any, m *calendar
 	m.EnforceCapacity = types.BoolValue(getBool(obj, "EnforceCapacity"))
 	m.EnforceSchedulingHorizon = types.BoolValue(getBool(obj, "EnforceSchedulingHorizon"))
 	m.ForwardRequestsToDelegates = types.BoolValue(getBool(obj, "ForwardRequestsToDelegates"))
+	m.MaximumConflictInstances = types.Int64Value(getInt(obj, "MaximumConflictInstances"))
+	m.MaximumDurationInMinutes = types.Int64Value(getInt(obj, "MaximumDurationInMinutes"))
+	m.MinimumDurationInMinutes = types.Int64Value(getInt(obj, "MinimumDurationInMinutes"))
 	m.OrganizerInfo = types.BoolValue(getBool(obj, "OrganizerInfo"))
+	m.PostReservationMaxClaimTimeInMinutes = types.Int64Value(getInt(obj, "PostReservationMaxClaimTimeInMinutes"))
 	m.ProcessExternalMeetingMessages = types.BoolValue(getBool(obj, "ProcessExternalMeetingMessages"))
 	m.RemoveCanceledMeetings = types.BoolValue(getBool(obj, "RemoveCanceledMeetings"))
 	m.RemoveForwardedMeetingNotifications = types.BoolValue(getBool(obj, "RemoveForwardedMeetingNotifications"))
@@ -353,6 +822,8 @@ func (r *calendarProcessingResource) reconcileState(cfg, read *calendarProcessin
 	read.AutomateProcessing = reconcile.KeepStr(cfg.AutomateProcessing, read.AutomateProcessing)
 	read.BookInPolicy = reconcile.KeepSet(cfg.BookInPolicy, read.BookInPolicy)
 	read.BookingType = reconcile.KeepStr(cfg.BookingType, read.BookingType)
+	read.BookingWindowInDays = reconcile.KeepInt64(cfg.BookingWindowInDays, read.BookingWindowInDays)
+	read.ConflictPercentageAllowed = reconcile.KeepInt64(cfg.ConflictPercentageAllowed, read.ConflictPercentageAllowed)
 	read.DeleteAttachments = reconcile.KeepBool(cfg.DeleteAttachments, read.DeleteAttachments)
 	read.DeleteComments = reconcile.KeepBool(cfg.DeleteComments, read.DeleteComments)
 	read.DeleteNonCalendarItems = reconcile.KeepBool(cfg.DeleteNonCalendarItems, read.DeleteNonCalendarItems)
@@ -362,7 +833,11 @@ func (r *calendarProcessingResource) reconcileState(cfg, read *calendarProcessin
 	read.EnforceCapacity = reconcile.KeepBool(cfg.EnforceCapacity, read.EnforceCapacity)
 	read.EnforceSchedulingHorizon = reconcile.KeepBool(cfg.EnforceSchedulingHorizon, read.EnforceSchedulingHorizon)
 	read.ForwardRequestsToDelegates = reconcile.KeepBool(cfg.ForwardRequestsToDelegates, read.ForwardRequestsToDelegates)
+	read.MaximumConflictInstances = reconcile.KeepInt64(cfg.MaximumConflictInstances, read.MaximumConflictInstances)
+	read.MaximumDurationInMinutes = reconcile.KeepInt64(cfg.MaximumDurationInMinutes, read.MaximumDurationInMinutes)
+	read.MinimumDurationInMinutes = reconcile.KeepInt64(cfg.MinimumDurationInMinutes, read.MinimumDurationInMinutes)
 	read.OrganizerInfo = reconcile.KeepBool(cfg.OrganizerInfo, read.OrganizerInfo)
+	read.PostReservationMaxClaimTimeInMinutes = reconcile.KeepInt64(cfg.PostReservationMaxClaimTimeInMinutes, read.PostReservationMaxClaimTimeInMinutes)
 	read.ProcessExternalMeetingMessages = reconcile.KeepBool(cfg.ProcessExternalMeetingMessages, read.ProcessExternalMeetingMessages)
 	read.RemoveCanceledMeetings = reconcile.KeepBool(cfg.RemoveCanceledMeetings, read.RemoveCanceledMeetings)
 	read.RemoveForwardedMeetingNotifications = reconcile.KeepBool(cfg.RemoveForwardedMeetingNotifications, read.RemoveForwardedMeetingNotifications)

@@ -25,23 +25,27 @@ List every QuarantinePolicy object (Get-QuarantinePolicy).
 Read-Only:
 
 - `admin_display_name` (String) Maps to the -AdminDisplayName parameter.
+- `admin_notification_frequency_in_days` (Number) Maps to the -AdminNotificationFrequencyInDays parameter.
 - `admin_notification_language` (String) Maps to the -AdminNotificationLanguage parameter.
 - `admin_notifications_enabled` (Boolean) Maps to the -AdminNotificationsEnabled parameter.
-- `admin_quarantine_permissions_list` (String) Maps to the -AdminQuarantinePermissionsList parameter.
+- `admin_quarantine_permissions_list` (Set of String) Maps to the -AdminQuarantinePermissionsList parameter.
 - `custom_disclaimer` (String) Maps to the -CustomDisclaimer parameter.
 - `end_user_quarantine_permissions` (String) Maps to the -EndUserQuarantinePermissions parameter.
+- `end_user_quarantine_permissions_value` (Number) Maps to the -EndUserQuarantinePermissionsValue parameter.
 - `end_user_spam_notification_custom_from_address` (String) Maps to the -EndUserSpamNotificationCustomFromAddress parameter.
 - `end_user_spam_notification_frequency` (String) Maps to the -EndUserSpamNotificationFrequency parameter.
+- `end_user_spam_notification_frequency_in_days` (Number) Maps to the -EndUserSpamNotificationFrequencyInDays parameter.
 - `end_user_spam_notification_language` (String) Maps to the -EndUserSpamNotificationLanguage parameter.
-- `esn_custom_subject` (String) Maps to the -EsnCustomSubject parameter.
+- `esn_custom_subject` (Set of String) Maps to the -EsnCustomSubject parameter.
 - `esn_enabled` (Boolean) Maps to the -ESNEnabled parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `ignore_dehydrated_flag` (Boolean) Maps to the -IgnoreDehydratedFlag parameter.
 - `include_messages_from_blocked_sender_address` (Boolean) Maps to the -IncludeMessagesFromBlockedSenderAddress parameter.
-- `multi_language_custom_disclaimer` (String) Maps to the -MultiLanguageCustomDisclaimer parameter.
-- `multi_language_sender_name` (String) Maps to the -MultiLanguageSenderName parameter.
-- `multi_language_setting` (String) Maps to the -MultiLanguageSetting parameter.
+- `multi_language_custom_disclaimer` (Set of String) Maps to the -MultiLanguageCustomDisclaimer parameter.
+- `multi_language_sender_name` (Set of String) Maps to the -MultiLanguageSenderName parameter.
+- `multi_language_setting` (Set of String) Maps to the -MultiLanguageSetting parameter.
 - `name` (String) Maps to the -Name parameter.
 - `organization_branding_enabled` (Boolean) Maps to the -OrganizationBrandingEnabled parameter.
 - `quarantine_policy_type` (String) Maps to the -QuarantinePolicyType parameter.
+- `quarantine_retention_days` (Number) Maps to the -QuarantineRetentionDays parameter.

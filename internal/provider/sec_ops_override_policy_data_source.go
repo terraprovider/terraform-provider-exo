@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -36,12 +37,12 @@ func (d *secOpsOverridePolicyDataSource) Schema(_ context.Context, _ datasource.
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID)."},
 			"identity":       schema.StringAttribute{Optional: true, Computed: true, Description: "Identity used to look up the object."},
-			"add_sent_to":    schema.StringAttribute{Computed: true, Description: "Maps to the -AddSentTo parameter."},
+			"add_sent_to":    schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -AddSentTo parameter."},
 			"comment":        schema.StringAttribute{Computed: true, Description: "Maps to the -Comment parameter."},
 			"enabled":        schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 			"name":           schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
-			"remove_sent_to": schema.StringAttribute{Computed: true, Description: "Maps to the -RemoveSentTo parameter."},
-			"sent_to":        schema.StringAttribute{Computed: true, Description: "Maps to the -SentTo parameter."},
+			"remove_sent_to": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -RemoveSentTo parameter."},
+			"sent_to":        schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SentTo parameter."},
 		},
 	}
 }

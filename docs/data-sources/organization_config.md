@@ -28,7 +28,7 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `apps_for_office_enabled` (Boolean) Maps to the -AppsForOfficeEnabled parameter.
 - `async_send_enabled` (Boolean) Maps to the -AsyncSendEnabled parameter.
 - `audit_disabled` (Boolean) Maps to the -AuditDisabled parameter.
-- `auto_archiving_threshold_percentage` (String) Maps to the -AutoArchivingThresholdPercentage parameter.
+- `auto_archiving_threshold_percentage` (Number) Maps to the -AutoArchivingThresholdPercentage parameter.
 - `auto_enable_archive_mailbox` (Boolean) Maps to the -AutoEnableArchiveMailbox parameter.
 - `auto_expanding_archive` (Boolean) Maps to the -AutoExpandingArchive parameter.
 - `autodiscover_partial_dir_sync` (Boolean) Maps to the -AutodiscoverPartialDirSync parameter.
@@ -52,6 +52,7 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `bookings_search_engine_index_disabled` (Boolean) Maps to the -BookingsSearchEngineIndexDisabled parameter.
 - `bookings_sms_microsoft_enabled` (Boolean) Maps to the -BookingsSmsMicrosoftEnabled parameter.
 - `bookings_social_sharing_restricted` (Boolean) Maps to the -BookingsSocialSharingRestricted parameter.
+- `byte_encoder_type_for7_bit_charsets` (Number) Maps to the -ByteEncoderTypeFor7BitCharsets parameter.
 - `calendar_version_store_enabled` (Boolean) Maps to the -CalendarVersionStoreEnabled parameter.
 - `compliance_ml_bgd_crawl_enabled` (Boolean) Maps to the -ComplianceMLBgdCrawlEnabled parameter.
 - `connectors_actionable_messages_enabled` (Boolean) Maps to the -ConnectorsActionableMessagesEnabled parameter.
@@ -64,6 +65,8 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `default_authentication_policy` (String) Maps to the -DefaultAuthenticationPolicy parameter.
 - `default_folder_permission_restricted` (Boolean) Maps to the -DefaultFolderPermissionRestricted parameter.
 - `default_group_access_type` (String) Maps to the -DefaultGroupAccessType parameter.
+- `default_minutes_to_reduce_long_events_by` (Number) Maps to the -DefaultMinutesToReduceLongEventsBy parameter.
+- `default_minutes_to_reduce_short_events_by` (Number) Maps to the -DefaultMinutesToReduceShortEventsBy parameter.
 - `default_public_folder_age_limit` (String) Maps to the -DefaultPublicFolderAgeLimit parameter.
 - `default_public_folder_deleted_item_retention` (String) Maps to the -DefaultPublicFolderDeletedItemRetention parameter.
 - `default_public_folder_issue_warning_quota` (String) Maps to the -DefaultPublicFolderIssueWarningQuota parameter.
@@ -74,11 +77,11 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `direct_reports_group_auto_creation_enabled` (Boolean) Maps to the -DirectReportsGroupAutoCreationEnabled parameter.
 - `disable_plus_address_in_recipients` (Boolean) Maps to the -DisablePlusAddressInRecipients parameter.
 - `distribution_group_default_ou` (String) Maps to the -DistributionGroupDefaultOU parameter.
-- `distribution_group_name_blocked_words_list` (String) Maps to the -DistributionGroupNameBlockedWordsList parameter.
+- `distribution_group_name_blocked_words_list` (Set of String) Maps to the -DistributionGroupNameBlockedWordsList parameter.
 - `distribution_group_naming_policy` (String) Maps to the -DistributionGroupNamingPolicy parameter.
 - `dlp_via_dcs_enabled` (Boolean) Maps to the -DLPViaDcsEnabled parameter.
 - `dlp_wait_on_send_enabled` (Boolean) Maps to the -DLPWaitOnSendEnabled parameter.
-- `dlp_wait_on_send_timeout` (String) Maps to the -DLPWaitOnSendTimeout parameter.
+- `dlp_wait_on_send_timeout` (Number) Maps to the -DLPWaitOnSendTimeout parameter.
 - `elc_processing_disabled` (Boolean) Maps to the -ElcProcessingDisabled parameter.
 - `enable_forwarding_address_sync_for_mailboxes` (Boolean) Maps to the -EnableForwardingAddressSyncForMailboxes parameter.
 - `enable_outlook_events` (Boolean) Maps to the -EnableOutlookEvents parameter.
@@ -86,28 +89,28 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `end_user_mail_notification_for_delayed_delicensing_enabled` (Boolean) Maps to the -EndUserMailNotificationForDelayedDelicensingEnabled parameter.
 - `enforce_exo_app_rbac_permissions` (Boolean) Maps to the -EnforceExoAppRbacPermissions parameter.
 - `enforce_shorten_event_setting` (Boolean) Maps to the -EnforceShortenEventSetting parameter.
-- `ews_allow_entourage` (String) Maps to the -EwsAllowEntourage parameter.
-- `ews_allow_list` (String) Maps to the -EwsAllowList parameter.
-- `ews_allow_mac_outlook` (String) Maps to the -EwsAllowMacOutlook parameter.
-- `ews_allow_outlook` (String) Maps to the -EwsAllowOutlook parameter.
+- `ews_allow_entourage` (Boolean) Maps to the -EwsAllowEntourage parameter.
+- `ews_allow_list` (Set of String) Maps to the -EwsAllowList parameter.
+- `ews_allow_mac_outlook` (Boolean) Maps to the -EwsAllowMacOutlook parameter.
+- `ews_allow_outlook` (Boolean) Maps to the -EwsAllowOutlook parameter.
 - `ews_allowed_app_i_ds` (String) Maps to the -EwsAllowedAppIDs parameter.
 - `ews_application_access_policy` (String) Maps to the -EwsApplicationAccessPolicy parameter.
-- `ews_block_list` (String) Maps to the -EwsBlockList parameter.
-- `ews_enabled` (String) Maps to the -EwsEnabled parameter.
+- `ews_block_list` (Set of String) Maps to the -EwsBlockList parameter.
+- `ews_enabled` (Boolean) Maps to the -EwsEnabled parameter.
 - `exchange_attributes_cloud_managed_by_default` (Boolean) Maps to the -ExchangeAttributesCloudManagedByDefault parameter.
 - `exchange_attributes_server_managed_by_default` (Boolean) Maps to the -ExchangeAttributesServerManagedByDefault parameter.
 - `exchange_notification_enabled` (Boolean) Maps to the -ExchangeNotificationEnabled parameter.
-- `exchange_notification_recipients` (String) Maps to the -ExchangeNotificationRecipients parameter.
+- `exchange_notification_recipients` (Set of String) Maps to the -ExchangeNotificationRecipients parameter.
 - `find_time_attendee_authentication_enabled` (Boolean) Maps to the -FindTimeAttendeeAuthenticationEnabled parameter.
 - `find_time_auto_schedule_disabled` (Boolean) Maps to the -FindTimeAutoScheduleDisabled parameter.
 - `find_time_lock_poll_for_attendees_enabled` (Boolean) Maps to the -FindTimeLockPollForAttendeesEnabled parameter.
 - `find_time_online_meeting_option_disabled` (Boolean) Maps to the -FindTimeOnlineMeetingOptionDisabled parameter.
-- `focused_inbox_on` (String) Maps to the -FocusedInboxOn parameter.
+- `focused_inbox_on` (Boolean) Maps to the -FocusedInboxOn parameter.
 - `hierarchical_address_book_root` (String) Maps to the -HierarchicalAddressBookRoot parameter.
 - `hybrid_rsvp_enabled` (Boolean) Maps to the -HybridRSVPEnabled parameter.
 - `id` (String) Object identifier (GUID).
 - `in_region_routing_enabled` (Boolean) Maps to the -InRegionRoutingEnabled parameter.
-- `ip_list_blocked` (String) Maps to the -IPListBlocked parameter.
+- `ip_list_blocked` (Set of String) Maps to the -IPListBlocked parameter.
 - `is_agenda_mail_enabled` (Boolean) Maps to the -IsAgendaMailEnabled parameter.
 - `is_group_folders_and_rules_enabled` (Boolean) Maps to the -IsGroupFoldersAndRulesEnabled parameter.
 - `is_group_member_allowed_to_edit_content` (Boolean) Maps to the -IsGroupMemberAllowedToEditContent parameter.
@@ -116,19 +119,19 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `mail_tips_all_tips_enabled` (Boolean) Maps to the -MailTipsAllTipsEnabled parameter.
 - `mail_tips_external_recipients_tips_enabled` (Boolean) Maps to the -MailTipsExternalRecipientsTipsEnabled parameter.
 - `mail_tips_group_metrics_enabled` (Boolean) Maps to the -MailTipsGroupMetricsEnabled parameter.
-- `mail_tips_large_audience_threshold` (String) Maps to the -MailTipsLargeAudienceThreshold parameter.
+- `mail_tips_large_audience_threshold` (Number) Maps to the -MailTipsLargeAudienceThreshold parameter.
 - `mail_tips_mailbox_sourced_tips_enabled` (Boolean) Maps to the -MailTipsMailboxSourcedTipsEnabled parameter.
 - `mask_client_ip_in_received_headers_enabled` (Boolean) Maps to the -MaskClientIpInReceivedHeadersEnabled parameter.
 - `match_sender_organizer_properties` (Boolean) Maps to the -MatchSenderOrganizerProperties parameter.
 - `message_highlights_enabled` (Boolean) Maps to the -MessageHighlightsEnabled parameter.
 - `message_recall_alert_recipients_enabled` (Boolean) Maps to the -MessageRecallAlertRecipientsEnabled parameter.
 - `message_recall_alert_recipients_read_messages_only_enabled` (Boolean) Maps to the -MessageRecallAlertRecipientsReadMessagesOnlyEnabled parameter.
-- `message_recall_enabled` (String) Maps to the -MessageRecallEnabled parameter.
+- `message_recall_enabled` (Boolean) Maps to the -MessageRecallEnabled parameter.
 - `message_recall_max_recallable_age` (String) Maps to the -MessageRecallMaxRecallableAge parameter.
 - `message_reminders_enabled` (Boolean) Maps to the -MessageRemindersEnabled parameter.
 - `mobile_app_education_enabled` (Boolean) Maps to the -MobileAppEducationEnabled parameter.
 - `o_auth2_client_profile_enabled` (Boolean) Maps to the -OAuth2ClientProfileEnabled parameter.
-- `online_meetings_by_default_enabled` (String) Maps to the -OnlineMeetingsByDefaultEnabled parameter.
+- `online_meetings_by_default_enabled` (Boolean) Maps to the -OnlineMeetingsByDefaultEnabled parameter.
 - `outlook_gif_picker_disabled` (Boolean) Maps to the -OutlookGifPickerDisabled parameter.
 - `outlook_mobile_gcc_restrictions_enabled` (Boolean) Maps to the -OutlookMobileGCCRestrictionsEnabled parameter.
 - `outlook_mobile_help_shift_enabled` (Boolean) Maps to the -OutlookMobileHelpShiftEnabled parameter.
@@ -137,15 +140,17 @@ Look up an existing OrganizationConfig object. Set identity to select it.
 - `outlook_text_prediction_disabled` (Boolean) Maps to the -OutlookTextPredictionDisabled parameter.
 - `per_tenant_switch_to_ests_enabled` (Boolean) Maps to the -PerTenantSwitchToESTSEnabled parameter.
 - `postpone_roaming_signatures_until_later` (Boolean) Maps to the -PostponeRoamingSignaturesUntilLater parameter.
+- `preferred_internet_code_page_for_shift_jis` (Number) Maps to the -PreferredInternetCodePageForShiftJis parameter.
 - `public_computers_detection_enabled` (Boolean) Maps to the -PublicComputersDetectionEnabled parameter.
 - `public_folder_show_client_control` (Boolean) Maps to the -PublicFolderShowClientControl parameter.
 - `public_folders_enabled` (String) Maps to the -PublicFoldersEnabled parameter.
 - `read_tracking_enabled` (Boolean) Maps to the -ReadTrackingEnabled parameter.
-- `recall_read_messages_enabled` (String) Maps to the -RecallReadMessagesEnabled parameter.
+- `recall_read_messages_enabled` (Boolean) Maps to the -RecallReadMessagesEnabled parameter.
 - `recipient_delimiters` (Boolean) Maps to the -RecipientDelimiters parameter.
 - `refresh_session_enabled` (Boolean) Maps to the -RefreshSessionEnabled parameter.
 - `reject_direct_send` (Boolean) Maps to the -RejectDirectSend parameter.
-- `remote_public_folder_mailboxes` (String) Maps to the -RemotePublicFolderMailboxes parameter.
+- `remote_public_folder_mailboxes` (Set of String) Maps to the -RemotePublicFolderMailboxes parameter.
+- `required_charset_coverage` (Number) Maps to the -RequiredCharsetCoverage parameter.
 - `send_from_alias_enabled` (Boolean) Maps to the -SendFromAliasEnabled parameter.
 - `shared_domain_email_address_flow_enabled` (Boolean) Maps to the -SharedDomainEmailAddressFlowEnabled parameter.
 - `shorten_event_scope_default` (String) Maps to the -ShortenEventScopeDefault parameter.

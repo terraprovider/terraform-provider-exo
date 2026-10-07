@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -35,7 +36,7 @@ type onPremisesOrganizationModel struct {
 	ID                       types.String `tfsdk:"id"`
 	Identity                 types.String `tfsdk:"identity"`
 	Comment                  types.String `tfsdk:"comment"`
-	HybridDomains            types.String `tfsdk:"hybrid_domains"`
+	HybridDomains            types.Set    `tfsdk:"hybrid_domains"`
 	InboundConnector         types.String `tfsdk:"inbound_connector"`
 	Name                     types.String `tfsdk:"name"`
 	OrganizationGuid         types.String `tfsdk:"organization_guid"`
@@ -53,9 +54,9 @@ func (r *onPremisesOrganizationResource) Schema(_ context.Context, _ resource.Sc
 		Description: "Manages the OnPremisesOrganization object via New-OnPremisesOrganization / Get-OnPremisesOrganization / Set-OnPremisesOrganization / Remove-OnPremisesOrganization.",
 		Attributes: map[string]schema.Attribute{
 			"id":                        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"hybrid_domains":            schema.StringAttribute{Required: true, Description: "Maps to the -HybridDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"hybrid_domains":            schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -HybridDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"inbound_connector":         schema.StringAttribute{Required: true, Description: "Maps to the -InboundConnector parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"name":                      schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organization_guid":         schema.StringAttribute{Required: true, Description: "Maps to the -OrganizationGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -80,25 +81,38 @@ func (r *onPremisesOrganizationResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	p := exo.NewOnPremisesOrganizationParams{
-		Comment:          plan.Comment.ValueString(),
-		Name:             plan.Name.ValueString(),
-		OrganizationName: plan.OrganizationName.ValueString(),
+	var config onPremisesOrganizationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.HybridDomains.ValueString(); v != "" {
-		p.HybridDomains = v
+
+	p := exo.NewOnPremisesOrganizationParams{}
+	if !config.Comment.IsNull() {
+		p.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.InboundConnector.ValueString(); v != "" {
-		p.InboundConnector = v
+	if !config.HybridDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.HybridDomains, &resp.Diagnostics); len(v) > 0 {
+			p.HybridDomains = v
+		}
 	}
-	if v := plan.OrganizationGuid.ValueString(); v != "" {
-		p.OrganizationGuid = v
+	if v := config.InboundConnector.ValueString(); v != "" {
+		p.InboundConnector = objectParam(v)
 	}
-	if v := plan.OrganizationRelationship.ValueString(); v != "" {
-		p.OrganizationRelationship = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
-	if v := plan.OutboundConnector.ValueString(); v != "" {
-		p.OutboundConnector = v
+	if !config.OrganizationGuid.IsNull() {
+		p.OrganizationGuid = plan.OrganizationGuid.ValueString()
+	}
+	if !config.OrganizationName.IsNull() {
+		p.OrganizationName = plan.OrganizationName.ValueString()
+	}
+	if v := config.OrganizationRelationship.ValueString(); v != "" {
+		p.OrganizationRelationship = objectParam(v)
+	}
+	if v := config.OutboundConnector.ValueString(); v != "" {
+		p.OutboundConnector = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,10 +164,16 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 	id := r.identityOf(state)
 	sp := exo.SetOnPremisesOrganizationParams{}
 	sp.Identity = id
-	sp.Comment = plan.Comment.ValueString()
-	sp.OrganizationName = plan.OrganizationName.ValueString()
-	if v := plan.OrganizationRelationship.ValueString(); v != "" {
-		sp.OrganizationRelationship = v
+	if !plan.Comment.Equal(state.Comment) {
+		sp.Comment = plan.Comment.ValueString()
+	}
+	if !plan.OrganizationName.Equal(state.OrganizationName) {
+		sp.OrganizationName = plan.OrganizationName.ValueString()
+	}
+	if !plan.OrganizationRelationship.Equal(state.OrganizationRelationship) {
+		if v := plan.OrganizationRelationship.ValueString(); v != "" {
+			sp.OrganizationRelationship = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -164,9 +184,8 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Comment":                  cfg.Comment,
-		"OrganizationName":         cfg.OrganizationName,
-		"OrganizationRelationship": cfg.OrganizationRelationship,
+		"Comment":          cfg.Comment,
+		"OrganizationName": cfg.OrganizationName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -229,19 +248,19 @@ func readOnPremisesOrganization(ctx context.Context, obj map[string]any, m *onPr
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Comment = types.StringValue(getString(obj, "Comment"))
-	m.HybridDomains = types.StringValue(getString(obj, "HybridDomains"))
-	m.InboundConnector = types.StringValue(getString(obj, "InboundConnector"))
+	m.HybridDomains = stringSetValue(ctx, getStringSlice(obj, "HybridDomains"))
+	m.InboundConnector = types.StringValue(getObjectJSON(obj, "InboundConnector"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OrganizationGuid = types.StringValue(getString(obj, "OrganizationGuid"))
 	m.OrganizationName = types.StringValue(getString(obj, "OrganizationName"))
-	m.OrganizationRelationship = types.StringValue(getString(obj, "OrganizationRelationship"))
-	m.OutboundConnector = types.StringValue(getString(obj, "OutboundConnector"))
+	m.OrganizationRelationship = types.StringValue(getObjectJSON(obj, "OrganizationRelationship"))
+	m.OutboundConnector = types.StringValue(getObjectJSON(obj, "OutboundConnector"))
 	_ = ctx
 }
 
 func (r *onPremisesOrganizationResource) reconcileState(cfg, read *onPremisesOrganizationModel) {
 	read.Comment = reconcile.KeepStr(cfg.Comment, read.Comment)
-	read.HybridDomains = reconcile.KeepStr(cfg.HybridDomains, read.HybridDomains)
+	read.HybridDomains = reconcile.KeepSet(cfg.HybridDomains, read.HybridDomains)
 	read.InboundConnector = reconcile.KeepStr(cfg.InboundConnector, read.InboundConnector)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationGuid = reconcile.KeepStr(cfg.OrganizationGuid, read.OrganizationGuid)

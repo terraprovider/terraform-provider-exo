@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &meetingInsightsSettingsResource{}
 	_ resource.ResourceWithConfigure   = &meetingInsightsSettingsResource{}
 	_ resource.ResourceWithImportState = &meetingInsightsSettingsResource{}
+	_ resource.ResourceWithModifyPlan  = &meetingInsightsSettingsResource{}
 )
 
 type meetingInsightsSettingsResource struct{ client *clients.Client }
@@ -48,7 +49,7 @@ func (r *meetingInsightsSettingsResource) Schema(_ context.Context, _ resource.S
 		Description: "Manages the MeetingInsightsSettings configuration via Set-MeetingInsightsSettings.",
 		Attributes: map[string]schema.Attribute{
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -67,8 +68,15 @@ func (r *meetingInsightsSettingsResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config meetingInsightsSettingsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMeetingInsightsSettingsParams{}
-	sp.Enabled = plan.Enabled.ValueString()
+	if !config.Enabled.IsNull() {
+		sp.Enabled = plan.Enabled.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -107,7 +115,9 @@ func (r *meetingInsightsSettingsResource) Update(ctx context.Context, req resour
 	}
 	id := r.identityOf(state)
 	sp := exo.SetMeetingInsightsSettingsParams{}
-	sp.Enabled = plan.Enabled.ValueString()
+	if !plan.Enabled.Equal(state.Enabled) {
+		sp.Enabled = plan.Enabled.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -131,6 +141,37 @@ func (r *meetingInsightsSettingsResource) Delete(_ context.Context, _ resource.D
 func (r *meetingInsightsSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *meetingInsightsSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan meetingInsightsSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetMeetingInsightsSettings(ctx, exo.GetMeetingInsightsSettingsParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur meetingInsightsSettingsModel
+	readMeetingInsightsSettings(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Enabled.IsUnknown() {
+		plan.Enabled = cur.Enabled
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *meetingInsightsSettingsResource) identityOf(m meetingInsightsSettingsModel) string {

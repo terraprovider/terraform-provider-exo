@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &mailboxCalendarFolderResource{}
 	_ resource.ResourceWithConfigure   = &mailboxCalendarFolderResource{}
 	_ resource.ResourceWithImportState = &mailboxCalendarFolderResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxCalendarFolderResource{}
 )
 
 type mailboxCalendarFolderResource struct{ client *clients.Client }
@@ -82,25 +83,44 @@ func (r *mailboxCalendarFolderResource) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxCalendarFolderModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxCalendarFolderParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.DetailLevel.ValueString(); v != "" {
-		sp.DetailLevel = v
+	if v := config.DetailLevel.ValueString(); v != "" {
+		sp.DetailLevel = objectParam(v)
 	}
-	if v := plan.PublishDateRangeFrom.ValueString(); v != "" {
-		sp.PublishDateRangeFrom = v
+	if v := config.PublishDateRangeFrom.ValueString(); v != "" {
+		sp.PublishDateRangeFrom = objectParam(v)
 	}
-	if v := plan.PublishDateRangeTo.ValueString(); v != "" {
-		sp.PublishDateRangeTo = v
+	if v := config.PublishDateRangeTo.ValueString(); v != "" {
+		sp.PublishDateRangeTo = objectParam(v)
 	}
-	sp.PublishEnabled = plan.PublishEnabled.ValueBool()
-	sp.ResetUrl = plan.ResetUrl.ValueBool()
-	sp.SearchableUrlEnabled = plan.SearchableUrlEnabled.ValueBool()
-	sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
-	if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
-		sp.SharedCalendarSyncStartDate = v
+	if !config.PublishEnabled.IsNull() {
+		if !plan.PublishEnabled.IsUnknown() {
+			sp.PublishEnabled = plan.PublishEnabled.ValueBoolPointer()
+		}
 	}
-	sp.UseHttps = plan.UseHttps.ValueBool()
+	if !config.ResetUrl.IsNull() {
+		sp.ResetUrl = plan.ResetUrl.ValueBool()
+	}
+	if !config.SearchableUrlEnabled.IsNull() {
+		if !plan.SearchableUrlEnabled.IsUnknown() {
+			sp.SearchableUrlEnabled = plan.SearchableUrlEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.SetAsSharingSource.IsNull() {
+		sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
+	}
+	if v := config.SharedCalendarSyncStartDate.ValueString(); v != "" {
+		sp.SharedCalendarSyncStartDate = objectParam(v)
+	}
+	if !config.UseHttps.IsNull() {
+		sp.UseHttps = plan.UseHttps.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -140,23 +160,45 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetMailboxCalendarFolderParams{}
 	sp.Identity = id
-	if v := plan.DetailLevel.ValueString(); v != "" {
-		sp.DetailLevel = v
+	if !plan.DetailLevel.Equal(state.DetailLevel) {
+		if v := plan.DetailLevel.ValueString(); v != "" {
+			sp.DetailLevel = objectParam(v)
+		}
 	}
-	if v := plan.PublishDateRangeFrom.ValueString(); v != "" {
-		sp.PublishDateRangeFrom = v
+	if !plan.PublishDateRangeFrom.Equal(state.PublishDateRangeFrom) {
+		if v := plan.PublishDateRangeFrom.ValueString(); v != "" {
+			sp.PublishDateRangeFrom = objectParam(v)
+		}
 	}
-	if v := plan.PublishDateRangeTo.ValueString(); v != "" {
-		sp.PublishDateRangeTo = v
+	if !plan.PublishDateRangeTo.Equal(state.PublishDateRangeTo) {
+		if v := plan.PublishDateRangeTo.ValueString(); v != "" {
+			sp.PublishDateRangeTo = objectParam(v)
+		}
 	}
-	sp.PublishEnabled = plan.PublishEnabled.ValueBool()
-	sp.ResetUrl = plan.ResetUrl.ValueBool()
-	sp.SearchableUrlEnabled = plan.SearchableUrlEnabled.ValueBool()
-	sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
-	if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
-		sp.SharedCalendarSyncStartDate = v
+	if !plan.PublishEnabled.Equal(state.PublishEnabled) {
+		if !plan.PublishEnabled.IsUnknown() {
+			sp.PublishEnabled = plan.PublishEnabled.ValueBoolPointer()
+		}
 	}
-	sp.UseHttps = plan.UseHttps.ValueBool()
+	if !plan.ResetUrl.Equal(state.ResetUrl) {
+		sp.ResetUrl = plan.ResetUrl.ValueBool()
+	}
+	if !plan.SearchableUrlEnabled.Equal(state.SearchableUrlEnabled) {
+		if !plan.SearchableUrlEnabled.IsUnknown() {
+			sp.SearchableUrlEnabled = plan.SearchableUrlEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SetAsSharingSource.Equal(state.SetAsSharingSource) {
+		sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
+	}
+	if !plan.SharedCalendarSyncStartDate.Equal(state.SharedCalendarSyncStartDate) {
+		if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
+			sp.SharedCalendarSyncStartDate = objectParam(v)
+		}
+	}
+	if !plan.UseHttps.Equal(state.UseHttps) {
+		sp.UseHttps = plan.UseHttps.ValueBool()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -165,12 +207,7 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DetailLevel":                 cfg.DetailLevel,
-		"PublishDateRangeFrom":        cfg.PublishDateRangeFrom,
-		"PublishDateRangeTo":          cfg.PublishDateRangeTo,
-		"SharedCalendarSyncStartDate": cfg.SharedCalendarSyncStartDate,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -183,6 +220,65 @@ func (r *mailboxCalendarFolderResource) Delete(_ context.Context, _ resource.Del
 func (r *mailboxCalendarFolderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxCalendarFolderResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxCalendarFolderModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxCalendarFolder(ctx, exo.GetMailboxCalendarFolderParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxCalendarFolderModel
+	readMailboxCalendarFolder(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.DetailLevel.IsUnknown() {
+		plan.DetailLevel = cur.DetailLevel
+	}
+	if plan.PublishDateRangeFrom.IsUnknown() {
+		plan.PublishDateRangeFrom = cur.PublishDateRangeFrom
+	}
+	if plan.PublishDateRangeTo.IsUnknown() {
+		plan.PublishDateRangeTo = cur.PublishDateRangeTo
+	}
+	if plan.PublishEnabled.IsUnknown() {
+		plan.PublishEnabled = cur.PublishEnabled
+	}
+	if plan.ResetUrl.IsUnknown() {
+		plan.ResetUrl = cur.ResetUrl
+	}
+	if plan.SearchableUrlEnabled.IsUnknown() {
+		plan.SearchableUrlEnabled = cur.SearchableUrlEnabled
+	}
+	if plan.SetAsSharingSource.IsUnknown() {
+		plan.SetAsSharingSource = cur.SetAsSharingSource
+	}
+	if plan.SharedCalendarSyncStartDate.IsUnknown() {
+		plan.SharedCalendarSyncStartDate = cur.SharedCalendarSyncStartDate
+	}
+	if plan.UseHttps.IsUnknown() {
+		plan.UseHttps = cur.UseHttps
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxCalendarFolderResource) identityOf(m mailboxCalendarFolderModel) string {
@@ -221,14 +317,14 @@ func (r *mailboxCalendarFolderResource) refresh(ctx context.Context, identity st
 
 func readMailboxCalendarFolder(ctx context.Context, obj map[string]any, m *mailboxCalendarFolderModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.DetailLevel = types.StringValue(getString(obj, "DetailLevel"))
-	m.PublishDateRangeFrom = types.StringValue(getString(obj, "PublishDateRangeFrom"))
-	m.PublishDateRangeTo = types.StringValue(getString(obj, "PublishDateRangeTo"))
+	m.DetailLevel = types.StringValue(getObjectJSON(obj, "DetailLevel"))
+	m.PublishDateRangeFrom = types.StringValue(getObjectJSON(obj, "PublishDateRangeFrom"))
+	m.PublishDateRangeTo = types.StringValue(getObjectJSON(obj, "PublishDateRangeTo"))
 	m.PublishEnabled = types.BoolValue(getBool(obj, "PublishEnabled"))
 	m.ResetUrl = types.BoolValue(getBool(obj, "ResetUrl"))
 	m.SearchableUrlEnabled = types.BoolValue(getBool(obj, "SearchableUrlEnabled"))
 	m.SetAsSharingSource = types.BoolValue(getBool(obj, "SetAsSharingSource"))
-	m.SharedCalendarSyncStartDate = types.StringValue(getString(obj, "SharedCalendarSyncStartDate"))
+	m.SharedCalendarSyncStartDate = types.StringValue(getObjectJSON(obj, "SharedCalendarSyncStartDate"))
 	m.UseHttps = types.BoolValue(getBool(obj, "UseHttps"))
 	_ = ctx
 }

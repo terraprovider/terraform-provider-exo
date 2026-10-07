@@ -51,7 +51,7 @@ func (r *journalRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Description: "Manages the JournalRule object via New-JournalRule / Get-JournalRule / Set-JournalRule / Remove-JournalRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"journal_email_address": schema.StringAttribute{Required: true, Description: "Maps to the -JournalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"name":                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -75,18 +75,29 @@ func (r *journalRuleResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	p := exo.NewJournalRuleParams{
-		Enabled: plan.Enabled.ValueBool(),
-		Name:    plan.Name.ValueString(),
+	var config journalRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.JournalEmailAddress.ValueString(); v != "" {
-		p.JournalEmailAddress = v
+
+	p := exo.NewJournalRuleParams{}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.Recipient.ValueString(); v != "" {
-		p.Recipient = v
+	if v := config.JournalEmailAddress.ValueString(); v != "" {
+		p.JournalEmailAddress = objectParam(v)
 	}
-	if v := plan.Scope.ValueString(); v != "" {
-		p.Scope = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Recipient.ValueString(); v != "" {
+		p.Recipient = objectParam(v)
+	}
+	if v := config.Scope.ValueString(); v != "" {
+		p.Scope = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -138,11 +149,15 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetJournalRuleParams{}
 	sp.Identity = id
-	if v := plan.Recipient.ValueString(); v != "" {
-		sp.Recipient = v
+	if !plan.Recipient.Equal(state.Recipient) {
+		if v := plan.Recipient.ValueString(); v != "" {
+			sp.Recipient = objectParam(v)
+		}
 	}
-	if v := plan.Scope.ValueString(); v != "" {
-		sp.Scope = v
+	if !plan.Scope.Equal(state.Scope) {
+		if v := plan.Scope.ValueString(); v != "" {
+			sp.Scope = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -152,10 +167,7 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Recipient": cfg.Recipient,
-		"Scope":     cfg.Scope,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -217,10 +229,10 @@ func readJournalRule(ctx context.Context, obj map[string]any, m *journalRuleMode
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
-	m.JournalEmailAddress = types.StringValue(getString(obj, "JournalEmailAddress"))
+	m.JournalEmailAddress = types.StringValue(getObjectJSON(obj, "JournalEmailAddress"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Recipient = types.StringValue(getString(obj, "Recipient"))
-	m.Scope = types.StringValue(getString(obj, "Scope"))
+	m.Recipient = types.StringValue(getObjectJSON(obj, "Recipient"))
+	m.Scope = types.StringValue(getObjectJSON(obj, "Scope"))
 	_ = ctx
 }
 

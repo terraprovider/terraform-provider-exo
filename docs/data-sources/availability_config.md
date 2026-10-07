@@ -21,6 +21,6 @@ Look up an existing AvailabilityConfig object. Set identity to select it.
 
 ### Read-Only
 
-- `allowed_tenant_ids` (String) Maps to the -AllowedTenantIds parameter.
+- `allowed_tenant_ids` (Set of String) Maps to the -AllowedTenantIds parameter.
 - `id` (String) Object identifier (GUID).
 - `org_wide_account` (String) Maps to the -OrgWideAccount parameter.

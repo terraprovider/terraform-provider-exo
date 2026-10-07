@@ -38,10 +38,10 @@ Read-Only:
 - `link_for_modified_connector` (String) Maps to the -LinkForModifiedConnector parameter.
 - `mta_sts_mode` (String) Maps to the -MtaStsMode parameter.
 - `name` (String) Maps to the -Name parameter.
-- `recipient_domains` (String) Maps to the -RecipientDomains parameter.
+- `recipient_domains` (Set of String) Maps to the -RecipientDomains parameter.
 - `route_all_messages_via_on_premises` (Boolean) Maps to the -RouteAllMessagesViaOnPremises parameter.
 - `sender_rewriting_enabled` (Boolean) Maps to the -SenderRewritingEnabled parameter.
-- `smart_hosts` (String) Maps to the -SmartHosts parameter.
+- `smart_hosts` (Set of String) Maps to the -SmartHosts parameter.
 - `smtp_dane_mode` (String) Maps to the -SmtpDaneMode parameter.
 - `test_mode` (Boolean) Maps to the -TestMode parameter.
 - `tls_domain` (String) Maps to the -TlsDomain parameter.

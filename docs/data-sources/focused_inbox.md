@@ -21,6 +21,6 @@ Look up an existing FocusedInbox object. Set identity to select it.
 
 ### Read-Only
 
-- `focused_inbox_on` (String) Maps to the -FocusedInboxOn parameter.
+- `focused_inbox_on` (Boolean) Maps to the -FocusedInboxOn parameter.
 - `id` (String) Object identifier (GUID).
 - `use_custom_routing` (Boolean) Maps to the -UseCustomRouting parameter.

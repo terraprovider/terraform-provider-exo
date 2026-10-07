@@ -52,7 +52,7 @@ func (r *reportSubmissionRuleResource) Schema(_ context.Context, _ resource.Sche
 		Description: "Manages the ReportSubmissionRule object via New-ReportSubmissionRule / Get-ReportSubmissionRule / Set-ReportSubmissionRule / Remove-ReportSubmissionRule.",
 		Attributes: map[string]schema.Attribute{
 			"id":                       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comments":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -76,14 +76,31 @@ func (r *reportSubmissionRuleResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	p := exo.NewReportSubmissionRuleParams{
-		Comments: plan.Comments.ValueString(),
-		Enabled:  plan.Enabled.ValueBool(),
-		Name:     plan.Name.ValueString(),
-		SentTo:   toStringSlice(ctx, plan.SentTo, &resp.Diagnostics),
+	var config reportSubmissionRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ReportSubmissionPolicy.ValueString(); v != "" {
-		p.ReportSubmissionPolicy = v
+
+	p := exo.NewReportSubmissionRuleParams{}
+	if !config.Comments.IsNull() {
+		p.Comments = plan.Comments.ValueString()
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.ReportSubmissionPolicy.ValueString(); v != "" {
+		p.ReportSubmissionPolicy = objectParam(v)
+	}
+	if !config.SentTo.IsNull() {
+		if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+			p.SentTo = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -135,8 +152,14 @@ func (r *reportSubmissionRuleResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetReportSubmissionRuleParams{}
 	sp.Identity = id
-	sp.Comments = plan.Comments.ValueString()
-	sp.SentTo = toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)
+	if !plan.Comments.Equal(state.Comments) {
+		sp.Comments = plan.Comments.ValueString()
+	}
+	if !plan.SentTo.Equal(state.SentTo) {
+		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
+			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -211,7 +234,7 @@ func readReportSubmissionRule(ctx context.Context, obj map[string]any, m *report
 	m.Comments = types.StringValue(getString(obj, "Comments"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.ReportSubmissionPolicy = types.StringValue(getString(obj, "ReportSubmissionPolicy"))
+	m.ReportSubmissionPolicy = types.StringValue(getObjectJSON(obj, "ReportSubmissionPolicy"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
 	_ = ctx
 }

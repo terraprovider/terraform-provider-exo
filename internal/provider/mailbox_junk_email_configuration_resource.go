@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = &mailboxJunkEmailConfigurationResource{}
 	_ resource.ResourceWithConfigure   = &mailboxJunkEmailConfigurationResource{}
 	_ resource.ResourceWithImportState = &mailboxJunkEmailConfigurationResource{}
+	_ resource.ResourceWithModifyPlan  = &mailboxJunkEmailConfigurationResource{}
 )
 
 type mailboxJunkEmailConfigurationResource struct{ client *clients.Client }
@@ -37,14 +39,14 @@ func NewMailboxJunkEmailConfigurationResource() resource.Resource {
 type mailboxJunkEmailConfigurationModel struct {
 	ID                          types.String `tfsdk:"id"`
 	Identity                    types.String `tfsdk:"identity"`
-	BlockedSendersAndDomains    types.String `tfsdk:"blocked_senders_and_domains"`
+	BlockedSendersAndDomains    types.Set    `tfsdk:"blocked_senders_and_domains"`
 	ContactsTrusted             types.Bool   `tfsdk:"contacts_trusted"`
 	Enabled                     types.Bool   `tfsdk:"enabled"`
 	FailOnError                 types.Bool   `tfsdk:"fail_on_error"`
 	SenderScreeningEnabled      types.Bool   `tfsdk:"sender_screening_enabled"`
 	TrustedListsOnly            types.Bool   `tfsdk:"trusted_lists_only"`
-	TrustedRecipientsAndDomains types.String `tfsdk:"trusted_recipients_and_domains"`
-	TrustedSendersAndDomains    types.String `tfsdk:"trusted_senders_and_domains"`
+	TrustedRecipientsAndDomains types.Set    `tfsdk:"trusted_recipients_and_domains"`
+	TrustedSendersAndDomains    types.Set    `tfsdk:"trusted_senders_and_domains"`
 }
 
 func (r *mailboxJunkEmailConfigurationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -57,14 +59,14 @@ func (r *mailboxJunkEmailConfigurationResource) Schema(_ context.Context, _ reso
 		Attributes: map[string]schema.Attribute{
 			"id":                             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                       schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"blocked_senders_and_domains":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedSendersAndDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"blocked_senders_and_domains":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedSendersAndDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"contacts_trusted":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ContactsTrusted parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enabled":                        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"fail_on_error":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FailOnError parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"sender_screening_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderScreeningEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"trusted_lists_only":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedListsOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"trusted_recipients_and_domains": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedRecipientsAndDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"trusted_senders_and_domains":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TrustedSendersAndDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"trusted_recipients_and_domains": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TrustedRecipientsAndDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"trusted_senders_and_domains":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TrustedSendersAndDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -82,21 +84,90 @@ func (r *mailboxJunkEmailConfigurationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailboxJunkEmailConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailboxJunkEmailConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.BlockedSendersAndDomains.ValueString(); v != "" {
-		sp.BlockedSendersAndDomains = v
+	var cur *mailboxJunkEmailConfigurationModel
+	curRead := false
+	current := func() *mailboxJunkEmailConfigurationModel {
+		if !curRead {
+			curRead = true
+			var m mailboxJunkEmailConfigurationModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxJunkEmailConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.ContactsTrusted = plan.ContactsTrusted.ValueBool()
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.FailOnError = plan.FailOnError.ValueBool()
-	sp.SenderScreeningEnabled = plan.SenderScreeningEnabled.ValueBool()
-	sp.TrustedListsOnly = plan.TrustedListsOnly.ValueBool()
-	if v := plan.TrustedRecipientsAndDomains.ValueString(); v != "" {
-		sp.TrustedRecipientsAndDomains = v
+	if !config.BlockedSendersAndDomains.IsNull() {
+		if !plan.BlockedSendersAndDomains.IsNull() && !plan.BlockedSendersAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.TrustedSendersAndDomains.ValueString(); v != "" {
-		sp.TrustedSendersAndDomains = v
+	if !config.ContactsTrusted.IsNull() {
+		if !plan.ContactsTrusted.IsUnknown() {
+			sp.ContactsTrusted = plan.ContactsTrusted.ValueBoolPointer()
+		}
+	}
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !config.FailOnError.IsNull() {
+		if !plan.FailOnError.IsUnknown() {
+			sp.FailOnError = plan.FailOnError.ValueBoolPointer()
+		}
+	}
+	if !config.SenderScreeningEnabled.IsNull() {
+		if !plan.SenderScreeningEnabled.IsUnknown() {
+			sp.SenderScreeningEnabled = plan.SenderScreeningEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.TrustedListsOnly.IsNull() {
+		if !plan.TrustedListsOnly.IsUnknown() {
+			sp.TrustedListsOnly = plan.TrustedListsOnly.ValueBoolPointer()
+		}
+	}
+	if !config.TrustedRecipientsAndDomains.IsNull() {
+		if !plan.TrustedRecipientsAndDomains.IsNull() && !plan.TrustedRecipientsAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedRecipientsAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedRecipientsAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedRecipientsAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.TrustedSendersAndDomains.IsNull() {
+		if !plan.TrustedSendersAndDomains.IsNull() && !plan.TrustedSendersAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -137,19 +208,83 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 	id := r.identityOf(state)
 	sp := exo.SetMailboxJunkEmailConfigurationParams{}
 	sp.Identity = id
-	if v := plan.BlockedSendersAndDomains.ValueString(); v != "" {
-		sp.BlockedSendersAndDomains = v
+	var cur *mailboxJunkEmailConfigurationModel
+	curRead := false
+	current := func() *mailboxJunkEmailConfigurationModel {
+		if !curRead {
+			curRead = true
+			var m mailboxJunkEmailConfigurationModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxJunkEmailConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	sp.ContactsTrusted = plan.ContactsTrusted.ValueBool()
-	sp.Enabled = plan.Enabled.ValueBool()
-	sp.FailOnError = plan.FailOnError.ValueBool()
-	sp.SenderScreeningEnabled = plan.SenderScreeningEnabled.ValueBool()
-	sp.TrustedListsOnly = plan.TrustedListsOnly.ValueBool()
-	if v := plan.TrustedRecipientsAndDomains.ValueString(); v != "" {
-		sp.TrustedRecipientsAndDomains = v
+	if !plan.BlockedSendersAndDomains.Equal(state.BlockedSendersAndDomains) {
+		if !plan.BlockedSendersAndDomains.IsNull() && !plan.BlockedSendersAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.TrustedSendersAndDomains.ValueString(); v != "" {
-		sp.TrustedSendersAndDomains = v
+	if !plan.ContactsTrusted.Equal(state.ContactsTrusted) {
+		if !plan.ContactsTrusted.IsUnknown() {
+			sp.ContactsTrusted = plan.ContactsTrusted.ValueBoolPointer()
+		}
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.FailOnError.Equal(state.FailOnError) {
+		if !plan.FailOnError.IsUnknown() {
+			sp.FailOnError = plan.FailOnError.ValueBoolPointer()
+		}
+	}
+	if !plan.SenderScreeningEnabled.Equal(state.SenderScreeningEnabled) {
+		if !plan.SenderScreeningEnabled.IsUnknown() {
+			sp.SenderScreeningEnabled = plan.SenderScreeningEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TrustedListsOnly.Equal(state.TrustedListsOnly) {
+		if !plan.TrustedListsOnly.IsUnknown() {
+			sp.TrustedListsOnly = plan.TrustedListsOnly.ValueBoolPointer()
+		}
+	}
+	if !plan.TrustedRecipientsAndDomains.Equal(state.TrustedRecipientsAndDomains) {
+		if !plan.TrustedRecipientsAndDomains.IsNull() && !plan.TrustedRecipientsAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedRecipientsAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedRecipientsAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedRecipientsAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.TrustedSendersAndDomains.Equal(state.TrustedSendersAndDomains) {
+		if !plan.TrustedSendersAndDomains.IsNull() && !plan.TrustedSendersAndDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -159,11 +294,7 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"BlockedSendersAndDomains":    cfg.BlockedSendersAndDomains,
-		"TrustedRecipientsAndDomains": cfg.TrustedRecipientsAndDomains,
-		"TrustedSendersAndDomains":    cfg.TrustedSendersAndDomains,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -176,6 +307,62 @@ func (r *mailboxJunkEmailConfigurationResource) Delete(_ context.Context, _ reso
 func (r *mailboxJunkEmailConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailboxJunkEmailConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailboxJunkEmailConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailboxJunkEmailConfiguration(ctx, exo.GetMailboxJunkEmailConfigurationParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailboxJunkEmailConfigurationModel
+	readMailboxJunkEmailConfiguration(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.BlockedSendersAndDomains.IsUnknown() {
+		plan.BlockedSendersAndDomains = cur.BlockedSendersAndDomains
+	}
+	if plan.ContactsTrusted.IsUnknown() {
+		plan.ContactsTrusted = cur.ContactsTrusted
+	}
+	if plan.Enabled.IsUnknown() {
+		plan.Enabled = cur.Enabled
+	}
+	if plan.FailOnError.IsUnknown() {
+		plan.FailOnError = cur.FailOnError
+	}
+	if plan.SenderScreeningEnabled.IsUnknown() {
+		plan.SenderScreeningEnabled = cur.SenderScreeningEnabled
+	}
+	if plan.TrustedListsOnly.IsUnknown() {
+		plan.TrustedListsOnly = cur.TrustedListsOnly
+	}
+	if plan.TrustedRecipientsAndDomains.IsUnknown() {
+		plan.TrustedRecipientsAndDomains = cur.TrustedRecipientsAndDomains
+	}
+	if plan.TrustedSendersAndDomains.IsUnknown() {
+		plan.TrustedSendersAndDomains = cur.TrustedSendersAndDomains
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailboxJunkEmailConfigurationResource) identityOf(m mailboxJunkEmailConfigurationModel) string {
@@ -214,24 +401,24 @@ func (r *mailboxJunkEmailConfigurationResource) refresh(ctx context.Context, ide
 
 func readMailboxJunkEmailConfiguration(ctx context.Context, obj map[string]any, m *mailboxJunkEmailConfigurationModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.BlockedSendersAndDomains = types.StringValue(getString(obj, "BlockedSendersAndDomains"))
+	m.BlockedSendersAndDomains = stringSetValue(ctx, getStringSlice(obj, "BlockedSendersAndDomains"))
 	m.ContactsTrusted = types.BoolValue(getBool(obj, "ContactsTrusted"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.FailOnError = types.BoolValue(getBool(obj, "FailOnError"))
 	m.SenderScreeningEnabled = types.BoolValue(getBool(obj, "SenderScreeningEnabled"))
 	m.TrustedListsOnly = types.BoolValue(getBool(obj, "TrustedListsOnly"))
-	m.TrustedRecipientsAndDomains = types.StringValue(getString(obj, "TrustedRecipientsAndDomains"))
-	m.TrustedSendersAndDomains = types.StringValue(getString(obj, "TrustedSendersAndDomains"))
+	m.TrustedRecipientsAndDomains = stringSetValue(ctx, getStringSlice(obj, "TrustedRecipientsAndDomains"))
+	m.TrustedSendersAndDomains = stringSetValue(ctx, getStringSlice(obj, "TrustedSendersAndDomains"))
 	_ = ctx
 }
 
 func (r *mailboxJunkEmailConfigurationResource) reconcileState(cfg, read *mailboxJunkEmailConfigurationModel) {
-	read.BlockedSendersAndDomains = reconcile.KeepStr(cfg.BlockedSendersAndDomains, read.BlockedSendersAndDomains)
+	read.BlockedSendersAndDomains = reconcile.KeepSet(cfg.BlockedSendersAndDomains, read.BlockedSendersAndDomains)
 	read.ContactsTrusted = reconcile.KeepBool(cfg.ContactsTrusted, read.ContactsTrusted)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.FailOnError = reconcile.KeepBool(cfg.FailOnError, read.FailOnError)
 	read.SenderScreeningEnabled = reconcile.KeepBool(cfg.SenderScreeningEnabled, read.SenderScreeningEnabled)
 	read.TrustedListsOnly = reconcile.KeepBool(cfg.TrustedListsOnly, read.TrustedListsOnly)
-	read.TrustedRecipientsAndDomains = reconcile.KeepStr(cfg.TrustedRecipientsAndDomains, read.TrustedRecipientsAndDomains)
-	read.TrustedSendersAndDomains = reconcile.KeepStr(cfg.TrustedSendersAndDomains, read.TrustedSendersAndDomains)
+	read.TrustedRecipientsAndDomains = reconcile.KeepSet(cfg.TrustedRecipientsAndDomains, read.TrustedRecipientsAndDomains)
+	read.TrustedSendersAndDomains = reconcile.KeepSet(cfg.TrustedSendersAndDomains, read.TrustedSendersAndDomains)
 }

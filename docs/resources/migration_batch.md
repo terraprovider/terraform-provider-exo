@@ -19,7 +19,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 
 - `analyze` (Boolean) Maps to the -Analyze parameter.
 - `connection_logical_id` (String) Maps to the -ConnectionLogicalId parameter.
-- `csv_data` (Set of String) Maps to the -CSVData parameter.
+- `csv_data` (String) Maps to the -CSVData parameter.
 - `google_resource` (Boolean) Maps to the -GoogleResource parameter.
 - `managed_gmail_teams` (Boolean) Maps to the -ManagedGmailTeams parameter.
 - `name` (String) Maps to the -Name parameter.
@@ -27,8 +27,8 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `slack_public_data_connector` (Boolean) Maps to the -SlackPublicDataConnector parameter.
 - `slack_workspace_id` (String) Maps to the -SlackWorkspaceId parameter.
 - `staged_roll_out_group_id` (String) Maps to the -StagedRollOutGroupId parameter.
-- `user_ids` (String) Maps to the -UserIds parameter.
-- `users` (String) Maps to the -Users parameter.
+- `user_ids` (Set of String) Maps to the -UserIds parameter.
+- `users` (Set of String) Maps to the -Users parameter.
 
 ### Optional
 
@@ -50,14 +50,14 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `data_fusion` (Boolean) Maps to the -DataFusion parameter.
 - `disable_on_copy` (Boolean) Maps to the -DisableOnCopy parameter.
 - `exclude_dumpsters` (Boolean) Maps to the -ExcludeDumpsters parameter.
-- `exclude_folders` (String) Maps to the -ExcludeFolders parameter.
+- `exclude_folders` (Set of String) Maps to the -ExcludeFolders parameter.
 - `format` (String) Maps to the -Format parameter.
 - `forwarding_disposition` (String) Maps to the -ForwardingDisposition parameter.
-- `include_folders` (String) Maps to the -IncludeFolders parameter.
+- `include_folders` (Set of String) Maps to the -IncludeFolders parameter.
 - `include_other_contacts` (Boolean) Maps to the -IncludeOtherContacts parameter.
 - `migrate_tasks` (Boolean) Maps to the -MigrateTasks parameter.
-- `move_options` (String) Maps to the -MoveOptions parameter.
-- `notification_emails` (String) Maps to the -NotificationEmails parameter.
+- `move_options` (Set of String) Maps to the -MoveOptions parameter.
+- `notification_emails` (Set of String) Maps to the -NotificationEmails parameter.
 - `partition` (String) Maps to the -Partition parameter.
 - `primary_only` (Boolean) Maps to the -PrimaryOnly parameter.
 - `remove_on_copy` (Boolean) Maps to the -RemoveOnCopy parameter.
@@ -70,25 +70,25 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `skip_delegates` (Boolean) Maps to the -SkipDelegates parameter.
 - `skip_details` (Boolean) Maps to the -SkipDetails parameter.
 - `skip_mail` (Boolean) Maps to the -SkipMail parameter.
-- `skip_merging` (String) Maps to the -SkipMerging parameter.
-- `skip_moving` (String) Maps to the -SkipMoving parameter.
+- `skip_merging` (Set of String) Maps to the -SkipMerging parameter.
+- `skip_moving` (Set of String) Maps to the -SkipMoving parameter.
 - `skip_provisioning` (Boolean) Maps to the -SkipProvisioning parameter.
 - `skip_reports` (Boolean) Maps to the -SkipReports parameter.
 - `skip_rules` (Boolean) Maps to the -SkipRules parameter.
 - `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
-- `source_mappings` (Set of String) Maps to the -SourceMappings parameter.
+- `source_mappings` (String) Maps to the -SourceMappings parameter.
 - `source_pf_primary_mailbox_guid` (String) Maps to the -SourcePFPrimaryMailboxGuid parameter.
 - `start_after` (String) Maps to the -StartAfter parameter.
 - `sync_now` (Boolean) Maps to the -SyncNow parameter.
-- `target_archive_databases` (String) Maps to the -TargetArchiveDatabases parameter.
-- `target_databases` (String) Maps to the -TargetDatabases parameter.
+- `target_archive_databases` (Set of String) Maps to the -TargetArchiveDatabases parameter.
+- `target_databases` (Set of String) Maps to the -TargetDatabases parameter.
 - `target_delivery_domain` (String) Maps to the -TargetDeliveryDomain parameter.
 - `target_endpoint` (String) Maps to the -TargetEndpoint parameter.
 - `time_zone` (String) Maps to the -TimeZone parameter.
 - `update` (Boolean) Maps to the -Update parameter.
 - `workflow_control_flags` (String) Maps to the -WorkflowControlFlags parameter.
 - `workflow_template` (String) Maps to the -WorkflowTemplate parameter.
-- `xml_data` (Set of String) Maps to the -XMLData parameter.
+- `xml_data` (String) Maps to the -XMLData parameter.
 
 ### Read-Only
 

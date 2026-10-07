@@ -22,12 +22,12 @@ Look up an existing ExoPhishSimOverrideRule object. Set identity or name to sele
 
 ### Read-Only
 
-- `add_domains` (String) Maps to the -AddDomains parameter.
-- `add_sender_ip_ranges` (String) Maps to the -AddSenderIpRanges parameter.
+- `add_domains` (Set of String) Maps to the -AddDomains parameter.
+- `add_sender_ip_ranges` (Set of String) Maps to the -AddSenderIpRanges parameter.
 - `comment` (String) Maps to the -Comment parameter.
-- `domains` (String) Maps to the -Domains parameter.
+- `domains` (Set of String) Maps to the -Domains parameter.
 - `id` (String) Object identifier (GUID).
 - `policy` (String) Maps to the -Policy parameter.
-- `remove_domains` (String) Maps to the -RemoveDomains parameter.
-- `remove_sender_ip_ranges` (String) Maps to the -RemoveSenderIpRanges parameter.
-- `sender_ip_ranges` (String) Maps to the -SenderIpRanges parameter.
+- `remove_domains` (Set of String) Maps to the -RemoveDomains parameter.
+- `remove_sender_ip_ranges` (Set of String) Maps to the -RemoveSenderIpRanges parameter.
+- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.

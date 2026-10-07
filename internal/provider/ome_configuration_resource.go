@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,7 +39,7 @@ type oMEConfigurationModel struct {
 	DisclaimerText           types.String `tfsdk:"disclaimer_text"`
 	EmailText                types.String `tfsdk:"email_text"`
 	ExternalMailExpiryInDays types.String `tfsdk:"external_mail_expiry_in_days"`
-	Image                    types.Set    `tfsdk:"image"`
+	Image                    types.String `tfsdk:"image"`
 	IntroductionText         types.String `tfsdk:"introduction_text"`
 	OTPEnabled               types.Bool   `tfsdk:"otp_enabled"`
 	PortalText               types.String `tfsdk:"portal_text"`
@@ -58,12 +57,12 @@ func (r *oMEConfigurationResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Manages the OMEConfiguration object via New-OMEConfiguration / Get-OMEConfiguration / Set-OMEConfiguration / Remove-OMEConfiguration.",
 		Attributes: map[string]schema.Attribute{
 			"id":                           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"background_color":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BackgroundColor parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"disclaimer_text":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisclaimerText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"email_text":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"external_mail_expiry_in_days": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalMailExpiryInDays parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"image":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Image parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"image":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Image parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"introduction_text":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IntroductionText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"otp_enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OTPEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"portal_text":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PortalText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -88,20 +87,49 @@ func (r *oMEConfigurationResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	p := exo.NewOMEConfigurationParams{
-		BackgroundColor:     plan.BackgroundColor.ValueString(),
-		DisclaimerText:      plan.DisclaimerText.ValueString(),
-		EmailText:           plan.EmailText.ValueString(),
-		Image:               toStringSlice(ctx, plan.Image, &resp.Diagnostics),
-		IntroductionText:    plan.IntroductionText.ValueString(),
-		OTPEnabled:          plan.OTPEnabled.ValueBool(),
-		PortalText:          plan.PortalText.ValueString(),
-		PrivacyStatementUrl: plan.PrivacyStatementUrl.ValueString(),
-		ReadButtonText:      plan.ReadButtonText.ValueString(),
-		SocialIdSignIn:      plan.SocialIdSignIn.ValueBool(),
+	var config oMEConfigurationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
-		p.ExternalMailExpiryInDays = v
+
+	p := exo.NewOMEConfigurationParams{}
+	if !config.BackgroundColor.IsNull() {
+		p.BackgroundColor = plan.BackgroundColor.ValueString()
+	}
+	if !config.DisclaimerText.IsNull() {
+		p.DisclaimerText = plan.DisclaimerText.ValueString()
+	}
+	if !config.EmailText.IsNull() {
+		p.EmailText = plan.EmailText.ValueString()
+	}
+	if v := config.ExternalMailExpiryInDays.ValueString(); v != "" {
+		p.ExternalMailExpiryInDays = objectParam(v)
+	}
+	if v := config.Image.ValueString(); v != "" {
+		p.Image = objectParam(v)
+	}
+	if !config.IntroductionText.IsNull() {
+		p.IntroductionText = plan.IntroductionText.ValueString()
+	}
+	if !config.OTPEnabled.IsNull() {
+		if !plan.OTPEnabled.IsUnknown() {
+			p.OTPEnabled = plan.OTPEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.PortalText.IsNull() {
+		p.PortalText = plan.PortalText.ValueString()
+	}
+	if !config.PrivacyStatementUrl.IsNull() {
+		p.PrivacyStatementUrl = plan.PrivacyStatementUrl.ValueString()
+	}
+	if !config.ReadButtonText.IsNull() {
+		p.ReadButtonText = plan.ReadButtonText.ValueString()
+	}
+	if !config.SocialIdSignIn.IsNull() {
+		if !plan.SocialIdSignIn.IsUnknown() {
+			p.SocialIdSignIn = plan.SocialIdSignIn.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,19 +181,47 @@ func (r *oMEConfigurationResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetOMEConfigurationParams{}
 	sp.Identity = id
-	sp.BackgroundColor = plan.BackgroundColor.ValueString()
-	sp.DisclaimerText = plan.DisclaimerText.ValueString()
-	sp.EmailText = plan.EmailText.ValueString()
-	if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
-		sp.ExternalMailExpiryInDays = v
+	if !plan.BackgroundColor.Equal(state.BackgroundColor) {
+		sp.BackgroundColor = plan.BackgroundColor.ValueString()
 	}
-	sp.Image = toStringSlice(ctx, plan.Image, &resp.Diagnostics)
-	sp.IntroductionText = plan.IntroductionText.ValueString()
-	sp.OTPEnabled = plan.OTPEnabled.ValueBool()
-	sp.PortalText = plan.PortalText.ValueString()
-	sp.PrivacyStatementUrl = plan.PrivacyStatementUrl.ValueString()
-	sp.ReadButtonText = plan.ReadButtonText.ValueString()
-	sp.SocialIdSignIn = plan.SocialIdSignIn.ValueBool()
+	if !plan.DisclaimerText.Equal(state.DisclaimerText) {
+		sp.DisclaimerText = plan.DisclaimerText.ValueString()
+	}
+	if !plan.EmailText.Equal(state.EmailText) {
+		sp.EmailText = plan.EmailText.ValueString()
+	}
+	if !plan.ExternalMailExpiryInDays.Equal(state.ExternalMailExpiryInDays) {
+		if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
+			sp.ExternalMailExpiryInDays = objectParam(v)
+		}
+	}
+	if !plan.Image.Equal(state.Image) {
+		if v := plan.Image.ValueString(); v != "" {
+			sp.Image = objectParam(v)
+		}
+	}
+	if !plan.IntroductionText.Equal(state.IntroductionText) {
+		sp.IntroductionText = plan.IntroductionText.ValueString()
+	}
+	if !plan.OTPEnabled.Equal(state.OTPEnabled) {
+		if !plan.OTPEnabled.IsUnknown() {
+			sp.OTPEnabled = plan.OTPEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.PortalText.Equal(state.PortalText) {
+		sp.PortalText = plan.PortalText.ValueString()
+	}
+	if !plan.PrivacyStatementUrl.Equal(state.PrivacyStatementUrl) {
+		sp.PrivacyStatementUrl = plan.PrivacyStatementUrl.ValueString()
+	}
+	if !plan.ReadButtonText.Equal(state.ReadButtonText) {
+		sp.ReadButtonText = plan.ReadButtonText.ValueString()
+	}
+	if !plan.SocialIdSignIn.Equal(state.SocialIdSignIn) {
+		if !plan.SocialIdSignIn.IsUnknown() {
+			sp.SocialIdSignIn = plan.SocialIdSignIn.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -175,14 +231,13 @@ func (r *oMEConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"BackgroundColor":          cfg.BackgroundColor,
-		"DisclaimerText":           cfg.DisclaimerText,
-		"EmailText":                cfg.EmailText,
-		"ExternalMailExpiryInDays": cfg.ExternalMailExpiryInDays,
-		"IntroductionText":         cfg.IntroductionText,
-		"PortalText":               cfg.PortalText,
-		"PrivacyStatementUrl":      cfg.PrivacyStatementUrl,
-		"ReadButtonText":           cfg.ReadButtonText,
+		"BackgroundColor":     cfg.BackgroundColor,
+		"DisclaimerText":      cfg.DisclaimerText,
+		"EmailText":           cfg.EmailText,
+		"IntroductionText":    cfg.IntroductionText,
+		"PortalText":          cfg.PortalText,
+		"PrivacyStatementUrl": cfg.PrivacyStatementUrl,
+		"ReadButtonText":      cfg.ReadButtonText,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -247,8 +302,8 @@ func readOMEConfiguration(ctx context.Context, obj map[string]any, m *oMEConfigu
 	m.BackgroundColor = types.StringValue(getString(obj, "BackgroundColor"))
 	m.DisclaimerText = types.StringValue(getString(obj, "DisclaimerText"))
 	m.EmailText = types.StringValue(getString(obj, "EmailText"))
-	m.ExternalMailExpiryInDays = types.StringValue(getString(obj, "ExternalMailExpiryInDays"))
-	m.Image = stringSetValue(ctx, getStringSlice(obj, "Image"))
+	m.ExternalMailExpiryInDays = types.StringValue(getObjectJSON(obj, "ExternalMailExpiryInDays"))
+	m.Image = types.StringValue(getObjectJSON(obj, "Image"))
 	m.IntroductionText = types.StringValue(getString(obj, "IntroductionText"))
 	m.OTPEnabled = types.BoolValue(getBool(obj, "OTPEnabled"))
 	m.PortalText = types.StringValue(getString(obj, "PortalText"))
@@ -263,7 +318,7 @@ func (r *oMEConfigurationResource) reconcileState(cfg, read *oMEConfigurationMod
 	read.DisclaimerText = reconcile.KeepStr(cfg.DisclaimerText, read.DisclaimerText)
 	read.EmailText = reconcile.KeepStr(cfg.EmailText, read.EmailText)
 	read.ExternalMailExpiryInDays = reconcile.KeepStr(cfg.ExternalMailExpiryInDays, read.ExternalMailExpiryInDays)
-	read.Image = reconcile.KeepSet(cfg.Image, read.Image)
+	read.Image = reconcile.KeepStr(cfg.Image, read.Image)
 	read.IntroductionText = reconcile.KeepStr(cfg.IntroductionText, read.IntroductionText)
 	read.OTPEnabled = reconcile.KeepBool(cfg.OTPEnabled, read.OTPEnabled)
 	read.PortalText = reconcile.KeepStr(cfg.PortalText, read.PortalText)

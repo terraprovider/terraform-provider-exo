@@ -28,8 +28,8 @@ Read-Only:
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
-- `keep_for_days` (String) Maps to the -KeepForDays parameter.
-- `keep_latest` (String) Maps to the -KeepLatest parameter.
+- `keep_for_days` (Number) Maps to the -KeepForDays parameter.
+- `keep_latest` (Number) Maps to the -KeepLatest parameter.
 - `mailbox` (String) Maps to the -Mailbox parameter.
 - `name` (String) Maps to the -Name parameter.
 - `provider_` (String) Maps to the -Provider parameter.

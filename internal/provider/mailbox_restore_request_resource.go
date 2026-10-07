@@ -86,7 +86,7 @@ func (r *mailboxRestoreRequestResource) Schema(_ context.Context, _ resource.Sch
 		Description: "Manages the MailboxRestoreRequest object via New-MailboxRestoreRequest / Get-MailboxRestoreRequest / Set-MailboxRestoreRequest / Remove-MailboxRestoreRequest.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"accept_large_data_loss":             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptLargeDataLoss parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"allow_legacy_dn_mismatch":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowLegacyDNMismatch parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"associated_messages_copy_option":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AssociatedMessagesCopyOption parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -144,68 +144,111 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	p := exo.NewMailboxRestoreRequestParams{
-		AcceptLargeDataLoss:   plan.AcceptLargeDataLoss.ValueBool(),
-		AllowLegacyDNMismatch: plan.AllowLegacyDNMismatch.ValueBool(),
-		BatchName:             plan.BatchName.ValueString(),
-		ContentFilter:         plan.ContentFilter.ValueString(),
-		CrossTenantRestore:    plan.CrossTenantRestore.ValueBool(),
-		ExcludeDumpster:       plan.ExcludeDumpster.ValueBool(),
-		ExcludeFolders:        toStringSlice(ctx, plan.ExcludeFolders, &resp.Diagnostics),
-		IncludeFolders:        toStringSlice(ctx, plan.IncludeFolders, &resp.Diagnostics),
-		Name:                  plan.Name.ValueString(),
-		SkipMerging:           toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics),
-		SourceIsArchive:       plan.SourceIsArchive.ValueBool(),
-		SourceRootFolder:      plan.SourceRootFolder.ValueString(),
-		Suspend:               plan.Suspend.ValueBool(),
-		SuspendComment:        plan.SuspendComment.ValueString(),
-		TargetIsArchive:       plan.TargetIsArchive.ValueBool(),
-		TargetRootFolder:      plan.TargetRootFolder.ValueString(),
+	var config mailboxRestoreRequestModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AssociatedMessagesCopyOption.ValueString(); v != "" {
-		p.AssociatedMessagesCopyOption = v
+
+	p := exo.NewMailboxRestoreRequestParams{}
+	if !config.AcceptLargeDataLoss.IsNull() {
+		p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
 	}
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		p.CompletedRequestAgeLimit = v
+	if !config.AllowLegacyDNMismatch.IsNull() {
+		p.AllowLegacyDNMismatch = plan.AllowLegacyDNMismatch.ValueBool()
 	}
-	if v := plan.ConflictResolutionOption.ValueString(); v != "" {
-		p.ConflictResolutionOption = v
+	if v := config.AssociatedMessagesCopyOption.ValueString(); v != "" {
+		p.AssociatedMessagesCopyOption = objectParam(v)
 	}
-	if v := plan.ContentFilterLanguage.ValueString(); v != "" {
-		p.ContentFilterLanguage = v
+	if !config.BatchName.IsNull() {
+		p.BatchName = plan.BatchName.ValueString()
 	}
-	if v := plan.RemoteCredential.ValueString(); v != "" {
-		p.RemoteCredential = v
+	if v := config.CompletedRequestAgeLimit.ValueString(); v != "" {
+		p.CompletedRequestAgeLimit = objectParam(v)
 	}
-	if v := plan.RemoteDatabaseGuid.ValueString(); v != "" {
-		p.RemoteDatabaseGuid = v
+	if v := config.ConflictResolutionOption.ValueString(); v != "" {
+		p.ConflictResolutionOption = objectParam(v)
 	}
-	if v := plan.RemoteHostName.ValueString(); v != "" {
-		p.RemoteHostName = v
+	if !config.ContentFilter.IsNull() {
+		p.ContentFilter = plan.ContentFilter.ValueString()
 	}
-	if v := plan.RemoteRestoreType.ValueString(); v != "" {
-		p.RemoteRestoreType = v
+	if v := config.ContentFilterLanguage.ValueString(); v != "" {
+		p.ContentFilterLanguage = objectParam(v)
 	}
-	if v := plan.SourceEndpoint.ValueString(); v != "" {
-		p.SourceEndpoint = v
+	if !config.CrossTenantRestore.IsNull() {
+		p.CrossTenantRestore = plan.CrossTenantRestore.ValueBool()
 	}
-	if v := plan.SourceExchangeGuid.ValueString(); v != "" {
-		p.SourceExchangeGuid = v
+	if !config.ExcludeDumpster.IsNull() {
+		p.ExcludeDumpster = plan.ExcludeDumpster.ValueBool()
 	}
-	if v := plan.SourceMailbox.ValueString(); v != "" {
-		p.SourceMailbox = v
+	if !config.ExcludeFolders.IsNull() {
+		if v := toStringSlice(ctx, plan.ExcludeFolders, &resp.Diagnostics); len(v) > 0 {
+			p.ExcludeFolders = v
+		}
 	}
-	if v := plan.SourceStoreMailbox.ValueString(); v != "" {
-		p.SourceStoreMailbox = v
+	if !config.IncludeFolders.IsNull() {
+		if v := toStringSlice(ctx, plan.IncludeFolders, &resp.Diagnostics); len(v) > 0 {
+			p.IncludeFolders = v
+		}
 	}
-	if v := plan.SourceTenant.ValueString(); v != "" {
-		p.SourceTenant = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
 	}
-	if v := plan.TargetMailbox.ValueString(); v != "" {
-		p.TargetMailbox = v
+	if v := config.RemoteCredential.ValueString(); v != "" {
+		p.RemoteCredential = objectParam(v)
 	}
-	if v := plan.TargetType.ValueString(); v != "" {
-		p.TargetType = v
+	if !config.RemoteDatabaseGuid.IsNull() {
+		p.RemoteDatabaseGuid = plan.RemoteDatabaseGuid.ValueString()
+	}
+	if v := config.RemoteHostName.ValueString(); v != "" {
+		p.RemoteHostName = objectParam(v)
+	}
+	if v := config.RemoteRestoreType.ValueString(); v != "" {
+		p.RemoteRestoreType = objectParam(v)
+	}
+	if !config.SkipMerging.IsNull() {
+		if v := toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics); len(v) > 0 {
+			p.SkipMerging = v
+		}
+	}
+	if v := config.SourceEndpoint.ValueString(); v != "" {
+		p.SourceEndpoint = objectParam(v)
+	}
+	if !config.SourceExchangeGuid.IsNull() {
+		p.SourceExchangeGuid = plan.SourceExchangeGuid.ValueString()
+	}
+	if !config.SourceIsArchive.IsNull() {
+		p.SourceIsArchive = plan.SourceIsArchive.ValueBool()
+	}
+	if v := config.SourceMailbox.ValueString(); v != "" {
+		p.SourceMailbox = objectParam(v)
+	}
+	if !config.SourceRootFolder.IsNull() {
+		p.SourceRootFolder = plan.SourceRootFolder.ValueString()
+	}
+	if v := config.SourceStoreMailbox.ValueString(); v != "" {
+		p.SourceStoreMailbox = objectParam(v)
+	}
+	if v := config.SourceTenant.ValueString(); v != "" {
+		p.SourceTenant = objectParam(v)
+	}
+	if !config.Suspend.IsNull() {
+		p.Suspend = plan.Suspend.ValueBool()
+	}
+	if !config.SuspendComment.IsNull() {
+		p.SuspendComment = plan.SuspendComment.ValueString()
+	}
+	if !config.TargetIsArchive.IsNull() {
+		p.TargetIsArchive = plan.TargetIsArchive.ValueBool()
+	}
+	if v := config.TargetMailbox.ValueString(); v != "" {
+		p.TargetMailbox = objectParam(v)
+	}
+	if !config.TargetRootFolder.IsNull() {
+		p.TargetRootFolder = plan.TargetRootFolder.ValueString()
+	}
+	if v := config.TargetType.ValueString(); v != "" {
+		p.TargetType = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -257,29 +300,57 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetMailboxRestoreRequestParams{}
 	sp.Identity = id
-	sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
-	sp.BatchName = plan.BatchName.ValueString()
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		sp.CompletedRequestAgeLimit = v
+	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
 	}
-	sp.InternalFlags = toStringSlice(ctx, plan.InternalFlags, &resp.Diagnostics)
-	if v := plan.Priority.ValueString(); v != "" {
-		sp.Priority = v
+	if !plan.BatchName.Equal(state.BatchName) {
+		sp.BatchName = plan.BatchName.ValueString()
 	}
-	sp.RehomeRequest = plan.RehomeRequest.ValueBool()
-	if v := plan.RequestExpiryInterval.ValueString(); v != "" {
-		sp.RequestExpiryInterval = v
+	if !plan.CompletedRequestAgeLimit.Equal(state.CompletedRequestAgeLimit) {
+		if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
+			sp.CompletedRequestAgeLimit = objectParam(v)
+		}
 	}
-	sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
-	sp.SkipMerging = toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = v
+	if !plan.InternalFlags.Equal(state.InternalFlags) {
+		if !plan.InternalFlags.IsNull() && !plan.InternalFlags.IsUnknown() {
+			sp.InternalFlags = append([]string{}, toStringSlice(ctx, plan.InternalFlags, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.SourceWlmLevel.ValueString(); v != "" {
-		sp.SourceWlmLevel = v
+	if !plan.Priority.Equal(state.Priority) {
+		if v := plan.Priority.ValueString(); v != "" {
+			sp.Priority = objectParam(v)
+		}
 	}
-	if v := plan.TargetWlmLevel.ValueString(); v != "" {
-		sp.TargetWlmLevel = v
+	if !plan.RehomeRequest.Equal(state.RehomeRequest) {
+		sp.RehomeRequest = plan.RehomeRequest.ValueBool()
+	}
+	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
+		if v := plan.RequestExpiryInterval.ValueString(); v != "" {
+			sp.RequestExpiryInterval = objectParam(v)
+		}
+	}
+	if !plan.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
+		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+	}
+	if !plan.SkipMerging.Equal(state.SkipMerging) {
+		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
+			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SkippedItemApprovalTime.Equal(state.SkippedItemApprovalTime) {
+		if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
+			sp.SkippedItemApprovalTime = objectParam(v)
+		}
+	}
+	if !plan.SourceWlmLevel.Equal(state.SourceWlmLevel) {
+		if v := plan.SourceWlmLevel.ValueString(); v != "" {
+			sp.SourceWlmLevel = objectParam(v)
+		}
+	}
+	if !plan.TargetWlmLevel.Equal(state.TargetWlmLevel) {
+		if v := plan.TargetWlmLevel.ValueString(); v != "" {
+			sp.TargetWlmLevel = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -290,13 +361,7 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"BatchName":                cfg.BatchName,
-		"CompletedRequestAgeLimit": cfg.CompletedRequestAgeLimit,
-		"Priority":                 cfg.Priority,
-		"RequestExpiryInterval":    cfg.RequestExpiryInterval,
-		"SkippedItemApprovalTime":  cfg.SkippedItemApprovalTime,
-		"SourceWlmLevel":           cfg.SourceWlmLevel,
-		"TargetWlmLevel":           cfg.TargetWlmLevel,
+		"BatchName": cfg.BatchName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -360,43 +425,43 @@ func readMailboxRestoreRequest(ctx context.Context, obj map[string]any, m *mailb
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AcceptLargeDataLoss = types.BoolValue(getBool(obj, "AcceptLargeDataLoss"))
 	m.AllowLegacyDNMismatch = types.BoolValue(getBool(obj, "AllowLegacyDNMismatch"))
-	m.AssociatedMessagesCopyOption = types.StringValue(getString(obj, "AssociatedMessagesCopyOption"))
+	m.AssociatedMessagesCopyOption = types.StringValue(getObjectJSON(obj, "AssociatedMessagesCopyOption"))
 	m.BatchName = types.StringValue(getString(obj, "BatchName"))
-	m.CompletedRequestAgeLimit = types.StringValue(getString(obj, "CompletedRequestAgeLimit"))
-	m.ConflictResolutionOption = types.StringValue(getString(obj, "ConflictResolutionOption"))
+	m.CompletedRequestAgeLimit = types.StringValue(getObjectJSON(obj, "CompletedRequestAgeLimit"))
+	m.ConflictResolutionOption = types.StringValue(getObjectJSON(obj, "ConflictResolutionOption"))
 	m.ContentFilter = types.StringValue(getString(obj, "ContentFilter"))
-	m.ContentFilterLanguage = types.StringValue(getString(obj, "ContentFilterLanguage"))
+	m.ContentFilterLanguage = types.StringValue(getObjectJSON(obj, "ContentFilterLanguage"))
 	m.CrossTenantRestore = types.BoolValue(getBool(obj, "CrossTenantRestore"))
 	m.ExcludeDumpster = types.BoolValue(getBool(obj, "ExcludeDumpster"))
 	m.ExcludeFolders = stringSetValue(ctx, getStringSlice(obj, "ExcludeFolders"))
 	m.IncludeFolders = stringSetValue(ctx, getStringSlice(obj, "IncludeFolders"))
 	m.InternalFlags = stringSetValue(ctx, getStringSlice(obj, "InternalFlags"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Priority = types.StringValue(getString(obj, "Priority"))
+	m.Priority = types.StringValue(getObjectJSON(obj, "Priority"))
 	m.RehomeRequest = types.BoolValue(getBool(obj, "RehomeRequest"))
-	m.RemoteCredential = types.StringValue(getString(obj, "RemoteCredential"))
+	m.RemoteCredential = types.StringValue(getObjectJSON(obj, "RemoteCredential"))
 	m.RemoteDatabaseGuid = types.StringValue(getString(obj, "RemoteDatabaseGuid"))
-	m.RemoteHostName = types.StringValue(getString(obj, "RemoteHostName"))
-	m.RemoteRestoreType = types.StringValue(getString(obj, "RemoteRestoreType"))
-	m.RequestExpiryInterval = types.StringValue(getString(obj, "RequestExpiryInterval"))
+	m.RemoteHostName = types.StringValue(getObjectJSON(obj, "RemoteHostName"))
+	m.RemoteRestoreType = types.StringValue(getObjectJSON(obj, "RemoteRestoreType"))
+	m.RequestExpiryInterval = types.StringValue(getObjectJSON(obj, "RequestExpiryInterval"))
 	m.SkipInitialConnectionValidation = types.BoolValue(getBool(obj, "SkipInitialConnectionValidation"))
 	m.SkipMerging = stringSetValue(ctx, getStringSlice(obj, "SkipMerging"))
-	m.SkippedItemApprovalTime = types.StringValue(getString(obj, "SkippedItemApprovalTime"))
-	m.SourceEndpoint = types.StringValue(getString(obj, "SourceEndpoint"))
+	m.SkippedItemApprovalTime = types.StringValue(getObjectJSON(obj, "SkippedItemApprovalTime"))
+	m.SourceEndpoint = types.StringValue(getObjectJSON(obj, "SourceEndpoint"))
 	m.SourceExchangeGuid = types.StringValue(getString(obj, "SourceExchangeGuid"))
 	m.SourceIsArchive = types.BoolValue(getBool(obj, "SourceIsArchive"))
-	m.SourceMailbox = types.StringValue(getString(obj, "SourceMailbox"))
+	m.SourceMailbox = types.StringValue(getObjectJSON(obj, "SourceMailbox"))
 	m.SourceRootFolder = types.StringValue(getString(obj, "SourceRootFolder"))
-	m.SourceStoreMailbox = types.StringValue(getString(obj, "SourceStoreMailbox"))
-	m.SourceTenant = types.StringValue(getString(obj, "SourceTenant"))
-	m.SourceWlmLevel = types.StringValue(getString(obj, "SourceWlmLevel"))
+	m.SourceStoreMailbox = types.StringValue(getObjectJSON(obj, "SourceStoreMailbox"))
+	m.SourceTenant = types.StringValue(getObjectJSON(obj, "SourceTenant"))
+	m.SourceWlmLevel = types.StringValue(getObjectJSON(obj, "SourceWlmLevel"))
 	m.Suspend = types.BoolValue(getBool(obj, "Suspend"))
 	m.SuspendComment = types.StringValue(getString(obj, "SuspendComment"))
 	m.TargetIsArchive = types.BoolValue(getBool(obj, "TargetIsArchive"))
-	m.TargetMailbox = types.StringValue(getString(obj, "TargetMailbox"))
+	m.TargetMailbox = types.StringValue(getObjectJSON(obj, "TargetMailbox"))
 	m.TargetRootFolder = types.StringValue(getString(obj, "TargetRootFolder"))
-	m.TargetType = types.StringValue(getString(obj, "TargetType"))
-	m.TargetWlmLevel = types.StringValue(getString(obj, "TargetWlmLevel"))
+	m.TargetType = types.StringValue(getObjectJSON(obj, "TargetType"))
+	m.TargetWlmLevel = types.StringValue(getObjectJSON(obj, "TargetWlmLevel"))
 	_ = ctx
 }
 

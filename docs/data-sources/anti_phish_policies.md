@@ -41,27 +41,28 @@ Read-Only:
 - `enable_unusual_characters_safety_tips` (Boolean) Maps to the -EnableUnusualCharactersSafetyTips parameter.
 - `enable_via_tag` (Boolean) Maps to the -EnableViaTag parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
-- `excluded_domains` (String) Maps to the -ExcludedDomains parameter.
-- `excluded_senders` (String) Maps to the -ExcludedSenders parameter.
+- `excluded_domains` (Set of String) Maps to the -ExcludedDomains parameter.
+- `excluded_senders` (Set of String) Maps to the -ExcludedSenders parameter.
 - `honor_dmarc_policy` (Boolean) Maps to the -HonorDmarcPolicy parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `impersonation_protection_state` (String) Maps to the -ImpersonationProtectionState parameter.
 - `mailbox_intelligence_protection_action` (String) Maps to the -MailboxIntelligenceProtectionAction parameter.
-- `mailbox_intelligence_protection_action_recipients` (String) Maps to the -MailboxIntelligenceProtectionActionRecipients parameter.
+- `mailbox_intelligence_protection_action_recipients` (Set of String) Maps to the -MailboxIntelligenceProtectionActionRecipients parameter.
 - `mailbox_intelligence_quarantine_tag` (String) Maps to the -MailboxIntelligenceQuarantineTag parameter.
 - `make_default` (Boolean) Maps to the -MakeDefault parameter.
 - `name` (String) Maps to the -Name parameter.
+- `phish_threshold_level` (Number) Maps to the -PhishThresholdLevel parameter.
 - `policy_tag` (String) Maps to the -PolicyTag parameter.
 - `recommended_policy_type` (String) Maps to the -RecommendedPolicyType parameter.
 - `similar_users_safety_tips_custom_text` (String) Maps to the -SimilarUsersSafetyTipsCustomText parameter.
 - `spoof_quarantine_tag` (String) Maps to the -SpoofQuarantineTag parameter.
-- `targeted_domain_action_recipients` (String) Maps to the -TargetedDomainActionRecipients parameter.
+- `targeted_domain_action_recipients` (Set of String) Maps to the -TargetedDomainActionRecipients parameter.
 - `targeted_domain_protection_action` (String) Maps to the -TargetedDomainProtectionAction parameter.
 - `targeted_domain_quarantine_tag` (String) Maps to the -TargetedDomainQuarantineTag parameter.
-- `targeted_domains_to_protect` (String) Maps to the -TargetedDomainsToProtect parameter.
-- `targeted_user_action_recipients` (String) Maps to the -TargetedUserActionRecipients parameter.
+- `targeted_domains_to_protect` (Set of String) Maps to the -TargetedDomainsToProtect parameter.
+- `targeted_user_action_recipients` (Set of String) Maps to the -TargetedUserActionRecipients parameter.
 - `targeted_user_protection_action` (String) Maps to the -TargetedUserProtectionAction parameter.
 - `targeted_user_quarantine_tag` (String) Maps to the -TargetedUserQuarantineTag parameter.
-- `targeted_users_to_protect` (String) Maps to the -TargetedUsersToProtect parameter.
+- `targeted_users_to_protect` (Set of String) Maps to the -TargetedUsersToProtect parameter.
 - `unusual_characters_safety_tips_custom_text` (String) Maps to the -UnusualCharactersSafetyTipsCustomText parameter.

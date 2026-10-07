@@ -18,14 +18,14 @@ Manages the SecOpsOverridePolicy object via New-SecOpsOverridePolicy / Get-SecOp
 ### Required
 
 - `name` (String) Maps to the -Name parameter.
-- `sent_to` (String) Maps to the -SentTo parameter.
+- `sent_to` (Set of String) Maps to the -SentTo parameter.
 
 ### Optional
 
-- `add_sent_to` (String) Maps to the -AddSentTo parameter.
+- `add_sent_to` (Set of String) Maps to the -AddSentTo parameter.
 - `comment` (String) Maps to the -Comment parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
-- `remove_sent_to` (String) Maps to the -RemoveSentTo parameter.
+- `remove_sent_to` (Set of String) Maps to the -RemoveSentTo parameter.
 
 ### Read-Only
 

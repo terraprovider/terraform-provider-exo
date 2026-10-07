@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &m365CrossTenantAccessPolicyResource{}
 	_ resource.ResourceWithConfigure   = &m365CrossTenantAccessPolicyResource{}
 	_ resource.ResourceWithImportState = &m365CrossTenantAccessPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &m365CrossTenantAccessPolicyResource{}
 )
 
 type m365CrossTenantAccessPolicyResource struct{ client *clients.Client }
@@ -49,7 +50,7 @@ func (r *m365CrossTenantAccessPolicyResource) Schema(_ context.Context, _ resour
 		Description: "Manages the M365CrossTenantAccessPolicy configuration via Set-M365CrossTenantAccessPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":             schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"authorization_policy": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AuthorizationPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"object_id":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ObjectId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
@@ -69,9 +70,18 @@ func (r *m365CrossTenantAccessPolicyResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config m365CrossTenantAccessPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetM365CrossTenantAccessPolicyParams{}
-	sp.AuthorizationPolicy = plan.AuthorizationPolicy.ValueString()
-	sp.ObjectId = plan.ObjectId.ValueString()
+	if !config.AuthorizationPolicy.IsNull() {
+		sp.AuthorizationPolicy = plan.AuthorizationPolicy.ValueString()
+	}
+	if !config.ObjectId.IsNull() {
+		sp.ObjectId = plan.ObjectId.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -110,8 +120,12 @@ func (r *m365CrossTenantAccessPolicyResource) Update(ctx context.Context, req re
 	}
 	id := r.identityOf(state)
 	sp := exo.SetM365CrossTenantAccessPolicyParams{}
-	sp.AuthorizationPolicy = plan.AuthorizationPolicy.ValueString()
-	sp.ObjectId = plan.ObjectId.ValueString()
+	if !plan.AuthorizationPolicy.Equal(state.AuthorizationPolicy) {
+		sp.AuthorizationPolicy = plan.AuthorizationPolicy.ValueString()
+	}
+	if !plan.ObjectId.Equal(state.ObjectId) {
+		sp.ObjectId = plan.ObjectId.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -136,6 +150,40 @@ func (r *m365CrossTenantAccessPolicyResource) Delete(_ context.Context, _ resour
 func (r *m365CrossTenantAccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *m365CrossTenantAccessPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan m365CrossTenantAccessPolicyModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetM365CrossTenantAccessPolicy(ctx, exo.GetM365CrossTenantAccessPolicyParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur m365CrossTenantAccessPolicyModel
+	readM365CrossTenantAccessPolicy(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AuthorizationPolicy.IsUnknown() {
+		plan.AuthorizationPolicy = cur.AuthorizationPolicy
+	}
+	if plan.ObjectId.IsUnknown() {
+		plan.ObjectId = cur.ObjectId
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *m365CrossTenantAccessPolicyResource) identityOf(m m365CrossTenantAccessPolicyModel) string {

@@ -17,7 +17,7 @@ Manages the OnPremisesOrganization object via New-OnPremisesOrganization / Get-O
 
 ### Required
 
-- `hybrid_domains` (String) Maps to the -HybridDomains parameter.
+- `hybrid_domains` (Set of String) Maps to the -HybridDomains parameter.
 - `inbound_connector` (String) Maps to the -InboundConnector parameter.
 - `name` (String) Maps to the -Name parameter.
 - `organization_guid` (String) Maps to the -OrganizationGuid parameter.

@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &m365DataAtRestEncryptionPolicyAssignmentResource{}
 	_ resource.ResourceWithConfigure   = &m365DataAtRestEncryptionPolicyAssignmentResource{}
 	_ resource.ResourceWithImportState = &m365DataAtRestEncryptionPolicyAssignmentResource{}
+	_ resource.ResourceWithModifyPlan  = &m365DataAtRestEncryptionPolicyAssignmentResource{}
 )
 
 type m365DataAtRestEncryptionPolicyAssignmentResource struct{ client *clients.Client }
@@ -48,7 +49,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Schema(_ context.Cont
 		Description: "Manages the M365DataAtRestEncryptionPolicyAssignment configuration via Set-M365DataAtRestEncryptionPolicyAssignment.",
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"data_encryption_policy": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DataEncryptionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -67,9 +68,14 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Create(ctx context.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config m365DataAtRestEncryptionPolicyAssignmentModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetM365DataAtRestEncryptionPolicyAssignmentParams{}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = v
+	if v := config.DataEncryptionPolicy.ValueString(); v != "" {
+		sp.DataEncryptionPolicy = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -109,8 +115,10 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Update(ctx context.Co
 	}
 	id := r.identityOf(state)
 	sp := exo.SetM365DataAtRestEncryptionPolicyAssignmentParams{}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = v
+	if !plan.DataEncryptionPolicy.Equal(state.DataEncryptionPolicy) {
+		if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
+			sp.DataEncryptionPolicy = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,9 +128,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Update(ctx context.Co
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"DataEncryptionPolicy": cfg.DataEncryptionPolicy,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -135,6 +141,37 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Delete(_ context.Cont
 func (r *m365DataAtRestEncryptionPolicyAssignmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *m365DataAtRestEncryptionPolicyAssignmentResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan m365DataAtRestEncryptionPolicyAssignmentModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetM365DataAtRestEncryptionPolicyAssignment(ctx, exo.GetM365DataAtRestEncryptionPolicyAssignmentParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur m365DataAtRestEncryptionPolicyAssignmentModel
+	readM365DataAtRestEncryptionPolicyAssignment(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.DataEncryptionPolicy.IsUnknown() {
+		plan.DataEncryptionPolicy = cur.DataEncryptionPolicy
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *m365DataAtRestEncryptionPolicyAssignmentResource) identityOf(m m365DataAtRestEncryptionPolicyAssignmentModel) string {
@@ -175,7 +212,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) refresh(ctx context.C
 func readM365DataAtRestEncryptionPolicyAssignment(ctx context.Context, obj map[string]any, m *m365DataAtRestEncryptionPolicyAssignmentModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.DataEncryptionPolicy = types.StringValue(getString(obj, "DataEncryptionPolicy"))
+	m.DataEncryptionPolicy = types.StringValue(getObjectJSON(obj, "DataEncryptionPolicy"))
 	_ = ctx
 }
 

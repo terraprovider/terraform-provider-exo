@@ -53,7 +53,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) Schema(_ context.Context, _ res
 		Description: "Manages the TenantAllowBlockListSpoofItems object via New-TenantAllowBlockListSpoofItems / Get-TenantAllowBlockListSpoofItems / Set-TenantAllowBlockListSpoofItems / Remove-TenantAllowBlockListSpoofItems.",
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"action":                 schema.StringAttribute{Required: true, Description: "Maps to the -Action parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"ids":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Ids parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sending_infrastructure": schema.StringAttribute{Required: true, Description: "Maps to the -SendingInfrastructure parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -77,11 +77,24 @@ func (r *tenantAllowBlockListSpoofItemsResource) Create(ctx context.Context, req
 		return
 	}
 
-	p := exo.NewTenantAllowBlockListSpoofItemsParams{
-		Action:                plan.Action.ValueString(),
-		SendingInfrastructure: plan.SendingInfrastructure.ValueString(),
-		SpoofType:             plan.SpoofType.ValueString(),
-		SpoofedUser:           plan.SpoofedUser.ValueString(),
+	var config tenantAllowBlockListSpoofItemsModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewTenantAllowBlockListSpoofItemsParams{}
+	if !config.Action.IsNull() {
+		p.Action = plan.Action.ValueString()
+	}
+	if !config.SendingInfrastructure.IsNull() {
+		p.SendingInfrastructure = plan.SendingInfrastructure.ValueString()
+	}
+	if !config.SpoofType.IsNull() {
+		p.SpoofType = plan.SpoofType.ValueString()
+	}
+	if !config.SpoofedUser.IsNull() {
+		p.SpoofedUser = plan.SpoofedUser.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -133,7 +146,11 @@ func (r *tenantAllowBlockListSpoofItemsResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetTenantAllowBlockListSpoofItemsParams{}
 	sp.Identity = id
-	sp.Ids = toStringSlice(ctx, plan.Ids, &resp.Diagnostics)
+	if !plan.Ids.Equal(state.Ids) {
+		if !plan.Ids.IsNull() && !plan.Ids.IsUnknown() {
+			sp.Ids = append([]string{}, toStringSlice(ctx, plan.Ids, &resp.Diagnostics)...)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

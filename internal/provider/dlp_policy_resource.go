@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -41,7 +40,7 @@ type dlpPolicyModel struct {
 	Parameters   types.String `tfsdk:"parameters"`
 	State        types.String `tfsdk:"state"`
 	Template     types.String `tfsdk:"template"`
-	TemplateData types.Set    `tfsdk:"template_data"`
+	TemplateData types.String `tfsdk:"template_data"`
 }
 
 func (r *dlpPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -60,7 +59,7 @@ func (r *dlpPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"parameters":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Parameters parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"state":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -State parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"template":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Template parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"template_data": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TemplateData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"template_data": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TemplateData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -79,20 +78,33 @@ func (r *dlpPolicyResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	p := exo.NewDlpPolicyParams{
-		Description:  plan.Description.ValueString(),
-		Name:         plan.Name.ValueString(),
-		Template:     plan.Template.ValueString(),
-		TemplateData: toStringSlice(ctx, plan.TemplateData, &resp.Diagnostics),
+	var config dlpPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.Mode.ValueString(); v != "" {
-		p.Mode = v
+
+	p := exo.NewDlpPolicyParams{}
+	if !config.Description.IsNull() {
+		p.Description = plan.Description.ValueString()
 	}
-	if v := plan.Parameters.ValueString(); v != "" {
-		p.Parameters = v
+	if v := config.Mode.ValueString(); v != "" {
+		p.Mode = objectParam(v)
 	}
-	if v := plan.State.ValueString(); v != "" {
-		p.State = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if v := config.Parameters.ValueString(); v != "" {
+		p.Parameters = objectParam(v)
+	}
+	if v := config.State.ValueString(); v != "" {
+		p.State = objectParam(v)
+	}
+	if !config.Template.IsNull() {
+		p.Template = plan.Template.ValueString()
+	}
+	if v := config.TemplateData.ValueString(); v != "" {
+		p.TemplateData = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -144,13 +156,21 @@ func (r *dlpPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetDlpPolicyParams{}
 	sp.Identity = id
-	sp.Description = plan.Description.ValueString()
-	if v := plan.Mode.ValueString(); v != "" {
-		sp.Mode = v
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
 	}
-	sp.Name = plan.Name.ValueString()
-	if v := plan.State.ValueString(); v != "" {
-		sp.State = v
+	if !plan.Mode.Equal(state.Mode) {
+		if v := plan.Mode.ValueString(); v != "" {
+			sp.Mode = objectParam(v)
+		}
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.State.Equal(state.State) {
+		if v := plan.State.ValueString(); v != "" {
+			sp.State = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -162,9 +182,7 @@ func (r *dlpPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Description": cfg.Description,
-		"Mode":        cfg.Mode,
 		"Name":        cfg.Name,
-		"State":       cfg.State,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -227,12 +245,12 @@ func readDlpPolicy(ctx context.Context, obj map[string]any, m *dlpPolicyModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Description = types.StringValue(getString(obj, "Description"))
-	m.Mode = types.StringValue(getString(obj, "Mode"))
+	m.Mode = types.StringValue(getObjectJSON(obj, "Mode"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.Parameters = types.StringValue(getString(obj, "Parameters"))
-	m.State = types.StringValue(getString(obj, "State"))
+	m.Parameters = types.StringValue(getObjectJSON(obj, "Parameters"))
+	m.State = types.StringValue(getObjectJSON(obj, "State"))
 	m.Template = types.StringValue(getString(obj, "Template"))
-	m.TemplateData = stringSetValue(ctx, getStringSlice(obj, "TemplateData"))
+	m.TemplateData = types.StringValue(getObjectJSON(obj, "TemplateData"))
 	_ = ctx
 }
 
@@ -243,5 +261,5 @@ func (r *dlpPolicyResource) reconcileState(cfg, read *dlpPolicyModel) {
 	read.Parameters = reconcile.KeepStr(cfg.Parameters, read.Parameters)
 	read.State = reconcile.KeepStr(cfg.State, read.State)
 	read.Template = reconcile.KeepStr(cfg.Template, read.Template)
-	read.TemplateData = reconcile.KeepSet(cfg.TemplateData, read.TemplateData)
+	read.TemplateData = reconcile.KeepStr(cfg.TemplateData, read.TemplateData)
 }

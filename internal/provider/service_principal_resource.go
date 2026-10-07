@@ -51,7 +51,7 @@ func (r *servicePrincipalResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Manages the ServicePrincipal object via New-ServicePrincipal / Get-ServicePrincipal / Set-ServicePrincipal / Remove-ServicePrincipal.",
 		Attributes: map[string]schema.Attribute{
 			"id":           schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"app_id":       schema.StringAttribute{Required: true, Description: "Maps to the -AppId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"display_name": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"object_id":    schema.StringAttribute{Required: true, Description: "Maps to the -ObjectId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -75,11 +75,24 @@ func (r *servicePrincipalResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	p := exo.NewServicePrincipalParams{
-		AppId:       plan.AppId.ValueString(),
-		DisplayName: plan.DisplayName.ValueString(),
-		ObjectId:    plan.ObjectId.ValueString(),
-		ServiceId:   plan.ServiceId.ValueString(),
+	var config servicePrincipalModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	p := exo.NewServicePrincipalParams{}
+	if !config.AppId.IsNull() {
+		p.AppId = plan.AppId.ValueString()
+	}
+	if !config.DisplayName.IsNull() {
+		p.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !config.ObjectId.IsNull() {
+		p.ObjectId = plan.ObjectId.ValueString()
+	}
+	if !config.ServiceId.IsNull() {
+		p.ServiceId = plan.ServiceId.ValueString()
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -131,8 +144,14 @@ func (r *servicePrincipalResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetServicePrincipalParams{}
 	sp.Identity = id
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.OverrideEnforceExoAppRbacPermissions = plan.OverrideEnforceExoAppRbacPermissions.ValueBool()
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !plan.OverrideEnforceExoAppRbacPermissions.Equal(state.OverrideEnforceExoAppRbacPermissions) {
+		if !plan.OverrideEnforceExoAppRbacPermissions.IsUnknown() {
+			sp.OverrideEnforceExoAppRbacPermissions = plan.OverrideEnforceExoAppRbacPermissions.ValueBoolPointer()
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -33,7 +33,7 @@ Read-Only:
 - `download_only` (Boolean) Maps to the -DownloadOnly parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `etoken` (String) Maps to the -Etoken parameter.
-- `file_data` (Set of String) Maps to the -FileData parameter.
+- `file_data` (String) Maps to the -FileData parameter.
 - `file_stream` (String) Maps to the -FileStream parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
@@ -48,5 +48,5 @@ Read-Only:
 - `provided_to` (String) Maps to the -ProvidedTo parameter.
 - `update_app_state` (Boolean) Maps to the -UpdateAppState parameter.
 - `url` (String) Maps to the -Url parameter.
-- `user_list` (String) Maps to the -UserList parameter.
+- `user_list` (Set of String) Maps to the -UserList parameter.
 - `version` (String) Maps to the -Version parameter.

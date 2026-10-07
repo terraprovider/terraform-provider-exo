@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -39,13 +41,14 @@ type hostedContentFilterPolicyModel struct {
 	Identity                                 types.String `tfsdk:"identity"`
 	AddXHeaderValue                          types.String `tfsdk:"add_x_header_value"`
 	AdminDisplayName                         types.String `tfsdk:"admin_display_name"`
-	AllowedSenderDomains                     types.String `tfsdk:"allowed_sender_domains"`
-	AllowedSenders                           types.String `tfsdk:"allowed_senders"`
-	BlockedSenderDomains                     types.String `tfsdk:"blocked_sender_domains"`
-	BlockedSenders                           types.String `tfsdk:"blocked_senders"`
+	AllowedSenderDomains                     types.Set    `tfsdk:"allowed_sender_domains"`
+	AllowedSenders                           types.Set    `tfsdk:"allowed_senders"`
+	BlockedSenderDomains                     types.Set    `tfsdk:"blocked_sender_domains"`
+	BlockedSenders                           types.Set    `tfsdk:"blocked_senders"`
 	BulkMovesEnabled                         types.String `tfsdk:"bulk_moves_enabled"`
 	BulkQuarantineTag                        types.String `tfsdk:"bulk_quarantine_tag"`
 	BulkSpamAction                           types.String `tfsdk:"bulk_spam_action"`
+	BulkThreshold                            types.Int64  `tfsdk:"bulk_threshold"`
 	DownloadLink                             types.Bool   `tfsdk:"download_link"`
 	EnableEndUserSpamNotifications           types.Bool   `tfsdk:"enable_end_user_spam_notifications"`
 	EnableLanguageBlockList                  types.Bool   `tfsdk:"enable_language_block_list"`
@@ -53,7 +56,9 @@ type hostedContentFilterPolicyModel struct {
 	EndUserSpamNotificationCustomFromAddress types.String `tfsdk:"end_user_spam_notification_custom_from_address"`
 	EndUserSpamNotificationCustomFromName    types.String `tfsdk:"end_user_spam_notification_custom_from_name"`
 	EndUserSpamNotificationCustomSubject     types.String `tfsdk:"end_user_spam_notification_custom_subject"`
+	EndUserSpamNotificationFrequency         types.Int64  `tfsdk:"end_user_spam_notification_frequency"`
 	EndUserSpamNotificationLanguage          types.String `tfsdk:"end_user_spam_notification_language"`
+	EndUserSpamNotificationLimit             types.Int64  `tfsdk:"end_user_spam_notification_limit"`
 	HighConfidencePhishAction                types.String `tfsdk:"high_confidence_phish_action"`
 	HighConfidencePhishQuarantineTag         types.String `tfsdk:"high_confidence_phish_quarantine_tag"`
 	HighConfidenceSpamAction                 types.String `tfsdk:"high_confidence_spam_action"`
@@ -64,7 +69,7 @@ type hostedContentFilterPolicyModel struct {
 	IncreaseScoreWithRedirectToOtherPort     types.String `tfsdk:"increase_score_with_redirect_to_other_port"`
 	InlineSafetyTipsEnabled                  types.Bool   `tfsdk:"inline_safety_tips_enabled"`
 	IntraOrgFilterState                      types.String `tfsdk:"intra_org_filter_state"`
-	LanguageBlockList                        types.String `tfsdk:"language_block_list"`
+	LanguageBlockList                        types.Set    `tfsdk:"language_block_list"`
 	MakeDefault                              types.Bool   `tfsdk:"make_default"`
 	MarkAsSpamBulkMail                       types.String `tfsdk:"mark_as_spam_bulk_mail"`
 	MarkAsSpamEmbedTagsInHtml                types.String `tfsdk:"mark_as_spam_embed_tags_in_html"`
@@ -83,14 +88,15 @@ type hostedContentFilterPolicyModel struct {
 	PhishQuarantineTag                       types.String `tfsdk:"phish_quarantine_tag"`
 	PhishSpamAction                          types.String `tfsdk:"phish_spam_action"`
 	PhishZapEnabled                          types.Bool   `tfsdk:"phish_zap_enabled"`
+	QuarantineRetentionPeriod                types.Int64  `tfsdk:"quarantine_retention_period"`
 	RecommendedPolicyType                    types.String `tfsdk:"recommended_policy_type"`
-	RedirectToRecipients                     types.String `tfsdk:"redirect_to_recipients"`
-	RegionBlockList                          types.String `tfsdk:"region_block_list"`
+	RedirectToRecipients                     types.Set    `tfsdk:"redirect_to_recipients"`
+	RegionBlockList                          types.Set    `tfsdk:"region_block_list"`
 	SpamAction                               types.String `tfsdk:"spam_action"`
 	SpamQuarantineTag                        types.String `tfsdk:"spam_quarantine_tag"`
 	SpamZapEnabled                           types.Bool   `tfsdk:"spam_zap_enabled"`
 	TestModeAction                           types.String `tfsdk:"test_mode_action"`
-	TestModeBccToRecipients                  types.String `tfsdk:"test_mode_bcc_to_recipients"`
+	TestModeBccToRecipients                  types.Set    `tfsdk:"test_mode_bcc_to_recipients"`
 }
 
 func (r *hostedContentFilterPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -102,16 +108,17 @@ func (r *hostedContentFilterPolicyResource) Schema(_ context.Context, _ resource
 		Description: "Manages the HostedContentFilterPolicy object via New-HostedContentFilterPolicy / Get-HostedContentFilterPolicy / Set-HostedContentFilterPolicy / Remove-HostedContentFilterPolicy.",
 		Attributes: map[string]schema.Attribute{
 			"id":                                 schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":                           schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"add_x_header_value":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AddXHeaderValue parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"admin_display_name":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_sender_domains":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedSenderDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"allowed_senders":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AllowedSenders parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"blocked_sender_domains":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedSenderDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"blocked_senders":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BlockedSenders parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"allowed_sender_domains":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedSenderDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"allowed_senders":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AllowedSenders parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"blocked_sender_domains":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedSenderDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"blocked_senders":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BlockedSenders parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"bulk_moves_enabled":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkMovesEnabled parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"bulk_quarantine_tag":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"bulk_spam_action":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BulkSpamAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bulk_threshold":                     schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -BulkThreshold parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"download_link":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DownloadLink parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_end_user_spam_notifications": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableEndUserSpamNotifications parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"enable_language_block_list":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableLanguageBlockList parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -119,7 +126,9 @@ func (r *hostedContentFilterPolicyResource) Schema(_ context.Context, _ resource
 			"end_user_spam_notification_custom_from_address": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_custom_from_name":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomFromName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_custom_subject":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationCustomSubject parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_spam_notification_frequency":           schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationFrequency parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"end_user_spam_notification_language":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationLanguage parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"end_user_spam_notification_limit":               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -EndUserSpamNotificationLimit parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"high_confidence_phish_action":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HighConfidencePhishAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"high_confidence_phish_quarantine_tag":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HighConfidencePhishQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"high_confidence_spam_action":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HighConfidenceSpamAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -130,7 +139,7 @@ func (r *hostedContentFilterPolicyResource) Schema(_ context.Context, _ resource
 			"increase_score_with_redirect_to_other_port":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IncreaseScoreWithRedirectToOtherPort parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"inline_safety_tips_enabled":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -InlineSafetyTipsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"intra_org_filter_state":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IntraOrgFilterState parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"language_block_list":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LanguageBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"language_block_list":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -LanguageBlockList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"make_default":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MakeDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mark_as_spam_bulk_mail":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MarkAsSpamBulkMail parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mark_as_spam_embed_tags_in_html":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MarkAsSpamEmbedTagsInHtml parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -149,14 +158,15 @@ func (r *hostedContentFilterPolicyResource) Schema(_ context.Context, _ resource
 			"phish_quarantine_tag":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhishQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phish_spam_action":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhishSpamAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phish_zap_enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PhishZapEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
+			"quarantine_retention_period":                    schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -QuarantineRetentionPeriod parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recommended_policy_type":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecommendedPolicyType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"redirect_to_recipients":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RedirectToRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"region_block_list":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RegionBlockList parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"redirect_to_recipients":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RedirectToRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"region_block_list":                              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RegionBlockList parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"spam_action":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SpamAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"spam_quarantine_tag":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SpamQuarantineTag parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"spam_zap_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SpamZapEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"test_mode_action":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TestModeAction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"test_mode_bcc_to_recipients":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TestModeBccToRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"test_mode_bcc_to_recipients":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -TestModeBccToRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -175,130 +185,221 @@ func (r *hostedContentFilterPolicyResource) Create(ctx context.Context, req reso
 		return
 	}
 
-	p := exo.NewHostedContentFilterPolicyParams{
-		AddXHeaderValue:                       plan.AddXHeaderValue.ValueString(),
-		AdminDisplayName:                      plan.AdminDisplayName.ValueString(),
-		BulkQuarantineTag:                     plan.BulkQuarantineTag.ValueString(),
-		DownloadLink:                          plan.DownloadLink.ValueBool(),
-		EnableEndUserSpamNotifications:        plan.EnableEndUserSpamNotifications.ValueBool(),
-		EnableLanguageBlockList:               plan.EnableLanguageBlockList.ValueBool(),
-		EnableRegionBlockList:                 plan.EnableRegionBlockList.ValueBool(),
-		EndUserSpamNotificationCustomFromName: plan.EndUserSpamNotificationCustomFromName.ValueString(),
-		EndUserSpamNotificationCustomSubject:  plan.EndUserSpamNotificationCustomSubject.ValueString(),
-		HighConfidencePhishQuarantineTag:      plan.HighConfidencePhishQuarantineTag.ValueString(),
-		HighConfidenceSpamQuarantineTag:       plan.HighConfidenceSpamQuarantineTag.ValueString(),
-		InlineSafetyTipsEnabled:               plan.InlineSafetyTipsEnabled.ValueBool(),
-		ModifySubjectValue:                    plan.ModifySubjectValue.ValueString(),
-		Name:                                  plan.Name.ValueString(),
-		PhishQuarantineTag:                    plan.PhishQuarantineTag.ValueString(),
-		PhishZapEnabled:                       plan.PhishZapEnabled.ValueBool(),
-		SpamQuarantineTag:                     plan.SpamQuarantineTag.ValueString(),
-		SpamZapEnabled:                        plan.SpamZapEnabled.ValueBool(),
+	var config hostedContentFilterPolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.AllowedSenderDomains.ValueString(); v != "" {
-		p.AllowedSenderDomains = v
+
+	p := exo.NewHostedContentFilterPolicyParams{}
+	if !config.AddXHeaderValue.IsNull() {
+		p.AddXHeaderValue = plan.AddXHeaderValue.ValueString()
 	}
-	if v := plan.AllowedSenders.ValueString(); v != "" {
-		p.AllowedSenders = v
+	if !config.AdminDisplayName.IsNull() {
+		p.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.BlockedSenderDomains.ValueString(); v != "" {
-		p.BlockedSenderDomains = v
+	if !config.AllowedSenderDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.AllowedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+			p.AllowedSenderDomains = v
+		}
 	}
-	if v := plan.BlockedSenders.ValueString(); v != "" {
-		p.BlockedSenders = v
+	if !config.AllowedSenders.IsNull() {
+		if v := toStringSlice(ctx, plan.AllowedSenders, &resp.Diagnostics); len(v) > 0 {
+			p.AllowedSenders = v
+		}
 	}
-	if v := plan.BulkMovesEnabled.ValueString(); v != "" {
-		p.BulkMovesEnabled = v
+	if !config.BlockedSenderDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.BlockedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+			p.BlockedSenderDomains = v
+		}
 	}
-	if v := plan.BulkSpamAction.ValueString(); v != "" {
-		p.BulkSpamAction = v
+	if !config.BlockedSenders.IsNull() {
+		if v := toStringSlice(ctx, plan.BlockedSenders, &resp.Diagnostics); len(v) > 0 {
+			p.BlockedSenders = v
+		}
 	}
-	if v := plan.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
-		p.EndUserSpamNotificationCustomFromAddress = v
+	if v := config.BulkMovesEnabled.ValueString(); v != "" {
+		p.BulkMovesEnabled = objectParam(v)
 	}
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		p.EndUserSpamNotificationLanguage = v
+	if !config.BulkQuarantineTag.IsNull() {
+		p.BulkQuarantineTag = plan.BulkQuarantineTag.ValueString()
 	}
-	if v := plan.HighConfidencePhishAction.ValueString(); v != "" {
-		p.HighConfidencePhishAction = v
+	if v := config.BulkSpamAction.ValueString(); v != "" {
+		p.BulkSpamAction = objectParam(v)
 	}
-	if v := plan.HighConfidenceSpamAction.ValueString(); v != "" {
-		p.HighConfidenceSpamAction = v
+	if !config.BulkThreshold.IsNull() {
+		if !plan.BulkThreshold.IsUnknown() {
+			p.BulkThreshold = plan.BulkThreshold.ValueInt64Pointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
-		p.IncreaseScoreWithBizOrInfoUrls = v
+	if !config.DownloadLink.IsNull() {
+		if !plan.DownloadLink.IsUnknown() {
+			p.DownloadLink = plan.DownloadLink.ValueBoolPointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithImageLinks.ValueString(); v != "" {
-		p.IncreaseScoreWithImageLinks = v
+	if !config.EnableEndUserSpamNotifications.IsNull() {
+		if !plan.EnableEndUserSpamNotifications.IsUnknown() {
+			p.EnableEndUserSpamNotifications = plan.EnableEndUserSpamNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithNumericIps.ValueString(); v != "" {
-		p.IncreaseScoreWithNumericIps = v
+	if !config.EnableLanguageBlockList.IsNull() {
+		if !plan.EnableLanguageBlockList.IsUnknown() {
+			p.EnableLanguageBlockList = plan.EnableLanguageBlockList.ValueBoolPointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
-		p.IncreaseScoreWithRedirectToOtherPort = v
+	if !config.EnableRegionBlockList.IsNull() {
+		if !plan.EnableRegionBlockList.IsUnknown() {
+			p.EnableRegionBlockList = plan.EnableRegionBlockList.ValueBoolPointer()
+		}
 	}
-	if v := plan.IntraOrgFilterState.ValueString(); v != "" {
-		p.IntraOrgFilterState = v
+	if v := config.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
+		p.EndUserSpamNotificationCustomFromAddress = objectParam(v)
 	}
-	if v := plan.LanguageBlockList.ValueString(); v != "" {
-		p.LanguageBlockList = v
+	if !config.EndUserSpamNotificationCustomFromName.IsNull() {
+		p.EndUserSpamNotificationCustomFromName = plan.EndUserSpamNotificationCustomFromName.ValueString()
 	}
-	if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
-		p.MarkAsSpamBulkMail = v
+	if !config.EndUserSpamNotificationCustomSubject.IsNull() {
+		p.EndUserSpamNotificationCustomSubject = plan.EndUserSpamNotificationCustomSubject.ValueString()
 	}
-	if v := plan.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
-		p.MarkAsSpamEmbedTagsInHtml = v
+	if !config.EndUserSpamNotificationFrequency.IsNull() {
+		if !plan.EndUserSpamNotificationFrequency.IsUnknown() {
+			p.EndUserSpamNotificationFrequency = plan.EndUserSpamNotificationFrequency.ValueInt64Pointer()
+		}
 	}
-	if v := plan.MarkAsSpamEmptyMessages.ValueString(); v != "" {
-		p.MarkAsSpamEmptyMessages = v
+	if v := config.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+		p.EndUserSpamNotificationLanguage = objectParam(v)
 	}
-	if v := plan.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
-		p.MarkAsSpamFormTagsInHtml = v
+	if !config.EndUserSpamNotificationLimit.IsNull() {
+		if !plan.EndUserSpamNotificationLimit.IsUnknown() {
+			p.EndUserSpamNotificationLimit = plan.EndUserSpamNotificationLimit.ValueInt64Pointer()
+		}
 	}
-	if v := plan.MarkAsSpamFramesInHtml.ValueString(); v != "" {
-		p.MarkAsSpamFramesInHtml = v
+	if v := config.HighConfidencePhishAction.ValueString(); v != "" {
+		p.HighConfidencePhishAction = objectParam(v)
 	}
-	if v := plan.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
-		p.MarkAsSpamFromAddressAuthFail = v
+	if !config.HighConfidencePhishQuarantineTag.IsNull() {
+		p.HighConfidencePhishQuarantineTag = plan.HighConfidencePhishQuarantineTag.ValueString()
 	}
-	if v := plan.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
-		p.MarkAsSpamJavaScriptInHtml = v
+	if v := config.HighConfidenceSpamAction.ValueString(); v != "" {
+		p.HighConfidenceSpamAction = objectParam(v)
 	}
-	if v := plan.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
-		p.MarkAsSpamNdrBackscatter = v
+	if !config.HighConfidenceSpamQuarantineTag.IsNull() {
+		p.HighConfidenceSpamQuarantineTag = plan.HighConfidenceSpamQuarantineTag.ValueString()
 	}
-	if v := plan.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
-		p.MarkAsSpamObjectTagsInHtml = v
+	if v := config.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
+		p.IncreaseScoreWithBizOrInfoUrls = objectParam(v)
 	}
-	if v := plan.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
-		p.MarkAsSpamSensitiveWordList = v
+	if v := config.IncreaseScoreWithImageLinks.ValueString(); v != "" {
+		p.IncreaseScoreWithImageLinks = objectParam(v)
 	}
-	if v := plan.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
-		p.MarkAsSpamSpfRecordHardFail = v
+	if v := config.IncreaseScoreWithNumericIps.ValueString(); v != "" {
+		p.IncreaseScoreWithNumericIps = objectParam(v)
 	}
-	if v := plan.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
-		p.MarkAsSpamWebBugsInHtml = v
+	if v := config.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
+		p.IncreaseScoreWithRedirectToOtherPort = objectParam(v)
 	}
-	if v := plan.PhishSpamAction.ValueString(); v != "" {
-		p.PhishSpamAction = v
+	if !config.InlineSafetyTipsEnabled.IsNull() {
+		if !plan.InlineSafetyTipsEnabled.IsUnknown() {
+			p.InlineSafetyTipsEnabled = plan.InlineSafetyTipsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RecommendedPolicyType.ValueString(); v != "" {
-		p.RecommendedPolicyType = v
+	if v := config.IntraOrgFilterState.ValueString(); v != "" {
+		p.IntraOrgFilterState = objectParam(v)
 	}
-	if v := plan.RedirectToRecipients.ValueString(); v != "" {
-		p.RedirectToRecipients = v
+	if !config.LanguageBlockList.IsNull() {
+		if v := toStringSlice(ctx, plan.LanguageBlockList, &resp.Diagnostics); len(v) > 0 {
+			p.LanguageBlockList = v
+		}
 	}
-	if v := plan.RegionBlockList.ValueString(); v != "" {
-		p.RegionBlockList = v
+	if v := config.MarkAsSpamBulkMail.ValueString(); v != "" {
+		p.MarkAsSpamBulkMail = objectParam(v)
 	}
-	if v := plan.SpamAction.ValueString(); v != "" {
-		p.SpamAction = v
+	if v := config.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
+		p.MarkAsSpamEmbedTagsInHtml = objectParam(v)
 	}
-	if v := plan.TestModeAction.ValueString(); v != "" {
-		p.TestModeAction = v
+	if v := config.MarkAsSpamEmptyMessages.ValueString(); v != "" {
+		p.MarkAsSpamEmptyMessages = objectParam(v)
 	}
-	if v := plan.TestModeBccToRecipients.ValueString(); v != "" {
-		p.TestModeBccToRecipients = v
+	if v := config.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
+		p.MarkAsSpamFormTagsInHtml = objectParam(v)
+	}
+	if v := config.MarkAsSpamFramesInHtml.ValueString(); v != "" {
+		p.MarkAsSpamFramesInHtml = objectParam(v)
+	}
+	if v := config.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
+		p.MarkAsSpamFromAddressAuthFail = objectParam(v)
+	}
+	if v := config.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
+		p.MarkAsSpamJavaScriptInHtml = objectParam(v)
+	}
+	if v := config.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
+		p.MarkAsSpamNdrBackscatter = objectParam(v)
+	}
+	if v := config.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
+		p.MarkAsSpamObjectTagsInHtml = objectParam(v)
+	}
+	if v := config.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
+		p.MarkAsSpamSensitiveWordList = objectParam(v)
+	}
+	if v := config.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
+		p.MarkAsSpamSpfRecordHardFail = objectParam(v)
+	}
+	if v := config.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
+		p.MarkAsSpamWebBugsInHtml = objectParam(v)
+	}
+	if !config.ModifySubjectValue.IsNull() {
+		p.ModifySubjectValue = plan.ModifySubjectValue.ValueString()
+	}
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.PhishQuarantineTag.IsNull() {
+		p.PhishQuarantineTag = plan.PhishQuarantineTag.ValueString()
+	}
+	if v := config.PhishSpamAction.ValueString(); v != "" {
+		p.PhishSpamAction = objectParam(v)
+	}
+	if !config.PhishZapEnabled.IsNull() {
+		if !plan.PhishZapEnabled.IsUnknown() {
+			p.PhishZapEnabled = plan.PhishZapEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.QuarantineRetentionPeriod.IsNull() {
+		if !plan.QuarantineRetentionPeriod.IsUnknown() {
+			p.QuarantineRetentionPeriod = plan.QuarantineRetentionPeriod.ValueInt64Pointer()
+		}
+	}
+	if v := config.RecommendedPolicyType.ValueString(); v != "" {
+		p.RecommendedPolicyType = objectParam(v)
+	}
+	if !config.RedirectToRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.RedirectToRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.RedirectToRecipients = v
+		}
+	}
+	if !config.RegionBlockList.IsNull() {
+		if v := toStringSlice(ctx, plan.RegionBlockList, &resp.Diagnostics); len(v) > 0 {
+			p.RegionBlockList = v
+		}
+	}
+	if v := config.SpamAction.ValueString(); v != "" {
+		p.SpamAction = objectParam(v)
+	}
+	if !config.SpamQuarantineTag.IsNull() {
+		p.SpamQuarantineTag = plan.SpamQuarantineTag.ValueString()
+	}
+	if !config.SpamZapEnabled.IsNull() {
+		if !plan.SpamZapEnabled.IsUnknown() {
+			p.SpamZapEnabled = plan.SpamZapEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.TestModeAction.ValueString(); v != "" {
+		p.TestModeAction = objectParam(v)
+	}
+	if !config.TestModeBccToRecipients.IsNull() {
+		if v := toStringSlice(ctx, plan.TestModeBccToRecipients, &resp.Diagnostics); len(v) > 0 {
+			p.TestModeBccToRecipients = v
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -350,125 +451,341 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	id := r.identityOf(state)
 	sp := exo.SetHostedContentFilterPolicyParams{}
 	sp.Identity = id
-	sp.AddXHeaderValue = plan.AddXHeaderValue.ValueString()
-	sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
-	if v := plan.AllowedSenderDomains.ValueString(); v != "" {
-		sp.AllowedSenderDomains = v
+	var cur *hostedContentFilterPolicyModel
+	curRead := false
+	current := func() *hostedContentFilterPolicyModel {
+		if !curRead {
+			curRead = true
+			var m hostedContentFilterPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-HostedContentFilterPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.AllowedSenders.ValueString(); v != "" {
-		sp.AllowedSenders = v
+	if !plan.AddXHeaderValue.Equal(state.AddXHeaderValue) {
+		sp.AddXHeaderValue = plan.AddXHeaderValue.ValueString()
 	}
-	if v := plan.BlockedSenderDomains.ValueString(); v != "" {
-		sp.BlockedSenderDomains = v
+	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
+		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.BlockedSenders.ValueString(); v != "" {
-		sp.BlockedSenders = v
+	if !plan.AllowedSenderDomains.Equal(state.AllowedSenderDomains) {
+		if !plan.AllowedSenderDomains.IsNull() && !plan.AllowedSenderDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AllowedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedSenderDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedSenderDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedSenderDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.BulkMovesEnabled.ValueString(); v != "" {
-		sp.BulkMovesEnabled = v
+	if !plan.AllowedSenders.Equal(state.AllowedSenders) {
+		if !plan.AllowedSenders.IsNull() && !plan.AllowedSenders.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AllowedSenders, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedSenders = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedSenders, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedSendersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.BulkQuarantineTag = plan.BulkQuarantineTag.ValueString()
-	if v := plan.BulkSpamAction.ValueString(); v != "" {
-		sp.BulkSpamAction = v
+	if !plan.BlockedSenderDomains.Equal(state.BlockedSenderDomains) {
+		if !plan.BlockedSenderDomains.IsNull() && !plan.BlockedSenderDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSenderDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSenderDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSenderDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.DownloadLink = plan.DownloadLink.ValueBool()
-	sp.EnableEndUserSpamNotifications = plan.EnableEndUserSpamNotifications.ValueBool()
-	sp.EnableLanguageBlockList = plan.EnableLanguageBlockList.ValueBool()
-	sp.EnableRegionBlockList = plan.EnableRegionBlockList.ValueBool()
-	if v := plan.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
-		sp.EndUserSpamNotificationCustomFromAddress = v
+	if !plan.BlockedSenders.Equal(state.BlockedSenders) {
+		if !plan.BlockedSenders.IsNull() && !plan.BlockedSenders.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BlockedSenders, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSenders = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSenders, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.EndUserSpamNotificationCustomFromName = plan.EndUserSpamNotificationCustomFromName.ValueString()
-	sp.EndUserSpamNotificationCustomSubject = plan.EndUserSpamNotificationCustomSubject.ValueString()
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		sp.EndUserSpamNotificationLanguage = v
+	if !plan.BulkMovesEnabled.Equal(state.BulkMovesEnabled) {
+		if v := plan.BulkMovesEnabled.ValueString(); v != "" {
+			sp.BulkMovesEnabled = objectParam(v)
+		}
 	}
-	if v := plan.HighConfidencePhishAction.ValueString(); v != "" {
-		sp.HighConfidencePhishAction = v
+	if !plan.BulkQuarantineTag.Equal(state.BulkQuarantineTag) {
+		sp.BulkQuarantineTag = plan.BulkQuarantineTag.ValueString()
 	}
-	sp.HighConfidencePhishQuarantineTag = plan.HighConfidencePhishQuarantineTag.ValueString()
-	if v := plan.HighConfidenceSpamAction.ValueString(); v != "" {
-		sp.HighConfidenceSpamAction = v
+	if !plan.BulkSpamAction.Equal(state.BulkSpamAction) {
+		if v := plan.BulkSpamAction.ValueString(); v != "" {
+			sp.BulkSpamAction = objectParam(v)
+		}
 	}
-	sp.HighConfidenceSpamQuarantineTag = plan.HighConfidenceSpamQuarantineTag.ValueString()
-	if v := plan.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
-		sp.IncreaseScoreWithBizOrInfoUrls = v
+	if !plan.BulkThreshold.Equal(state.BulkThreshold) {
+		if !plan.BulkThreshold.IsUnknown() {
+			sp.BulkThreshold = plan.BulkThreshold.ValueInt64Pointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithImageLinks.ValueString(); v != "" {
-		sp.IncreaseScoreWithImageLinks = v
+	if !plan.DownloadLink.Equal(state.DownloadLink) {
+		if !plan.DownloadLink.IsUnknown() {
+			sp.DownloadLink = plan.DownloadLink.ValueBoolPointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithNumericIps.ValueString(); v != "" {
-		sp.IncreaseScoreWithNumericIps = v
+	if !plan.EnableEndUserSpamNotifications.Equal(state.EnableEndUserSpamNotifications) {
+		if !plan.EnableEndUserSpamNotifications.IsUnknown() {
+			sp.EnableEndUserSpamNotifications = plan.EnableEndUserSpamNotifications.ValueBoolPointer()
+		}
 	}
-	if v := plan.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
-		sp.IncreaseScoreWithRedirectToOtherPort = v
+	if !plan.EnableLanguageBlockList.Equal(state.EnableLanguageBlockList) {
+		if !plan.EnableLanguageBlockList.IsUnknown() {
+			sp.EnableLanguageBlockList = plan.EnableLanguageBlockList.ValueBoolPointer()
+		}
 	}
-	sp.InlineSafetyTipsEnabled = plan.InlineSafetyTipsEnabled.ValueBool()
-	if v := plan.IntraOrgFilterState.ValueString(); v != "" {
-		sp.IntraOrgFilterState = v
+	if !plan.EnableRegionBlockList.Equal(state.EnableRegionBlockList) {
+		if !plan.EnableRegionBlockList.IsUnknown() {
+			sp.EnableRegionBlockList = plan.EnableRegionBlockList.ValueBoolPointer()
+		}
 	}
-	if v := plan.LanguageBlockList.ValueString(); v != "" {
-		sp.LanguageBlockList = v
+	if !plan.EndUserSpamNotificationCustomFromAddress.Equal(state.EndUserSpamNotificationCustomFromAddress) {
+		if v := plan.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
+			sp.EndUserSpamNotificationCustomFromAddress = objectParam(v)
+		}
 	}
-	sp.MakeDefault = plan.MakeDefault.ValueBool()
-	if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
-		sp.MarkAsSpamBulkMail = v
+	if !plan.EndUserSpamNotificationCustomFromName.Equal(state.EndUserSpamNotificationCustomFromName) {
+		sp.EndUserSpamNotificationCustomFromName = plan.EndUserSpamNotificationCustomFromName.ValueString()
 	}
-	if v := plan.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamEmbedTagsInHtml = v
+	if !plan.EndUserSpamNotificationCustomSubject.Equal(state.EndUserSpamNotificationCustomSubject) {
+		sp.EndUserSpamNotificationCustomSubject = plan.EndUserSpamNotificationCustomSubject.ValueString()
 	}
-	if v := plan.MarkAsSpamEmptyMessages.ValueString(); v != "" {
-		sp.MarkAsSpamEmptyMessages = v
+	if !plan.EndUserSpamNotificationFrequency.Equal(state.EndUserSpamNotificationFrequency) {
+		if !plan.EndUserSpamNotificationFrequency.IsUnknown() {
+			sp.EndUserSpamNotificationFrequency = plan.EndUserSpamNotificationFrequency.ValueInt64Pointer()
+		}
 	}
-	if v := plan.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamFormTagsInHtml = v
+	if !plan.EndUserSpamNotificationLanguage.Equal(state.EndUserSpamNotificationLanguage) {
+		if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+			sp.EndUserSpamNotificationLanguage = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamFramesInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamFramesInHtml = v
+	if !plan.EndUserSpamNotificationLimit.Equal(state.EndUserSpamNotificationLimit) {
+		if !plan.EndUserSpamNotificationLimit.IsUnknown() {
+			sp.EndUserSpamNotificationLimit = plan.EndUserSpamNotificationLimit.ValueInt64Pointer()
+		}
 	}
-	if v := plan.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
-		sp.MarkAsSpamFromAddressAuthFail = v
+	if !plan.HighConfidencePhishAction.Equal(state.HighConfidencePhishAction) {
+		if v := plan.HighConfidencePhishAction.ValueString(); v != "" {
+			sp.HighConfidencePhishAction = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamJavaScriptInHtml = v
+	if !plan.HighConfidencePhishQuarantineTag.Equal(state.HighConfidencePhishQuarantineTag) {
+		sp.HighConfidencePhishQuarantineTag = plan.HighConfidencePhishQuarantineTag.ValueString()
 	}
-	if v := plan.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
-		sp.MarkAsSpamNdrBackscatter = v
+	if !plan.HighConfidenceSpamAction.Equal(state.HighConfidenceSpamAction) {
+		if v := plan.HighConfidenceSpamAction.ValueString(); v != "" {
+			sp.HighConfidenceSpamAction = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamObjectTagsInHtml = v
+	if !plan.HighConfidenceSpamQuarantineTag.Equal(state.HighConfidenceSpamQuarantineTag) {
+		sp.HighConfidenceSpamQuarantineTag = plan.HighConfidenceSpamQuarantineTag.ValueString()
 	}
-	if v := plan.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
-		sp.MarkAsSpamSensitiveWordList = v
+	if !plan.IncreaseScoreWithBizOrInfoUrls.Equal(state.IncreaseScoreWithBizOrInfoUrls) {
+		if v := plan.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
+			sp.IncreaseScoreWithBizOrInfoUrls = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
-		sp.MarkAsSpamSpfRecordHardFail = v
+	if !plan.IncreaseScoreWithImageLinks.Equal(state.IncreaseScoreWithImageLinks) {
+		if v := plan.IncreaseScoreWithImageLinks.ValueString(); v != "" {
+			sp.IncreaseScoreWithImageLinks = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamWebBugsInHtml = v
+	if !plan.IncreaseScoreWithNumericIps.Equal(state.IncreaseScoreWithNumericIps) {
+		if v := plan.IncreaseScoreWithNumericIps.ValueString(); v != "" {
+			sp.IncreaseScoreWithNumericIps = objectParam(v)
+		}
 	}
-	sp.ModifySubjectValue = plan.ModifySubjectValue.ValueString()
-	sp.PhishQuarantineTag = plan.PhishQuarantineTag.ValueString()
-	if v := plan.PhishSpamAction.ValueString(); v != "" {
-		sp.PhishSpamAction = v
+	if !plan.IncreaseScoreWithRedirectToOtherPort.Equal(state.IncreaseScoreWithRedirectToOtherPort) {
+		if v := plan.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
+			sp.IncreaseScoreWithRedirectToOtherPort = objectParam(v)
+		}
 	}
-	sp.PhishZapEnabled = plan.PhishZapEnabled.ValueBool()
-	if v := plan.RedirectToRecipients.ValueString(); v != "" {
-		sp.RedirectToRecipients = v
+	if !plan.InlineSafetyTipsEnabled.Equal(state.InlineSafetyTipsEnabled) {
+		if !plan.InlineSafetyTipsEnabled.IsUnknown() {
+			sp.InlineSafetyTipsEnabled = plan.InlineSafetyTipsEnabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.RegionBlockList.ValueString(); v != "" {
-		sp.RegionBlockList = v
+	if !plan.IntraOrgFilterState.Equal(state.IntraOrgFilterState) {
+		if v := plan.IntraOrgFilterState.ValueString(); v != "" {
+			sp.IntraOrgFilterState = objectParam(v)
+		}
 	}
-	if v := plan.SpamAction.ValueString(); v != "" {
-		sp.SpamAction = v
+	if !plan.LanguageBlockList.Equal(state.LanguageBlockList) {
+		if !plan.LanguageBlockList.IsNull() && !plan.LanguageBlockList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.LanguageBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.LanguageBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LanguageBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.LanguageBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.SpamQuarantineTag = plan.SpamQuarantineTag.ValueString()
-	sp.SpamZapEnabled = plan.SpamZapEnabled.ValueBool()
-	if v := plan.TestModeAction.ValueString(); v != "" {
-		sp.TestModeAction = v
+	if !plan.MakeDefault.Equal(state.MakeDefault) {
+		sp.MakeDefault = plan.MakeDefault.ValueBool()
 	}
-	if v := plan.TestModeBccToRecipients.ValueString(); v != "" {
-		sp.TestModeBccToRecipients = v
+	if !plan.MarkAsSpamBulkMail.Equal(state.MarkAsSpamBulkMail) {
+		if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
+			sp.MarkAsSpamBulkMail = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamEmbedTagsInHtml.Equal(state.MarkAsSpamEmbedTagsInHtml) {
+		if v := plan.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamEmbedTagsInHtml = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamEmptyMessages.Equal(state.MarkAsSpamEmptyMessages) {
+		if v := plan.MarkAsSpamEmptyMessages.ValueString(); v != "" {
+			sp.MarkAsSpamEmptyMessages = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamFormTagsInHtml.Equal(state.MarkAsSpamFormTagsInHtml) {
+		if v := plan.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamFormTagsInHtml = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamFramesInHtml.Equal(state.MarkAsSpamFramesInHtml) {
+		if v := plan.MarkAsSpamFramesInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamFramesInHtml = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamFromAddressAuthFail.Equal(state.MarkAsSpamFromAddressAuthFail) {
+		if v := plan.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
+			sp.MarkAsSpamFromAddressAuthFail = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamJavaScriptInHtml.Equal(state.MarkAsSpamJavaScriptInHtml) {
+		if v := plan.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamJavaScriptInHtml = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamNdrBackscatter.Equal(state.MarkAsSpamNdrBackscatter) {
+		if v := plan.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
+			sp.MarkAsSpamNdrBackscatter = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamObjectTagsInHtml.Equal(state.MarkAsSpamObjectTagsInHtml) {
+		if v := plan.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamObjectTagsInHtml = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamSensitiveWordList.Equal(state.MarkAsSpamSensitiveWordList) {
+		if v := plan.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
+			sp.MarkAsSpamSensitiveWordList = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamSpfRecordHardFail.Equal(state.MarkAsSpamSpfRecordHardFail) {
+		if v := plan.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
+			sp.MarkAsSpamSpfRecordHardFail = objectParam(v)
+		}
+	}
+	if !plan.MarkAsSpamWebBugsInHtml.Equal(state.MarkAsSpamWebBugsInHtml) {
+		if v := plan.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamWebBugsInHtml = objectParam(v)
+		}
+	}
+	if !plan.ModifySubjectValue.Equal(state.ModifySubjectValue) {
+		sp.ModifySubjectValue = plan.ModifySubjectValue.ValueString()
+	}
+	if !plan.PhishQuarantineTag.Equal(state.PhishQuarantineTag) {
+		sp.PhishQuarantineTag = plan.PhishQuarantineTag.ValueString()
+	}
+	if !plan.PhishSpamAction.Equal(state.PhishSpamAction) {
+		if v := plan.PhishSpamAction.ValueString(); v != "" {
+			sp.PhishSpamAction = objectParam(v)
+		}
+	}
+	if !plan.PhishZapEnabled.Equal(state.PhishZapEnabled) {
+		if !plan.PhishZapEnabled.IsUnknown() {
+			sp.PhishZapEnabled = plan.PhishZapEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.QuarantineRetentionPeriod.Equal(state.QuarantineRetentionPeriod) {
+		if !plan.QuarantineRetentionPeriod.IsUnknown() {
+			sp.QuarantineRetentionPeriod = plan.QuarantineRetentionPeriod.ValueInt64Pointer()
+		}
+	}
+	if !plan.RedirectToRecipients.Equal(state.RedirectToRecipients) {
+		if !plan.RedirectToRecipients.IsNull() && !plan.RedirectToRecipients.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RedirectToRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.RedirectToRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RedirectToRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.RedirectToRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RegionBlockList.Equal(state.RegionBlockList) {
+		if !plan.RegionBlockList.IsNull() && !plan.RegionBlockList.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RegionBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.RegionBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RegionBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.RegionBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.SpamAction.Equal(state.SpamAction) {
+		if v := plan.SpamAction.ValueString(); v != "" {
+			sp.SpamAction = objectParam(v)
+		}
+	}
+	if !plan.SpamQuarantineTag.Equal(state.SpamQuarantineTag) {
+		sp.SpamQuarantineTag = plan.SpamQuarantineTag.ValueString()
+	}
+	if !plan.SpamZapEnabled.Equal(state.SpamZapEnabled) {
+		if !plan.SpamZapEnabled.IsUnknown() {
+			sp.SpamZapEnabled = plan.SpamZapEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TestModeAction.Equal(state.TestModeAction) {
+		if v := plan.TestModeAction.ValueString(); v != "" {
+			sp.TestModeAction = objectParam(v)
+		}
+	}
+	if !plan.TestModeBccToRecipients.Equal(state.TestModeBccToRecipients) {
+		if !plan.TestModeBccToRecipients.IsNull() && !plan.TestModeBccToRecipients.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TestModeBccToRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.TestModeBccToRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TestModeBccToRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.TestModeBccToRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -479,50 +796,16 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AddXHeaderValue":                          cfg.AddXHeaderValue,
-		"AdminDisplayName":                         cfg.AdminDisplayName,
-		"AllowedSenderDomains":                     cfg.AllowedSenderDomains,
-		"AllowedSenders":                           cfg.AllowedSenders,
-		"BlockedSenderDomains":                     cfg.BlockedSenderDomains,
-		"BlockedSenders":                           cfg.BlockedSenders,
-		"BulkMovesEnabled":                         cfg.BulkMovesEnabled,
-		"BulkQuarantineTag":                        cfg.BulkQuarantineTag,
-		"BulkSpamAction":                           cfg.BulkSpamAction,
-		"EndUserSpamNotificationCustomFromAddress": cfg.EndUserSpamNotificationCustomFromAddress,
-		"EndUserSpamNotificationCustomFromName":    cfg.EndUserSpamNotificationCustomFromName,
-		"EndUserSpamNotificationCustomSubject":     cfg.EndUserSpamNotificationCustomSubject,
-		"EndUserSpamNotificationLanguage":          cfg.EndUserSpamNotificationLanguage,
-		"HighConfidencePhishAction":                cfg.HighConfidencePhishAction,
-		"HighConfidencePhishQuarantineTag":         cfg.HighConfidencePhishQuarantineTag,
-		"HighConfidenceSpamAction":                 cfg.HighConfidenceSpamAction,
-		"HighConfidenceSpamQuarantineTag":          cfg.HighConfidenceSpamQuarantineTag,
-		"IncreaseScoreWithBizOrInfoUrls":           cfg.IncreaseScoreWithBizOrInfoUrls,
-		"IncreaseScoreWithImageLinks":              cfg.IncreaseScoreWithImageLinks,
-		"IncreaseScoreWithNumericIps":              cfg.IncreaseScoreWithNumericIps,
-		"IncreaseScoreWithRedirectToOtherPort":     cfg.IncreaseScoreWithRedirectToOtherPort,
-		"IntraOrgFilterState":                      cfg.IntraOrgFilterState,
-		"LanguageBlockList":                        cfg.LanguageBlockList,
-		"MarkAsSpamBulkMail":                       cfg.MarkAsSpamBulkMail,
-		"MarkAsSpamEmbedTagsInHtml":                cfg.MarkAsSpamEmbedTagsInHtml,
-		"MarkAsSpamEmptyMessages":                  cfg.MarkAsSpamEmptyMessages,
-		"MarkAsSpamFormTagsInHtml":                 cfg.MarkAsSpamFormTagsInHtml,
-		"MarkAsSpamFramesInHtml":                   cfg.MarkAsSpamFramesInHtml,
-		"MarkAsSpamFromAddressAuthFail":            cfg.MarkAsSpamFromAddressAuthFail,
-		"MarkAsSpamJavaScriptInHtml":               cfg.MarkAsSpamJavaScriptInHtml,
-		"MarkAsSpamNdrBackscatter":                 cfg.MarkAsSpamNdrBackscatter,
-		"MarkAsSpamObjectTagsInHtml":               cfg.MarkAsSpamObjectTagsInHtml,
-		"MarkAsSpamSensitiveWordList":              cfg.MarkAsSpamSensitiveWordList,
-		"MarkAsSpamSpfRecordHardFail":              cfg.MarkAsSpamSpfRecordHardFail,
-		"MarkAsSpamWebBugsInHtml":                  cfg.MarkAsSpamWebBugsInHtml,
-		"ModifySubjectValue":                       cfg.ModifySubjectValue,
-		"PhishQuarantineTag":                       cfg.PhishQuarantineTag,
-		"PhishSpamAction":                          cfg.PhishSpamAction,
-		"RedirectToRecipients":                     cfg.RedirectToRecipients,
-		"RegionBlockList":                          cfg.RegionBlockList,
-		"SpamAction":                               cfg.SpamAction,
-		"SpamQuarantineTag":                        cfg.SpamQuarantineTag,
-		"TestModeAction":                           cfg.TestModeAction,
-		"TestModeBccToRecipients":                  cfg.TestModeBccToRecipients,
+		"AddXHeaderValue":                       cfg.AddXHeaderValue,
+		"AdminDisplayName":                      cfg.AdminDisplayName,
+		"BulkQuarantineTag":                     cfg.BulkQuarantineTag,
+		"EndUserSpamNotificationCustomFromName": cfg.EndUserSpamNotificationCustomFromName,
+		"EndUserSpamNotificationCustomSubject":  cfg.EndUserSpamNotificationCustomSubject,
+		"HighConfidencePhishQuarantineTag":      cfg.HighConfidencePhishQuarantineTag,
+		"HighConfidenceSpamQuarantineTag":       cfg.HighConfidenceSpamQuarantineTag,
+		"ModifySubjectValue":                    cfg.ModifySubjectValue,
+		"PhishQuarantineTag":                    cfg.PhishQuarantineTag,
+		"SpamQuarantineTag":                     cfg.SpamQuarantineTag,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -586,71 +869,76 @@ func readHostedContentFilterPolicy(ctx context.Context, obj map[string]any, m *h
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AddXHeaderValue = types.StringValue(getString(obj, "AddXHeaderValue"))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
-	m.AllowedSenderDomains = types.StringValue(getString(obj, "AllowedSenderDomains"))
-	m.AllowedSenders = types.StringValue(getString(obj, "AllowedSenders"))
-	m.BlockedSenderDomains = types.StringValue(getString(obj, "BlockedSenderDomains"))
-	m.BlockedSenders = types.StringValue(getString(obj, "BlockedSenders"))
-	m.BulkMovesEnabled = types.StringValue(getString(obj, "BulkMovesEnabled"))
+	m.AllowedSenderDomains = stringSetValue(ctx, getStringSlice(obj, "AllowedSenderDomains"))
+	m.AllowedSenders = stringSetValue(ctx, getStringSlice(obj, "AllowedSenders"))
+	m.BlockedSenderDomains = stringSetValue(ctx, getStringSlice(obj, "BlockedSenderDomains"))
+	m.BlockedSenders = stringSetValue(ctx, getStringSlice(obj, "BlockedSenders"))
+	m.BulkMovesEnabled = types.StringValue(getObjectJSON(obj, "BulkMovesEnabled"))
 	m.BulkQuarantineTag = types.StringValue(getString(obj, "BulkQuarantineTag"))
-	m.BulkSpamAction = types.StringValue(getString(obj, "BulkSpamAction"))
+	m.BulkSpamAction = types.StringValue(getObjectJSON(obj, "BulkSpamAction"))
+	m.BulkThreshold = types.Int64Value(getInt(obj, "BulkThreshold"))
 	m.DownloadLink = types.BoolValue(getBool(obj, "DownloadLink"))
 	m.EnableEndUserSpamNotifications = types.BoolValue(getBool(obj, "EnableEndUserSpamNotifications"))
 	m.EnableLanguageBlockList = types.BoolValue(getBool(obj, "EnableLanguageBlockList"))
 	m.EnableRegionBlockList = types.BoolValue(getBool(obj, "EnableRegionBlockList"))
-	m.EndUserSpamNotificationCustomFromAddress = types.StringValue(getString(obj, "EndUserSpamNotificationCustomFromAddress"))
+	m.EndUserSpamNotificationCustomFromAddress = types.StringValue(getObjectJSON(obj, "EndUserSpamNotificationCustomFromAddress"))
 	m.EndUserSpamNotificationCustomFromName = types.StringValue(getString(obj, "EndUserSpamNotificationCustomFromName"))
 	m.EndUserSpamNotificationCustomSubject = types.StringValue(getString(obj, "EndUserSpamNotificationCustomSubject"))
-	m.EndUserSpamNotificationLanguage = types.StringValue(getString(obj, "EndUserSpamNotificationLanguage"))
-	m.HighConfidencePhishAction = types.StringValue(getString(obj, "HighConfidencePhishAction"))
+	m.EndUserSpamNotificationFrequency = types.Int64Value(getInt(obj, "EndUserSpamNotificationFrequency"))
+	m.EndUserSpamNotificationLanguage = types.StringValue(getObjectJSON(obj, "EndUserSpamNotificationLanguage"))
+	m.EndUserSpamNotificationLimit = types.Int64Value(getInt(obj, "EndUserSpamNotificationLimit"))
+	m.HighConfidencePhishAction = types.StringValue(getObjectJSON(obj, "HighConfidencePhishAction"))
 	m.HighConfidencePhishQuarantineTag = types.StringValue(getString(obj, "HighConfidencePhishQuarantineTag"))
-	m.HighConfidenceSpamAction = types.StringValue(getString(obj, "HighConfidenceSpamAction"))
+	m.HighConfidenceSpamAction = types.StringValue(getObjectJSON(obj, "HighConfidenceSpamAction"))
 	m.HighConfidenceSpamQuarantineTag = types.StringValue(getString(obj, "HighConfidenceSpamQuarantineTag"))
-	m.IncreaseScoreWithBizOrInfoUrls = types.StringValue(getString(obj, "IncreaseScoreWithBizOrInfoUrls"))
-	m.IncreaseScoreWithImageLinks = types.StringValue(getString(obj, "IncreaseScoreWithImageLinks"))
-	m.IncreaseScoreWithNumericIps = types.StringValue(getString(obj, "IncreaseScoreWithNumericIps"))
-	m.IncreaseScoreWithRedirectToOtherPort = types.StringValue(getString(obj, "IncreaseScoreWithRedirectToOtherPort"))
+	m.IncreaseScoreWithBizOrInfoUrls = types.StringValue(getObjectJSON(obj, "IncreaseScoreWithBizOrInfoUrls"))
+	m.IncreaseScoreWithImageLinks = types.StringValue(getObjectJSON(obj, "IncreaseScoreWithImageLinks"))
+	m.IncreaseScoreWithNumericIps = types.StringValue(getObjectJSON(obj, "IncreaseScoreWithNumericIps"))
+	m.IncreaseScoreWithRedirectToOtherPort = types.StringValue(getObjectJSON(obj, "IncreaseScoreWithRedirectToOtherPort"))
 	m.InlineSafetyTipsEnabled = types.BoolValue(getBool(obj, "InlineSafetyTipsEnabled"))
-	m.IntraOrgFilterState = types.StringValue(getString(obj, "IntraOrgFilterState"))
-	m.LanguageBlockList = types.StringValue(getString(obj, "LanguageBlockList"))
+	m.IntraOrgFilterState = types.StringValue(getObjectJSON(obj, "IntraOrgFilterState"))
+	m.LanguageBlockList = stringSetValue(ctx, getStringSlice(obj, "LanguageBlockList"))
 	m.MakeDefault = types.BoolValue(getBool(obj, "MakeDefault"))
-	m.MarkAsSpamBulkMail = types.StringValue(getString(obj, "MarkAsSpamBulkMail"))
-	m.MarkAsSpamEmbedTagsInHtml = types.StringValue(getString(obj, "MarkAsSpamEmbedTagsInHtml"))
-	m.MarkAsSpamEmptyMessages = types.StringValue(getString(obj, "MarkAsSpamEmptyMessages"))
-	m.MarkAsSpamFormTagsInHtml = types.StringValue(getString(obj, "MarkAsSpamFormTagsInHtml"))
-	m.MarkAsSpamFramesInHtml = types.StringValue(getString(obj, "MarkAsSpamFramesInHtml"))
-	m.MarkAsSpamFromAddressAuthFail = types.StringValue(getString(obj, "MarkAsSpamFromAddressAuthFail"))
-	m.MarkAsSpamJavaScriptInHtml = types.StringValue(getString(obj, "MarkAsSpamJavaScriptInHtml"))
-	m.MarkAsSpamNdrBackscatter = types.StringValue(getString(obj, "MarkAsSpamNdrBackscatter"))
-	m.MarkAsSpamObjectTagsInHtml = types.StringValue(getString(obj, "MarkAsSpamObjectTagsInHtml"))
-	m.MarkAsSpamSensitiveWordList = types.StringValue(getString(obj, "MarkAsSpamSensitiveWordList"))
-	m.MarkAsSpamSpfRecordHardFail = types.StringValue(getString(obj, "MarkAsSpamSpfRecordHardFail"))
-	m.MarkAsSpamWebBugsInHtml = types.StringValue(getString(obj, "MarkAsSpamWebBugsInHtml"))
+	m.MarkAsSpamBulkMail = types.StringValue(getObjectJSON(obj, "MarkAsSpamBulkMail"))
+	m.MarkAsSpamEmbedTagsInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamEmbedTagsInHtml"))
+	m.MarkAsSpamEmptyMessages = types.StringValue(getObjectJSON(obj, "MarkAsSpamEmptyMessages"))
+	m.MarkAsSpamFormTagsInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamFormTagsInHtml"))
+	m.MarkAsSpamFramesInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamFramesInHtml"))
+	m.MarkAsSpamFromAddressAuthFail = types.StringValue(getObjectJSON(obj, "MarkAsSpamFromAddressAuthFail"))
+	m.MarkAsSpamJavaScriptInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamJavaScriptInHtml"))
+	m.MarkAsSpamNdrBackscatter = types.StringValue(getObjectJSON(obj, "MarkAsSpamNdrBackscatter"))
+	m.MarkAsSpamObjectTagsInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamObjectTagsInHtml"))
+	m.MarkAsSpamSensitiveWordList = types.StringValue(getObjectJSON(obj, "MarkAsSpamSensitiveWordList"))
+	m.MarkAsSpamSpfRecordHardFail = types.StringValue(getObjectJSON(obj, "MarkAsSpamSpfRecordHardFail"))
+	m.MarkAsSpamWebBugsInHtml = types.StringValue(getObjectJSON(obj, "MarkAsSpamWebBugsInHtml"))
 	m.ModifySubjectValue = types.StringValue(getString(obj, "ModifySubjectValue"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.PhishQuarantineTag = types.StringValue(getString(obj, "PhishQuarantineTag"))
-	m.PhishSpamAction = types.StringValue(getString(obj, "PhishSpamAction"))
+	m.PhishSpamAction = types.StringValue(getObjectJSON(obj, "PhishSpamAction"))
 	m.PhishZapEnabled = types.BoolValue(getBool(obj, "PhishZapEnabled"))
-	m.RecommendedPolicyType = types.StringValue(getString(obj, "RecommendedPolicyType"))
-	m.RedirectToRecipients = types.StringValue(getString(obj, "RedirectToRecipients"))
-	m.RegionBlockList = types.StringValue(getString(obj, "RegionBlockList"))
-	m.SpamAction = types.StringValue(getString(obj, "SpamAction"))
+	m.QuarantineRetentionPeriod = types.Int64Value(getInt(obj, "QuarantineRetentionPeriod"))
+	m.RecommendedPolicyType = types.StringValue(getObjectJSON(obj, "RecommendedPolicyType"))
+	m.RedirectToRecipients = stringSetValue(ctx, getStringSlice(obj, "RedirectToRecipients"))
+	m.RegionBlockList = stringSetValue(ctx, getStringSlice(obj, "RegionBlockList"))
+	m.SpamAction = types.StringValue(getObjectJSON(obj, "SpamAction"))
 	m.SpamQuarantineTag = types.StringValue(getString(obj, "SpamQuarantineTag"))
 	m.SpamZapEnabled = types.BoolValue(getBool(obj, "SpamZapEnabled"))
-	m.TestModeAction = types.StringValue(getString(obj, "TestModeAction"))
-	m.TestModeBccToRecipients = types.StringValue(getString(obj, "TestModeBccToRecipients"))
+	m.TestModeAction = types.StringValue(getObjectJSON(obj, "TestModeAction"))
+	m.TestModeBccToRecipients = stringSetValue(ctx, getStringSlice(obj, "TestModeBccToRecipients"))
 	_ = ctx
 }
 
 func (r *hostedContentFilterPolicyResource) reconcileState(cfg, read *hostedContentFilterPolicyModel) {
 	read.AddXHeaderValue = reconcile.KeepStr(cfg.AddXHeaderValue, read.AddXHeaderValue)
 	read.AdminDisplayName = reconcile.KeepStr(cfg.AdminDisplayName, read.AdminDisplayName)
-	read.AllowedSenderDomains = reconcile.KeepStr(cfg.AllowedSenderDomains, read.AllowedSenderDomains)
-	read.AllowedSenders = reconcile.KeepStr(cfg.AllowedSenders, read.AllowedSenders)
-	read.BlockedSenderDomains = reconcile.KeepStr(cfg.BlockedSenderDomains, read.BlockedSenderDomains)
-	read.BlockedSenders = reconcile.KeepStr(cfg.BlockedSenders, read.BlockedSenders)
+	read.AllowedSenderDomains = reconcile.KeepSet(cfg.AllowedSenderDomains, read.AllowedSenderDomains)
+	read.AllowedSenders = reconcile.KeepSet(cfg.AllowedSenders, read.AllowedSenders)
+	read.BlockedSenderDomains = reconcile.KeepSet(cfg.BlockedSenderDomains, read.BlockedSenderDomains)
+	read.BlockedSenders = reconcile.KeepSet(cfg.BlockedSenders, read.BlockedSenders)
 	read.BulkMovesEnabled = reconcile.KeepStr(cfg.BulkMovesEnabled, read.BulkMovesEnabled)
 	read.BulkQuarantineTag = reconcile.KeepStr(cfg.BulkQuarantineTag, read.BulkQuarantineTag)
 	read.BulkSpamAction = reconcile.KeepStr(cfg.BulkSpamAction, read.BulkSpamAction)
+	read.BulkThreshold = reconcile.KeepInt64(cfg.BulkThreshold, read.BulkThreshold)
 	read.DownloadLink = reconcile.KeepBool(cfg.DownloadLink, read.DownloadLink)
 	read.EnableEndUserSpamNotifications = reconcile.KeepBool(cfg.EnableEndUserSpamNotifications, read.EnableEndUserSpamNotifications)
 	read.EnableLanguageBlockList = reconcile.KeepBool(cfg.EnableLanguageBlockList, read.EnableLanguageBlockList)
@@ -658,7 +946,9 @@ func (r *hostedContentFilterPolicyResource) reconcileState(cfg, read *hostedCont
 	read.EndUserSpamNotificationCustomFromAddress = reconcile.KeepStr(cfg.EndUserSpamNotificationCustomFromAddress, read.EndUserSpamNotificationCustomFromAddress)
 	read.EndUserSpamNotificationCustomFromName = reconcile.KeepStr(cfg.EndUserSpamNotificationCustomFromName, read.EndUserSpamNotificationCustomFromName)
 	read.EndUserSpamNotificationCustomSubject = reconcile.KeepStr(cfg.EndUserSpamNotificationCustomSubject, read.EndUserSpamNotificationCustomSubject)
+	read.EndUserSpamNotificationFrequency = reconcile.KeepInt64(cfg.EndUserSpamNotificationFrequency, read.EndUserSpamNotificationFrequency)
 	read.EndUserSpamNotificationLanguage = reconcile.KeepStr(cfg.EndUserSpamNotificationLanguage, read.EndUserSpamNotificationLanguage)
+	read.EndUserSpamNotificationLimit = reconcile.KeepInt64(cfg.EndUserSpamNotificationLimit, read.EndUserSpamNotificationLimit)
 	read.HighConfidencePhishAction = reconcile.KeepStr(cfg.HighConfidencePhishAction, read.HighConfidencePhishAction)
 	read.HighConfidencePhishQuarantineTag = reconcile.KeepStr(cfg.HighConfidencePhishQuarantineTag, read.HighConfidencePhishQuarantineTag)
 	read.HighConfidenceSpamAction = reconcile.KeepStr(cfg.HighConfidenceSpamAction, read.HighConfidenceSpamAction)
@@ -669,7 +959,7 @@ func (r *hostedContentFilterPolicyResource) reconcileState(cfg, read *hostedCont
 	read.IncreaseScoreWithRedirectToOtherPort = reconcile.KeepStr(cfg.IncreaseScoreWithRedirectToOtherPort, read.IncreaseScoreWithRedirectToOtherPort)
 	read.InlineSafetyTipsEnabled = reconcile.KeepBool(cfg.InlineSafetyTipsEnabled, read.InlineSafetyTipsEnabled)
 	read.IntraOrgFilterState = reconcile.KeepStr(cfg.IntraOrgFilterState, read.IntraOrgFilterState)
-	read.LanguageBlockList = reconcile.KeepStr(cfg.LanguageBlockList, read.LanguageBlockList)
+	read.LanguageBlockList = reconcile.KeepSet(cfg.LanguageBlockList, read.LanguageBlockList)
 	read.MakeDefault = reconcile.KeepBool(cfg.MakeDefault, read.MakeDefault)
 	read.MarkAsSpamBulkMail = reconcile.KeepStr(cfg.MarkAsSpamBulkMail, read.MarkAsSpamBulkMail)
 	read.MarkAsSpamEmbedTagsInHtml = reconcile.KeepStr(cfg.MarkAsSpamEmbedTagsInHtml, read.MarkAsSpamEmbedTagsInHtml)
@@ -688,12 +978,13 @@ func (r *hostedContentFilterPolicyResource) reconcileState(cfg, read *hostedCont
 	read.PhishQuarantineTag = reconcile.KeepStr(cfg.PhishQuarantineTag, read.PhishQuarantineTag)
 	read.PhishSpamAction = reconcile.KeepStr(cfg.PhishSpamAction, read.PhishSpamAction)
 	read.PhishZapEnabled = reconcile.KeepBool(cfg.PhishZapEnabled, read.PhishZapEnabled)
+	read.QuarantineRetentionPeriod = reconcile.KeepInt64(cfg.QuarantineRetentionPeriod, read.QuarantineRetentionPeriod)
 	read.RecommendedPolicyType = reconcile.KeepStr(cfg.RecommendedPolicyType, read.RecommendedPolicyType)
-	read.RedirectToRecipients = reconcile.KeepStr(cfg.RedirectToRecipients, read.RedirectToRecipients)
-	read.RegionBlockList = reconcile.KeepStr(cfg.RegionBlockList, read.RegionBlockList)
+	read.RedirectToRecipients = reconcile.KeepSet(cfg.RedirectToRecipients, read.RedirectToRecipients)
+	read.RegionBlockList = reconcile.KeepSet(cfg.RegionBlockList, read.RegionBlockList)
 	read.SpamAction = reconcile.KeepStr(cfg.SpamAction, read.SpamAction)
 	read.SpamQuarantineTag = reconcile.KeepStr(cfg.SpamQuarantineTag, read.SpamQuarantineTag)
 	read.SpamZapEnabled = reconcile.KeepBool(cfg.SpamZapEnabled, read.SpamZapEnabled)
 	read.TestModeAction = reconcile.KeepStr(cfg.TestModeAction, read.TestModeAction)
-	read.TestModeBccToRecipients = reconcile.KeepStr(cfg.TestModeBccToRecipients, read.TestModeBccToRecipients)
+	read.TestModeBccToRecipients = reconcile.KeepSet(cfg.TestModeBccToRecipients, read.TestModeBccToRecipients)
 }

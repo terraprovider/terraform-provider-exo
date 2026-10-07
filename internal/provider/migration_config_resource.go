@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &migrationConfigResource{}
 	_ resource.ResourceWithConfigure   = &migrationConfigResource{}
 	_ resource.ResourceWithImportState = &migrationConfigResource{}
+	_ resource.ResourceWithModifyPlan  = &migrationConfigResource{}
 )
 
 type migrationConfigResource struct{ client *clients.Client }
@@ -46,7 +47,7 @@ func (r *migrationConfigResource) Schema(_ context.Context, _ resource.SchemaReq
 		Description: "Manages the MigrationConfig configuration via Set-MigrationConfig.",
 		Attributes: map[string]schema.Attribute{
 			"id":        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"partition": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -65,9 +66,14 @@ func (r *migrationConfigResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config migrationConfigModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMigrationConfigParams{}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+	if v := config.Partition.ValueString(); v != "" {
+		sp.Partition = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -107,8 +113,10 @@ func (r *migrationConfigResource) Update(ctx context.Context, req resource.Updat
 	}
 	id := r.identityOf(state)
 	sp := exo.SetMigrationConfigParams{}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = v
+	if !plan.Partition.Equal(state.Partition) {
+		if v := plan.Partition.ValueString(); v != "" {
+			sp.Partition = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -118,9 +126,7 @@ func (r *migrationConfigResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"Partition": cfg.Partition,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -133,6 +139,37 @@ func (r *migrationConfigResource) Delete(_ context.Context, _ resource.DeleteReq
 func (r *migrationConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *migrationConfigResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan migrationConfigModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	res, err := r.client.EXO.GetMigrationConfig(ctx, exo.GetMigrationConfigParams{})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur migrationConfigModel
+	readMigrationConfig(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.Partition.IsUnknown() {
+		plan.Partition = cur.Partition
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *migrationConfigResource) identityOf(m migrationConfigModel) string {
@@ -173,7 +210,7 @@ func (r *migrationConfigResource) refresh(ctx context.Context, identity string, 
 func readMigrationConfig(ctx context.Context, obj map[string]any, m *migrationConfigModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.Partition = types.StringValue(getString(obj, "Partition"))
+	m.Partition = types.StringValue(getObjectJSON(obj, "Partition"))
 	_ = ctx
 }
 

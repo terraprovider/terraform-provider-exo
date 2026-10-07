@@ -26,6 +26,7 @@ var (
 	_ resource.Resource                = &mailPublicFolderResource{}
 	_ resource.ResourceWithConfigure   = &mailPublicFolderResource{}
 	_ resource.ResourceWithImportState = &mailPublicFolderResource{}
+	_ resource.ResourceWithModifyPlan  = &mailPublicFolderResource{}
 )
 
 type mailPublicFolderResource struct{ client *clients.Client }
@@ -36,11 +37,11 @@ func NewMailPublicFolderResource() resource.Resource { return &mailPublicFolderR
 type mailPublicFolderModel struct {
 	ID                                     types.String `tfsdk:"id"`
 	Identity                               types.String `tfsdk:"identity"`
-	AcceptMessagesOnlyFrom                 types.String `tfsdk:"accept_messages_only_from"`
-	AcceptMessagesOnlyFromDLMembers        types.String `tfsdk:"accept_messages_only_from_dl_members"`
-	AcceptMessagesOnlyFromSendersOrMembers types.String `tfsdk:"accept_messages_only_from_senders_or_members"`
+	AcceptMessagesOnlyFrom                 types.Set    `tfsdk:"accept_messages_only_from"`
+	AcceptMessagesOnlyFromDLMembers        types.Set    `tfsdk:"accept_messages_only_from_dl_members"`
+	AcceptMessagesOnlyFromSendersOrMembers types.Set    `tfsdk:"accept_messages_only_from_senders_or_members"`
 	Alias                                  types.String `tfsdk:"alias_"`
-	BypassModerationFromSendersOrMembers   types.String `tfsdk:"bypass_moderation_from_senders_or_members"`
+	BypassModerationFromSendersOrMembers   types.Set    `tfsdk:"bypass_moderation_from_senders_or_members"`
 	Contacts                               types.Set    `tfsdk:"contacts"`
 	CustomAttribute1                       types.String `tfsdk:"custom_attribute1"`
 	CustomAttribute10                      types.String `tfsdk:"custom_attribute10"`
@@ -60,31 +61,31 @@ type mailPublicFolderModel struct {
 	DeliverToMailboxAndForward             types.Bool   `tfsdk:"deliver_to_mailbox_and_forward"`
 	DisplayName                            types.String `tfsdk:"display_name"`
 	EmailAddressPolicyEnabled              types.Bool   `tfsdk:"email_address_policy_enabled"`
-	EmailAddresses                         types.String `tfsdk:"email_addresses"`
+	EmailAddresses                         types.Set    `tfsdk:"email_addresses"`
 	EntryId                                types.String `tfsdk:"entry_id"`
-	ExtensionCustomAttribute1              types.String `tfsdk:"extension_custom_attribute1"`
-	ExtensionCustomAttribute2              types.String `tfsdk:"extension_custom_attribute2"`
-	ExtensionCustomAttribute3              types.String `tfsdk:"extension_custom_attribute3"`
-	ExtensionCustomAttribute4              types.String `tfsdk:"extension_custom_attribute4"`
-	ExtensionCustomAttribute5              types.String `tfsdk:"extension_custom_attribute5"`
+	ExtensionCustomAttribute1              types.Set    `tfsdk:"extension_custom_attribute1"`
+	ExtensionCustomAttribute2              types.Set    `tfsdk:"extension_custom_attribute2"`
+	ExtensionCustomAttribute3              types.Set    `tfsdk:"extension_custom_attribute3"`
+	ExtensionCustomAttribute4              types.Set    `tfsdk:"extension_custom_attribute4"`
+	ExtensionCustomAttribute5              types.Set    `tfsdk:"extension_custom_attribute5"`
 	ExternalEmailAddress                   types.String `tfsdk:"external_email_address"`
 	ForwardingAddress                      types.String `tfsdk:"forwarding_address"`
-	GrantSendOnBehalfTo                    types.String `tfsdk:"grant_send_on_behalf_to"`
+	GrantSendOnBehalfTo                    types.Set    `tfsdk:"grant_send_on_behalf_to"`
 	HiddenFromAddressListsEnabled          types.Bool   `tfsdk:"hidden_from_address_lists_enabled"`
 	IgnoreMissingFolderLink                types.Bool   `tfsdk:"ignore_missing_folder_link"`
 	MailTip                                types.String `tfsdk:"mail_tip"`
-	MailTipTranslations                    types.String `tfsdk:"mail_tip_translations"`
+	MailTipTranslations                    types.Set    `tfsdk:"mail_tip_translations"`
 	MaxReceiveSize                         types.String `tfsdk:"max_receive_size"`
 	MaxSendSize                            types.String `tfsdk:"max_send_size"`
-	ModeratedBy                            types.String `tfsdk:"moderated_by"`
+	ModeratedBy                            types.Set    `tfsdk:"moderated_by"`
 	ModerationEnabled                      types.Bool   `tfsdk:"moderation_enabled"`
 	Name                                   types.String `tfsdk:"name"`
 	OnPremisesObjectId                     types.String `tfsdk:"on_premises_object_id"`
 	PhoneticDisplayName                    types.String `tfsdk:"phonetic_display_name"`
 	PrimarySmtpAddress                     types.String `tfsdk:"primary_smtp_address"`
-	RejectMessagesFrom                     types.String `tfsdk:"reject_messages_from"`
-	RejectMessagesFromDLMembers            types.String `tfsdk:"reject_messages_from_dl_members"`
-	RejectMessagesFromSendersOrMembers     types.String `tfsdk:"reject_messages_from_senders_or_members"`
+	RejectMessagesFrom                     types.Set    `tfsdk:"reject_messages_from"`
+	RejectMessagesFromDLMembers            types.Set    `tfsdk:"reject_messages_from_dl_members"`
+	RejectMessagesFromSendersOrMembers     types.Set    `tfsdk:"reject_messages_from_senders_or_members"`
 	RequireSenderAuthenticationEnabled     types.Bool   `tfsdk:"require_sender_authentication_enabled"`
 	SendModerationNotifications            types.String `tfsdk:"send_moderation_notifications"`
 	SimpleDisplayName                      types.String `tfsdk:"simple_display_name"`
@@ -101,11 +102,11 @@ func (r *mailPublicFolderResource) Schema(_ context.Context, _ resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id":                                   schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                             schema.StringAttribute{Required: true, Description: "Identity of the existing object whose configuration is managed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"accept_messages_only_from":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_dl_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"accept_messages_only_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from":            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_dl_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"accept_messages_only_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -AcceptMessagesOnlyFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"alias_": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Alias parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"bypass_moderation_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"bypass_moderation_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -BypassModerationFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"contacts":                                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Contacts parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"custom_attribute1":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"custom_attribute10":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CustomAttribute10 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -125,31 +126,31 @@ func (r *mailPublicFolderResource) Schema(_ context.Context, _ resource.SchemaRe
 			"deliver_to_mailbox_and_forward":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverToMailboxAndForward parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"display_name":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"email_address_policy_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddressPolicyEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"email_addresses":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"email_addresses":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"entry_id":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EntryId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute1":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute2":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute3":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute4":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"extension_custom_attribute5":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute1":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute1 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute2":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute2 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute3":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute4":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"extension_custom_attribute5":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"external_email_address":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_address":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"grant_send_on_behalf_to":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"grant_send_on_behalf_to":                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"ignore_missing_folder_link":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IgnoreMissingFolderLink parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"mail_tip":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"mail_tip_translations":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"mail_tip_translations":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"max_receive_size":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxReceiveSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"max_send_size":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxSendSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"moderated_by":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"moderated_by":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"on_premises_object_id":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OnPremisesObjectId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"phonetic_display_name":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_dl_members":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"reject_messages_from_senders_or_members": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_dl_members":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"reject_messages_from_senders_or_members": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"require_sender_authentication_enabled":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSenderAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_moderation_notifications":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendModerationNotifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"simple_display_name":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -171,108 +172,351 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var config mailPublicFolderModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	sp := exo.SetMailPublicFolderParams{}
 	sp.Identity = plan.Identity.ValueString()
-	if v := plan.AcceptMessagesOnlyFrom.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFrom = v
+	var cur *mailPublicFolderModel
+	curRead := false
+	current := func() *mailPublicFolderModel {
+		if !curRead {
+			curRead = true
+			var m mailPublicFolderModel
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailPublicFolder failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.AcceptMessagesOnlyFromDLMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromDLMembers = v
+	if !config.AcceptMessagesOnlyFrom.IsNull() {
+		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
+	if !config.AcceptMessagesOnlyFromDLMembers.IsNull() {
+		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.Alias = plan.Alias.ValueString()
-	if v := plan.BypassModerationFromSendersOrMembers.ValueString(); v != "" {
-		sp.BypassModerationFromSendersOrMembers = v
+	if !config.AcceptMessagesOnlyFromSendersOrMembers.IsNull() {
+		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.Contacts = toStringSlice(ctx, plan.Contacts, &resp.Diagnostics)
-	sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
-	sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
-	sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
-	sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
-	sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
-	sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
-	sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
-	sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
-	sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
-	sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
-	sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
-	sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
-	sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
-	sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
-	sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
-	sp.DeliverToMailboxAndForward = plan.DeliverToMailboxAndForward.ValueBool()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.EmailAddressPolicyEnabled = plan.EmailAddressPolicyEnabled.ValueBool()
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
+	if !config.Alias.IsNull() {
+		sp.Alias = plan.Alias.ValueString()
 	}
-	sp.EntryId = plan.EntryId.ValueString()
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
+	if !config.BypassModerationFromSendersOrMembers.IsNull() {
+		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
+	if !config.Contacts.IsNull() {
+		if !plan.Contacts.IsNull() && !plan.Contacts.IsUnknown() {
+			sp.Contacts = append([]string{}, toStringSlice(ctx, plan.Contacts, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
+	if !config.CustomAttribute1.IsNull() {
+		sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
+	if !config.CustomAttribute10.IsNull() {
+		sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
+	if !config.CustomAttribute11.IsNull() {
+		sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
 	}
-	if v := plan.ExternalEmailAddress.ValueString(); v != "" {
-		sp.ExternalEmailAddress = v
+	if !config.CustomAttribute12.IsNull() {
+		sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
 	}
-	if v := plan.ForwardingAddress.ValueString(); v != "" {
-		sp.ForwardingAddress = v
+	if !config.CustomAttribute13.IsNull() {
+		sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
 	}
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
+	if !config.CustomAttribute14.IsNull() {
+		sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
 	}
-	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
-	sp.IgnoreMissingFolderLink = plan.IgnoreMissingFolderLink.ValueBool()
-	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
+	if !config.CustomAttribute15.IsNull() {
+		sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = v
+	if !config.CustomAttribute2.IsNull() {
+		sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = v
+	if !config.CustomAttribute3.IsNull() {
+		sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
+	if !config.CustomAttribute4.IsNull() {
+		sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
 	}
-	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
-	sp.Name = plan.Name.ValueString()
-	if v := plan.OnPremisesObjectId.ValueString(); v != "" {
-		sp.OnPremisesObjectId = v
+	if !config.CustomAttribute5.IsNull() {
+		sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
 	}
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = v
+	if !config.CustomAttribute6.IsNull() {
+		sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
 	}
-	if v := plan.RejectMessagesFrom.ValueString(); v != "" {
-		sp.RejectMessagesFrom = v
+	if !config.CustomAttribute7.IsNull() {
+		sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
 	}
-	if v := plan.RejectMessagesFromDLMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromDLMembers = v
+	if !config.CustomAttribute8.IsNull() {
+		sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
 	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
+	if !config.CustomAttribute9.IsNull() {
+		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
 	}
-	sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBool()
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = v
+	if !config.DeliverToMailboxAndForward.IsNull() {
+		if !plan.DeliverToMailboxAndForward.IsUnknown() {
+			sp.DeliverToMailboxAndForward = plan.DeliverToMailboxAndForward.ValueBoolPointer()
+		}
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !config.DisplayName.IsNull() {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !config.EmailAddressPolicyEnabled.IsNull() {
+		if !plan.EmailAddressPolicyEnabled.IsUnknown() {
+			sp.EmailAddressPolicyEnabled = plan.EmailAddressPolicyEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.EmailAddresses.IsNull() {
+		if !plan.EmailAddresses.IsNull() && !plan.EmailAddresses.IsUnknown() {
+			sp.EmailAddresses = append([]string{}, toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)...)
+		}
+	}
+	if !config.EntryId.IsNull() {
+		sp.EntryId = plan.EntryId.ValueString()
+	}
+	if !config.ExtensionCustomAttribute1.IsNull() {
+		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.ExtensionCustomAttribute2.IsNull() {
+		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.ExtensionCustomAttribute3.IsNull() {
+		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.ExtensionCustomAttribute4.IsNull() {
+		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.ExtensionCustomAttribute5.IsNull() {
+		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if v := config.ExternalEmailAddress.ValueString(); v != "" {
+		sp.ExternalEmailAddress = objectParam(v)
+	}
+	if v := config.ForwardingAddress.ValueString(); v != "" {
+		sp.ForwardingAddress = objectParam(v)
+	}
+	if !config.GrantSendOnBehalfTo.IsNull() {
+		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.HiddenFromAddressListsEnabled.IsNull() {
+		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
+			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.IgnoreMissingFolderLink.IsNull() {
+		if !plan.IgnoreMissingFolderLink.IsUnknown() {
+			sp.IgnoreMissingFolderLink = plan.IgnoreMissingFolderLink.ValueBoolPointer()
+		}
+	}
+	if !config.MailTip.IsNull() {
+		sp.MailTip = plan.MailTip.ValueString()
+	}
+	if !config.MailTipTranslations.IsNull() {
+		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if v := config.MaxReceiveSize.ValueString(); v != "" {
+		sp.MaxReceiveSize = objectParam(v)
+	}
+	if v := config.MaxSendSize.ValueString(); v != "" {
+		sp.MaxSendSize = objectParam(v)
+	}
+	if !config.ModeratedBy.IsNull() {
+		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.ModerationEnabled.IsNull() {
+		if !plan.ModerationEnabled.IsUnknown() {
+			sp.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
+		}
+	}
+	if !config.Name.IsNull() {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !config.OnPremisesObjectId.IsNull() {
+		sp.OnPremisesObjectId = plan.OnPremisesObjectId.ValueString()
+	}
+	if !config.PhoneticDisplayName.IsNull() {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if v := config.PrimarySmtpAddress.ValueString(); v != "" {
+		sp.PrimarySmtpAddress = objectParam(v)
+	}
+	if !config.RejectMessagesFrom.IsNull() {
+		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.RejectMessagesFromDLMembers.IsNull() {
+		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.RejectMessagesFromSendersOrMembers.IsNull() {
+		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !config.RequireSenderAuthenticationEnabled.IsNull() {
+		if !plan.RequireSenderAuthenticationEnabled.IsUnknown() {
+			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
+		}
+	}
+	if v := config.SendModerationNotifications.ValueString(); v != "" {
+		sp.SendModerationNotifications = objectParam(v)
+	}
+	if !config.SimpleDisplayName.IsNull() {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if v := config.WindowsEmailAddress.ValueString(); v != "" {
+		sp.WindowsEmailAddress = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -313,106 +557,358 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetMailPublicFolderParams{}
 	sp.Identity = id
-	if v := plan.AcceptMessagesOnlyFrom.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFrom = v
+	var cur *mailPublicFolderModel
+	curRead := false
+	current := func() *mailPublicFolderModel {
+		if !curRead {
+			curRead = true
+			var m mailPublicFolderModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailPublicFolder failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
 	}
-	if v := plan.AcceptMessagesOnlyFromDLMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromDLMembers = v
+	if !plan.AcceptMessagesOnlyFrom.Equal(state.AcceptMessagesOnlyFrom) {
+		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.AcceptMessagesOnlyFromSendersOrMembers.ValueString(); v != "" {
-		sp.AcceptMessagesOnlyFromSendersOrMembers = v
+	if !plan.AcceptMessagesOnlyFromDLMembers.Equal(state.AcceptMessagesOnlyFromDLMembers) {
+		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.Alias = plan.Alias.ValueString()
-	if v := plan.BypassModerationFromSendersOrMembers.ValueString(); v != "" {
-		sp.BypassModerationFromSendersOrMembers = v
+	if !plan.AcceptMessagesOnlyFromSendersOrMembers.Equal(state.AcceptMessagesOnlyFromSendersOrMembers) {
+		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	sp.Contacts = toStringSlice(ctx, plan.Contacts, &resp.Diagnostics)
-	sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
-	sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
-	sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
-	sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
-	sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
-	sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
-	sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
-	sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
-	sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
-	sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
-	sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
-	sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
-	sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
-	sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
-	sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
-	sp.DeliverToMailboxAndForward = plan.DeliverToMailboxAndForward.ValueBool()
-	sp.DisplayName = plan.DisplayName.ValueString()
-	sp.EmailAddressPolicyEnabled = plan.EmailAddressPolicyEnabled.ValueBool()
-	if v := plan.EmailAddresses.ValueString(); v != "" {
-		sp.EmailAddresses = v
+	if !plan.Alias.Equal(state.Alias) {
+		sp.Alias = plan.Alias.ValueString()
 	}
-	sp.EntryId = plan.EntryId.ValueString()
-	if v := plan.ExtensionCustomAttribute1.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute1 = v
+	if !plan.BypassModerationFromSendersOrMembers.Equal(state.BypassModerationFromSendersOrMembers) {
+		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
-	if v := plan.ExtensionCustomAttribute2.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute2 = v
+	if !plan.Contacts.Equal(state.Contacts) {
+		if !plan.Contacts.IsNull() && !plan.Contacts.IsUnknown() {
+			sp.Contacts = append([]string{}, toStringSlice(ctx, plan.Contacts, &resp.Diagnostics)...)
+		}
 	}
-	if v := plan.ExtensionCustomAttribute3.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute3 = v
+	if !plan.CustomAttribute1.Equal(state.CustomAttribute1) {
+		sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute4.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute4 = v
+	if !plan.CustomAttribute10.Equal(state.CustomAttribute10) {
+		sp.CustomAttribute10 = plan.CustomAttribute10.ValueString()
 	}
-	if v := plan.ExtensionCustomAttribute5.ValueString(); v != "" {
-		sp.ExtensionCustomAttribute5 = v
+	if !plan.CustomAttribute11.Equal(state.CustomAttribute11) {
+		sp.CustomAttribute11 = plan.CustomAttribute11.ValueString()
 	}
-	if v := plan.ExternalEmailAddress.ValueString(); v != "" {
-		sp.ExternalEmailAddress = v
+	if !plan.CustomAttribute12.Equal(state.CustomAttribute12) {
+		sp.CustomAttribute12 = plan.CustomAttribute12.ValueString()
 	}
-	if v := plan.ForwardingAddress.ValueString(); v != "" {
-		sp.ForwardingAddress = v
+	if !plan.CustomAttribute13.Equal(state.CustomAttribute13) {
+		sp.CustomAttribute13 = plan.CustomAttribute13.ValueString()
 	}
-	if v := plan.GrantSendOnBehalfTo.ValueString(); v != "" {
-		sp.GrantSendOnBehalfTo = v
+	if !plan.CustomAttribute14.Equal(state.CustomAttribute14) {
+		sp.CustomAttribute14 = plan.CustomAttribute14.ValueString()
 	}
-	sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBool()
-	sp.IgnoreMissingFolderLink = plan.IgnoreMissingFolderLink.ValueBool()
-	sp.MailTip = plan.MailTip.ValueString()
-	if v := plan.MailTipTranslations.ValueString(); v != "" {
-		sp.MailTipTranslations = v
+	if !plan.CustomAttribute15.Equal(state.CustomAttribute15) {
+		sp.CustomAttribute15 = plan.CustomAttribute15.ValueString()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = v
+	if !plan.CustomAttribute2.Equal(state.CustomAttribute2) {
+		sp.CustomAttribute2 = plan.CustomAttribute2.ValueString()
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = v
+	if !plan.CustomAttribute3.Equal(state.CustomAttribute3) {
+		sp.CustomAttribute3 = plan.CustomAttribute3.ValueString()
 	}
-	if v := plan.ModeratedBy.ValueString(); v != "" {
-		sp.ModeratedBy = v
+	if !plan.CustomAttribute4.Equal(state.CustomAttribute4) {
+		sp.CustomAttribute4 = plan.CustomAttribute4.ValueString()
 	}
-	sp.ModerationEnabled = plan.ModerationEnabled.ValueBool()
-	sp.Name = plan.Name.ValueString()
-	if v := plan.OnPremisesObjectId.ValueString(); v != "" {
-		sp.OnPremisesObjectId = v
+	if !plan.CustomAttribute5.Equal(state.CustomAttribute5) {
+		sp.CustomAttribute5 = plan.CustomAttribute5.ValueString()
 	}
-	sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = v
+	if !plan.CustomAttribute6.Equal(state.CustomAttribute6) {
+		sp.CustomAttribute6 = plan.CustomAttribute6.ValueString()
 	}
-	if v := plan.RejectMessagesFrom.ValueString(); v != "" {
-		sp.RejectMessagesFrom = v
+	if !plan.CustomAttribute7.Equal(state.CustomAttribute7) {
+		sp.CustomAttribute7 = plan.CustomAttribute7.ValueString()
 	}
-	if v := plan.RejectMessagesFromDLMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromDLMembers = v
+	if !plan.CustomAttribute8.Equal(state.CustomAttribute8) {
+		sp.CustomAttribute8 = plan.CustomAttribute8.ValueString()
 	}
-	if v := plan.RejectMessagesFromSendersOrMembers.ValueString(); v != "" {
-		sp.RejectMessagesFromSendersOrMembers = v
+	if !plan.CustomAttribute9.Equal(state.CustomAttribute9) {
+		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
 	}
-	sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBool()
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = v
+	if !plan.DeliverToMailboxAndForward.Equal(state.DeliverToMailboxAndForward) {
+		if !plan.DeliverToMailboxAndForward.IsUnknown() {
+			sp.DeliverToMailboxAndForward = plan.DeliverToMailboxAndForward.ValueBoolPointer()
+		}
 	}
-	sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = v
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
+	if !plan.EmailAddressPolicyEnabled.Equal(state.EmailAddressPolicyEnabled) {
+		if !plan.EmailAddressPolicyEnabled.IsUnknown() {
+			sp.EmailAddressPolicyEnabled = plan.EmailAddressPolicyEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.EmailAddresses.Equal(state.EmailAddresses) {
+		if !plan.EmailAddresses.IsNull() && !plan.EmailAddresses.IsUnknown() {
+			sp.EmailAddresses = append([]string{}, toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.EntryId.Equal(state.EntryId) {
+		sp.EntryId = plan.EntryId.ValueString()
+	}
+	if !plan.ExtensionCustomAttribute1.Equal(state.ExtensionCustomAttribute1) {
+		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExtensionCustomAttribute2.Equal(state.ExtensionCustomAttribute2) {
+		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExtensionCustomAttribute3.Equal(state.ExtensionCustomAttribute3) {
+		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExtensionCustomAttribute4.Equal(state.ExtensionCustomAttribute4) {
+		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExtensionCustomAttribute5.Equal(state.ExtensionCustomAttribute5) {
+		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ExternalEmailAddress.Equal(state.ExternalEmailAddress) {
+		if v := plan.ExternalEmailAddress.ValueString(); v != "" {
+			sp.ExternalEmailAddress = objectParam(v)
+		}
+	}
+	if !plan.ForwardingAddress.Equal(state.ForwardingAddress) {
+		if v := plan.ForwardingAddress.ValueString(); v != "" {
+			sp.ForwardingAddress = objectParam(v)
+		}
+	}
+	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
+		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
+			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.IgnoreMissingFolderLink.Equal(state.IgnoreMissingFolderLink) {
+		if !plan.IgnoreMissingFolderLink.IsUnknown() {
+			sp.IgnoreMissingFolderLink = plan.IgnoreMissingFolderLink.ValueBoolPointer()
+		}
+	}
+	if !plan.MailTip.Equal(state.MailTip) {
+		sp.MailTip = plan.MailTip.ValueString()
+	}
+	if !plan.MailTipTranslations.Equal(state.MailTipTranslations) {
+		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
+	}
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
+	}
+	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
+		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.ModerationEnabled.Equal(state.ModerationEnabled) {
+		if !plan.ModerationEnabled.IsUnknown() {
+			sp.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.Name.Equal(state.Name) {
+		sp.Name = plan.Name.ValueString()
+	}
+	if !plan.OnPremisesObjectId.Equal(state.OnPremisesObjectId) {
+		sp.OnPremisesObjectId = plan.OnPremisesObjectId.ValueString()
+	}
+	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
+		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
+	}
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
+	}
+	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
+		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RejectMessagesFromDLMembers.Equal(state.RejectMessagesFromDLMembers) {
+		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
+		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		if !plan.RequireSenderAuthenticationEnabled.IsUnknown() {
+			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
+	}
+	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
+		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
+	}
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -423,52 +919,29 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AcceptMessagesOnlyFrom":                 cfg.AcceptMessagesOnlyFrom,
-		"AcceptMessagesOnlyFromDLMembers":        cfg.AcceptMessagesOnlyFromDLMembers,
-		"AcceptMessagesOnlyFromSendersOrMembers": cfg.AcceptMessagesOnlyFromSendersOrMembers,
-		"Alias":                                  cfg.Alias,
-		"BypassModerationFromSendersOrMembers":   cfg.BypassModerationFromSendersOrMembers,
-		"CustomAttribute1":                       cfg.CustomAttribute1,
-		"CustomAttribute10":                      cfg.CustomAttribute10,
-		"CustomAttribute11":                      cfg.CustomAttribute11,
-		"CustomAttribute12":                      cfg.CustomAttribute12,
-		"CustomAttribute13":                      cfg.CustomAttribute13,
-		"CustomAttribute14":                      cfg.CustomAttribute14,
-		"CustomAttribute15":                      cfg.CustomAttribute15,
-		"CustomAttribute2":                       cfg.CustomAttribute2,
-		"CustomAttribute3":                       cfg.CustomAttribute3,
-		"CustomAttribute4":                       cfg.CustomAttribute4,
-		"CustomAttribute5":                       cfg.CustomAttribute5,
-		"CustomAttribute6":                       cfg.CustomAttribute6,
-		"CustomAttribute7":                       cfg.CustomAttribute7,
-		"CustomAttribute8":                       cfg.CustomAttribute8,
-		"CustomAttribute9":                       cfg.CustomAttribute9,
-		"DisplayName":                            cfg.DisplayName,
-		"EmailAddresses":                         cfg.EmailAddresses,
-		"EntryId":                                cfg.EntryId,
-		"ExtensionCustomAttribute1":              cfg.ExtensionCustomAttribute1,
-		"ExtensionCustomAttribute2":              cfg.ExtensionCustomAttribute2,
-		"ExtensionCustomAttribute3":              cfg.ExtensionCustomAttribute3,
-		"ExtensionCustomAttribute4":              cfg.ExtensionCustomAttribute4,
-		"ExtensionCustomAttribute5":              cfg.ExtensionCustomAttribute5,
-		"ExternalEmailAddress":                   cfg.ExternalEmailAddress,
-		"ForwardingAddress":                      cfg.ForwardingAddress,
-		"GrantSendOnBehalfTo":                    cfg.GrantSendOnBehalfTo,
-		"MailTip":                                cfg.MailTip,
-		"MailTipTranslations":                    cfg.MailTipTranslations,
-		"MaxReceiveSize":                         cfg.MaxReceiveSize,
-		"MaxSendSize":                            cfg.MaxSendSize,
-		"ModeratedBy":                            cfg.ModeratedBy,
-		"Name":                                   cfg.Name,
-		"OnPremisesObjectId":                     cfg.OnPremisesObjectId,
-		"PhoneticDisplayName":                    cfg.PhoneticDisplayName,
-		"PrimarySmtpAddress":                     cfg.PrimarySmtpAddress,
-		"RejectMessagesFrom":                     cfg.RejectMessagesFrom,
-		"RejectMessagesFromDLMembers":            cfg.RejectMessagesFromDLMembers,
-		"RejectMessagesFromSendersOrMembers":     cfg.RejectMessagesFromSendersOrMembers,
-		"SendModerationNotifications":            cfg.SendModerationNotifications,
-		"SimpleDisplayName":                      cfg.SimpleDisplayName,
-		"WindowsEmailAddress":                    cfg.WindowsEmailAddress,
+		"Alias":               cfg.Alias,
+		"CustomAttribute1":    cfg.CustomAttribute1,
+		"CustomAttribute10":   cfg.CustomAttribute10,
+		"CustomAttribute11":   cfg.CustomAttribute11,
+		"CustomAttribute12":   cfg.CustomAttribute12,
+		"CustomAttribute13":   cfg.CustomAttribute13,
+		"CustomAttribute14":   cfg.CustomAttribute14,
+		"CustomAttribute15":   cfg.CustomAttribute15,
+		"CustomAttribute2":    cfg.CustomAttribute2,
+		"CustomAttribute3":    cfg.CustomAttribute3,
+		"CustomAttribute4":    cfg.CustomAttribute4,
+		"CustomAttribute5":    cfg.CustomAttribute5,
+		"CustomAttribute6":    cfg.CustomAttribute6,
+		"CustomAttribute7":    cfg.CustomAttribute7,
+		"CustomAttribute8":    cfg.CustomAttribute8,
+		"CustomAttribute9":    cfg.CustomAttribute9,
+		"DisplayName":         cfg.DisplayName,
+		"EntryId":             cfg.EntryId,
+		"MailTip":             cfg.MailTip,
+		"Name":                cfg.Name,
+		"OnPremisesObjectId":  cfg.OnPremisesObjectId,
+		"PhoneticDisplayName": cfg.PhoneticDisplayName,
+		"SimpleDisplayName":   cfg.SimpleDisplayName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
@@ -482,6 +955,197 @@ func (r *mailPublicFolderResource) Delete(_ context.Context, _ resource.DeleteRe
 func (r *mailPublicFolderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identity"), req.ID)...)
+}
+
+func (r *mailPublicFolderResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() || r.client == nil {
+		return
+	}
+	var plan mailPublicFolderModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	identity := plan.Identity.ValueString()
+	if identity == "" {
+		return
+	}
+	res, err := r.client.EXO.GetMailPublicFolder(ctx, exo.GetMailPublicFolderParams{Identity: identity})
+	if err != nil {
+		return
+	}
+	obj := firstObject(res.Value)
+	if obj == nil {
+		return
+	}
+	var cur mailPublicFolderModel
+	readMailPublicFolder(ctx, obj, &cur)
+	if plan.ID.IsUnknown() {
+		plan.ID = cur.ID
+	}
+	if plan.Identity.IsUnknown() {
+		plan.Identity = cur.Identity
+	}
+	if plan.AcceptMessagesOnlyFrom.IsUnknown() {
+		plan.AcceptMessagesOnlyFrom = cur.AcceptMessagesOnlyFrom
+	}
+	if plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
+		plan.AcceptMessagesOnlyFromDLMembers = cur.AcceptMessagesOnlyFromDLMembers
+	}
+	if plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
+		plan.AcceptMessagesOnlyFromSendersOrMembers = cur.AcceptMessagesOnlyFromSendersOrMembers
+	}
+	if plan.Alias.IsUnknown() {
+		plan.Alias = cur.Alias
+	}
+	if plan.BypassModerationFromSendersOrMembers.IsUnknown() {
+		plan.BypassModerationFromSendersOrMembers = cur.BypassModerationFromSendersOrMembers
+	}
+	if plan.Contacts.IsUnknown() {
+		plan.Contacts = cur.Contacts
+	}
+	if plan.CustomAttribute1.IsUnknown() {
+		plan.CustomAttribute1 = cur.CustomAttribute1
+	}
+	if plan.CustomAttribute10.IsUnknown() {
+		plan.CustomAttribute10 = cur.CustomAttribute10
+	}
+	if plan.CustomAttribute11.IsUnknown() {
+		plan.CustomAttribute11 = cur.CustomAttribute11
+	}
+	if plan.CustomAttribute12.IsUnknown() {
+		plan.CustomAttribute12 = cur.CustomAttribute12
+	}
+	if plan.CustomAttribute13.IsUnknown() {
+		plan.CustomAttribute13 = cur.CustomAttribute13
+	}
+	if plan.CustomAttribute14.IsUnknown() {
+		plan.CustomAttribute14 = cur.CustomAttribute14
+	}
+	if plan.CustomAttribute15.IsUnknown() {
+		plan.CustomAttribute15 = cur.CustomAttribute15
+	}
+	if plan.CustomAttribute2.IsUnknown() {
+		plan.CustomAttribute2 = cur.CustomAttribute2
+	}
+	if plan.CustomAttribute3.IsUnknown() {
+		plan.CustomAttribute3 = cur.CustomAttribute3
+	}
+	if plan.CustomAttribute4.IsUnknown() {
+		plan.CustomAttribute4 = cur.CustomAttribute4
+	}
+	if plan.CustomAttribute5.IsUnknown() {
+		plan.CustomAttribute5 = cur.CustomAttribute5
+	}
+	if plan.CustomAttribute6.IsUnknown() {
+		plan.CustomAttribute6 = cur.CustomAttribute6
+	}
+	if plan.CustomAttribute7.IsUnknown() {
+		plan.CustomAttribute7 = cur.CustomAttribute7
+	}
+	if plan.CustomAttribute8.IsUnknown() {
+		plan.CustomAttribute8 = cur.CustomAttribute8
+	}
+	if plan.CustomAttribute9.IsUnknown() {
+		plan.CustomAttribute9 = cur.CustomAttribute9
+	}
+	if plan.DeliverToMailboxAndForward.IsUnknown() {
+		plan.DeliverToMailboxAndForward = cur.DeliverToMailboxAndForward
+	}
+	if plan.DisplayName.IsUnknown() {
+		plan.DisplayName = cur.DisplayName
+	}
+	if plan.EmailAddressPolicyEnabled.IsUnknown() {
+		plan.EmailAddressPolicyEnabled = cur.EmailAddressPolicyEnabled
+	}
+	if plan.EmailAddresses.IsUnknown() {
+		plan.EmailAddresses = cur.EmailAddresses
+	}
+	if plan.EntryId.IsUnknown() {
+		plan.EntryId = cur.EntryId
+	}
+	if plan.ExtensionCustomAttribute1.IsUnknown() {
+		plan.ExtensionCustomAttribute1 = cur.ExtensionCustomAttribute1
+	}
+	if plan.ExtensionCustomAttribute2.IsUnknown() {
+		plan.ExtensionCustomAttribute2 = cur.ExtensionCustomAttribute2
+	}
+	if plan.ExtensionCustomAttribute3.IsUnknown() {
+		plan.ExtensionCustomAttribute3 = cur.ExtensionCustomAttribute3
+	}
+	if plan.ExtensionCustomAttribute4.IsUnknown() {
+		plan.ExtensionCustomAttribute4 = cur.ExtensionCustomAttribute4
+	}
+	if plan.ExtensionCustomAttribute5.IsUnknown() {
+		plan.ExtensionCustomAttribute5 = cur.ExtensionCustomAttribute5
+	}
+	if plan.ExternalEmailAddress.IsUnknown() {
+		plan.ExternalEmailAddress = cur.ExternalEmailAddress
+	}
+	if plan.ForwardingAddress.IsUnknown() {
+		plan.ForwardingAddress = cur.ForwardingAddress
+	}
+	if plan.GrantSendOnBehalfTo.IsUnknown() {
+		plan.GrantSendOnBehalfTo = cur.GrantSendOnBehalfTo
+	}
+	if plan.HiddenFromAddressListsEnabled.IsUnknown() {
+		plan.HiddenFromAddressListsEnabled = cur.HiddenFromAddressListsEnabled
+	}
+	if plan.IgnoreMissingFolderLink.IsUnknown() {
+		plan.IgnoreMissingFolderLink = cur.IgnoreMissingFolderLink
+	}
+	if plan.MailTip.IsUnknown() {
+		plan.MailTip = cur.MailTip
+	}
+	if plan.MailTipTranslations.IsUnknown() {
+		plan.MailTipTranslations = cur.MailTipTranslations
+	}
+	if plan.MaxReceiveSize.IsUnknown() {
+		plan.MaxReceiveSize = cur.MaxReceiveSize
+	}
+	if plan.MaxSendSize.IsUnknown() {
+		plan.MaxSendSize = cur.MaxSendSize
+	}
+	if plan.ModeratedBy.IsUnknown() {
+		plan.ModeratedBy = cur.ModeratedBy
+	}
+	if plan.ModerationEnabled.IsUnknown() {
+		plan.ModerationEnabled = cur.ModerationEnabled
+	}
+	if plan.Name.IsUnknown() {
+		plan.Name = cur.Name
+	}
+	if plan.OnPremisesObjectId.IsUnknown() {
+		plan.OnPremisesObjectId = cur.OnPremisesObjectId
+	}
+	if plan.PhoneticDisplayName.IsUnknown() {
+		plan.PhoneticDisplayName = cur.PhoneticDisplayName
+	}
+	if plan.PrimarySmtpAddress.IsUnknown() {
+		plan.PrimarySmtpAddress = cur.PrimarySmtpAddress
+	}
+	if plan.RejectMessagesFrom.IsUnknown() {
+		plan.RejectMessagesFrom = cur.RejectMessagesFrom
+	}
+	if plan.RejectMessagesFromDLMembers.IsUnknown() {
+		plan.RejectMessagesFromDLMembers = cur.RejectMessagesFromDLMembers
+	}
+	if plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
+		plan.RejectMessagesFromSendersOrMembers = cur.RejectMessagesFromSendersOrMembers
+	}
+	if plan.RequireSenderAuthenticationEnabled.IsUnknown() {
+		plan.RequireSenderAuthenticationEnabled = cur.RequireSenderAuthenticationEnabled
+	}
+	if plan.SendModerationNotifications.IsUnknown() {
+		plan.SendModerationNotifications = cur.SendModerationNotifications
+	}
+	if plan.SimpleDisplayName.IsUnknown() {
+		plan.SimpleDisplayName = cur.SimpleDisplayName
+	}
+	if plan.WindowsEmailAddress.IsUnknown() {
+		plan.WindowsEmailAddress = cur.WindowsEmailAddress
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func (r *mailPublicFolderResource) identityOf(m mailPublicFolderModel) string {
@@ -520,11 +1184,11 @@ func (r *mailPublicFolderResource) refresh(ctx context.Context, identity string,
 
 func readMailPublicFolder(ctx context.Context, obj map[string]any, m *mailPublicFolderModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
-	m.AcceptMessagesOnlyFrom = types.StringValue(getString(obj, "AcceptMessagesOnlyFrom"))
-	m.AcceptMessagesOnlyFromDLMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromDLMembers"))
-	m.AcceptMessagesOnlyFromSendersOrMembers = types.StringValue(getString(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
+	m.AcceptMessagesOnlyFrom = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFrom"))
+	m.AcceptMessagesOnlyFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromDLMembers"))
+	m.AcceptMessagesOnlyFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "AcceptMessagesOnlyFromSendersOrMembers"))
 	m.Alias = types.StringValue(getString(obj, "Alias"))
-	m.BypassModerationFromSendersOrMembers = types.StringValue(getString(obj, "BypassModerationFromSendersOrMembers"))
+	m.BypassModerationFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "BypassModerationFromSendersOrMembers"))
 	m.Contacts = stringSetValue(ctx, getStringSlice(obj, "Contacts"))
 	m.CustomAttribute1 = types.StringValue(getString(obj, "CustomAttribute1"))
 	m.CustomAttribute10 = types.StringValue(getString(obj, "CustomAttribute10"))
@@ -544,44 +1208,44 @@ func readMailPublicFolder(ctx context.Context, obj map[string]any, m *mailPublic
 	m.DeliverToMailboxAndForward = types.BoolValue(getBool(obj, "DeliverToMailboxAndForward"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.EmailAddressPolicyEnabled = types.BoolValue(getBool(obj, "EmailAddressPolicyEnabled"))
-	m.EmailAddresses = types.StringValue(getString(obj, "EmailAddresses"))
+	m.EmailAddresses = stringSetValue(ctx, getStringSlice(obj, "EmailAddresses"))
 	m.EntryId = types.StringValue(getString(obj, "EntryId"))
-	m.ExtensionCustomAttribute1 = types.StringValue(getString(obj, "ExtensionCustomAttribute1"))
-	m.ExtensionCustomAttribute2 = types.StringValue(getString(obj, "ExtensionCustomAttribute2"))
-	m.ExtensionCustomAttribute3 = types.StringValue(getString(obj, "ExtensionCustomAttribute3"))
-	m.ExtensionCustomAttribute4 = types.StringValue(getString(obj, "ExtensionCustomAttribute4"))
-	m.ExtensionCustomAttribute5 = types.StringValue(getString(obj, "ExtensionCustomAttribute5"))
-	m.ExternalEmailAddress = types.StringValue(getString(obj, "ExternalEmailAddress"))
-	m.ForwardingAddress = types.StringValue(getString(obj, "ForwardingAddress"))
-	m.GrantSendOnBehalfTo = types.StringValue(getString(obj, "GrantSendOnBehalfTo"))
+	m.ExtensionCustomAttribute1 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute1"))
+	m.ExtensionCustomAttribute2 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute2"))
+	m.ExtensionCustomAttribute3 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute3"))
+	m.ExtensionCustomAttribute4 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute4"))
+	m.ExtensionCustomAttribute5 = stringSetValue(ctx, getStringSlice(obj, "ExtensionCustomAttribute5"))
+	m.ExternalEmailAddress = types.StringValue(getObjectJSON(obj, "ExternalEmailAddress"))
+	m.ForwardingAddress = types.StringValue(getObjectJSON(obj, "ForwardingAddress"))
+	m.GrantSendOnBehalfTo = stringSetValue(ctx, getStringSlice(obj, "GrantSendOnBehalfTo"))
 	m.HiddenFromAddressListsEnabled = types.BoolValue(getBool(obj, "HiddenFromAddressListsEnabled"))
 	m.IgnoreMissingFolderLink = types.BoolValue(getBool(obj, "IgnoreMissingFolderLink"))
 	m.MailTip = types.StringValue(getString(obj, "MailTip"))
-	m.MailTipTranslations = types.StringValue(getString(obj, "MailTipTranslations"))
-	m.MaxReceiveSize = types.StringValue(getString(obj, "MaxReceiveSize"))
-	m.MaxSendSize = types.StringValue(getString(obj, "MaxSendSize"))
-	m.ModeratedBy = types.StringValue(getString(obj, "ModeratedBy"))
+	m.MailTipTranslations = stringSetValue(ctx, getStringSlice(obj, "MailTipTranslations"))
+	m.MaxReceiveSize = types.StringValue(getObjectJSON(obj, "MaxReceiveSize"))
+	m.MaxSendSize = types.StringValue(getObjectJSON(obj, "MaxSendSize"))
+	m.ModeratedBy = stringSetValue(ctx, getStringSlice(obj, "ModeratedBy"))
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OnPremisesObjectId = types.StringValue(getString(obj, "OnPremisesObjectId"))
 	m.PhoneticDisplayName = types.StringValue(getString(obj, "PhoneticDisplayName"))
-	m.PrimarySmtpAddress = types.StringValue(getString(obj, "PrimarySmtpAddress"))
-	m.RejectMessagesFrom = types.StringValue(getString(obj, "RejectMessagesFrom"))
-	m.RejectMessagesFromDLMembers = types.StringValue(getString(obj, "RejectMessagesFromDLMembers"))
-	m.RejectMessagesFromSendersOrMembers = types.StringValue(getString(obj, "RejectMessagesFromSendersOrMembers"))
+	m.PrimarySmtpAddress = types.StringValue(getObjectJSON(obj, "PrimarySmtpAddress"))
+	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
+	m.RejectMessagesFromDLMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromDLMembers"))
+	m.RejectMessagesFromSendersOrMembers = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFromSendersOrMembers"))
 	m.RequireSenderAuthenticationEnabled = types.BoolValue(getBool(obj, "RequireSenderAuthenticationEnabled"))
-	m.SendModerationNotifications = types.StringValue(getString(obj, "SendModerationNotifications"))
+	m.SendModerationNotifications = types.StringValue(getObjectJSON(obj, "SendModerationNotifications"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
-	m.WindowsEmailAddress = types.StringValue(getString(obj, "WindowsEmailAddress"))
+	m.WindowsEmailAddress = types.StringValue(getObjectJSON(obj, "WindowsEmailAddress"))
 	_ = ctx
 }
 
 func (r *mailPublicFolderResource) reconcileState(cfg, read *mailPublicFolderModel) {
-	read.AcceptMessagesOnlyFrom = reconcile.KeepStr(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
-	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
-	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepStr(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
+	read.AcceptMessagesOnlyFrom = reconcile.KeepSet(cfg.AcceptMessagesOnlyFrom, read.AcceptMessagesOnlyFrom)
+	read.AcceptMessagesOnlyFromDLMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromDLMembers, read.AcceptMessagesOnlyFromDLMembers)
+	read.AcceptMessagesOnlyFromSendersOrMembers = reconcile.KeepSet(cfg.AcceptMessagesOnlyFromSendersOrMembers, read.AcceptMessagesOnlyFromSendersOrMembers)
 	read.Alias = reconcile.KeepStr(cfg.Alias, read.Alias)
-	read.BypassModerationFromSendersOrMembers = reconcile.KeepStr(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
+	read.BypassModerationFromSendersOrMembers = reconcile.KeepSet(cfg.BypassModerationFromSendersOrMembers, read.BypassModerationFromSendersOrMembers)
 	read.Contacts = reconcile.KeepSet(cfg.Contacts, read.Contacts)
 	read.CustomAttribute1 = reconcile.KeepStr(cfg.CustomAttribute1, read.CustomAttribute1)
 	read.CustomAttribute10 = reconcile.KeepStr(cfg.CustomAttribute10, read.CustomAttribute10)
@@ -601,31 +1265,31 @@ func (r *mailPublicFolderResource) reconcileState(cfg, read *mailPublicFolderMod
 	read.DeliverToMailboxAndForward = reconcile.KeepBool(cfg.DeliverToMailboxAndForward, read.DeliverToMailboxAndForward)
 	read.DisplayName = reconcile.KeepStr(cfg.DisplayName, read.DisplayName)
 	read.EmailAddressPolicyEnabled = reconcile.KeepBool(cfg.EmailAddressPolicyEnabled, read.EmailAddressPolicyEnabled)
-	read.EmailAddresses = reconcile.KeepStr(cfg.EmailAddresses, read.EmailAddresses)
+	read.EmailAddresses = reconcile.KeepSet(cfg.EmailAddresses, read.EmailAddresses)
 	read.EntryId = reconcile.KeepStr(cfg.EntryId, read.EntryId)
-	read.ExtensionCustomAttribute1 = reconcile.KeepStr(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
-	read.ExtensionCustomAttribute2 = reconcile.KeepStr(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
-	read.ExtensionCustomAttribute3 = reconcile.KeepStr(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
-	read.ExtensionCustomAttribute4 = reconcile.KeepStr(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
-	read.ExtensionCustomAttribute5 = reconcile.KeepStr(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
+	read.ExtensionCustomAttribute1 = reconcile.KeepSet(cfg.ExtensionCustomAttribute1, read.ExtensionCustomAttribute1)
+	read.ExtensionCustomAttribute2 = reconcile.KeepSet(cfg.ExtensionCustomAttribute2, read.ExtensionCustomAttribute2)
+	read.ExtensionCustomAttribute3 = reconcile.KeepSet(cfg.ExtensionCustomAttribute3, read.ExtensionCustomAttribute3)
+	read.ExtensionCustomAttribute4 = reconcile.KeepSet(cfg.ExtensionCustomAttribute4, read.ExtensionCustomAttribute4)
+	read.ExtensionCustomAttribute5 = reconcile.KeepSet(cfg.ExtensionCustomAttribute5, read.ExtensionCustomAttribute5)
 	read.ExternalEmailAddress = reconcile.KeepStr(cfg.ExternalEmailAddress, read.ExternalEmailAddress)
 	read.ForwardingAddress = reconcile.KeepStr(cfg.ForwardingAddress, read.ForwardingAddress)
-	read.GrantSendOnBehalfTo = reconcile.KeepStr(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
+	read.GrantSendOnBehalfTo = reconcile.KeepSet(cfg.GrantSendOnBehalfTo, read.GrantSendOnBehalfTo)
 	read.HiddenFromAddressListsEnabled = reconcile.KeepBool(cfg.HiddenFromAddressListsEnabled, read.HiddenFromAddressListsEnabled)
 	read.IgnoreMissingFolderLink = reconcile.KeepBool(cfg.IgnoreMissingFolderLink, read.IgnoreMissingFolderLink)
 	read.MailTip = reconcile.KeepStr(cfg.MailTip, read.MailTip)
-	read.MailTipTranslations = reconcile.KeepStr(cfg.MailTipTranslations, read.MailTipTranslations)
+	read.MailTipTranslations = reconcile.KeepSet(cfg.MailTipTranslations, read.MailTipTranslations)
 	read.MaxReceiveSize = reconcile.KeepStr(cfg.MaxReceiveSize, read.MaxReceiveSize)
 	read.MaxSendSize = reconcile.KeepStr(cfg.MaxSendSize, read.MaxSendSize)
-	read.ModeratedBy = reconcile.KeepStr(cfg.ModeratedBy, read.ModeratedBy)
+	read.ModeratedBy = reconcile.KeepSet(cfg.ModeratedBy, read.ModeratedBy)
 	read.ModerationEnabled = reconcile.KeepBool(cfg.ModerationEnabled, read.ModerationEnabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OnPremisesObjectId = reconcile.KeepStr(cfg.OnPremisesObjectId, read.OnPremisesObjectId)
 	read.PhoneticDisplayName = reconcile.KeepStr(cfg.PhoneticDisplayName, read.PhoneticDisplayName)
 	read.PrimarySmtpAddress = reconcile.KeepStr(cfg.PrimarySmtpAddress, read.PrimarySmtpAddress)
-	read.RejectMessagesFrom = reconcile.KeepStr(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
-	read.RejectMessagesFromDLMembers = reconcile.KeepStr(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
-	read.RejectMessagesFromSendersOrMembers = reconcile.KeepStr(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
+	read.RejectMessagesFrom = reconcile.KeepSet(cfg.RejectMessagesFrom, read.RejectMessagesFrom)
+	read.RejectMessagesFromDLMembers = reconcile.KeepSet(cfg.RejectMessagesFromDLMembers, read.RejectMessagesFromDLMembers)
+	read.RejectMessagesFromSendersOrMembers = reconcile.KeepSet(cfg.RejectMessagesFromSendersOrMembers, read.RejectMessagesFromSendersOrMembers)
 	read.RequireSenderAuthenticationEnabled = reconcile.KeepBool(cfg.RequireSenderAuthenticationEnabled, read.RequireSenderAuthenticationEnabled)
 	read.SendModerationNotifications = reconcile.KeepStr(cfg.SendModerationNotifications, read.SendModerationNotifications)
 	read.SimpleDisplayName = reconcile.KeepStr(cfg.SimpleDisplayName, read.SimpleDisplayName)

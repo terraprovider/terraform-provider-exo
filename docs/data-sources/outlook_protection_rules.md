@@ -30,6 +30,7 @@ Read-Only:
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
 - `name` (String) Maps to the -Name parameter.
+- `priority` (Number) Maps to the -Priority parameter.
 - `sent_to` (Set of String) Maps to the -SentTo parameter.
 - `sent_to_scope` (String) Maps to the -SentToScope parameter.
 - `user_can_override` (Boolean) Maps to the -UserCanOverride parameter.

@@ -21,14 +21,14 @@ Manages the Group configuration via Set-Group.
 
 ### Optional
 
-- `description` (String) Maps to the -Description parameter.
+- `description` (Set of String) Maps to the -Description parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `is_hierarchical_group` (Boolean) Maps to the -IsHierarchicalGroup parameter.
 - `managed_by` (Set of String) Maps to the -ManagedBy parameter.
 - `name` (String) Maps to the -Name parameter.
 - `notes` (String) Maps to the -Notes parameter.
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
-- `seniority_index` (String) Maps to the -SeniorityIndex parameter.
+- `seniority_index` (Number) Maps to the -SeniorityIndex parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.
 - `universal` (Boolean) Maps to the -Universal parameter.
 - `windows_email_address` (String) Maps to the -WindowsEmailAddress parameter.

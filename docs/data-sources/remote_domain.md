@@ -39,9 +39,9 @@ Look up an existing RemoteDomain object. Set identity or name to select it.
 - `ndr_enabled` (Boolean) Maps to the -NDREnabled parameter.
 - `non_mime_character_set` (String) Maps to the -NonMimeCharacterSet parameter.
 - `preferred_internet_code_page_for_shift_jis` (String) Maps to the -PreferredInternetCodePageForShiftJis parameter.
-- `required_charset_coverage` (String) Maps to the -RequiredCharsetCoverage parameter.
+- `required_charset_coverage` (Number) Maps to the -RequiredCharsetCoverage parameter.
 - `target_delivery_domain` (Boolean) Maps to the -TargetDeliveryDomain parameter.
-- `tnef_enabled` (String) Maps to the -TNEFEnabled parameter.
+- `tnef_enabled` (Boolean) Maps to the -TNEFEnabled parameter.
 - `trusted_mail_inbound_enabled` (Boolean) Maps to the -TrustedMailInboundEnabled parameter.
 - `trusted_mail_outbound_enabled` (Boolean) Maps to the -TrustedMailOutboundEnabled parameter.
 - `use_simple_display_name` (Boolean) Maps to the -UseSimpleDisplayName parameter.

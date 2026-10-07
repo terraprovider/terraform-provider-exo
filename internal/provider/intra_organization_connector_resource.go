@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,7 +41,7 @@ type intraOrganizationConnectorModel struct {
 	DiscoveryEndpoint    types.String `tfsdk:"discovery_endpoint"`
 	Enabled              types.Bool   `tfsdk:"enabled"`
 	Name                 types.String `tfsdk:"name"`
-	TargetAddressDomains types.String `tfsdk:"target_address_domains"`
+	TargetAddressDomains types.Set    `tfsdk:"target_address_domains"`
 	TargetSharingEpr     types.String `tfsdk:"target_sharing_epr"`
 }
 
@@ -53,11 +54,11 @@ func (r *intraOrganizationConnectorResource) Schema(_ context.Context, _ resourc
 		Description: "Manages the IntraOrganizationConnector object via New-IntraOrganizationConnector / Get-IntraOrganizationConnector / Set-IntraOrganizationConnector / Remove-IntraOrganizationConnector.",
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets."},
+			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"discovery_endpoint":     schema.StringAttribute{Required: true, Description: "Maps to the -DiscoveryEndpoint parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                   schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"target_address_domains": schema.StringAttribute{Required: true, Description: "Maps to the -TargetAddressDomains parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"target_address_domains": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -TargetAddressDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"target_sharing_epr":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetSharingEpr parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -77,18 +78,31 @@ func (r *intraOrganizationConnectorResource) Create(ctx context.Context, req res
 		return
 	}
 
-	p := exo.NewIntraOrganizationConnectorParams{
-		Enabled: plan.Enabled.ValueBool(),
-		Name:    plan.Name.ValueString(),
+	var config intraOrganizationConnectorModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if v := plan.DiscoveryEndpoint.ValueString(); v != "" {
-		p.DiscoveryEndpoint = v
+
+	p := exo.NewIntraOrganizationConnectorParams{}
+	if v := config.DiscoveryEndpoint.ValueString(); v != "" {
+		p.DiscoveryEndpoint = objectParam(v)
 	}
-	if v := plan.TargetAddressDomains.ValueString(); v != "" {
-		p.TargetAddressDomains = v
+	if !config.Enabled.IsNull() {
+		if !plan.Enabled.IsUnknown() {
+			p.Enabled = plan.Enabled.ValueBoolPointer()
+		}
 	}
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		p.TargetSharingEpr = v
+	if !config.Name.IsNull() {
+		p.Name = plan.Name.ValueString()
+	}
+	if !config.TargetAddressDomains.IsNull() {
+		if v := toStringSlice(ctx, plan.TargetAddressDomains, &resp.Diagnostics); len(v) > 0 {
+			p.TargetAddressDomains = v
+		}
+	}
+	if v := config.TargetSharingEpr.ValueString(); v != "" {
+		p.TargetSharingEpr = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,9 +154,15 @@ func (r *intraOrganizationConnectorResource) Update(ctx context.Context, req res
 	id := r.identityOf(state)
 	sp := exo.SetIntraOrganizationConnectorParams{}
 	sp.Identity = id
-	sp.Enabled = plan.Enabled.ValueBool()
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		sp.TargetSharingEpr = v
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TargetSharingEpr.Equal(state.TargetSharingEpr) {
+		if v := plan.TargetSharingEpr.ValueString(); v != "" {
+			sp.TargetSharingEpr = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -152,9 +172,7 @@ func (r *intraOrganizationConnectorResource) Update(ctx context.Context, req res
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"TargetSharingEpr": cfg.TargetSharingEpr,
-	}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -215,11 +233,11 @@ func (r *intraOrganizationConnectorResource) refresh(ctx context.Context, identi
 func readIntraOrganizationConnector(ctx context.Context, obj map[string]any, m *intraOrganizationConnectorModel) {
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
-	m.DiscoveryEndpoint = types.StringValue(getString(obj, "DiscoveryEndpoint"))
+	m.DiscoveryEndpoint = types.StringValue(getObjectJSON(obj, "DiscoveryEndpoint"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
-	m.TargetAddressDomains = types.StringValue(getString(obj, "TargetAddressDomains"))
-	m.TargetSharingEpr = types.StringValue(getString(obj, "TargetSharingEpr"))
+	m.TargetAddressDomains = stringSetValue(ctx, getStringSlice(obj, "TargetAddressDomains"))
+	m.TargetSharingEpr = types.StringValue(getObjectJSON(obj, "TargetSharingEpr"))
 	_ = ctx
 }
 
@@ -227,6 +245,6 @@ func (r *intraOrganizationConnectorResource) reconcileState(cfg, read *intraOrga
 	read.DiscoveryEndpoint = reconcile.KeepStr(cfg.DiscoveryEndpoint, read.DiscoveryEndpoint)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
-	read.TargetAddressDomains = reconcile.KeepStr(cfg.TargetAddressDomains, read.TargetAddressDomains)
+	read.TargetAddressDomains = reconcile.KeepSet(cfg.TargetAddressDomains, read.TargetAddressDomains)
 	read.TargetSharingEpr = reconcile.KeepStr(cfg.TargetSharingEpr, read.TargetSharingEpr)
 }

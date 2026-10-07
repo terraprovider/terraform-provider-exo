@@ -47,7 +47,7 @@ Look up an existing MobileDeviceMailboxPolicy object. Set identity or name to se
 - `allow_unsigned_installation_packages` (Boolean) Maps to the -AllowUnsignedInstallationPackages parameter.
 - `allow_wi_fi` (Boolean) Maps to the -AllowWiFi parameter.
 - `alphanumeric_password_required` (Boolean, Sensitive) Maps to the -AlphanumericPasswordRequired parameter.
-- `approved_application_list` (String) Maps to the -ApprovedApplicationList parameter.
+- `approved_application_list` (Set of String) Maps to the -ApprovedApplicationList parameter.
 - `attachments_enabled` (Boolean) Maps to the -AttachmentsEnabled parameter.
 - `device_encryption_enabled` (Boolean) Maps to the -DeviceEncryptionEnabled parameter.
 - `device_policy_refresh_interval` (String) Maps to the -DevicePolicyRefreshInterval parameter.
@@ -61,9 +61,11 @@ Look up an existing MobileDeviceMailboxPolicy object. Set identity or name to se
 - `max_email_html_body_truncation_size` (String) Maps to the -MaxEmailHTMLBodyTruncationSize parameter.
 - `max_inactivity_time_lock` (String) Maps to the -MaxInactivityTimeLock parameter.
 - `max_password_failed_attempts` (String, Sensitive) Maps to the -MaxPasswordFailedAttempts parameter.
-- `min_password_length` (String, Sensitive) Maps to the -MinPasswordLength parameter.
+- `min_password_complex_characters` (Number, Sensitive) Maps to the -MinPasswordComplexCharacters parameter.
+- `min_password_length` (Number, Sensitive) Maps to the -MinPasswordLength parameter.
 - `password_enabled` (Boolean, Sensitive) Maps to the -PasswordEnabled parameter.
 - `password_expiration` (String, Sensitive) Maps to the -PasswordExpiration parameter.
+- `password_history` (Number, Sensitive) Maps to the -PasswordHistory parameter.
 - `password_recovery_enabled` (Boolean, Sensitive) Maps to the -PasswordRecoveryEnabled parameter.
 - `require_device_encryption` (Boolean) Maps to the -RequireDeviceEncryption parameter.
 - `require_encrypted_smime_messages` (Boolean) Maps to the -RequireEncryptedSMIMEMessages parameter.
@@ -72,6 +74,6 @@ Look up an existing MobileDeviceMailboxPolicy object. Set identity or name to se
 - `require_signed_smime_algorithm` (String) Maps to the -RequireSignedSMIMEAlgorithm parameter.
 - `require_signed_smime_messages` (Boolean) Maps to the -RequireSignedSMIMEMessages parameter.
 - `require_storage_card_encryption` (Boolean) Maps to the -RequireStorageCardEncryption parameter.
-- `unapproved_in_rom_application_list` (String) Maps to the -UnapprovedInROMApplicationList parameter.
+- `unapproved_in_rom_application_list` (Set of String) Maps to the -UnapprovedInROMApplicationList parameter.
 - `unc_access_enabled` (Boolean) Maps to the -UNCAccessEnabled parameter.
 - `wss_access_enabled` (Boolean) Maps to the -WSSAccessEnabled parameter.
