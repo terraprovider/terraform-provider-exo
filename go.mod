@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
-	github.com/terraprovider/go-exoscc v0.2.1-0.20261007102906-1f620e65df5d
+	github.com/terraprovider/go-exoscc v0.3.0
 )
 
 require (
@@ -52,7 +52,7 @@ require (
 	github.com/oklog/run v1.2.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/terraprovider/go-msadmin v0.2.0
-	github.com/terraprovider/tf-msadmin v0.8.1-0.20261007103305-e9d6e51209f3
+	github.com/terraprovider/tf-msadmin v0.9.0
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
