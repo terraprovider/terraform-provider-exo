@@ -170,6 +170,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			InUpdate:     inU,
 			Object:       p.Kind() == spec.KindAny,
 			PointerParam: isPointer(p),
+			Delta:        at == genframework.TypeStringSet && inU && firstParam(name, setCmd).DeltaCapable(), // clear via Remove delta
 		})
 	}
 	if !hasCreateAttr(attrs) {
@@ -339,6 +340,7 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 			InUpdate:     true,
 			Object:       p.Kind() == spec.KindAny,
 			PointerParam: isPointer(p),
+			Delta:        at == genframework.TypeStringSet && p.DeltaCapable(), // clear via Remove delta
 		})
 	}
 	if len(attrs) == 0 {

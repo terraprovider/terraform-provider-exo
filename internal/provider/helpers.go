@@ -212,3 +212,10 @@ func getObjectJSON(m map[string]any, key string) string {
 	}
 	return string(b)
 }
+
+// listRemoveDelta builds the Remove delta that clears a multi-value property:
+// the Admin API ignores an empty list, like -AllowList @() in PowerShell, and
+// needs -AllowList @{Remove=...} instead.
+func listRemoveDelta(v []string) *adminapi.StringDelta {
+	return &adminapi.StringDelta{Remove: v}
+}
