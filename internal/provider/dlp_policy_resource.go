@@ -159,14 +159,18 @@ func (r *dlpPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	if !plan.Description.Equal(state.Description) {
 		sp.Description = plan.Description.ValueString()
 	}
-	if v := plan.Mode.ValueString(); v != "" {
-		sp.Mode = objectParam(v)
+	if !plan.Mode.Equal(state.Mode) {
+		if v := plan.Mode.ValueString(); v != "" {
+			sp.Mode = objectParam(v)
+		}
 	}
 	if !plan.Name.Equal(state.Name) {
 		sp.Name = plan.Name.ValueString()
 	}
-	if v := plan.State.ValueString(); v != "" {
-		sp.State = objectParam(v)
+	if !plan.State.Equal(state.State) {
+		if v := plan.State.ValueString(); v != "" {
+			sp.State = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -140,22 +140,30 @@ func (r *federatedOrganizationIdentifierResource) Update(ctx context.Context, re
 	id := r.identityOf(state)
 	sp := exo.SetFederatedOrganizationIdentifierParams{}
 	sp.Identity = id
-	if v := plan.AccountNamespace.ValueString(); v != "" {
-		sp.AccountNamespace = objectParam(v)
+	if !plan.AccountNamespace.Equal(state.AccountNamespace) {
+		if v := plan.AccountNamespace.ValueString(); v != "" {
+			sp.AccountNamespace = objectParam(v)
+		}
 	}
-	if v := plan.DefaultDomain.ValueString(); v != "" {
-		sp.DefaultDomain = objectParam(v)
+	if !plan.DefaultDomain.Equal(state.DefaultDomain) {
+		if v := plan.DefaultDomain.ValueString(); v != "" {
+			sp.DefaultDomain = objectParam(v)
+		}
 	}
-	if v := plan.DelegationFederationTrust.ValueString(); v != "" {
-		sp.DelegationFederationTrust = objectParam(v)
+	if !plan.DelegationFederationTrust.Equal(state.DelegationFederationTrust) {
+		if v := plan.DelegationFederationTrust.ValueString(); v != "" {
+			sp.DelegationFederationTrust = objectParam(v)
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.OrganizationContact.ValueString(); v != "" {
-		sp.OrganizationContact = objectParam(v)
+	if !plan.OrganizationContact.Equal(state.OrganizationContact) {
+		if v := plan.OrganizationContact.ValueString(); v != "" {
+			sp.OrganizationContact = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

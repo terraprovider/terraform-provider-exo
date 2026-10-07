@@ -164,8 +164,10 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 			sp.AcceptSecurityIdentifierInformation = plan.AcceptSecurityIdentifierInformation.ValueBoolPointer()
 		}
 	}
-	if v := plan.AccountType.ValueString(); v != "" {
-		sp.AccountType = objectParam(v)
+	if !plan.AccountType.Equal(state.AccountType) {
+		if v := plan.AccountType.ValueString(); v != "" {
+			sp.AccountType = objectParam(v)
+		}
 	}
 	if !plan.ActAsPermissions.Equal(state.ActAsPermissions) {
 		if !plan.ActAsPermissions.IsNull() && !plan.ActAsPermissions.IsUnknown() {
@@ -177,8 +179,10 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.LinkedAccount.ValueString(); v != "" {
-		sp.LinkedAccount = objectParam(v)
+	if !plan.LinkedAccount.Equal(state.LinkedAccount) {
+		if v := plan.LinkedAccount.ValueString(); v != "" {
+			sp.LinkedAccount = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

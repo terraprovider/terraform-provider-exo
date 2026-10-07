@@ -148,8 +148,10 @@ func (r *elevatedAccessApprovalPolicyResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetElevatedAccessApprovalPolicyParams{}
 	sp.Identity = id
-	if v := plan.ApproverGroup.ValueString(); v != "" {
-		sp.ApproverGroup = objectParam(v)
+	if !plan.ApproverGroup.Equal(state.ApproverGroup) {
+		if v := plan.ApproverGroup.ValueString(); v != "" {
+			sp.ApproverGroup = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

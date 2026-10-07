@@ -369,8 +369,10 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 			}
 		}
 	}
-	if v := plan.AccessType.ValueString(); v != "" {
-		sp.AccessType = objectParam(v)
+	if !plan.AccessType.Equal(state.AccessType) {
+		if v := plan.AccessType.ValueString(); v != "" {
+			sp.AccessType = objectParam(v)
+		}
 	}
 	if !plan.Alias.Equal(state.Alias) {
 		sp.Alias = plan.Alias.ValueString()
@@ -378,8 +380,10 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.AlwaysSubscribeMembersToCalendarEvents.Equal(state.AlwaysSubscribeMembersToCalendarEvents) {
 		sp.AlwaysSubscribeMembersToCalendarEvents = plan.AlwaysSubscribeMembersToCalendarEvents.ValueBool()
 	}
-	if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
-		sp.AuditLogAgeLimit = objectParam(v)
+	if !plan.AuditLogAgeLimit.Equal(state.AuditLogAgeLimit) {
+		if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
+			sp.AuditLogAgeLimit = objectParam(v)
+		}
 	}
 	if !plan.AutoSubscribeNewMembers.Equal(state.AutoSubscribeNewMembers) {
 		sp.AutoSubscribeNewMembers = plan.AutoSubscribeNewMembers.ValueBool()
@@ -438,8 +442,10 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.CustomAttribute9.Equal(state.CustomAttribute9) {
 		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
 	}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = objectParam(v)
+	if !plan.DataEncryptionPolicy.Equal(state.DataEncryptionPolicy) {
+		if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
+			sp.DataEncryptionPolicy = objectParam(v)
+		}
 	}
 	if !plan.DisplayName.Equal(state.DisplayName) {
 		sp.DisplayName = plan.DisplayName.ValueString()
@@ -538,16 +544,20 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.HiddenFromExchangeClientsEnabled.Equal(state.HiddenFromExchangeClientsEnabled) {
 		sp.HiddenFromExchangeClientsEnabled = plan.HiddenFromExchangeClientsEnabled.ValueBool()
 	}
-	if v := plan.InformationBarrierMode.ValueString(); v != "" {
-		sp.InformationBarrierMode = objectParam(v)
+	if !plan.InformationBarrierMode.Equal(state.InformationBarrierMode) {
+		if v := plan.InformationBarrierMode.ValueString(); v != "" {
+			sp.InformationBarrierMode = objectParam(v)
+		}
 	}
 	if !plan.IsMemberAllowedToEditContent.Equal(state.IsMemberAllowedToEditContent) {
 		if !plan.IsMemberAllowedToEditContent.IsUnknown() {
 			sp.IsMemberAllowedToEditContent = plan.IsMemberAllowedToEditContent.ValueBoolPointer()
 		}
 	}
-	if v := plan.Language.ValueString(); v != "" {
-		sp.Language = objectParam(v)
+	if !plan.Language.Equal(state.Language) {
+		if v := plan.Language.ValueString(); v != "" {
+			sp.Language = objectParam(v)
+		}
 	}
 	if !plan.MailTip.Equal(state.MailTip) {
 		sp.MailTip = plan.MailTip.ValueString()
@@ -568,11 +578,15 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
 		sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = objectParam(v)
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = objectParam(v)
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -595,8 +609,10 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.Notes.Equal(state.Notes) {
 		sp.Notes = plan.Notes.ValueString()
 	}
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = objectParam(v)
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
 		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
@@ -616,8 +632,10 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.SensitivityLabelId.ValueString(); v != "" {
-		sp.SensitivityLabelId = objectParam(v)
+	if !plan.SensitivityLabelId.Equal(state.SensitivityLabelId) {
+		if v := plan.SensitivityLabelId.ValueString(); v != "" {
+			sp.SensitivityLabelId = objectParam(v)
+		}
 	}
 	if !plan.SubscriptionEnabled.Equal(state.SubscriptionEnabled) {
 		sp.SubscriptionEnabled = plan.SubscriptionEnabled.ValueBool()

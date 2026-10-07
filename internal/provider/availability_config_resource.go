@@ -160,8 +160,10 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 			}
 		}
 	}
-	if v := plan.OrgWideAccount.ValueString(); v != "" {
-		sp.OrgWideAccount = objectParam(v)
+	if !plan.OrgWideAccount.Equal(state.OrgWideAccount) {
+		if v := plan.OrgWideAccount.ValueString(); v != "" {
+			sp.OrgWideAccount = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

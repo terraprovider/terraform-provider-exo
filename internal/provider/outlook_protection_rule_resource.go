@@ -211,8 +211,10 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 			}
 		}
 	}
-	if v := plan.SentToScope.ValueString(); v != "" {
-		sp.SentToScope = objectParam(v)
+	if !plan.SentToScope.Equal(state.SentToScope) {
+		if v := plan.SentToScope.ValueString(); v != "" {
+			sp.SentToScope = objectParam(v)
+		}
 	}
 	if !plan.UserCanOverride.Equal(state.UserCanOverride) {
 		if !plan.UserCanOverride.IsUnknown() {

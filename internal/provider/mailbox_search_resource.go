@@ -165,8 +165,10 @@ func (r *mailboxSearchResource) Update(ctx context.Context, req resource.UpdateR
 			sp.InPlaceHoldEnabled = plan.InPlaceHoldEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ItemHoldPeriod.ValueString(); v != "" {
-		sp.ItemHoldPeriod = objectParam(v)
+	if !plan.ItemHoldPeriod.Equal(state.ItemHoldPeriod) {
+		if v := plan.ItemHoldPeriod.ValueString(); v != "" {
+			sp.ItemHoldPeriod = objectParam(v)
+		}
 	}
 	if !plan.SourceMailboxes.Equal(state.SourceMailboxes) {
 		if !plan.SourceMailboxes.IsNull() && !plan.SourceMailboxes.IsUnknown() {

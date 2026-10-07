@@ -762,11 +762,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 			}
 		}
 	}
-	if v := plan.ExternalEmailAddress.ValueString(); v != "" {
-		sp.ExternalEmailAddress = objectParam(v)
+	if !plan.ExternalEmailAddress.Equal(state.ExternalEmailAddress) {
+		if v := plan.ExternalEmailAddress.ValueString(); v != "" {
+			sp.ExternalEmailAddress = objectParam(v)
+		}
 	}
-	if v := plan.ForwardingAddress.ValueString(); v != "" {
-		sp.ForwardingAddress = objectParam(v)
+	if !plan.ForwardingAddress.Equal(state.ForwardingAddress) {
+		if v := plan.ForwardingAddress.ValueString(); v != "" {
+			sp.ForwardingAddress = objectParam(v)
+		}
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
@@ -807,11 +811,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 			}
 		}
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = objectParam(v)
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = objectParam(v)
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -840,8 +848,10 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
 		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
 	}
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = objectParam(v)
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -887,14 +897,18 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
 	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

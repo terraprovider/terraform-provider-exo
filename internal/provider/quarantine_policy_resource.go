@@ -281,8 +281,10 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.AdminNotificationFrequencyInDays = plan.AdminNotificationFrequencyInDays.ValueInt64Pointer()
 		}
 	}
-	if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
-		sp.AdminNotificationLanguage = objectParam(v)
+	if !plan.AdminNotificationLanguage.Equal(state.AdminNotificationLanguage) {
+		if v := plan.AdminNotificationLanguage.ValueString(); v != "" {
+			sp.AdminNotificationLanguage = objectParam(v)
+		}
 	}
 	if !plan.AdminNotificationsEnabled.Equal(state.AdminNotificationsEnabled) {
 		if !plan.AdminNotificationsEnabled.IsUnknown() {
@@ -310,8 +312,10 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.ESNEnabled = plan.ESNEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
-		sp.EndUserQuarantinePermissions = objectParam(v)
+	if !plan.EndUserQuarantinePermissions.Equal(state.EndUserQuarantinePermissions) {
+		if v := plan.EndUserQuarantinePermissions.ValueString(); v != "" {
+			sp.EndUserQuarantinePermissions = objectParam(v)
+		}
 	}
 	if !plan.EndUserQuarantinePermissionsValue.Equal(state.EndUserQuarantinePermissionsValue) {
 		if !plan.EndUserQuarantinePermissionsValue.IsUnknown() {
@@ -321,16 +325,20 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	if !plan.EndUserSpamNotificationCustomFromAddress.Equal(state.EndUserSpamNotificationCustomFromAddress) {
 		sp.EndUserSpamNotificationCustomFromAddress = plan.EndUserSpamNotificationCustomFromAddress.ValueString()
 	}
-	if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
-		sp.EndUserSpamNotificationFrequency = objectParam(v)
+	if !plan.EndUserSpamNotificationFrequency.Equal(state.EndUserSpamNotificationFrequency) {
+		if v := plan.EndUserSpamNotificationFrequency.ValueString(); v != "" {
+			sp.EndUserSpamNotificationFrequency = objectParam(v)
+		}
 	}
 	if !plan.EndUserSpamNotificationFrequencyInDays.Equal(state.EndUserSpamNotificationFrequencyInDays) {
 		if !plan.EndUserSpamNotificationFrequencyInDays.IsUnknown() {
 			sp.EndUserSpamNotificationFrequencyInDays = plan.EndUserSpamNotificationFrequencyInDays.ValueInt64Pointer()
 		}
 	}
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		sp.EndUserSpamNotificationLanguage = objectParam(v)
+	if !plan.EndUserSpamNotificationLanguage.Equal(state.EndUserSpamNotificationLanguage) {
+		if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+			sp.EndUserSpamNotificationLanguage = objectParam(v)
+		}
 	}
 	if !plan.EsnCustomSubject.Equal(state.EsnCustomSubject) {
 		if !plan.EsnCustomSubject.IsNull() && !plan.EsnCustomSubject.IsUnknown() {

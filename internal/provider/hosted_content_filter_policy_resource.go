@@ -523,14 +523,18 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 			}
 		}
 	}
-	if v := plan.BulkMovesEnabled.ValueString(); v != "" {
-		sp.BulkMovesEnabled = objectParam(v)
+	if !plan.BulkMovesEnabled.Equal(state.BulkMovesEnabled) {
+		if v := plan.BulkMovesEnabled.ValueString(); v != "" {
+			sp.BulkMovesEnabled = objectParam(v)
+		}
 	}
 	if !plan.BulkQuarantineTag.Equal(state.BulkQuarantineTag) {
 		sp.BulkQuarantineTag = plan.BulkQuarantineTag.ValueString()
 	}
-	if v := plan.BulkSpamAction.ValueString(); v != "" {
-		sp.BulkSpamAction = objectParam(v)
+	if !plan.BulkSpamAction.Equal(state.BulkSpamAction) {
+		if v := plan.BulkSpamAction.ValueString(); v != "" {
+			sp.BulkSpamAction = objectParam(v)
+		}
 	}
 	if !plan.BulkThreshold.Equal(state.BulkThreshold) {
 		if !plan.BulkThreshold.IsUnknown() {
@@ -557,8 +561,10 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 			sp.EnableRegionBlockList = plan.EnableRegionBlockList.ValueBoolPointer()
 		}
 	}
-	if v := plan.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
-		sp.EndUserSpamNotificationCustomFromAddress = objectParam(v)
+	if !plan.EndUserSpamNotificationCustomFromAddress.Equal(state.EndUserSpamNotificationCustomFromAddress) {
+		if v := plan.EndUserSpamNotificationCustomFromAddress.ValueString(); v != "" {
+			sp.EndUserSpamNotificationCustomFromAddress = objectParam(v)
+		}
 	}
 	if !plan.EndUserSpamNotificationCustomFromName.Equal(state.EndUserSpamNotificationCustomFromName) {
 		sp.EndUserSpamNotificationCustomFromName = plan.EndUserSpamNotificationCustomFromName.ValueString()
@@ -571,45 +577,61 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 			sp.EndUserSpamNotificationFrequency = plan.EndUserSpamNotificationFrequency.ValueInt64Pointer()
 		}
 	}
-	if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
-		sp.EndUserSpamNotificationLanguage = objectParam(v)
+	if !plan.EndUserSpamNotificationLanguage.Equal(state.EndUserSpamNotificationLanguage) {
+		if v := plan.EndUserSpamNotificationLanguage.ValueString(); v != "" {
+			sp.EndUserSpamNotificationLanguage = objectParam(v)
+		}
 	}
 	if !plan.EndUserSpamNotificationLimit.Equal(state.EndUserSpamNotificationLimit) {
 		if !plan.EndUserSpamNotificationLimit.IsUnknown() {
 			sp.EndUserSpamNotificationLimit = plan.EndUserSpamNotificationLimit.ValueInt64Pointer()
 		}
 	}
-	if v := plan.HighConfidencePhishAction.ValueString(); v != "" {
-		sp.HighConfidencePhishAction = objectParam(v)
+	if !plan.HighConfidencePhishAction.Equal(state.HighConfidencePhishAction) {
+		if v := plan.HighConfidencePhishAction.ValueString(); v != "" {
+			sp.HighConfidencePhishAction = objectParam(v)
+		}
 	}
 	if !plan.HighConfidencePhishQuarantineTag.Equal(state.HighConfidencePhishQuarantineTag) {
 		sp.HighConfidencePhishQuarantineTag = plan.HighConfidencePhishQuarantineTag.ValueString()
 	}
-	if v := plan.HighConfidenceSpamAction.ValueString(); v != "" {
-		sp.HighConfidenceSpamAction = objectParam(v)
+	if !plan.HighConfidenceSpamAction.Equal(state.HighConfidenceSpamAction) {
+		if v := plan.HighConfidenceSpamAction.ValueString(); v != "" {
+			sp.HighConfidenceSpamAction = objectParam(v)
+		}
 	}
 	if !plan.HighConfidenceSpamQuarantineTag.Equal(state.HighConfidenceSpamQuarantineTag) {
 		sp.HighConfidenceSpamQuarantineTag = plan.HighConfidenceSpamQuarantineTag.ValueString()
 	}
-	if v := plan.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
-		sp.IncreaseScoreWithBizOrInfoUrls = objectParam(v)
+	if !plan.IncreaseScoreWithBizOrInfoUrls.Equal(state.IncreaseScoreWithBizOrInfoUrls) {
+		if v := plan.IncreaseScoreWithBizOrInfoUrls.ValueString(); v != "" {
+			sp.IncreaseScoreWithBizOrInfoUrls = objectParam(v)
+		}
 	}
-	if v := plan.IncreaseScoreWithImageLinks.ValueString(); v != "" {
-		sp.IncreaseScoreWithImageLinks = objectParam(v)
+	if !plan.IncreaseScoreWithImageLinks.Equal(state.IncreaseScoreWithImageLinks) {
+		if v := plan.IncreaseScoreWithImageLinks.ValueString(); v != "" {
+			sp.IncreaseScoreWithImageLinks = objectParam(v)
+		}
 	}
-	if v := plan.IncreaseScoreWithNumericIps.ValueString(); v != "" {
-		sp.IncreaseScoreWithNumericIps = objectParam(v)
+	if !plan.IncreaseScoreWithNumericIps.Equal(state.IncreaseScoreWithNumericIps) {
+		if v := plan.IncreaseScoreWithNumericIps.ValueString(); v != "" {
+			sp.IncreaseScoreWithNumericIps = objectParam(v)
+		}
 	}
-	if v := plan.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
-		sp.IncreaseScoreWithRedirectToOtherPort = objectParam(v)
+	if !plan.IncreaseScoreWithRedirectToOtherPort.Equal(state.IncreaseScoreWithRedirectToOtherPort) {
+		if v := plan.IncreaseScoreWithRedirectToOtherPort.ValueString(); v != "" {
+			sp.IncreaseScoreWithRedirectToOtherPort = objectParam(v)
+		}
 	}
 	if !plan.InlineSafetyTipsEnabled.Equal(state.InlineSafetyTipsEnabled) {
 		if !plan.InlineSafetyTipsEnabled.IsUnknown() {
 			sp.InlineSafetyTipsEnabled = plan.InlineSafetyTipsEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.IntraOrgFilterState.ValueString(); v != "" {
-		sp.IntraOrgFilterState = objectParam(v)
+	if !plan.IntraOrgFilterState.Equal(state.IntraOrgFilterState) {
+		if v := plan.IntraOrgFilterState.ValueString(); v != "" {
+			sp.IntraOrgFilterState = objectParam(v)
+		}
 	}
 	if !plan.LanguageBlockList.Equal(state.LanguageBlockList) {
 		if !plan.LanguageBlockList.IsNull() && !plan.LanguageBlockList.IsUnknown() {
@@ -627,41 +649,65 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	if !plan.MakeDefault.Equal(state.MakeDefault) {
 		sp.MakeDefault = plan.MakeDefault.ValueBool()
 	}
-	if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
-		sp.MarkAsSpamBulkMail = objectParam(v)
+	if !plan.MarkAsSpamBulkMail.Equal(state.MarkAsSpamBulkMail) {
+		if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
+			sp.MarkAsSpamBulkMail = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamEmbedTagsInHtml = objectParam(v)
+	if !plan.MarkAsSpamEmbedTagsInHtml.Equal(state.MarkAsSpamEmbedTagsInHtml) {
+		if v := plan.MarkAsSpamEmbedTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamEmbedTagsInHtml = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamEmptyMessages.ValueString(); v != "" {
-		sp.MarkAsSpamEmptyMessages = objectParam(v)
+	if !plan.MarkAsSpamEmptyMessages.Equal(state.MarkAsSpamEmptyMessages) {
+		if v := plan.MarkAsSpamEmptyMessages.ValueString(); v != "" {
+			sp.MarkAsSpamEmptyMessages = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamFormTagsInHtml = objectParam(v)
+	if !plan.MarkAsSpamFormTagsInHtml.Equal(state.MarkAsSpamFormTagsInHtml) {
+		if v := plan.MarkAsSpamFormTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamFormTagsInHtml = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamFramesInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamFramesInHtml = objectParam(v)
+	if !plan.MarkAsSpamFramesInHtml.Equal(state.MarkAsSpamFramesInHtml) {
+		if v := plan.MarkAsSpamFramesInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamFramesInHtml = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
-		sp.MarkAsSpamFromAddressAuthFail = objectParam(v)
+	if !plan.MarkAsSpamFromAddressAuthFail.Equal(state.MarkAsSpamFromAddressAuthFail) {
+		if v := plan.MarkAsSpamFromAddressAuthFail.ValueString(); v != "" {
+			sp.MarkAsSpamFromAddressAuthFail = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamJavaScriptInHtml = objectParam(v)
+	if !plan.MarkAsSpamJavaScriptInHtml.Equal(state.MarkAsSpamJavaScriptInHtml) {
+		if v := plan.MarkAsSpamJavaScriptInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamJavaScriptInHtml = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
-		sp.MarkAsSpamNdrBackscatter = objectParam(v)
+	if !plan.MarkAsSpamNdrBackscatter.Equal(state.MarkAsSpamNdrBackscatter) {
+		if v := plan.MarkAsSpamNdrBackscatter.ValueString(); v != "" {
+			sp.MarkAsSpamNdrBackscatter = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamObjectTagsInHtml = objectParam(v)
+	if !plan.MarkAsSpamObjectTagsInHtml.Equal(state.MarkAsSpamObjectTagsInHtml) {
+		if v := plan.MarkAsSpamObjectTagsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamObjectTagsInHtml = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
-		sp.MarkAsSpamSensitiveWordList = objectParam(v)
+	if !plan.MarkAsSpamSensitiveWordList.Equal(state.MarkAsSpamSensitiveWordList) {
+		if v := plan.MarkAsSpamSensitiveWordList.ValueString(); v != "" {
+			sp.MarkAsSpamSensitiveWordList = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
-		sp.MarkAsSpamSpfRecordHardFail = objectParam(v)
+	if !plan.MarkAsSpamSpfRecordHardFail.Equal(state.MarkAsSpamSpfRecordHardFail) {
+		if v := plan.MarkAsSpamSpfRecordHardFail.ValueString(); v != "" {
+			sp.MarkAsSpamSpfRecordHardFail = objectParam(v)
+		}
 	}
-	if v := plan.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
-		sp.MarkAsSpamWebBugsInHtml = objectParam(v)
+	if !plan.MarkAsSpamWebBugsInHtml.Equal(state.MarkAsSpamWebBugsInHtml) {
+		if v := plan.MarkAsSpamWebBugsInHtml.ValueString(); v != "" {
+			sp.MarkAsSpamWebBugsInHtml = objectParam(v)
+		}
 	}
 	if !plan.ModifySubjectValue.Equal(state.ModifySubjectValue) {
 		sp.ModifySubjectValue = plan.ModifySubjectValue.ValueString()
@@ -669,8 +715,10 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	if !plan.PhishQuarantineTag.Equal(state.PhishQuarantineTag) {
 		sp.PhishQuarantineTag = plan.PhishQuarantineTag.ValueString()
 	}
-	if v := plan.PhishSpamAction.ValueString(); v != "" {
-		sp.PhishSpamAction = objectParam(v)
+	if !plan.PhishSpamAction.Equal(state.PhishSpamAction) {
+		if v := plan.PhishSpamAction.ValueString(); v != "" {
+			sp.PhishSpamAction = objectParam(v)
+		}
 	}
 	if !plan.PhishZapEnabled.Equal(state.PhishZapEnabled) {
 		if !plan.PhishZapEnabled.IsUnknown() {
@@ -708,8 +756,10 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 			}
 		}
 	}
-	if v := plan.SpamAction.ValueString(); v != "" {
-		sp.SpamAction = objectParam(v)
+	if !plan.SpamAction.Equal(state.SpamAction) {
+		if v := plan.SpamAction.ValueString(); v != "" {
+			sp.SpamAction = objectParam(v)
+		}
 	}
 	if !plan.SpamQuarantineTag.Equal(state.SpamQuarantineTag) {
 		sp.SpamQuarantineTag = plan.SpamQuarantineTag.ValueString()
@@ -719,8 +769,10 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 			sp.SpamZapEnabled = plan.SpamZapEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.TestModeAction.ValueString(); v != "" {
-		sp.TestModeAction = objectParam(v)
+	if !plan.TestModeAction.Equal(state.TestModeAction) {
+		if v := plan.TestModeAction.ValueString(); v != "" {
+			sp.TestModeAction = objectParam(v)
+		}
 	}
 	if !plan.TestModeBccToRecipients.Equal(state.TestModeBccToRecipients) {
 		if !plan.TestModeBccToRecipients.IsNull() && !plan.TestModeBccToRecipients.IsUnknown() {

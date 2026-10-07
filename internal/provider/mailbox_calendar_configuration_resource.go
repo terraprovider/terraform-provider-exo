@@ -485,8 +485,10 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.CreateEventsFromEmailAsPrivate = plan.CreateEventsFromEmailAsPrivate.ValueBoolPointer()
 		}
 	}
-	if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
-		sp.DailyAgendaMailSchedule = objectParam(v)
+	if !plan.DailyAgendaMailSchedule.Equal(state.DailyAgendaMailSchedule) {
+		if v := plan.DailyAgendaMailSchedule.ValueString(); v != "" {
+			sp.DailyAgendaMailSchedule = objectParam(v)
+		}
 	}
 	if !plan.DefaultMeetingDuration.Equal(state.DefaultMeetingDuration) {
 		if !plan.DefaultMeetingDuration.IsUnknown() {
@@ -503,11 +505,15 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
 		}
 	}
-	if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
-		sp.DefaultOnlineMeetingProvider = objectParam(v)
+	if !plan.DefaultOnlineMeetingProvider.Equal(state.DefaultOnlineMeetingProvider) {
+		if v := plan.DefaultOnlineMeetingProvider.ValueString(); v != "" {
+			sp.DefaultOnlineMeetingProvider = objectParam(v)
+		}
 	}
-	if v := plan.DefaultReminderTime.ValueString(); v != "" {
-		sp.DefaultReminderTime = objectParam(v)
+	if !plan.DefaultReminderTime.Equal(state.DefaultReminderTime) {
+		if v := plan.DefaultReminderTime.ValueString(); v != "" {
+			sp.DefaultReminderTime = objectParam(v)
+		}
 	}
 	if !plan.DeleteMeetingRequestOnRespond.Equal(state.DeleteMeetingRequestOnRespond) {
 		if !plan.DeleteMeetingRequestOnRespond.IsUnknown() {
@@ -529,8 +535,10 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.EventsFromEmailEnabled = plan.EventsFromEmailEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.FirstWeekOfYear.ValueString(); v != "" {
-		sp.FirstWeekOfYear = objectParam(v)
+	if !plan.FirstWeekOfYear.Equal(state.FirstWeekOfYear) {
+		if v := plan.FirstWeekOfYear.ValueString(); v != "" {
+			sp.FirstWeekOfYear = objectParam(v)
+		}
 	}
 	if !plan.FlightEventsFromEmailEnabled.Equal(state.FlightEventsFromEmailEnabled) {
 		if !plan.FlightEventsFromEmailEnabled.IsUnknown() {
@@ -547,11 +555,15 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.InvoiceEventsFromEmailEnabled = plan.InvoiceEventsFromEmailEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.LocationDetailsInFreeBusy.ValueString(); v != "" {
-		sp.LocationDetailsInFreeBusy = objectParam(v)
+	if !plan.LocationDetailsInFreeBusy.Equal(state.LocationDetailsInFreeBusy) {
+		if v := plan.LocationDetailsInFreeBusy.ValueString(); v != "" {
+			sp.LocationDetailsInFreeBusy = objectParam(v)
+		}
 	}
-	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = objectParam(v)
+	if !plan.MailboxLocation.Equal(state.MailboxLocation) {
+		if v := plan.MailboxLocation.ValueString(); v != "" {
+			sp.MailboxLocation = objectParam(v)
+		}
 	}
 	if !plan.OnlineMeetingsByDefaultEnabled.Equal(state.OnlineMeetingsByDefaultEnabled) {
 		if !plan.OnlineMeetingsByDefaultEnabled.IsUnknown() {
@@ -588,8 +600,10 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.ServiceAppointmentEventsFromEmailEnabled = plan.ServiceAppointmentEventsFromEmailEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = objectParam(v)
+	if !plan.ShortenEventScopeDefault.Equal(state.ShortenEventScopeDefault) {
+		if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
+			sp.ShortenEventScopeDefault = objectParam(v)
+		}
 	}
 	if !plan.ShowWeekNumbers.Equal(state.ShowWeekNumbers) {
 		if !plan.ShowWeekNumbers.IsUnknown() {
@@ -601,8 +615,10 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			sp.SkipAgendaMailOnFreeDays = plan.SkipAgendaMailOnFreeDays.ValueBoolPointer()
 		}
 	}
-	if v := plan.TimeIncrement.ValueString(); v != "" {
-		sp.TimeIncrement = objectParam(v)
+	if !plan.TimeIncrement.Equal(state.TimeIncrement) {
+		if v := plan.TimeIncrement.ValueString(); v != "" {
+			sp.TimeIncrement = objectParam(v)
+		}
 	}
 	if !plan.UseBrightCalendarColorThemeInOwa.Equal(state.UseBrightCalendarColorThemeInOwa) {
 		if !plan.UseBrightCalendarColorThemeInOwa.IsUnknown() {
@@ -632,23 +648,35 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 			}
 		}
 	}
-	if v := plan.WeatherUnit.ValueString(); v != "" {
-		sp.WeatherUnit = objectParam(v)
+	if !plan.WeatherUnit.Equal(state.WeatherUnit) {
+		if v := plan.WeatherUnit.ValueString(); v != "" {
+			sp.WeatherUnit = objectParam(v)
+		}
 	}
-	if v := plan.WeekStartDay.ValueString(); v != "" {
-		sp.WeekStartDay = objectParam(v)
+	if !plan.WeekStartDay.Equal(state.WeekStartDay) {
+		if v := plan.WeekStartDay.ValueString(); v != "" {
+			sp.WeekStartDay = objectParam(v)
+		}
 	}
-	if v := plan.WorkDays.ValueString(); v != "" {
-		sp.WorkDays = objectParam(v)
+	if !plan.WorkDays.Equal(state.WorkDays) {
+		if v := plan.WorkDays.ValueString(); v != "" {
+			sp.WorkDays = objectParam(v)
+		}
 	}
-	if v := plan.WorkingHoursEndTime.ValueString(); v != "" {
-		sp.WorkingHoursEndTime = objectParam(v)
+	if !plan.WorkingHoursEndTime.Equal(state.WorkingHoursEndTime) {
+		if v := plan.WorkingHoursEndTime.ValueString(); v != "" {
+			sp.WorkingHoursEndTime = objectParam(v)
+		}
 	}
-	if v := plan.WorkingHoursStartTime.ValueString(); v != "" {
-		sp.WorkingHoursStartTime = objectParam(v)
+	if !plan.WorkingHoursStartTime.Equal(state.WorkingHoursStartTime) {
+		if v := plan.WorkingHoursStartTime.ValueString(); v != "" {
+			sp.WorkingHoursStartTime = objectParam(v)
+		}
 	}
-	if v := plan.WorkingHoursTimeZone.ValueString(); v != "" {
-		sp.WorkingHoursTimeZone = objectParam(v)
+	if !plan.WorkingHoursTimeZone.Equal(state.WorkingHoursTimeZone) {
+		if v := plan.WorkingHoursTimeZone.ValueString(); v != "" {
+			sp.WorkingHoursTimeZone = objectParam(v)
+		}
 	}
 	if !plan.WorkspaceUserEnabled.Equal(state.WorkspaceUserEnabled) {
 		if !plan.WorkspaceUserEnabled.IsUnknown() {

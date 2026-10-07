@@ -144,8 +144,10 @@ func (r *mailboxSpellingConfigurationResource) Update(ctx context.Context, req r
 			sp.CheckBeforeSend = plan.CheckBeforeSend.ValueBoolPointer()
 		}
 	}
-	if v := plan.DictionaryLanguage.ValueString(); v != "" {
-		sp.DictionaryLanguage = objectParam(v)
+	if !plan.DictionaryLanguage.Equal(state.DictionaryLanguage) {
+		if v := plan.DictionaryLanguage.ValueString(); v != "" {
+			sp.DictionaryLanguage = objectParam(v)
+		}
 	}
 	if !plan.IgnoreMixedDigits.Equal(state.IgnoreMixedDigits) {
 		if !plan.IgnoreMixedDigits.IsUnknown() {

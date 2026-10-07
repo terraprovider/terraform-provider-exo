@@ -877,8 +877,10 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 			}
 		}
 	}
-	if v := plan.ManagedBy.ValueString(); v != "" {
-		sp.ManagedBy = objectParam(v)
+	if !plan.ManagedBy.Equal(state.ManagedBy) {
+		if v := plan.ManagedBy.ValueString(); v != "" {
+			sp.ManagedBy = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -904,11 +906,15 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	if !plan.PhoneticDisplayName.Equal(state.PhoneticDisplayName) {
 		sp.PhoneticDisplayName = plan.PhoneticDisplayName.ValueString()
 	}
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = objectParam(v)
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
 	}
-	if v := plan.RecipientContainer.ValueString(); v != "" {
-		sp.RecipientContainer = objectParam(v)
+	if !plan.RecipientContainer.Equal(state.RecipientContainer) {
+		if v := plan.RecipientContainer.ValueString(); v != "" {
+			sp.RecipientContainer = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -964,8 +970,10 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
 	if !plan.SendOofMessageToOriginatorEnabled.Equal(state.SendOofMessageToOriginatorEnabled) {
 		if !plan.SendOofMessageToOriginatorEnabled.IsUnknown() {
@@ -978,8 +986,10 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	if !plan.UpdateMemberCount.Equal(state.UpdateMemberCount) {
 		sp.UpdateMemberCount = plan.UpdateMemberCount.ValueBool()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

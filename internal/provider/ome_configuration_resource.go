@@ -190,11 +190,15 @@ func (r *oMEConfigurationResource) Update(ctx context.Context, req resource.Upda
 	if !plan.EmailText.Equal(state.EmailText) {
 		sp.EmailText = plan.EmailText.ValueString()
 	}
-	if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
-		sp.ExternalMailExpiryInDays = objectParam(v)
+	if !plan.ExternalMailExpiryInDays.Equal(state.ExternalMailExpiryInDays) {
+		if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
+			sp.ExternalMailExpiryInDays = objectParam(v)
+		}
 	}
-	if v := plan.Image.ValueString(); v != "" {
-		sp.Image = objectParam(v)
+	if !plan.Image.Equal(state.Image) {
+		if v := plan.Image.ValueString(); v != "" {
+			sp.Image = objectParam(v)
+		}
 	}
 	if !plan.IntroductionText.Equal(state.IntroductionText) {
 		sp.IntroductionText = plan.IntroductionText.ValueString()

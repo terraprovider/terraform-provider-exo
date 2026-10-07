@@ -158,39 +158,55 @@ func (r *publicFolderResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetPublicFolderParams{}
 	sp.Identity = id
-	if v := plan.AgeLimit.ValueString(); v != "" {
-		sp.AgeLimit = objectParam(v)
+	if !plan.AgeLimit.Equal(state.AgeLimit) {
+		if v := plan.AgeLimit.ValueString(); v != "" {
+			sp.AgeLimit = objectParam(v)
+		}
 	}
-	if v := plan.EformsLocaleId.ValueString(); v != "" {
-		sp.EformsLocaleId = objectParam(v)
+	if !plan.EformsLocaleId.Equal(state.EformsLocaleId) {
+		if v := plan.EformsLocaleId.ValueString(); v != "" {
+			sp.EformsLocaleId = objectParam(v)
+		}
 	}
-	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = objectParam(v)
+	if !plan.IssueWarningQuota.Equal(state.IssueWarningQuota) {
+		if v := plan.IssueWarningQuota.ValueString(); v != "" {
+			sp.IssueWarningQuota = objectParam(v)
+		}
 	}
 	if !plan.MailEnabled.Equal(state.MailEnabled) {
 		if !plan.MailEnabled.IsUnknown() {
 			sp.MailEnabled = plan.MailEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.MailRecipientGuid.ValueString(); v != "" {
-		sp.MailRecipientGuid = objectParam(v)
+	if !plan.MailRecipientGuid.Equal(state.MailRecipientGuid) {
+		if v := plan.MailRecipientGuid.ValueString(); v != "" {
+			sp.MailRecipientGuid = objectParam(v)
+		}
 	}
-	if v := plan.MaxItemSize.ValueString(); v != "" {
-		sp.MaxItemSize = objectParam(v)
+	if !plan.MaxItemSize.Equal(state.MaxItemSize) {
+		if v := plan.MaxItemSize.ValueString(); v != "" {
+			sp.MaxItemSize = objectParam(v)
+		}
 	}
-	if v := plan.Path.ValueString(); v != "" {
-		sp.Path = objectParam(v)
+	if !plan.Path.Equal(state.Path) {
+		if v := plan.Path.ValueString(); v != "" {
+			sp.Path = objectParam(v)
+		}
 	}
 	if !plan.PerUserReadStateEnabled.Equal(state.PerUserReadStateEnabled) {
 		if !plan.PerUserReadStateEnabled.IsUnknown() {
 			sp.PerUserReadStateEnabled = plan.PerUserReadStateEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ProhibitPostQuota.ValueString(); v != "" {
-		sp.ProhibitPostQuota = objectParam(v)
+	if !plan.ProhibitPostQuota.Equal(state.ProhibitPostQuota) {
+		if v := plan.ProhibitPostQuota.ValueString(); v != "" {
+			sp.ProhibitPostQuota = objectParam(v)
+		}
 	}
-	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = objectParam(v)
+	if !plan.RetainDeletedItemsFor.Equal(state.RetainDeletedItemsFor) {
+		if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
+			sp.RetainDeletedItemsFor = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

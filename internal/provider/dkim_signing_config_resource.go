@@ -162,11 +162,15 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.BodyCanonicalization.ValueString(); v != "" {
-		sp.BodyCanonicalization = objectParam(v)
+	if !plan.BodyCanonicalization.Equal(state.BodyCanonicalization) {
+		if v := plan.BodyCanonicalization.ValueString(); v != "" {
+			sp.BodyCanonicalization = objectParam(v)
+		}
 	}
-	if v := plan.HeaderCanonicalization.ValueString(); v != "" {
-		sp.HeaderCanonicalization = objectParam(v)
+	if !plan.HeaderCanonicalization.Equal(state.HeaderCanonicalization) {
+		if v := plan.HeaderCanonicalization.ValueString(); v != "" {
+			sp.HeaderCanonicalization = objectParam(v)
+		}
 	}
 	if !plan.PublishTxtRecords.Equal(state.PublishTxtRecords) {
 		sp.PublishTxtRecords = plan.PublishTxtRecords.ValueBool()

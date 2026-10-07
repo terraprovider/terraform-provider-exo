@@ -481,8 +481,10 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.CustomAttribute9.Equal(state.CustomAttribute9) {
 		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
 	}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = objectParam(v)
+	if !plan.DataEncryptionPolicy.Equal(state.DataEncryptionPolicy) {
+		if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
+			sp.DataEncryptionPolicy = objectParam(v)
+		}
 	}
 	if !plan.DisplayName.Equal(state.DisplayName) {
 		sp.DisplayName = plan.DisplayName.ValueString()
@@ -601,11 +603,15 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.ImmutableId.Equal(state.ImmutableId) {
 		sp.ImmutableId = plan.ImmutableId.ValueString()
 	}
-	if v := plan.JournalArchiveAddress.ValueString(); v != "" {
-		sp.JournalArchiveAddress = objectParam(v)
+	if !plan.JournalArchiveAddress.Equal(state.JournalArchiveAddress) {
+		if v := plan.JournalArchiveAddress.ValueString(); v != "" {
+			sp.JournalArchiveAddress = objectParam(v)
+		}
 	}
-	if v := plan.MacAttachmentFormat.ValueString(); v != "" {
-		sp.MacAttachmentFormat = objectParam(v)
+	if !plan.MacAttachmentFormat.Equal(state.MacAttachmentFormat) {
+		if v := plan.MacAttachmentFormat.ValueString(); v != "" {
+			sp.MacAttachmentFormat = objectParam(v)
+		}
 	}
 	if !plan.MailTip.Equal(state.MailTip) {
 		sp.MailTip = plan.MailTip.ValueString()
@@ -626,17 +632,25 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
 		sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = objectParam(v)
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = objectParam(v)
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
 	}
-	if v := plan.MessageBodyFormat.ValueString(); v != "" {
-		sp.MessageBodyFormat = objectParam(v)
+	if !plan.MessageBodyFormat.Equal(state.MessageBodyFormat) {
+		if v := plan.MessageBodyFormat.ValueString(); v != "" {
+			sp.MessageBodyFormat = objectParam(v)
+		}
 	}
-	if v := plan.MessageFormat.ValueString(); v != "" {
-		sp.MessageFormat = objectParam(v)
+	if !plan.MessageFormat.Equal(state.MessageFormat) {
+		if v := plan.MessageFormat.ValueString(); v != "" {
+			sp.MessageFormat = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -656,14 +670,18 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 			sp.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = objectParam(v)
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
 	}
 	if !plan.RecalculateInactiveMailUser.Equal(state.RecalculateInactiveMailUser) {
 		sp.RecalculateInactiveMailUser = plan.RecalculateInactiveMailUser.ValueBool()
 	}
-	if v := plan.RecipientLimits.ValueString(); v != "" {
-		sp.RecipientLimits = objectParam(v)
+	if !plan.RecipientLimits.Equal(state.RecipientLimits) {
+		if v := plan.RecipientLimits.ValueString(); v != "" {
+			sp.RecipientLimits = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -732,8 +750,10 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
 	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
@@ -741,8 +761,10 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.UnblockForwardSyncPostCrossTenantMigration.Equal(state.UnblockForwardSyncPostCrossTenantMigration) {
 		sp.UnblockForwardSyncPostCrossTenantMigration = plan.UnblockForwardSyncPostCrossTenantMigration.ValueBool()
 	}
-	if v := plan.UseMapiRichTextFormat.ValueString(); v != "" {
-		sp.UseMapiRichTextFormat = objectParam(v)
+	if !plan.UseMapiRichTextFormat.Equal(state.UseMapiRichTextFormat) {
+		if v := plan.UseMapiRichTextFormat.ValueString(); v != "" {
+			sp.UseMapiRichTextFormat = objectParam(v)
+		}
 	}
 	if !plan.UsePreferMessageFormat.Equal(state.UsePreferMessageFormat) {
 		if !plan.UsePreferMessageFormat.IsUnknown() {
@@ -775,8 +797,10 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 			}
 		}
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

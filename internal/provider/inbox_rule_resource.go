@@ -731,8 +731,10 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.CompleteFlag = plan.CompleteFlag.ValueBoolPointer()
 		}
 	}
-	if v := plan.CopyToFolder.ValueString(); v != "" {
-		sp.CopyToFolder = objectParam(v)
+	if !plan.CopyToFolder.Equal(state.CopyToFolder) {
+		if v := plan.CopyToFolder.ValueString(); v != "" {
+			sp.CopyToFolder = objectParam(v)
+		}
 	}
 	if !plan.DeleteMessage.Equal(state.DeleteMessage) {
 		if !plan.DeleteMessage.IsUnknown() {
@@ -835,8 +837,10 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.ExceptIfIsMentioned = plan.ExceptIfIsMentioned.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		sp.ExceptIfMessageTypeMatches = objectParam(v)
+	if !plan.ExceptIfMessageTypeMatches.Equal(state.ExceptIfMessageTypeMatches) {
+		if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
+			sp.ExceptIfMessageTypeMatches = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfMyNameInCcBox.Equal(state.ExceptIfMyNameInCcBox) {
 		if !plan.ExceptIfMyNameInCcBox.IsUnknown() {
@@ -858,11 +862,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.ExceptIfMyNameNotInToBox = plan.ExceptIfMyNameNotInToBox.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExceptIfReceivedAfterDate.ValueString(); v != "" {
-		sp.ExceptIfReceivedAfterDate = objectParam(v)
+	if !plan.ExceptIfReceivedAfterDate.Equal(state.ExceptIfReceivedAfterDate) {
+		if v := plan.ExceptIfReceivedAfterDate.ValueString(); v != "" {
+			sp.ExceptIfReceivedAfterDate = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
-		sp.ExceptIfReceivedBeforeDate = objectParam(v)
+	if !plan.ExceptIfReceivedBeforeDate.Equal(state.ExceptIfReceivedBeforeDate) {
+		if v := plan.ExceptIfReceivedBeforeDate.ValueString(); v != "" {
+			sp.ExceptIfReceivedBeforeDate = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfRecipientAddressContainsWords.Equal(state.ExceptIfRecipientAddressContainsWords) {
 		if !plan.ExceptIfRecipientAddressContainsWords.IsNull() && !plan.ExceptIfRecipientAddressContainsWords.IsUnknown() {
@@ -913,17 +921,25 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			}
 		}
 	}
-	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		sp.ExceptIfWithImportance = objectParam(v)
+	if !plan.ExceptIfWithImportance.Equal(state.ExceptIfWithImportance) {
+		if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
+			sp.ExceptIfWithImportance = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfWithSensitivity.ValueString(); v != "" {
-		sp.ExceptIfWithSensitivity = objectParam(v)
+	if !plan.ExceptIfWithSensitivity.Equal(state.ExceptIfWithSensitivity) {
+		if v := plan.ExceptIfWithSensitivity.ValueString(); v != "" {
+			sp.ExceptIfWithSensitivity = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
-		sp.ExceptIfWithinSizeRangeMaximum = objectParam(v)
+	if !plan.ExceptIfWithinSizeRangeMaximum.Equal(state.ExceptIfWithinSizeRangeMaximum) {
+		if v := plan.ExceptIfWithinSizeRangeMaximum.ValueString(); v != "" {
+			sp.ExceptIfWithinSizeRangeMaximum = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
-		sp.ExceptIfWithinSizeRangeMinimum = objectParam(v)
+	if !plan.ExceptIfWithinSizeRangeMinimum.Equal(state.ExceptIfWithinSizeRangeMinimum) {
+		if v := plan.ExceptIfWithinSizeRangeMinimum.ValueString(); v != "" {
+			sp.ExceptIfWithinSizeRangeMinimum = objectParam(v)
+		}
 	}
 	if !plan.FlagMessage.Equal(state.FlagMessage) {
 		sp.FlagMessage = plan.FlagMessage.ValueString()
@@ -992,22 +1008,30 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.IsMentioned = plan.IsMentioned.ValueBoolPointer()
 		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = objectParam(v)
+	if !plan.Mailbox.Equal(state.Mailbox) {
+		if v := plan.Mailbox.ValueString(); v != "" {
+			sp.Mailbox = objectParam(v)
+		}
 	}
 	if !plan.MarkAsRead.Equal(state.MarkAsRead) {
 		if !plan.MarkAsRead.IsUnknown() {
 			sp.MarkAsRead = plan.MarkAsRead.ValueBoolPointer()
 		}
 	}
-	if v := plan.MarkImportance.ValueString(); v != "" {
-		sp.MarkImportance = objectParam(v)
+	if !plan.MarkImportance.Equal(state.MarkImportance) {
+		if v := plan.MarkImportance.ValueString(); v != "" {
+			sp.MarkImportance = objectParam(v)
+		}
 	}
-	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		sp.MessageTypeMatches = objectParam(v)
+	if !plan.MessageTypeMatches.Equal(state.MessageTypeMatches) {
+		if v := plan.MessageTypeMatches.ValueString(); v != "" {
+			sp.MessageTypeMatches = objectParam(v)
+		}
 	}
-	if v := plan.MoveToFolder.ValueString(); v != "" {
-		sp.MoveToFolder = objectParam(v)
+	if !plan.MoveToFolder.Equal(state.MoveToFolder) {
+		if v := plan.MoveToFolder.ValueString(); v != "" {
+			sp.MoveToFolder = objectParam(v)
+		}
 	}
 	if !plan.MyNameInCcBox.Equal(state.MyNameInCcBox) {
 		if !plan.MyNameInCcBox.IsUnknown() {
@@ -1047,11 +1071,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.Priority = plan.Priority.ValueInt64Pointer()
 		}
 	}
-	if v := plan.ReceivedAfterDate.ValueString(); v != "" {
-		sp.ReceivedAfterDate = objectParam(v)
+	if !plan.ReceivedAfterDate.Equal(state.ReceivedAfterDate) {
+		if v := plan.ReceivedAfterDate.ValueString(); v != "" {
+			sp.ReceivedAfterDate = objectParam(v)
+		}
 	}
-	if v := plan.ReceivedBeforeDate.ValueString(); v != "" {
-		sp.ReceivedBeforeDate = objectParam(v)
+	if !plan.ReceivedBeforeDate.Equal(state.ReceivedBeforeDate) {
+		if v := plan.ReceivedBeforeDate.ValueString(); v != "" {
+			sp.ReceivedBeforeDate = objectParam(v)
+		}
 	}
 	if !plan.RecipientAddressContainsWords.Equal(state.RecipientAddressContainsWords) {
 		if !plan.RecipientAddressContainsWords.IsNull() && !plan.RecipientAddressContainsWords.IsUnknown() {
@@ -1117,17 +1145,25 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			}
 		}
 	}
-	if v := plan.WithImportance.ValueString(); v != "" {
-		sp.WithImportance = objectParam(v)
+	if !plan.WithImportance.Equal(state.WithImportance) {
+		if v := plan.WithImportance.ValueString(); v != "" {
+			sp.WithImportance = objectParam(v)
+		}
 	}
-	if v := plan.WithSensitivity.ValueString(); v != "" {
-		sp.WithSensitivity = objectParam(v)
+	if !plan.WithSensitivity.Equal(state.WithSensitivity) {
+		if v := plan.WithSensitivity.ValueString(); v != "" {
+			sp.WithSensitivity = objectParam(v)
+		}
 	}
-	if v := plan.WithinSizeRangeMaximum.ValueString(); v != "" {
-		sp.WithinSizeRangeMaximum = objectParam(v)
+	if !plan.WithinSizeRangeMaximum.Equal(state.WithinSizeRangeMaximum) {
+		if v := plan.WithinSizeRangeMaximum.ValueString(); v != "" {
+			sp.WithinSizeRangeMaximum = objectParam(v)
+		}
 	}
-	if v := plan.WithinSizeRangeMinimum.ValueString(); v != "" {
-		sp.WithinSizeRangeMinimum = objectParam(v)
+	if !plan.WithinSizeRangeMinimum.Equal(state.WithinSizeRangeMinimum) {
+		if v := plan.WithinSizeRangeMinimum.ValueString(); v != "" {
+			sp.WithinSizeRangeMinimum = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

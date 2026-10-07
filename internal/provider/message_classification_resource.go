@@ -174,8 +174,10 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	if !plan.ClassificationID.Equal(state.ClassificationID) {
 		sp.ClassificationID = plan.ClassificationID.ValueString()
 	}
-	if v := plan.DisplayPrecedence.ValueString(); v != "" {
-		sp.DisplayPrecedence = objectParam(v)
+	if !plan.DisplayPrecedence.Equal(state.DisplayPrecedence) {
+		if v := plan.DisplayPrecedence.ValueString(); v != "" {
+			sp.DisplayPrecedence = objectParam(v)
+		}
 	}
 	if !plan.PermissionMenuVisible.Equal(state.PermissionMenuVisible) {
 		if !plan.PermissionMenuVisible.IsUnknown() {

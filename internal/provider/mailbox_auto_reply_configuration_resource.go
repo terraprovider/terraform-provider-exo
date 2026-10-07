@@ -194,8 +194,10 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 			sp.AutoDeclineFutureRequestsWhenOOF = plan.AutoDeclineFutureRequestsWhenOOF.ValueBoolPointer()
 		}
 	}
-	if v := plan.AutoReplyState.ValueString(); v != "" {
-		sp.AutoReplyState = objectParam(v)
+	if !plan.AutoReplyState.Equal(state.AutoReplyState) {
+		if v := plan.AutoReplyState.ValueString(); v != "" {
+			sp.AutoReplyState = objectParam(v)
+		}
 	}
 	if !plan.CreateOOFEvent.Equal(state.CreateOOFEvent) {
 		if !plan.CreateOOFEvent.IsUnknown() {
@@ -215,16 +217,20 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 	if !plan.DeclineMeetingMessage.Equal(state.DeclineMeetingMessage) {
 		sp.DeclineMeetingMessage = plan.DeclineMeetingMessage.ValueString()
 	}
-	if v := plan.EndTime.ValueString(); v != "" {
-		sp.EndTime = objectParam(v)
+	if !plan.EndTime.Equal(state.EndTime) {
+		if v := plan.EndTime.ValueString(); v != "" {
+			sp.EndTime = objectParam(v)
+		}
 	}
 	if !plan.EventsToDeleteIDs.Equal(state.EventsToDeleteIDs) {
 		if !plan.EventsToDeleteIDs.IsNull() && !plan.EventsToDeleteIDs.IsUnknown() {
 			sp.EventsToDeleteIDs = append([]string{}, toStringSlice(ctx, plan.EventsToDeleteIDs, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExternalAudience.ValueString(); v != "" {
-		sp.ExternalAudience = objectParam(v)
+	if !plan.ExternalAudience.Equal(state.ExternalAudience) {
+		if v := plan.ExternalAudience.ValueString(); v != "" {
+			sp.ExternalAudience = objectParam(v)
+		}
 	}
 	if !plan.ExternalMessage.Equal(state.ExternalMessage) {
 		sp.ExternalMessage = plan.ExternalMessage.ValueString()
@@ -235,8 +241,10 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 	if !plan.OOFEventSubject.Equal(state.OOFEventSubject) {
 		sp.OOFEventSubject = plan.OOFEventSubject.ValueString()
 	}
-	if v := plan.StartTime.ValueString(); v != "" {
-		sp.StartTime = objectParam(v)
+	if !plan.StartTime.Equal(state.StartTime) {
+		if v := plan.StartTime.ValueString(); v != "" {
+			sp.StartTime = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

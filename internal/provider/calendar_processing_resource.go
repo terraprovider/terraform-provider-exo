@@ -416,16 +416,20 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 			sp.AllowRecurringMeetings = plan.AllowRecurringMeetings.ValueBoolPointer()
 		}
 	}
-	if v := plan.AutomateProcessing.ValueString(); v != "" {
-		sp.AutomateProcessing = objectParam(v)
+	if !plan.AutomateProcessing.Equal(state.AutomateProcessing) {
+		if v := plan.AutomateProcessing.ValueString(); v != "" {
+			sp.AutomateProcessing = objectParam(v)
+		}
 	}
 	if !plan.BookInPolicy.Equal(state.BookInPolicy) {
 		if !plan.BookInPolicy.IsNull() && !plan.BookInPolicy.IsUnknown() {
 			sp.BookInPolicy = append([]string{}, toStringSlice(ctx, plan.BookInPolicy, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.BookingType.ValueString(); v != "" {
-		sp.BookingType = objectParam(v)
+	if !plan.BookingType.Equal(state.BookingType) {
+		if v := plan.BookingType.ValueString(); v != "" {
+			sp.BookingType = objectParam(v)
+		}
 	}
 	if !plan.BookingWindowInDays.Equal(state.BookingWindowInDays) {
 		if !plan.BookingWindowInDays.IsUnknown() {

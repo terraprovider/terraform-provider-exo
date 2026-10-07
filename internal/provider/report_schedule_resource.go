@@ -199,14 +199,20 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetReportScheduleParams{}
 	sp.Identity = id
-	if v := plan.DlpRuleId.ValueString(); v != "" {
-		sp.DlpRuleId = objectParam(v)
+	if !plan.DlpRuleId.Equal(state.DlpRuleId) {
+		if v := plan.DlpRuleId.ValueString(); v != "" {
+			sp.DlpRuleId = objectParam(v)
+		}
 	}
-	if v := plan.EncryptionTemplate.ValueString(); v != "" {
-		sp.EncryptionTemplate = objectParam(v)
+	if !plan.EncryptionTemplate.Equal(state.EncryptionTemplate) {
+		if v := plan.EncryptionTemplate.ValueString(); v != "" {
+			sp.EncryptionTemplate = objectParam(v)
+		}
 	}
-	if v := plan.EncryptionType.ValueString(); v != "" {
-		sp.EncryptionType = objectParam(v)
+	if !plan.EncryptionType.Equal(state.EncryptionType) {
+		if v := plan.EncryptionType.ValueString(); v != "" {
+			sp.EncryptionType = objectParam(v)
+		}
 	}
 	if !plan.IncludeDLP.Equal(state.IncludeDLP) {
 		sp.IncludeDLP = plan.IncludeDLP.ValueBool()
@@ -214,17 +220,23 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 	if !plan.RecipientAddress.Equal(state.RecipientAddress) {
 		sp.RecipientAddress = plan.RecipientAddress.ValueString()
 	}
-	if v := plan.ScheduleID.ValueString(); v != "" {
-		sp.ScheduleID = objectParam(v)
+	if !plan.ScheduleID.Equal(state.ScheduleID) {
+		if v := plan.ScheduleID.ValueString(); v != "" {
+			sp.ScheduleID = objectParam(v)
+		}
 	}
 	if !plan.SenderAddress.Equal(state.SenderAddress) {
 		sp.SenderAddress = plan.SenderAddress.ValueString()
 	}
-	if v := plan.StartDate.ValueString(); v != "" {
-		sp.StartDate = objectParam(v)
+	if !plan.StartDate.Equal(state.StartDate) {
+		if v := plan.StartDate.ValueString(); v != "" {
+			sp.StartDate = objectParam(v)
+		}
 	}
-	if v := plan.TransportRuleId.ValueString(); v != "" {
-		sp.TransportRuleId = objectParam(v)
+	if !plan.TransportRuleId.Equal(state.TransportRuleId) {
+		if v := plan.TransportRuleId.ValueString(); v != "" {
+			sp.TransportRuleId = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

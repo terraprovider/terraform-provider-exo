@@ -385,14 +385,20 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.AuthenticationFailAction.ValueString(); v != "" {
-		sp.AuthenticationFailAction = objectParam(v)
+	if !plan.AuthenticationFailAction.Equal(state.AuthenticationFailAction) {
+		if v := plan.AuthenticationFailAction.ValueString(); v != "" {
+			sp.AuthenticationFailAction = objectParam(v)
+		}
 	}
-	if v := plan.DmarcQuarantineAction.ValueString(); v != "" {
-		sp.DmarcQuarantineAction = objectParam(v)
+	if !plan.DmarcQuarantineAction.Equal(state.DmarcQuarantineAction) {
+		if v := plan.DmarcQuarantineAction.ValueString(); v != "" {
+			sp.DmarcQuarantineAction = objectParam(v)
+		}
 	}
-	if v := plan.DmarcRejectAction.ValueString(); v != "" {
-		sp.DmarcRejectAction = objectParam(v)
+	if !plan.DmarcRejectAction.Equal(state.DmarcRejectAction) {
+		if v := plan.DmarcRejectAction.ValueString(); v != "" {
+			sp.DmarcRejectAction = objectParam(v)
+		}
 	}
 	if !plan.EnableFirstContactSafetyTips.Equal(state.EnableFirstContactSafetyTips) {
 		if !plan.EnableFirstContactSafetyTips.IsUnknown() {
@@ -490,11 +496,15 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 			sp.HonorDmarcPolicy = plan.HonorDmarcPolicy.ValueBoolPointer()
 		}
 	}
-	if v := plan.ImpersonationProtectionState.ValueString(); v != "" {
-		sp.ImpersonationProtectionState = objectParam(v)
+	if !plan.ImpersonationProtectionState.Equal(state.ImpersonationProtectionState) {
+		if v := plan.ImpersonationProtectionState.ValueString(); v != "" {
+			sp.ImpersonationProtectionState = objectParam(v)
+		}
 	}
-	if v := plan.MailboxIntelligenceProtectionAction.ValueString(); v != "" {
-		sp.MailboxIntelligenceProtectionAction = objectParam(v)
+	if !plan.MailboxIntelligenceProtectionAction.Equal(state.MailboxIntelligenceProtectionAction) {
+		if v := plan.MailboxIntelligenceProtectionAction.ValueString(); v != "" {
+			sp.MailboxIntelligenceProtectionAction = objectParam(v)
+		}
 	}
 	if !plan.MailboxIntelligenceProtectionActionRecipients.Equal(state.MailboxIntelligenceProtectionActionRecipients) {
 		if !plan.MailboxIntelligenceProtectionActionRecipients.IsNull() && !plan.MailboxIntelligenceProtectionActionRecipients.IsUnknown() {
@@ -539,8 +549,10 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 			}
 		}
 	}
-	if v := plan.TargetedDomainProtectionAction.ValueString(); v != "" {
-		sp.TargetedDomainProtectionAction = objectParam(v)
+	if !plan.TargetedDomainProtectionAction.Equal(state.TargetedDomainProtectionAction) {
+		if v := plan.TargetedDomainProtectionAction.ValueString(); v != "" {
+			sp.TargetedDomainProtectionAction = objectParam(v)
+		}
 	}
 	if !plan.TargetedDomainQuarantineTag.Equal(state.TargetedDomainQuarantineTag) {
 		sp.TargetedDomainQuarantineTag = plan.TargetedDomainQuarantineTag.ValueString()
@@ -571,8 +583,10 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 			}
 		}
 	}
-	if v := plan.TargetedUserProtectionAction.ValueString(); v != "" {
-		sp.TargetedUserProtectionAction = objectParam(v)
+	if !plan.TargetedUserProtectionAction.Equal(state.TargetedUserProtectionAction) {
+		if v := plan.TargetedUserProtectionAction.ValueString(); v != "" {
+			sp.TargetedUserProtectionAction = objectParam(v)
+		}
 	}
 	if !plan.TargetedUserQuarantineTag.Equal(state.TargetedUserQuarantineTag) {
 		sp.TargetedUserQuarantineTag = plan.TargetedUserQuarantineTag.ValueString()

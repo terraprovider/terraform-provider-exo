@@ -159,20 +159,26 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 	if !plan.DateFormat.Equal(state.DateFormat) {
 		sp.DateFormat = plan.DateFormat.ValueString()
 	}
-	if v := plan.Language.ValueString(); v != "" {
-		sp.Language = objectParam(v)
+	if !plan.Language.Equal(state.Language) {
+		if v := plan.Language.ValueString(); v != "" {
+			sp.Language = objectParam(v)
+		}
 	}
 	if !plan.LocalizeDefaultFolderName.Equal(state.LocalizeDefaultFolderName) {
 		sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
 	}
-	if v := plan.MailboxLocation.ValueString(); v != "" {
-		sp.MailboxLocation = objectParam(v)
+	if !plan.MailboxLocation.Equal(state.MailboxLocation) {
+		if v := plan.MailboxLocation.ValueString(); v != "" {
+			sp.MailboxLocation = objectParam(v)
+		}
 	}
 	if !plan.TimeFormat.Equal(state.TimeFormat) {
 		sp.TimeFormat = plan.TimeFormat.ValueString()
 	}
-	if v := plan.TimeZone.ValueString(); v != "" {
-		sp.TimeZone = objectParam(v)
+	if !plan.TimeZone.Equal(state.TimeZone) {
+		if v := plan.TimeZone.ValueString(); v != "" {
+			sp.TimeZone = objectParam(v)
+		}
 	}
 	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
 		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()

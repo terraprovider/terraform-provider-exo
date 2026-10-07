@@ -445,8 +445,10 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.AssistantName.Equal(state.AssistantName) {
 		sp.AssistantName = plan.AssistantName.ValueString()
 	}
-	if v := plan.AuthenticationPolicy.ValueString(); v != "" {
-		sp.AuthenticationPolicy = objectParam(v)
+	if !plan.AuthenticationPolicy.Equal(state.AuthenticationPolicy) {
+		if v := plan.AuthenticationPolicy.ValueString(); v != "" {
+			sp.AuthenticationPolicy = objectParam(v)
+		}
 	}
 	if !plan.BlockCloudCache.Equal(state.BlockCloudCache) {
 		if !plan.BlockCloudCache.IsUnknown() {
@@ -467,14 +469,18 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.Company.Equal(state.Company) {
 		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = objectParam(v)
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
 	if !plan.Department.Equal(state.Department) {
 		sp.Department = plan.Department.ValueString()
 	}
-	if v := plan.DesiredWorkloads.ValueString(); v != "" {
-		sp.DesiredWorkloads = objectParam(v)
+	if !plan.DesiredWorkloads.Equal(state.DesiredWorkloads) {
+		if v := plan.DesiredWorkloads.ValueString(); v != "" {
+			sp.DesiredWorkloads = objectParam(v)
+		}
 	}
 	if !plan.DisplayName.Equal(state.DisplayName) {
 		sp.DisplayName = plan.DisplayName.ValueString()
@@ -490,8 +496,10 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.FirstName.Equal(state.FirstName) {
 		sp.FirstName = plan.FirstName.ValueString()
 	}
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = objectParam(v)
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
 	}
 	if !plan.HomePhone.Equal(state.HomePhone) {
 		sp.HomePhone = plan.HomePhone.ValueString()
@@ -510,14 +518,20 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
 		sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	}
-	if v := plan.MailboxRegionSuffix.ValueString(); v != "" {
-		sp.MailboxRegionSuffix = objectParam(v)
+	if !plan.MailboxRegionSuffix.Equal(state.MailboxRegionSuffix) {
+		if v := plan.MailboxRegionSuffix.ValueString(); v != "" {
+			sp.MailboxRegionSuffix = objectParam(v)
+		}
 	}
-	if v := plan.ManagedOnboardingType.ValueString(); v != "" {
-		sp.ManagedOnboardingType = objectParam(v)
+	if !plan.ManagedOnboardingType.Equal(state.ManagedOnboardingType) {
+		if v := plan.ManagedOnboardingType.ValueString(); v != "" {
+			sp.ManagedOnboardingType = objectParam(v)
+		}
 	}
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = objectParam(v)
+	if !plan.Manager.Equal(state.Manager) {
+		if v := plan.Manager.ValueString(); v != "" {
+			sp.Manager = objectParam(v)
+		}
 	}
 	if !plan.MobilePhone.Equal(state.MobilePhone) {
 		sp.MobilePhone = plan.MobilePhone.ValueString()
@@ -628,8 +642,10 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.StreetAddress.Equal(state.StreetAddress) {
 		sp.StreetAddress = plan.StreetAddress.ValueString()
 	}
-	if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
-		sp.StsRefreshTokensValidFrom = objectParam(v)
+	if !plan.StsRefreshTokensValidFrom.Equal(state.StsRefreshTokensValidFrom) {
+		if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
+			sp.StsRefreshTokensValidFrom = objectParam(v)
+		}
 	}
 	if !plan.Title.Equal(state.Title) {
 		sp.Title = plan.Title.ValueString()
@@ -642,8 +658,10 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.WebPage.Equal(state.WebPage) {
 		sp.WebPage = plan.WebPage.ValueString()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -313,51 +313,65 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 			sp.ConvertDisclaimerWrapperToEml = plan.ConvertDisclaimerWrapperToEml.ValueBoolPointer()
 		}
 	}
-	if v := plan.DSNConversionMode.ValueString(); v != "" {
-		sp.DSNConversionMode = objectParam(v)
+	if !plan.DSNConversionMode.Equal(state.DSNConversionMode) {
+		if v := plan.DSNConversionMode.ValueString(); v != "" {
+			sp.DSNConversionMode = objectParam(v)
+		}
 	}
 	if !plan.ExternalDelayDsnEnabled.Equal(state.ExternalDelayDsnEnabled) {
 		if !plan.ExternalDelayDsnEnabled.IsUnknown() {
 			sp.ExternalDelayDsnEnabled = plan.ExternalDelayDsnEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExternalDsnDefaultLanguage.ValueString(); v != "" {
-		sp.ExternalDsnDefaultLanguage = objectParam(v)
+	if !plan.ExternalDsnDefaultLanguage.Equal(state.ExternalDsnDefaultLanguage) {
+		if v := plan.ExternalDsnDefaultLanguage.ValueString(); v != "" {
+			sp.ExternalDsnDefaultLanguage = objectParam(v)
+		}
 	}
 	if !plan.ExternalDsnLanguageDetectionEnabled.Equal(state.ExternalDsnLanguageDetectionEnabled) {
 		if !plan.ExternalDsnLanguageDetectionEnabled.IsUnknown() {
 			sp.ExternalDsnLanguageDetectionEnabled = plan.ExternalDsnLanguageDetectionEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExternalDsnReportingAuthority.ValueString(); v != "" {
-		sp.ExternalDsnReportingAuthority = objectParam(v)
+	if !plan.ExternalDsnReportingAuthority.Equal(state.ExternalDsnReportingAuthority) {
+		if v := plan.ExternalDsnReportingAuthority.ValueString(); v != "" {
+			sp.ExternalDsnReportingAuthority = objectParam(v)
+		}
 	}
 	if !plan.ExternalDsnSendHtml.Equal(state.ExternalDsnSendHtml) {
 		if !plan.ExternalDsnSendHtml.IsUnknown() {
 			sp.ExternalDsnSendHtml = plan.ExternalDsnSendHtml.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExternalPostmasterAddress.ValueString(); v != "" {
-		sp.ExternalPostmasterAddress = objectParam(v)
+	if !plan.ExternalPostmasterAddress.Equal(state.ExternalPostmasterAddress) {
+		if v := plan.ExternalPostmasterAddress.ValueString(); v != "" {
+			sp.ExternalPostmasterAddress = objectParam(v)
+		}
 	}
-	if v := plan.HeaderPromotionModeSetting.ValueString(); v != "" {
-		sp.HeaderPromotionModeSetting = objectParam(v)
+	if !plan.HeaderPromotionModeSetting.Equal(state.HeaderPromotionModeSetting) {
+		if v := plan.HeaderPromotionModeSetting.ValueString(); v != "" {
+			sp.HeaderPromotionModeSetting = objectParam(v)
+		}
 	}
 	if !plan.InternalDelayDsnEnabled.Equal(state.InternalDelayDsnEnabled) {
 		if !plan.InternalDelayDsnEnabled.IsUnknown() {
 			sp.InternalDelayDsnEnabled = plan.InternalDelayDsnEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.InternalDsnDefaultLanguage.ValueString(); v != "" {
-		sp.InternalDsnDefaultLanguage = objectParam(v)
+	if !plan.InternalDsnDefaultLanguage.Equal(state.InternalDsnDefaultLanguage) {
+		if v := plan.InternalDsnDefaultLanguage.ValueString(); v != "" {
+			sp.InternalDsnDefaultLanguage = objectParam(v)
+		}
 	}
 	if !plan.InternalDsnLanguageDetectionEnabled.Equal(state.InternalDsnLanguageDetectionEnabled) {
 		if !plan.InternalDsnLanguageDetectionEnabled.IsUnknown() {
 			sp.InternalDsnLanguageDetectionEnabled = plan.InternalDsnLanguageDetectionEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.InternalDsnReportingAuthority.ValueString(); v != "" {
-		sp.InternalDsnReportingAuthority = objectParam(v)
+	if !plan.InternalDsnReportingAuthority.Equal(state.InternalDsnReportingAuthority) {
+		if v := plan.InternalDsnReportingAuthority.ValueString(); v != "" {
+			sp.InternalDsnReportingAuthority = objectParam(v)
+		}
 	}
 	if !plan.InternalDsnSendHtml.Equal(state.InternalDsnSendHtml) {
 		if !plan.InternalDsnSendHtml.IsUnknown() {
@@ -369,14 +383,20 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 			sp.JournalMessageExpirationDays = plan.JournalMessageExpirationDays.ValueInt64Pointer()
 		}
 	}
-	if v := plan.JournalingReportNdrTo.ValueString(); v != "" {
-		sp.JournalingReportNdrTo = objectParam(v)
+	if !plan.JournalingReportNdrTo.Equal(state.JournalingReportNdrTo) {
+		if v := plan.JournalingReportNdrTo.ValueString(); v != "" {
+			sp.JournalingReportNdrTo = objectParam(v)
+		}
 	}
-	if v := plan.MaxRecipientEnvelopeLimit.ValueString(); v != "" {
-		sp.MaxRecipientEnvelopeLimit = objectParam(v)
+	if !plan.MaxRecipientEnvelopeLimit.Equal(state.MaxRecipientEnvelopeLimit) {
+		if v := plan.MaxRecipientEnvelopeLimit.ValueString(); v != "" {
+			sp.MaxRecipientEnvelopeLimit = objectParam(v)
+		}
 	}
-	if v := plan.MessageExpiration.ValueString(); v != "" {
-		sp.MessageExpiration = objectParam(v)
+	if !plan.MessageExpiration.Equal(state.MessageExpiration) {
+		if v := plan.MessageExpiration.ValueString(); v != "" {
+			sp.MessageExpiration = objectParam(v)
+		}
 	}
 	if !plan.PreventDuplicateJournalingEnabled.Equal(state.PreventDuplicateJournalingEnabled) {
 		if !plan.PreventDuplicateJournalingEnabled.IsUnknown() {

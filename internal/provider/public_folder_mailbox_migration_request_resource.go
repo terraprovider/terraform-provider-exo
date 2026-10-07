@@ -147,8 +147,10 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = objectParam(v)
+	if !plan.SkippedItemApprovalTime.Equal(state.SkippedItemApprovalTime) {
+		if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
+			sp.SkippedItemApprovalTime = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

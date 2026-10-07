@@ -155,8 +155,10 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 	if !plan.IsDefault.Equal(state.IsDefault) {
 		sp.IsDefault = plan.IsDefault.ValueBool()
 	}
-	if v := plan.Locale.ValueString(); v != "" {
-		sp.Locale = objectParam(v)
+	if !plan.Locale.Equal(state.Locale) {
+		if v := plan.Locale.ValueString(); v != "" {
+			sp.Locale = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -307,8 +307,10 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 			}
 		}
 	}
-	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
-		sp.RMSOnlineKeySharingLocation = objectParam(v)
+	if !plan.RMSOnlineKeySharingLocation.Equal(state.RMSOnlineKeySharingLocation) {
+		if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {
+			sp.RMSOnlineKeySharingLocation = objectParam(v)
+		}
 	}
 	if !plan.RejectIfRecipientHasNoRights.Equal(state.RejectIfRecipientHasNoRights) {
 		if !plan.RejectIfRecipientHasNoRights.IsUnknown() {
@@ -335,8 +337,10 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 			sp.SimplifiedClientAccessEncryptOnlyDisabled = plan.SimplifiedClientAccessEncryptOnlyDisabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.TransportDecryptionSetting.ValueString(); v != "" {
-		sp.TransportDecryptionSetting = objectParam(v)
+	if !plan.TransportDecryptionSetting.Equal(state.TransportDecryptionSetting) {
+		if v := plan.TransportDecryptionSetting.ValueString(); v != "" {
+			sp.TransportDecryptionSetting = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

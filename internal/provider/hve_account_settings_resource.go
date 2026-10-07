@@ -115,8 +115,10 @@ func (r *hVEAccountSettingsResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetHVEAccountSettingsParams{}
 	sp.Identity = id
-	if v := plan.ReplyTo.ValueString(); v != "" {
-		sp.ReplyTo = objectParam(v)
+	if !plan.ReplyTo.Equal(state.ReplyTo) {
+		if v := plan.ReplyTo.ValueString(); v != "" {
+			sp.ReplyTo = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

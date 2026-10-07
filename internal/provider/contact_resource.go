@@ -356,8 +356,10 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.Company.Equal(state.Company) {
 		sp.Company = plan.Company.ValueString()
 	}
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = objectParam(v)
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
 	if !plan.Department.Equal(state.Department) {
 		sp.Department = plan.Department.ValueString()
@@ -371,8 +373,10 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.FirstName.Equal(state.FirstName) {
 		sp.FirstName = plan.FirstName.ValueString()
 	}
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = objectParam(v)
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
 	}
 	if !plan.HomePhone.Equal(state.HomePhone) {
 		sp.HomePhone = plan.HomePhone.ValueString()
@@ -383,8 +387,10 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.LastName.Equal(state.LastName) {
 		sp.LastName = plan.LastName.ValueString()
 	}
-	if v := plan.Manager.ValueString(); v != "" {
-		sp.Manager = objectParam(v)
+	if !plan.Manager.Equal(state.Manager) {
+		if v := plan.Manager.ValueString(); v != "" {
+			sp.Manager = objectParam(v)
+		}
 	}
 	if !plan.MobilePhone.Equal(state.MobilePhone) {
 		sp.MobilePhone = plan.MobilePhone.ValueString()
@@ -485,8 +491,10 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.WebPage.Equal(state.WebPage) {
 		sp.WebPage = plan.WebPage.ValueString()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

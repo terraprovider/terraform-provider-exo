@@ -405,8 +405,10 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 			sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBoolPointer()
 		}
 	}
-	if v := plan.SMIMECertificateIssuingCA.ValueString(); v != "" {
-		sp.SMIMECertificateIssuingCA = objectParam(v)
+	if !plan.SMIMECertificateIssuingCA.Equal(state.SMIMECertificateIssuingCA) {
+		if v := plan.SMIMECertificateIssuingCA.ValueString(); v != "" {
+			sp.SMIMECertificateIssuingCA = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -149,11 +149,15 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetJournalRuleParams{}
 	sp.Identity = id
-	if v := plan.Recipient.ValueString(); v != "" {
-		sp.Recipient = objectParam(v)
+	if !plan.Recipient.Equal(state.Recipient) {
+		if v := plan.Recipient.ValueString(); v != "" {
+			sp.Recipient = objectParam(v)
+		}
 	}
-	if v := plan.Scope.ValueString(); v != "" {
-		sp.Scope = objectParam(v)
+	if !plan.Scope.Equal(state.Scope) {
+		if v := plan.Scope.ValueString(); v != "" {
+			sp.Scope = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

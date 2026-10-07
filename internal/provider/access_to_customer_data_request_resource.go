@@ -130,8 +130,10 @@ func (r *accessToCustomerDataRequestResource) Update(ctx context.Context, req re
 	}
 	id := r.identityOf(state)
 	sp := exo.SetAccessToCustomerDataRequestParams{}
-	if v := plan.ApprovalDecision.ValueString(); v != "" {
-		sp.ApprovalDecision = objectParam(v)
+	if !plan.ApprovalDecision.Equal(state.ApprovalDecision) {
+		if v := plan.ApprovalDecision.ValueString(); v != "" {
+			sp.ApprovalDecision = objectParam(v)
+		}
 	}
 	if !plan.Comment.Equal(state.Comment) {
 		sp.Comment = plan.Comment.ValueString()
@@ -139,8 +141,10 @@ func (r *accessToCustomerDataRequestResource) Update(ctx context.Context, req re
 	if !plan.RequestId.Equal(state.RequestId) {
 		sp.RequestId = plan.RequestId.ValueString()
 	}
-	if v := plan.ServiceName.ValueString(); v != "" {
-		sp.ServiceName = objectParam(v)
+	if !plan.ServiceName.Equal(state.ServiceName) {
+		if v := plan.ServiceName.ValueString(); v != "" {
+			sp.ServiceName = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

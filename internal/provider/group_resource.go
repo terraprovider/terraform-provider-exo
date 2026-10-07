@@ -258,8 +258,10 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if !plan.Universal.Equal(state.Universal) {
 		sp.Universal = plan.Universal.ValueBool()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -160,8 +160,10 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
 		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
 	}
-	if v := plan.Priority.ValueString(); v != "" {
-		sp.Priority = objectParam(v)
+	if !plan.Priority.Equal(state.Priority) {
+		if v := plan.Priority.ValueString(); v != "" {
+			sp.Priority = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

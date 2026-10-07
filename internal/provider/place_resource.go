@@ -232,8 +232,10 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if !plan.City.Equal(state.City) {
 		sp.City = plan.City.ValueString()
 	}
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = objectParam(v)
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
 	if !plan.DisplayDeviceName.Equal(state.DisplayDeviceName) {
 		sp.DisplayDeviceName = plan.DisplayDeviceName.ValueString()
@@ -246,8 +248,10 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if !plan.FloorLabel.Equal(state.FloorLabel) {
 		sp.FloorLabel = plan.FloorLabel.ValueString()
 	}
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = objectParam(v)
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
 	}
 	if !plan.IsWheelChairAccessible.Equal(state.IsWheelChairAccessible) {
 		if !plan.IsWheelChairAccessible.IsUnknown() {

@@ -1225,17 +1225,25 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 		}
 		return cur
 	}
-	if v := plan.ActivationDate.ValueString(); v != "" {
-		sp.ActivationDate = objectParam(v)
+	if !plan.ActivationDate.Equal(state.ActivationDate) {
+		if v := plan.ActivationDate.ValueString(); v != "" {
+			sp.ActivationDate = objectParam(v)
+		}
 	}
-	if v := plan.AdComparisonAttribute.ValueString(); v != "" {
-		sp.AdComparisonAttribute = objectParam(v)
+	if !plan.AdComparisonAttribute.Equal(state.AdComparisonAttribute) {
+		if v := plan.AdComparisonAttribute.ValueString(); v != "" {
+			sp.AdComparisonAttribute = objectParam(v)
+		}
 	}
-	if v := plan.AdComparisonOperator.ValueString(); v != "" {
-		sp.AdComparisonOperator = objectParam(v)
+	if !plan.AdComparisonOperator.Equal(state.AdComparisonOperator) {
+		if v := plan.AdComparisonOperator.ValueString(); v != "" {
+			sp.AdComparisonOperator = objectParam(v)
+		}
 	}
-	if v := plan.AddManagerAsRecipientType.ValueString(); v != "" {
-		sp.AddManagerAsRecipientType = objectParam(v)
+	if !plan.AddManagerAsRecipientType.Equal(state.AddManagerAsRecipientType) {
+		if v := plan.AddManagerAsRecipientType.ValueString(); v != "" {
+			sp.AddManagerAsRecipientType = objectParam(v)
+		}
 	}
 	if !plan.AddToRecipients.Equal(state.AddToRecipients) {
 		if !plan.AddToRecipients.IsNull() && !plan.AddToRecipients.IsUnknown() {
@@ -1285,25 +1293,35 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.ApplyClassification.Equal(state.ApplyClassification) {
 		sp.ApplyClassification = plan.ApplyClassification.ValueString()
 	}
-	if v := plan.ApplyHtmlDisclaimerFallbackAction.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerFallbackAction = objectParam(v)
+	if !plan.ApplyHtmlDisclaimerFallbackAction.Equal(state.ApplyHtmlDisclaimerFallbackAction) {
+		if v := plan.ApplyHtmlDisclaimerFallbackAction.ValueString(); v != "" {
+			sp.ApplyHtmlDisclaimerFallbackAction = objectParam(v)
+		}
 	}
-	if v := plan.ApplyHtmlDisclaimerLocation.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerLocation = objectParam(v)
+	if !plan.ApplyHtmlDisclaimerLocation.Equal(state.ApplyHtmlDisclaimerLocation) {
+		if v := plan.ApplyHtmlDisclaimerLocation.ValueString(); v != "" {
+			sp.ApplyHtmlDisclaimerLocation = objectParam(v)
+		}
 	}
-	if v := plan.ApplyHtmlDisclaimerText.ValueString(); v != "" {
-		sp.ApplyHtmlDisclaimerText = objectParam(v)
+	if !plan.ApplyHtmlDisclaimerText.Equal(state.ApplyHtmlDisclaimerText) {
+		if v := plan.ApplyHtmlDisclaimerText.ValueString(); v != "" {
+			sp.ApplyHtmlDisclaimerText = objectParam(v)
+		}
 	}
 	if !plan.ApplyOME.Equal(state.ApplyOME) {
 		if !plan.ApplyOME.IsUnknown() {
 			sp.ApplyOME = plan.ApplyOME.ValueBoolPointer()
 		}
 	}
-	if v := plan.ApplyRightsProtectionCustomizationTemplate.ValueString(); v != "" {
-		sp.ApplyRightsProtectionCustomizationTemplate = objectParam(v)
+	if !plan.ApplyRightsProtectionCustomizationTemplate.Equal(state.ApplyRightsProtectionCustomizationTemplate) {
+		if v := plan.ApplyRightsProtectionCustomizationTemplate.ValueString(); v != "" {
+			sp.ApplyRightsProtectionCustomizationTemplate = objectParam(v)
+		}
 	}
-	if v := plan.ApplyRightsProtectionTemplate.ValueString(); v != "" {
-		sp.ApplyRightsProtectionTemplate = objectParam(v)
+	if !plan.ApplyRightsProtectionTemplate.Equal(state.ApplyRightsProtectionTemplate) {
+		if v := plan.ApplyRightsProtectionTemplate.ValueString(); v != "" {
+			sp.ApplyRightsProtectionTemplate = objectParam(v)
+		}
 	}
 	if !plan.AttachmentContainsWords.Equal(state.AttachmentContainsWords) {
 		if !plan.AttachmentContainsWords.IsNull() && !plan.AttachmentContainsWords.IsUnknown() {
@@ -1350,8 +1368,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.AttachmentPropertyContainsWords = append([]string{}, toStringSlice(ctx, plan.AttachmentPropertyContainsWords, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.AttachmentSizeOver.ValueString(); v != "" {
-		sp.AttachmentSizeOver = objectParam(v)
+	if !plan.AttachmentSizeOver.Equal(state.AttachmentSizeOver) {
+		if v := plan.AttachmentSizeOver.ValueString(); v != "" {
+			sp.AttachmentSizeOver = objectParam(v)
+		}
 	}
 	if !plan.BetweenMemberOf1.Equal(state.BetweenMemberOf1) {
 		if !plan.BetweenMemberOf1.IsNull() && !plan.BetweenMemberOf1.IsUnknown() {
@@ -1394,11 +1414,15 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.DlpPolicy.Equal(state.DlpPolicy) {
 		sp.DlpPolicy = plan.DlpPolicy.ValueString()
 	}
-	if v := plan.ExceptIfAdComparisonAttribute.ValueString(); v != "" {
-		sp.ExceptIfAdComparisonAttribute = objectParam(v)
+	if !plan.ExceptIfAdComparisonAttribute.Equal(state.ExceptIfAdComparisonAttribute) {
+		if v := plan.ExceptIfAdComparisonAttribute.ValueString(); v != "" {
+			sp.ExceptIfAdComparisonAttribute = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfAdComparisonOperator.ValueString(); v != "" {
-		sp.ExceptIfAdComparisonOperator = objectParam(v)
+	if !plan.ExceptIfAdComparisonOperator.Equal(state.ExceptIfAdComparisonOperator) {
+		if v := plan.ExceptIfAdComparisonOperator.ValueString(); v != "" {
+			sp.ExceptIfAdComparisonOperator = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfAnyOfCcHeader.Equal(state.ExceptIfAnyOfCcHeader) {
 		if !plan.ExceptIfAnyOfCcHeader.IsNull() && !plan.ExceptIfAnyOfCcHeader.IsUnknown() {
@@ -1485,8 +1509,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfAttachmentPropertyContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfAttachmentPropertyContainsWords, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfAttachmentSizeOver.ValueString(); v != "" {
-		sp.ExceptIfAttachmentSizeOver = objectParam(v)
+	if !plan.ExceptIfAttachmentSizeOver.Equal(state.ExceptIfAttachmentSizeOver) {
+		if v := plan.ExceptIfAttachmentSizeOver.ValueString(); v != "" {
+			sp.ExceptIfAttachmentSizeOver = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfBetweenMemberOf1.Equal(state.ExceptIfBetweenMemberOf1) {
 		if !plan.ExceptIfBetweenMemberOf1.IsNull() && !plan.ExceptIfBetweenMemberOf1.IsUnknown() {
@@ -1523,8 +1549,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfFromMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfFromMemberOf, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfFromScope.ValueString(); v != "" {
-		sp.ExceptIfFromScope = objectParam(v)
+	if !plan.ExceptIfFromScope.Equal(state.ExceptIfFromScope) {
+		if v := plan.ExceptIfFromScope.ValueString(); v != "" {
+			sp.ExceptIfFromScope = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfHasClassification.Equal(state.ExceptIfHasClassification) {
 		sp.ExceptIfHasClassification = plan.ExceptIfHasClassification.ValueString()
@@ -1539,16 +1567,20 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfHasSenderOverride = plan.ExceptIfHasSenderOverride.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExceptIfHeaderContainsMessageHeader.ValueString(); v != "" {
-		sp.ExceptIfHeaderContainsMessageHeader = objectParam(v)
+	if !plan.ExceptIfHeaderContainsMessageHeader.Equal(state.ExceptIfHeaderContainsMessageHeader) {
+		if v := plan.ExceptIfHeaderContainsMessageHeader.ValueString(); v != "" {
+			sp.ExceptIfHeaderContainsMessageHeader = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfHeaderContainsWords.Equal(state.ExceptIfHeaderContainsWords) {
 		if !plan.ExceptIfHeaderContainsWords.IsNull() && !plan.ExceptIfHeaderContainsWords.IsUnknown() {
 			sp.ExceptIfHeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfHeaderMatchesMessageHeader.ValueString(); v != "" {
-		sp.ExceptIfHeaderMatchesMessageHeader = objectParam(v)
+	if !plan.ExceptIfHeaderMatchesMessageHeader.Equal(state.ExceptIfHeaderMatchesMessageHeader) {
+		if v := plan.ExceptIfHeaderMatchesMessageHeader.ValueString(); v != "" {
+			sp.ExceptIfHeaderMatchesMessageHeader = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfHeaderMatchesPatterns.Equal(state.ExceptIfHeaderMatchesPatterns) {
 		if !plan.ExceptIfHeaderMatchesPatterns.IsNull() && !plan.ExceptIfHeaderMatchesPatterns.IsUnknown() {
@@ -1560,17 +1592,25 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfManagerAddresses = append([]string{}, toStringSlice(ctx, plan.ExceptIfManagerAddresses, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
-		sp.ExceptIfManagerForEvaluatedUser = objectParam(v)
+	if !plan.ExceptIfManagerForEvaluatedUser.Equal(state.ExceptIfManagerForEvaluatedUser) {
+		if v := plan.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
+			sp.ExceptIfManagerForEvaluatedUser = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfMessageContainsDataClassifications.ValueString(); v != "" {
-		sp.ExceptIfMessageContainsDataClassifications = objectParam(v)
+	if !plan.ExceptIfMessageContainsDataClassifications.Equal(state.ExceptIfMessageContainsDataClassifications) {
+		if v := plan.ExceptIfMessageContainsDataClassifications.ValueString(); v != "" {
+			sp.ExceptIfMessageContainsDataClassifications = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfMessageSizeOver.ValueString(); v != "" {
-		sp.ExceptIfMessageSizeOver = objectParam(v)
+	if !plan.ExceptIfMessageSizeOver.Equal(state.ExceptIfMessageSizeOver) {
+		if v := plan.ExceptIfMessageSizeOver.ValueString(); v != "" {
+			sp.ExceptIfMessageSizeOver = objectParam(v)
+		}
 	}
-	if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
-		sp.ExceptIfMessageTypeMatches = objectParam(v)
+	if !plan.ExceptIfMessageTypeMatches.Equal(state.ExceptIfMessageTypeMatches) {
+		if v := plan.ExceptIfMessageTypeMatches.ValueString(); v != "" {
+			sp.ExceptIfMessageTypeMatches = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfRecipientADAttributeContainsWords.Equal(state.ExceptIfRecipientADAttributeContainsWords) {
 		if !plan.ExceptIfRecipientADAttributeContainsWords.IsNull() && !plan.ExceptIfRecipientADAttributeContainsWords.IsUnknown() {
@@ -1602,8 +1642,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfRecipientInSenderList = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientInSenderList, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfSCLOver.ValueString(); v != "" {
-		sp.ExceptIfSCLOver = objectParam(v)
+	if !plan.ExceptIfSCLOver.Equal(state.ExceptIfSCLOver) {
+		if v := plan.ExceptIfSCLOver.ValueString(); v != "" {
+			sp.ExceptIfSCLOver = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfSenderADAttributeContainsWords.Equal(state.ExceptIfSenderADAttributeContainsWords) {
 		if !plan.ExceptIfSenderADAttributeContainsWords.IsNull() && !plan.ExceptIfSenderADAttributeContainsWords.IsUnknown() {
@@ -1638,8 +1680,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			}
 		}
 	}
-	if v := plan.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
-		sp.ExceptIfSenderManagementRelationship = objectParam(v)
+	if !plan.ExceptIfSenderManagementRelationship.Equal(state.ExceptIfSenderManagementRelationship) {
+		if v := plan.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
+			sp.ExceptIfSenderManagementRelationship = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfSentTo.Equal(state.ExceptIfSentTo) {
 		if !plan.ExceptIfSentTo.IsNull() && !plan.ExceptIfSentTo.IsUnknown() {
@@ -1651,8 +1695,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfSentToMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfSentToScope.ValueString(); v != "" {
-		sp.ExceptIfSentToScope = objectParam(v)
+	if !plan.ExceptIfSentToScope.Equal(state.ExceptIfSentToScope) {
+		if v := plan.ExceptIfSentToScope.ValueString(); v != "" {
+			sp.ExceptIfSentToScope = objectParam(v)
+		}
 	}
 	if !plan.ExceptIfSubjectContainsWords.Equal(state.ExceptIfSubjectContainsWords) {
 		if !plan.ExceptIfSubjectContainsWords.IsNull() && !plan.ExceptIfSubjectContainsWords.IsUnknown() {
@@ -1674,11 +1720,15 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ExceptIfSubjectOrBodyMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectOrBodyMatchesPatterns, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
-		sp.ExceptIfWithImportance = objectParam(v)
+	if !plan.ExceptIfWithImportance.Equal(state.ExceptIfWithImportance) {
+		if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
+			sp.ExceptIfWithImportance = objectParam(v)
+		}
 	}
-	if v := plan.ExpiryDate.ValueString(); v != "" {
-		sp.ExpiryDate = objectParam(v)
+	if !plan.ExpiryDate.Equal(state.ExpiryDate) {
+		if v := plan.ExpiryDate.ValueString(); v != "" {
+			sp.ExpiryDate = objectParam(v)
+		}
 	}
 	if !plan.From.Equal(state.From) {
 		if !plan.From.IsNull() && !plan.From.IsUnknown() {
@@ -1700,14 +1750,20 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.FromMemberOf = append([]string{}, toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.FromScope.ValueString(); v != "" {
-		sp.FromScope = objectParam(v)
+	if !plan.FromScope.Equal(state.FromScope) {
+		if v := plan.FromScope.ValueString(); v != "" {
+			sp.FromScope = objectParam(v)
+		}
 	}
-	if v := plan.GenerateIncidentReport.ValueString(); v != "" {
-		sp.GenerateIncidentReport = objectParam(v)
+	if !plan.GenerateIncidentReport.Equal(state.GenerateIncidentReport) {
+		if v := plan.GenerateIncidentReport.ValueString(); v != "" {
+			sp.GenerateIncidentReport = objectParam(v)
+		}
 	}
-	if v := plan.GenerateNotification.ValueString(); v != "" {
-		sp.GenerateNotification = objectParam(v)
+	if !plan.GenerateNotification.Equal(state.GenerateNotification) {
+		if v := plan.GenerateNotification.ValueString(); v != "" {
+			sp.GenerateNotification = objectParam(v)
+		}
 	}
 	if !plan.HasClassification.Equal(state.HasClassification) {
 		sp.HasClassification = plan.HasClassification.ValueString()
@@ -1722,16 +1778,20 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.HasSenderOverride = plan.HasSenderOverride.ValueBoolPointer()
 		}
 	}
-	if v := plan.HeaderContainsMessageHeader.ValueString(); v != "" {
-		sp.HeaderContainsMessageHeader = objectParam(v)
+	if !plan.HeaderContainsMessageHeader.Equal(state.HeaderContainsMessageHeader) {
+		if v := plan.HeaderContainsMessageHeader.ValueString(); v != "" {
+			sp.HeaderContainsMessageHeader = objectParam(v)
+		}
 	}
 	if !plan.HeaderContainsWords.Equal(state.HeaderContainsWords) {
 		if !plan.HeaderContainsWords.IsNull() && !plan.HeaderContainsWords.IsUnknown() {
 			sp.HeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.HeaderMatchesMessageHeader.ValueString(); v != "" {
-		sp.HeaderMatchesMessageHeader = objectParam(v)
+	if !plan.HeaderMatchesMessageHeader.Equal(state.HeaderMatchesMessageHeader) {
+		if v := plan.HeaderMatchesMessageHeader.ValueString(); v != "" {
+			sp.HeaderMatchesMessageHeader = objectParam(v)
+		}
 	}
 	if !plan.HeaderMatchesPatterns.Equal(state.HeaderMatchesPatterns) {
 		if !plan.HeaderMatchesPatterns.IsNull() && !plan.HeaderMatchesPatterns.IsUnknown() {
@@ -1743,28 +1803,40 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.IncidentReportContent = append([]string{}, toStringSlice(ctx, plan.IncidentReportContent, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.LogEventText.ValueString(); v != "" {
-		sp.LogEventText = objectParam(v)
+	if !plan.LogEventText.Equal(state.LogEventText) {
+		if v := plan.LogEventText.ValueString(); v != "" {
+			sp.LogEventText = objectParam(v)
+		}
 	}
 	if !plan.ManagerAddresses.Equal(state.ManagerAddresses) {
 		if !plan.ManagerAddresses.IsNull() && !plan.ManagerAddresses.IsUnknown() {
 			sp.ManagerAddresses = append([]string{}, toStringSlice(ctx, plan.ManagerAddresses, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.ManagerForEvaluatedUser.ValueString(); v != "" {
-		sp.ManagerForEvaluatedUser = objectParam(v)
+	if !plan.ManagerForEvaluatedUser.Equal(state.ManagerForEvaluatedUser) {
+		if v := plan.ManagerForEvaluatedUser.ValueString(); v != "" {
+			sp.ManagerForEvaluatedUser = objectParam(v)
+		}
 	}
-	if v := plan.MessageContainsDataClassifications.ValueString(); v != "" {
-		sp.MessageContainsDataClassifications = objectParam(v)
+	if !plan.MessageContainsDataClassifications.Equal(state.MessageContainsDataClassifications) {
+		if v := plan.MessageContainsDataClassifications.ValueString(); v != "" {
+			sp.MessageContainsDataClassifications = objectParam(v)
+		}
 	}
-	if v := plan.MessageSizeOver.ValueString(); v != "" {
-		sp.MessageSizeOver = objectParam(v)
+	if !plan.MessageSizeOver.Equal(state.MessageSizeOver) {
+		if v := plan.MessageSizeOver.ValueString(); v != "" {
+			sp.MessageSizeOver = objectParam(v)
+		}
 	}
-	if v := plan.MessageTypeMatches.ValueString(); v != "" {
-		sp.MessageTypeMatches = objectParam(v)
+	if !plan.MessageTypeMatches.Equal(state.MessageTypeMatches) {
+		if v := plan.MessageTypeMatches.ValueString(); v != "" {
+			sp.MessageTypeMatches = objectParam(v)
+		}
 	}
-	if v := plan.Mode.ValueString(); v != "" {
-		sp.Mode = objectParam(v)
+	if !plan.Mode.Equal(state.Mode) {
+		if v := plan.Mode.ValueString(); v != "" {
+			sp.Mode = objectParam(v)
+		}
 	}
 	if !plan.ModerateMessageByManager.Equal(state.ModerateMessageByManager) {
 		if !plan.ModerateMessageByManager.IsUnknown() {
@@ -1776,11 +1848,15 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.ModerateMessageByUser = append([]string{}, toStringSlice(ctx, plan.ModerateMessageByUser, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.NotifySender.ValueString(); v != "" {
-		sp.NotifySender = objectParam(v)
+	if !plan.NotifySender.Equal(state.NotifySender) {
+		if v := plan.NotifySender.ValueString(); v != "" {
+			sp.NotifySender = objectParam(v)
+		}
 	}
-	if v := plan.PrependSubject.ValueString(); v != "" {
-		sp.PrependSubject = objectParam(v)
+	if !plan.PrependSubject.Equal(state.PrependSubject) {
+		if v := plan.PrependSubject.ValueString(); v != "" {
+			sp.PrependSubject = objectParam(v)
+		}
 	}
 	if !plan.Priority.Equal(state.Priority) {
 		if !plan.Priority.IsUnknown() {
@@ -1812,8 +1888,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.RecipientAddressMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.RecipientAddressMatchesPatterns, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.RecipientAddressType.ValueString(); v != "" {
-		sp.RecipientAddressType = objectParam(v)
+	if !plan.RecipientAddressType.Equal(state.RecipientAddressType) {
+		if v := plan.RecipientAddressType.ValueString(); v != "" {
+			sp.RecipientAddressType = objectParam(v)
+		}
 	}
 	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
 		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
@@ -1830,14 +1908,20 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.RedirectMessageTo = append([]string{}, toStringSlice(ctx, plan.RedirectMessageTo, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.RejectMessageEnhancedStatusCode.ValueString(); v != "" {
-		sp.RejectMessageEnhancedStatusCode = objectParam(v)
+	if !plan.RejectMessageEnhancedStatusCode.Equal(state.RejectMessageEnhancedStatusCode) {
+		if v := plan.RejectMessageEnhancedStatusCode.ValueString(); v != "" {
+			sp.RejectMessageEnhancedStatusCode = objectParam(v)
+		}
 	}
-	if v := plan.RejectMessageReasonText.ValueString(); v != "" {
-		sp.RejectMessageReasonText = objectParam(v)
+	if !plan.RejectMessageReasonText.Equal(state.RejectMessageReasonText) {
+		if v := plan.RejectMessageReasonText.ValueString(); v != "" {
+			sp.RejectMessageReasonText = objectParam(v)
+		}
 	}
-	if v := plan.RemoveHeader.ValueString(); v != "" {
-		sp.RemoveHeader = objectParam(v)
+	if !plan.RemoveHeader.Equal(state.RemoveHeader) {
+		if v := plan.RemoveHeader.ValueString(); v != "" {
+			sp.RemoveHeader = objectParam(v)
+		}
 	}
 	if !plan.RemoveOME.Equal(state.RemoveOME) {
 		if !plan.RemoveOME.IsUnknown() {
@@ -1854,22 +1938,30 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.RemoveRMSAttachmentEncryption = plan.RemoveRMSAttachmentEncryption.ValueBoolPointer()
 		}
 	}
-	if v := plan.RouteMessageOutboundConnector.ValueString(); v != "" {
-		sp.RouteMessageOutboundConnector = objectParam(v)
+	if !plan.RouteMessageOutboundConnector.Equal(state.RouteMessageOutboundConnector) {
+		if v := plan.RouteMessageOutboundConnector.ValueString(); v != "" {
+			sp.RouteMessageOutboundConnector = objectParam(v)
+		}
 	}
 	if !plan.RouteMessageOutboundRequireTls.Equal(state.RouteMessageOutboundRequireTls) {
 		if !plan.RouteMessageOutboundRequireTls.IsUnknown() {
 			sp.RouteMessageOutboundRequireTls = plan.RouteMessageOutboundRequireTls.ValueBoolPointer()
 		}
 	}
-	if v := plan.RuleErrorAction.ValueString(); v != "" {
-		sp.RuleErrorAction = objectParam(v)
+	if !plan.RuleErrorAction.Equal(state.RuleErrorAction) {
+		if v := plan.RuleErrorAction.ValueString(); v != "" {
+			sp.RuleErrorAction = objectParam(v)
+		}
 	}
-	if v := plan.RuleSubType.ValueString(); v != "" {
-		sp.RuleSubType = objectParam(v)
+	if !plan.RuleSubType.Equal(state.RuleSubType) {
+		if v := plan.RuleSubType.ValueString(); v != "" {
+			sp.RuleSubType = objectParam(v)
+		}
 	}
-	if v := plan.SCLOver.ValueString(); v != "" {
-		sp.SCLOver = objectParam(v)
+	if !plan.SCLOver.Equal(state.SCLOver) {
+		if v := plan.SCLOver.ValueString(); v != "" {
+			sp.SCLOver = objectParam(v)
+		}
 	}
 	if !plan.SenderADAttributeContainsWords.Equal(state.SenderADAttributeContainsWords) {
 		if !plan.SenderADAttributeContainsWords.IsNull() && !plan.SenderADAttributeContainsWords.IsUnknown() {
@@ -1881,8 +1973,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.SenderADAttributeMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.SenderADAttributeMatchesPatterns, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.SenderAddressLocation.ValueString(); v != "" {
-		sp.SenderAddressLocation = objectParam(v)
+	if !plan.SenderAddressLocation.Equal(state.SenderAddressLocation) {
+		if v := plan.SenderAddressLocation.ValueString(); v != "" {
+			sp.SenderAddressLocation = objectParam(v)
+		}
 	}
 	if !plan.SenderDomainIs.Equal(state.SenderDomainIs) {
 		if !plan.SenderDomainIs.IsNull() && !plan.SenderDomainIs.IsUnknown() {
@@ -1907,8 +2001,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			}
 		}
 	}
-	if v := plan.SenderManagementRelationship.ValueString(); v != "" {
-		sp.SenderManagementRelationship = objectParam(v)
+	if !plan.SenderManagementRelationship.Equal(state.SenderManagementRelationship) {
+		if v := plan.SenderManagementRelationship.ValueString(); v != "" {
+			sp.SenderManagementRelationship = objectParam(v)
+		}
 	}
 	if !plan.SentTo.Equal(state.SentTo) {
 		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
@@ -1920,26 +2016,38 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.SentToMemberOf = append([]string{}, toStringSlice(ctx, plan.SentToMemberOf, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.SentToScope.ValueString(); v != "" {
-		sp.SentToScope = objectParam(v)
+	if !plan.SentToScope.Equal(state.SentToScope) {
+		if v := plan.SentToScope.ValueString(); v != "" {
+			sp.SentToScope = objectParam(v)
+		}
 	}
 	if !plan.SetAuditSeverity.Equal(state.SetAuditSeverity) {
 		sp.SetAuditSeverity = plan.SetAuditSeverity.ValueString()
 	}
-	if v := plan.SetHeaderName.ValueString(); v != "" {
-		sp.SetHeaderName = objectParam(v)
+	if !plan.SetHeaderName.Equal(state.SetHeaderName) {
+		if v := plan.SetHeaderName.ValueString(); v != "" {
+			sp.SetHeaderName = objectParam(v)
+		}
 	}
-	if v := plan.SetHeaderValue.ValueString(); v != "" {
-		sp.SetHeaderValue = objectParam(v)
+	if !plan.SetHeaderValue.Equal(state.SetHeaderValue) {
+		if v := plan.SetHeaderValue.ValueString(); v != "" {
+			sp.SetHeaderValue = objectParam(v)
+		}
 	}
-	if v := plan.SetSCL.ValueString(); v != "" {
-		sp.SetSCL = objectParam(v)
+	if !plan.SetSCL.Equal(state.SetSCL) {
+		if v := plan.SetSCL.ValueString(); v != "" {
+			sp.SetSCL = objectParam(v)
+		}
 	}
-	if v := plan.SmtpRejectMessageRejectStatusCode.ValueString(); v != "" {
-		sp.SmtpRejectMessageRejectStatusCode = objectParam(v)
+	if !plan.SmtpRejectMessageRejectStatusCode.Equal(state.SmtpRejectMessageRejectStatusCode) {
+		if v := plan.SmtpRejectMessageRejectStatusCode.ValueString(); v != "" {
+			sp.SmtpRejectMessageRejectStatusCode = objectParam(v)
+		}
 	}
-	if v := plan.SmtpRejectMessageRejectText.ValueString(); v != "" {
-		sp.SmtpRejectMessageRejectText = objectParam(v)
+	if !plan.SmtpRejectMessageRejectText.Equal(state.SmtpRejectMessageRejectText) {
+		if v := plan.SmtpRejectMessageRejectText.ValueString(); v != "" {
+			sp.SmtpRejectMessageRejectText = objectParam(v)
+		}
 	}
 	if !plan.StopRuleProcessing.Equal(state.StopRuleProcessing) {
 		if !plan.StopRuleProcessing.IsUnknown() {
@@ -1966,8 +2074,10 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 			sp.SubjectOrBodyMatchesPatterns = append([]string{}, toStringSlice(ctx, plan.SubjectOrBodyMatchesPatterns, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.WithImportance.ValueString(); v != "" {
-		sp.WithImportance = objectParam(v)
+	if !plan.WithImportance.Equal(state.WithImportance) {
+		if v := plan.WithImportance.ValueString(); v != "" {
+			sp.WithImportance = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

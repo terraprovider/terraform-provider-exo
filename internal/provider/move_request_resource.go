@@ -284,14 +284,20 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	if !plan.BatchName.Equal(state.BatchName) {
 		sp.BatchName = plan.BatchName.ValueString()
 	}
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = objectParam(v)
+	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
+		if v := plan.CompleteAfter.ValueString(); v != "" {
+			sp.CompleteAfter = objectParam(v)
+		}
 	}
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		sp.CompletedRequestAgeLimit = objectParam(v)
+	if !plan.CompletedRequestAgeLimit.Equal(state.CompletedRequestAgeLimit) {
+		if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
+			sp.CompletedRequestAgeLimit = objectParam(v)
+		}
 	}
-	if v := plan.IncrementalSyncInterval.ValueString(); v != "" {
-		sp.IncrementalSyncInterval = objectParam(v)
+	if !plan.IncrementalSyncInterval.Equal(state.IncrementalSyncInterval) {
+		if v := plan.IncrementalSyncInterval.ValueString(); v != "" {
+			sp.IncrementalSyncInterval = objectParam(v)
+		}
 	}
 	if !plan.MoveOptions.Equal(state.MoveOptions) {
 		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
@@ -306,25 +312,35 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 			}
 		}
 	}
-	if v := plan.ProxyToMailbox.ValueString(); v != "" {
-		sp.ProxyToMailbox = objectParam(v)
+	if !plan.ProxyToMailbox.Equal(state.ProxyToMailbox) {
+		if v := plan.ProxyToMailbox.ValueString(); v != "" {
+			sp.ProxyToMailbox = objectParam(v)
+		}
 	}
-	if v := plan.RequestExpiryInterval.ValueString(); v != "" {
-		sp.RequestExpiryInterval = objectParam(v)
+	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
+		if v := plan.RequestExpiryInterval.ValueString(); v != "" {
+			sp.RequestExpiryInterval = objectParam(v)
+		}
 	}
 	if !plan.SkipMoving.Equal(state.SkipMoving) {
 		if !plan.SkipMoving.IsNull() && !plan.SkipMoving.IsUnknown() {
 			sp.SkipMoving = append([]string{}, toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = objectParam(v)
+	if !plan.SkippedItemApprovalTime.Equal(state.SkippedItemApprovalTime) {
+		if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
+			sp.SkippedItemApprovalTime = objectParam(v)
+		}
 	}
-	if v := plan.SourceEndpoint.ValueString(); v != "" {
-		sp.SourceEndpoint = objectParam(v)
+	if !plan.SourceEndpoint.Equal(state.SourceEndpoint) {
+		if v := plan.SourceEndpoint.ValueString(); v != "" {
+			sp.SourceEndpoint = objectParam(v)
+		}
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = objectParam(v)
+	if !plan.StartAfter.Equal(state.StartAfter) {
+		if v := plan.StartAfter.ValueString(); v != "" {
+			sp.StartAfter = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

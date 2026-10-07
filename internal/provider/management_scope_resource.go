@@ -142,8 +142,10 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetManagementScopeParams{}
 	sp.Identity = id
-	if v := plan.RecipientRoot.ValueString(); v != "" {
-		sp.RecipientRoot = objectParam(v)
+	if !plan.RecipientRoot.Equal(state.RecipientRoot) {
+		if v := plan.RecipientRoot.ValueString(); v != "" {
+			sp.RecipientRoot = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

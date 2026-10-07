@@ -115,8 +115,10 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetCalendarSettingsParams{}
 	sp.Identity = id
-	if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
-		sp.EnablePreserveDeclinedMeetings = objectParam(v)
+	if !plan.EnablePreserveDeclinedMeetings.Equal(state.EnablePreserveDeclinedMeetings) {
+		if v := plan.EnablePreserveDeclinedMeetings.ValueString(); v != "" {
+			sp.EnablePreserveDeclinedMeetings = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -120,11 +120,15 @@ func (r *mailboxIRMAccessResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetMailboxIRMAccessParams{}
 	sp.Identity = id
-	if v := plan.AccessLevel.ValueString(); v != "" {
-		sp.AccessLevel = objectParam(v)
+	if !plan.AccessLevel.Equal(state.AccessLevel) {
+		if v := plan.AccessLevel.ValueString(); v != "" {
+			sp.AccessLevel = objectParam(v)
+		}
 	}
-	if v := plan.User.ValueString(); v != "" {
-		sp.User = objectParam(v)
+	if !plan.User.Equal(state.User) {
+		if v := plan.User.ValueString(); v != "" {
+			sp.User = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

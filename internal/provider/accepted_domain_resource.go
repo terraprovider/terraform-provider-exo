@@ -168,8 +168,10 @@ func (r *acceptedDomainResource) Update(ctx context.Context, req resource.Update
 			sp.CanHaveCloudCache = plan.CanHaveCloudCache.ValueBoolPointer()
 		}
 	}
-	if v := plan.DomainType.ValueString(); v != "" {
-		sp.DomainType = objectParam(v)
+	if !plan.DomainType.Equal(state.DomainType) {
+		if v := plan.DomainType.ValueString(); v != "" {
+			sp.DomainType = objectParam(v)
+		}
 	}
 	if !plan.EnableNego2Authentication.Equal(state.EnableNego2Authentication) {
 		if !plan.EnableNego2Authentication.IsUnknown() {

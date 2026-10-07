@@ -179,8 +179,10 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetSweepRuleParams{}
 	sp.Identity = id
-	if v := plan.DestinationFolder.ValueString(); v != "" {
-		sp.DestinationFolder = objectParam(v)
+	if !plan.DestinationFolder.Equal(state.DestinationFolder) {
+		if v := plan.DestinationFolder.ValueString(); v != "" {
+			sp.DestinationFolder = objectParam(v)
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
@@ -197,17 +199,25 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.KeepLatest = plan.KeepLatest.ValueInt64Pointer()
 		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = objectParam(v)
+	if !plan.Mailbox.Equal(state.Mailbox) {
+		if v := plan.Mailbox.ValueString(); v != "" {
+			sp.Mailbox = objectParam(v)
+		}
 	}
-	if v := plan.Sender.ValueString(); v != "" {
-		sp.Sender = objectParam(v)
+	if !plan.Sender.Equal(state.Sender) {
+		if v := plan.Sender.ValueString(); v != "" {
+			sp.Sender = objectParam(v)
+		}
 	}
-	if v := plan.SourceFolder.ValueString(); v != "" {
-		sp.SourceFolder = objectParam(v)
+	if !plan.SourceFolder.Equal(state.SourceFolder) {
+		if v := plan.SourceFolder.ValueString(); v != "" {
+			sp.SourceFolder = objectParam(v)
+		}
 	}
-	if v := plan.SystemCategory.ValueString(); v != "" {
-		sp.SystemCategory = objectParam(v)
+	if !plan.SystemCategory.Equal(state.SystemCategory) {
+		if v := plan.SystemCategory.ValueString(); v != "" {
+			sp.SystemCategory = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

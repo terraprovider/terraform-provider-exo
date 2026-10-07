@@ -611,8 +611,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.AccountDisabled = plan.AccountDisabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.AddressBookPolicy.ValueString(); v != "" {
-		sp.AddressBookPolicy = objectParam(v)
+	if !plan.AddressBookPolicy.Equal(state.AddressBookPolicy) {
+		if v := plan.AddressBookPolicy.ValueString(); v != "" {
+			sp.AddressBookPolicy = objectParam(v)
+		}
 	}
 	if !plan.Alias.Equal(state.Alias) {
 		sp.Alias = plan.Alias.ValueString()
@@ -664,8 +666,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.AuditEnabled = plan.AuditEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
-		sp.AuditLogAgeLimit = objectParam(v)
+	if !plan.AuditLogAgeLimit.Equal(state.AuditLogAgeLimit) {
+		if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
+			sp.AuditLogAgeLimit = objectParam(v)
+		}
 	}
 	if !plan.AuditOwner.Equal(state.AuditOwner) {
 		if !plan.AuditOwner.IsNull() && !plan.AuditOwner.IsUnknown() {
@@ -756,8 +760,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.CustomAttribute9.Equal(state.CustomAttribute9) {
 		sp.CustomAttribute9 = plan.CustomAttribute9.ValueString()
 	}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = objectParam(v)
+	if !plan.DataEncryptionPolicy.Equal(state.DataEncryptionPolicy) {
+		if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
+			sp.DataEncryptionPolicy = objectParam(v)
+		}
 	}
 	if !plan.DefaultAuditSet.Equal(state.DefaultAuditSet) {
 		if !plan.DefaultAuditSet.IsNull() && !plan.DefaultAuditSet.IsUnknown() {
@@ -772,8 +778,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if v := plan.DefaultPublicFolderMailbox.ValueString(); v != "" {
-		sp.DefaultPublicFolderMailbox = objectParam(v)
+	if !plan.DefaultPublicFolderMailbox.Equal(state.DefaultPublicFolderMailbox) {
+		if v := plan.DefaultPublicFolderMailbox.ValueString(); v != "" {
+			sp.DefaultPublicFolderMailbox = objectParam(v)
+		}
 	}
 	if !plan.DeliverToMailboxAndForward.Equal(state.DeliverToMailboxAndForward) {
 		if !plan.DeliverToMailboxAndForward.IsUnknown() {
@@ -806,8 +814,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.EmailAddresses = append([]string{}, toStringSlice(ctx, plan.EmailAddresses, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.EndDateForRetentionHold.ValueString(); v != "" {
-		sp.EndDateForRetentionHold = objectParam(v)
+	if !plan.EndDateForRetentionHold.Equal(state.EndDateForRetentionHold) {
+		if v := plan.EndDateForRetentionHold.ValueString(); v != "" {
+			sp.EndDateForRetentionHold = objectParam(v)
+		}
 	}
 	if !plan.EnforcedTimestamps.Equal(state.EnforcedTimestamps) {
 		sp.EnforcedTimestamps = plan.EnforcedTimestamps.ValueString()
@@ -888,14 +898,20 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if v := plan.ExternalOofOptions.ValueString(); v != "" {
-		sp.ExternalOofOptions = objectParam(v)
+	if !plan.ExternalOofOptions.Equal(state.ExternalOofOptions) {
+		if v := plan.ExternalOofOptions.ValueString(); v != "" {
+			sp.ExternalOofOptions = objectParam(v)
+		}
 	}
-	if v := plan.ForwardingAddress.ValueString(); v != "" {
-		sp.ForwardingAddress = objectParam(v)
+	if !plan.ForwardingAddress.Equal(state.ForwardingAddress) {
+		if v := plan.ForwardingAddress.ValueString(); v != "" {
+			sp.ForwardingAddress = objectParam(v)
+		}
 	}
-	if v := plan.ForwardingSmtpAddress.ValueString(); v != "" {
-		sp.ForwardingSmtpAddress = objectParam(v)
+	if !plan.ForwardingSmtpAddress.Equal(state.ForwardingSmtpAddress) {
+		if v := plan.ForwardingSmtpAddress.ValueString(); v != "" {
+			sp.ForwardingSmtpAddress = objectParam(v)
+		}
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
@@ -931,11 +947,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.IsExcludedFromServingHierarchy = plan.IsExcludedFromServingHierarchy.ValueBoolPointer()
 		}
 	}
-	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = objectParam(v)
+	if !plan.IssueWarningQuota.Equal(state.IssueWarningQuota) {
+		if v := plan.IssueWarningQuota.ValueString(); v != "" {
+			sp.IssueWarningQuota = objectParam(v)
+		}
 	}
-	if v := plan.JournalArchiveAddress.ValueString(); v != "" {
-		sp.JournalArchiveAddress = objectParam(v)
+	if !plan.JournalArchiveAddress.Equal(state.JournalArchiveAddress) {
+		if v := plan.JournalArchiveAddress.ValueString(); v != "" {
+			sp.JournalArchiveAddress = objectParam(v)
+		}
 	}
 	if !plan.Languages.Equal(state.Languages) {
 		if !plan.Languages.IsNull() && !plan.Languages.IsUnknown() {
@@ -950,11 +970,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if v := plan.LitigationHoldDate.ValueString(); v != "" {
-		sp.LitigationHoldDate = objectParam(v)
+	if !plan.LitigationHoldDate.Equal(state.LitigationHoldDate) {
+		if v := plan.LitigationHoldDate.ValueString(); v != "" {
+			sp.LitigationHoldDate = objectParam(v)
+		}
 	}
-	if v := plan.LitigationHoldDuration.ValueString(); v != "" {
-		sp.LitigationHoldDuration = objectParam(v)
+	if !plan.LitigationHoldDuration.Equal(state.LitigationHoldDuration) {
+		if v := plan.LitigationHoldDuration.ValueString(); v != "" {
+			sp.LitigationHoldDuration = objectParam(v)
+		}
 	}
 	if !plan.LitigationHoldEnabled.Equal(state.LitigationHoldEnabled) {
 		if !plan.LitigationHoldEnabled.IsUnknown() {
@@ -983,11 +1007,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
 		sp.MailboxRegion = plan.MailboxRegion.ValueString()
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = objectParam(v)
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = objectParam(v)
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
 	}
 	if !plan.MessageCopyForSMTPClientSubmissionEnabled.Equal(state.MessageCopyForSMTPClientSubmissionEnabled) {
 		if !plan.MessageCopyForSMTPClientSubmissionEnabled.IsUnknown() {
@@ -1043,11 +1071,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.Office.Equal(state.Office) {
 		sp.Office = plan.Office.ValueString()
 	}
-	if v := plan.ProhibitSendQuota.ValueString(); v != "" {
-		sp.ProhibitSendQuota = objectParam(v)
+	if !plan.ProhibitSendQuota.Equal(state.ProhibitSendQuota) {
+		if v := plan.ProhibitSendQuota.ValueString(); v != "" {
+			sp.ProhibitSendQuota = objectParam(v)
+		}
 	}
-	if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
-		sp.ProhibitSendReceiveQuota = objectParam(v)
+	if !plan.ProhibitSendReceiveQuota.Equal(state.ProhibitSendReceiveQuota) {
+		if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
+			sp.ProhibitSendReceiveQuota = objectParam(v)
+		}
 	}
 	if !plan.ProvideConsent.Equal(state.ProvideConsent) {
 		sp.ProvideConsent = plan.ProvideConsent.ValueBool()
@@ -1058,8 +1090,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.RecalculateInactiveMailbox.Equal(state.RecalculateInactiveMailbox) {
 		sp.RecalculateInactiveMailbox = plan.RecalculateInactiveMailbox.ValueBool()
 	}
-	if v := plan.RecipientLimits.ValueString(); v != "" {
-		sp.RecipientLimits = objectParam(v)
+	if !plan.RecipientLimits.Equal(state.RecipientLimits) {
+		if v := plan.RecipientLimits.ValueString(); v != "" {
+			sp.RecipientLimits = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -1143,8 +1177,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = objectParam(v)
+	if !plan.RetainDeletedItemsFor.Equal(state.RetainDeletedItemsFor) {
+		if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
+			sp.RetainDeletedItemsFor = objectParam(v)
+		}
 	}
 	if !plan.RetentionComment.Equal(state.RetentionComment) {
 		sp.RetentionComment = plan.RetentionComment.ValueString()
@@ -1154,31 +1190,43 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.RetentionHoldEnabled = plan.RetentionHoldEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.RetentionPolicy.ValueString(); v != "" {
-		sp.RetentionPolicy = objectParam(v)
+	if !plan.RetentionPolicy.Equal(state.RetentionPolicy) {
+		if v := plan.RetentionPolicy.ValueString(); v != "" {
+			sp.RetentionPolicy = objectParam(v)
+		}
 	}
 	if !plan.RetentionUrl.Equal(state.RetentionUrl) {
 		sp.RetentionUrl = plan.RetentionUrl.ValueString()
 	}
-	if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
-		sp.RoleAssignmentPolicy = objectParam(v)
+	if !plan.RoleAssignmentPolicy.Equal(state.RoleAssignmentPolicy) {
+		if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
+			sp.RoleAssignmentPolicy = objectParam(v)
+		}
 	}
-	if v := plan.RoomMailboxPassword.ValueString(); v != "" {
-		sp.RoomMailboxPassword = objectParam(v)
+	if !plan.RoomMailboxPassword.Equal(state.RoomMailboxPassword) {
+		if v := plan.RoomMailboxPassword.ValueString(); v != "" {
+			sp.RoomMailboxPassword = objectParam(v)
+		}
 	}
-	if v := plan.RulesQuota.ValueString(); v != "" {
-		sp.RulesQuota = objectParam(v)
+	if !plan.RulesQuota.Equal(state.RulesQuota) {
+		if v := plan.RulesQuota.ValueString(); v != "" {
+			sp.RulesQuota = objectParam(v)
+		}
 	}
 	if !plan.SchedulerAssistant.Equal(state.SchedulerAssistant) {
 		if !plan.SchedulerAssistant.IsUnknown() {
 			sp.SchedulerAssistant = plan.SchedulerAssistant.ValueBoolPointer()
 		}
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
-	if v := plan.SharingPolicy.ValueString(); v != "" {
-		sp.SharingPolicy = objectParam(v)
+	if !plan.SharingPolicy.Equal(state.SharingPolicy) {
+		if v := plan.SharingPolicy.ValueString(); v != "" {
+			sp.SharingPolicy = objectParam(v)
+		}
 	}
 	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
@@ -1188,17 +1236,25 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			sp.SingleItemRecoveryEnabled = plan.SingleItemRecoveryEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.StartDateForRetentionHold.ValueString(); v != "" {
-		sp.StartDateForRetentionHold = objectParam(v)
+	if !plan.StartDateForRetentionHold.Equal(state.StartDateForRetentionHold) {
+		if v := plan.StartDateForRetentionHold.ValueString(); v != "" {
+			sp.StartDateForRetentionHold = objectParam(v)
+		}
 	}
-	if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
-		sp.StsRefreshTokensValidFrom = objectParam(v)
+	if !plan.StsRefreshTokensValidFrom.Equal(state.StsRefreshTokensValidFrom) {
+		if v := plan.StsRefreshTokensValidFrom.ValueString(); v != "" {
+			sp.StsRefreshTokensValidFrom = objectParam(v)
+		}
 	}
-	if v := plan.Type.ValueString(); v != "" {
-		sp.Type = objectParam(v)
+	if !plan.Type.Equal(state.Type) {
+		if v := plan.Type.ValueString(); v != "" {
+			sp.Type = objectParam(v)
+		}
 	}
-	if v := plan.UniqueRecipientsCountLimitLevel.ValueString(); v != "" {
-		sp.UniqueRecipientsCountLimitLevel = objectParam(v)
+	if !plan.UniqueRecipientsCountLimitLevel.Equal(state.UniqueRecipientsCountLimitLevel) {
+		if v := plan.UniqueRecipientsCountLimitLevel.ValueString(); v != "" {
+			sp.UniqueRecipientsCountLimitLevel = objectParam(v)
+		}
 	}
 	if !plan.UniqueUnrestrictedGroupsLimitEnabled.Equal(state.UniqueUnrestrictedGroupsLimitEnabled) {
 		if !plan.UniqueUnrestrictedGroupsLimitEnabled.IsUnknown() {
@@ -1244,8 +1300,10 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

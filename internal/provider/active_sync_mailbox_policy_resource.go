@@ -495,8 +495,10 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 			sp.AllowApplePushNotifications = plan.AllowApplePushNotifications.ValueBoolPointer()
 		}
 	}
-	if v := plan.AllowBluetooth.ValueString(); v != "" {
-		sp.AllowBluetooth = objectParam(v)
+	if !plan.AllowBluetooth.Equal(state.AllowBluetooth) {
+		if v := plan.AllowBluetooth.ValueString(); v != "" {
+			sp.AllowBluetooth = objectParam(v)
+		}
 	}
 	if !plan.AllowBrowser.Equal(state.AllowBrowser) {
 		if !plan.AllowBrowser.IsUnknown() {
@@ -558,8 +560,10 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 			sp.AllowRemoteDesktop = plan.AllowRemoteDesktop.ValueBoolPointer()
 		}
 	}
-	if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
-		sp.AllowSMIMEEncryptionAlgorithmNegotiation = objectParam(v)
+	if !plan.AllowSMIMEEncryptionAlgorithmNegotiation.Equal(state.AllowSMIMEEncryptionAlgorithmNegotiation) {
+		if v := plan.AllowSMIMEEncryptionAlgorithmNegotiation.ValueString(); v != "" {
+			sp.AllowSMIMEEncryptionAlgorithmNegotiation = objectParam(v)
+		}
 	}
 	if !plan.AllowSMIMESoftCerts.Equal(state.AllowSMIMESoftCerts) {
 		if !plan.AllowSMIMESoftCerts.IsUnknown() {
@@ -621,16 +625,20 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 			sp.DevicePasswordEnabled = plan.DevicePasswordEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.DevicePasswordExpiration.ValueString(); v != "" {
-		sp.DevicePasswordExpiration = objectParam(v)
+	if !plan.DevicePasswordExpiration.Equal(state.DevicePasswordExpiration) {
+		if v := plan.DevicePasswordExpiration.ValueString(); v != "" {
+			sp.DevicePasswordExpiration = objectParam(v)
+		}
 	}
 	if !plan.DevicePasswordHistory.Equal(state.DevicePasswordHistory) {
 		if !plan.DevicePasswordHistory.IsUnknown() {
 			sp.DevicePasswordHistory = plan.DevicePasswordHistory.ValueInt64Pointer()
 		}
 	}
-	if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
-		sp.DevicePolicyRefreshInterval = objectParam(v)
+	if !plan.DevicePolicyRefreshInterval.Equal(state.DevicePolicyRefreshInterval) {
+		if v := plan.DevicePolicyRefreshInterval.ValueString(); v != "" {
+			sp.DevicePolicyRefreshInterval = objectParam(v)
+		}
 	}
 	if !plan.IrmEnabled.Equal(state.IrmEnabled) {
 		if !plan.IrmEnabled.IsUnknown() {
@@ -647,26 +655,40 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 			sp.IsDefaultPolicy = plan.IsDefaultPolicy.ValueBoolPointer()
 		}
 	}
-	if v := plan.MaxAttachmentSize.ValueString(); v != "" {
-		sp.MaxAttachmentSize = objectParam(v)
+	if !plan.MaxAttachmentSize.Equal(state.MaxAttachmentSize) {
+		if v := plan.MaxAttachmentSize.ValueString(); v != "" {
+			sp.MaxAttachmentSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxCalendarAgeFilter.ValueString(); v != "" {
-		sp.MaxCalendarAgeFilter = objectParam(v)
+	if !plan.MaxCalendarAgeFilter.Equal(state.MaxCalendarAgeFilter) {
+		if v := plan.MaxCalendarAgeFilter.ValueString(); v != "" {
+			sp.MaxCalendarAgeFilter = objectParam(v)
+		}
 	}
-	if v := plan.MaxDevicePasswordFailedAttempts.ValueString(); v != "" {
-		sp.MaxDevicePasswordFailedAttempts = objectParam(v)
+	if !plan.MaxDevicePasswordFailedAttempts.Equal(state.MaxDevicePasswordFailedAttempts) {
+		if v := plan.MaxDevicePasswordFailedAttempts.ValueString(); v != "" {
+			sp.MaxDevicePasswordFailedAttempts = objectParam(v)
+		}
 	}
-	if v := plan.MaxEmailAgeFilter.ValueString(); v != "" {
-		sp.MaxEmailAgeFilter = objectParam(v)
+	if !plan.MaxEmailAgeFilter.Equal(state.MaxEmailAgeFilter) {
+		if v := plan.MaxEmailAgeFilter.ValueString(); v != "" {
+			sp.MaxEmailAgeFilter = objectParam(v)
+		}
 	}
-	if v := plan.MaxEmailBodyTruncationSize.ValueString(); v != "" {
-		sp.MaxEmailBodyTruncationSize = objectParam(v)
+	if !plan.MaxEmailBodyTruncationSize.Equal(state.MaxEmailBodyTruncationSize) {
+		if v := plan.MaxEmailBodyTruncationSize.ValueString(); v != "" {
+			sp.MaxEmailBodyTruncationSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
-		sp.MaxEmailHTMLBodyTruncationSize = objectParam(v)
+	if !plan.MaxEmailHTMLBodyTruncationSize.Equal(state.MaxEmailHTMLBodyTruncationSize) {
+		if v := plan.MaxEmailHTMLBodyTruncationSize.ValueString(); v != "" {
+			sp.MaxEmailHTMLBodyTruncationSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxInactivityTimeDeviceLock.ValueString(); v != "" {
-		sp.MaxInactivityTimeDeviceLock = objectParam(v)
+	if !plan.MaxInactivityTimeDeviceLock.Equal(state.MaxInactivityTimeDeviceLock) {
+		if v := plan.MaxInactivityTimeDeviceLock.ValueString(); v != "" {
+			sp.MaxInactivityTimeDeviceLock = objectParam(v)
+		}
 	}
 	if !plan.MinDevicePasswordComplexCharacters.Equal(state.MinDevicePasswordComplexCharacters) {
 		if !plan.MinDevicePasswordComplexCharacters.IsUnknown() {
@@ -693,16 +715,20 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 			sp.RequireEncryptedSMIMEMessages = plan.RequireEncryptedSMIMEMessages.ValueBoolPointer()
 		}
 	}
-	if v := plan.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
-		sp.RequireEncryptionSMIMEAlgorithm = objectParam(v)
+	if !plan.RequireEncryptionSMIMEAlgorithm.Equal(state.RequireEncryptionSMIMEAlgorithm) {
+		if v := plan.RequireEncryptionSMIMEAlgorithm.ValueString(); v != "" {
+			sp.RequireEncryptionSMIMEAlgorithm = objectParam(v)
+		}
 	}
 	if !plan.RequireManualSyncWhenRoaming.Equal(state.RequireManualSyncWhenRoaming) {
 		if !plan.RequireManualSyncWhenRoaming.IsUnknown() {
 			sp.RequireManualSyncWhenRoaming = plan.RequireManualSyncWhenRoaming.ValueBoolPointer()
 		}
 	}
-	if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
-		sp.RequireSignedSMIMEAlgorithm = objectParam(v)
+	if !plan.RequireSignedSMIMEAlgorithm.Equal(state.RequireSignedSMIMEAlgorithm) {
+		if v := plan.RequireSignedSMIMEAlgorithm.ValueString(); v != "" {
+			sp.RequireSignedSMIMEAlgorithm = objectParam(v)
+		}
 	}
 	if !plan.RequireSignedSMIMEMessages.Equal(state.RequireSignedSMIMEMessages) {
 		if !plan.RequireSignedSMIMEMessages.IsUnknown() {

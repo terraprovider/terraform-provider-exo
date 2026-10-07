@@ -306,22 +306,28 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	if !plan.BatchName.Equal(state.BatchName) {
 		sp.BatchName = plan.BatchName.ValueString()
 	}
-	if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
-		sp.CompletedRequestAgeLimit = objectParam(v)
+	if !plan.CompletedRequestAgeLimit.Equal(state.CompletedRequestAgeLimit) {
+		if v := plan.CompletedRequestAgeLimit.ValueString(); v != "" {
+			sp.CompletedRequestAgeLimit = objectParam(v)
+		}
 	}
 	if !plan.InternalFlags.Equal(state.InternalFlags) {
 		if !plan.InternalFlags.IsNull() && !plan.InternalFlags.IsUnknown() {
 			sp.InternalFlags = append([]string{}, toStringSlice(ctx, plan.InternalFlags, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.Priority.ValueString(); v != "" {
-		sp.Priority = objectParam(v)
+	if !plan.Priority.Equal(state.Priority) {
+		if v := plan.Priority.ValueString(); v != "" {
+			sp.Priority = objectParam(v)
+		}
 	}
 	if !plan.RehomeRequest.Equal(state.RehomeRequest) {
 		sp.RehomeRequest = plan.RehomeRequest.ValueBool()
 	}
-	if v := plan.RequestExpiryInterval.ValueString(); v != "" {
-		sp.RequestExpiryInterval = objectParam(v)
+	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
+		if v := plan.RequestExpiryInterval.ValueString(); v != "" {
+			sp.RequestExpiryInterval = objectParam(v)
+		}
 	}
 	if !plan.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
 		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
@@ -331,14 +337,20 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
-		sp.SkippedItemApprovalTime = objectParam(v)
+	if !plan.SkippedItemApprovalTime.Equal(state.SkippedItemApprovalTime) {
+		if v := plan.SkippedItemApprovalTime.ValueString(); v != "" {
+			sp.SkippedItemApprovalTime = objectParam(v)
+		}
 	}
-	if v := plan.SourceWlmLevel.ValueString(); v != "" {
-		sp.SourceWlmLevel = objectParam(v)
+	if !plan.SourceWlmLevel.Equal(state.SourceWlmLevel) {
+		if v := plan.SourceWlmLevel.ValueString(); v != "" {
+			sp.SourceWlmLevel = objectParam(v)
+		}
 	}
-	if v := plan.TargetWlmLevel.ValueString(); v != "" {
-		sp.TargetWlmLevel = objectParam(v)
+	if !plan.TargetWlmLevel.Equal(state.TargetWlmLevel) {
+		if v := plan.TargetWlmLevel.ValueString(); v != "" {
+			sp.TargetWlmLevel = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -170,8 +170,10 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 	if !plan.OrganizationName.Equal(state.OrganizationName) {
 		sp.OrganizationName = plan.OrganizationName.ValueString()
 	}
-	if v := plan.OrganizationRelationship.ValueString(); v != "" {
-		sp.OrganizationRelationship = objectParam(v)
+	if !plan.OrganizationRelationship.Equal(state.OrganizationRelationship) {
+		if v := plan.OrganizationRelationship.ValueString(); v != "" {
+			sp.OrganizationRelationship = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

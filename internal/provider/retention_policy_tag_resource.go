@@ -223,14 +223,18 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 		}
 		return cur
 	}
-	if v := plan.AgeLimitForRetention.ValueString(); v != "" {
-		sp.AgeLimitForRetention = objectParam(v)
+	if !plan.AgeLimitForRetention.Equal(state.AgeLimitForRetention) {
+		if v := plan.AgeLimitForRetention.ValueString(); v != "" {
+			sp.AgeLimitForRetention = objectParam(v)
+		}
 	}
 	if !plan.Comment.Equal(state.Comment) {
 		sp.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.LegacyManagedFolder.ValueString(); v != "" {
-		sp.LegacyManagedFolder = objectParam(v)
+	if !plan.LegacyManagedFolder.Equal(state.LegacyManagedFolder) {
+		if v := plan.LegacyManagedFolder.ValueString(); v != "" {
+			sp.LegacyManagedFolder = objectParam(v)
+		}
 	}
 	if !plan.LocalizedComment.Equal(state.LocalizedComment) {
 		if !plan.LocalizedComment.IsNull() && !plan.LocalizedComment.IsUnknown() {
@@ -258,8 +262,10 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 			}
 		}
 	}
-	if v := plan.Mailbox.ValueString(); v != "" {
-		sp.Mailbox = objectParam(v)
+	if !plan.Mailbox.Equal(state.Mailbox) {
+		if v := plan.Mailbox.ValueString(); v != "" {
+			sp.Mailbox = objectParam(v)
+		}
 	}
 	if !plan.MessageClass.Equal(state.MessageClass) {
 		sp.MessageClass = plan.MessageClass.ValueString()
@@ -274,8 +280,10 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 			sp.OptionalInMailbox = append([]string{}, toStringSlice(ctx, plan.OptionalInMailbox, &resp.Diagnostics)...)
 		}
 	}
-	if v := plan.RetentionAction.ValueString(); v != "" {
-		sp.RetentionAction = objectParam(v)
+	if !plan.RetentionAction.Equal(state.RetentionAction) {
+		if v := plan.RetentionAction.ValueString(); v != "" {
+			sp.RetentionAction = objectParam(v)
+		}
 	}
 	if !plan.RetentionEnabled.Equal(state.RetentionEnabled) {
 		if !plan.RetentionEnabled.IsUnknown() {

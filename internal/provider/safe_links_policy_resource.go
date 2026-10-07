@@ -271,8 +271,10 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	if !plan.CustomNotificationText.Equal(state.CustomNotificationText) {
 		sp.CustomNotificationText = plan.CustomNotificationText.ValueString()
 	}
-	if v := plan.CustomUrlList.ValueString(); v != "" {
-		sp.CustomUrlList = objectParam(v)
+	if !plan.CustomUrlList.Equal(state.CustomUrlList) {
+		if v := plan.CustomUrlList.ValueString(); v != "" {
+			sp.CustomUrlList = objectParam(v)
+		}
 	}
 	if !plan.DeliverMessageAfterScan.Equal(state.DeliverMessageAfterScan) {
 		if !plan.DeliverMessageAfterScan.IsUnknown() {
@@ -322,8 +324,10 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 			sp.EnableSafeLinksForTeams = plan.EnableSafeLinksForTeams.ValueBoolPointer()
 		}
 	}
-	if v := plan.LocalizedNotificationTextList.ValueString(); v != "" {
-		sp.LocalizedNotificationTextList = objectParam(v)
+	if !plan.LocalizedNotificationTextList.Equal(state.LocalizedNotificationTextList) {
+		if v := plan.LocalizedNotificationTextList.ValueString(); v != "" {
+			sp.LocalizedNotificationTextList = objectParam(v)
+		}
 	}
 	if !plan.ScanUrls.Equal(state.ScanUrls) {
 		if !plan.ScanUrls.IsUnknown() {

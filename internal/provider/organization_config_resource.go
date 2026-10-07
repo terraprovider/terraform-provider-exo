@@ -1134,8 +1134,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.ActivityBasedAuthenticationTimeoutEnabled = plan.ActivityBasedAuthenticationTimeoutEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
-		sp.ActivityBasedAuthenticationTimeoutInterval = objectParam(v)
+	if !plan.ActivityBasedAuthenticationTimeoutInterval.Equal(state.ActivityBasedAuthenticationTimeoutInterval) {
+		if v := plan.ActivityBasedAuthenticationTimeoutInterval.ValueString(); v != "" {
+			sp.ActivityBasedAuthenticationTimeoutInterval = objectParam(v)
+		}
 	}
 	if !plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.Equal(state.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled) {
 		if !plan.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsUnknown() {
@@ -1336,16 +1338,20 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.DLPWaitOnSendTimeout = plan.DLPWaitOnSendTimeout.ValueInt64Pointer()
 		}
 	}
-	if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
-		sp.DefaultAuthenticationPolicy = objectParam(v)
+	if !plan.DefaultAuthenticationPolicy.Equal(state.DefaultAuthenticationPolicy) {
+		if v := plan.DefaultAuthenticationPolicy.ValueString(); v != "" {
+			sp.DefaultAuthenticationPolicy = objectParam(v)
+		}
 	}
 	if !plan.DefaultFolderPermissionRestricted.Equal(state.DefaultFolderPermissionRestricted) {
 		if !plan.DefaultFolderPermissionRestricted.IsUnknown() {
 			sp.DefaultFolderPermissionRestricted = plan.DefaultFolderPermissionRestricted.ValueBoolPointer()
 		}
 	}
-	if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
-		sp.DefaultGroupAccessType = objectParam(v)
+	if !plan.DefaultGroupAccessType.Equal(state.DefaultGroupAccessType) {
+		if v := plan.DefaultGroupAccessType.ValueString(); v != "" {
+			sp.DefaultGroupAccessType = objectParam(v)
+		}
 	}
 	if !plan.DefaultMinutesToReduceLongEventsBy.Equal(state.DefaultMinutesToReduceLongEventsBy) {
 		if !plan.DefaultMinutesToReduceLongEventsBy.IsUnknown() {
@@ -1357,23 +1363,35 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.DefaultMinutesToReduceShortEventsBy = plan.DefaultMinutesToReduceShortEventsBy.ValueInt64Pointer()
 		}
 	}
-	if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
-		sp.DefaultPublicFolderAgeLimit = objectParam(v)
+	if !plan.DefaultPublicFolderAgeLimit.Equal(state.DefaultPublicFolderAgeLimit) {
+		if v := plan.DefaultPublicFolderAgeLimit.ValueString(); v != "" {
+			sp.DefaultPublicFolderAgeLimit = objectParam(v)
+		}
 	}
-	if v := plan.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderDeletedItemRetention = objectParam(v)
+	if !plan.DefaultPublicFolderDeletedItemRetention.Equal(state.DefaultPublicFolderDeletedItemRetention) {
+		if v := plan.DefaultPublicFolderDeletedItemRetention.ValueString(); v != "" {
+			sp.DefaultPublicFolderDeletedItemRetention = objectParam(v)
+		}
 	}
-	if v := plan.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderIssueWarningQuota = objectParam(v)
+	if !plan.DefaultPublicFolderIssueWarningQuota.Equal(state.DefaultPublicFolderIssueWarningQuota) {
+		if v := plan.DefaultPublicFolderIssueWarningQuota.ValueString(); v != "" {
+			sp.DefaultPublicFolderIssueWarningQuota = objectParam(v)
+		}
 	}
-	if v := plan.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
-		sp.DefaultPublicFolderMaxItemSize = objectParam(v)
+	if !plan.DefaultPublicFolderMaxItemSize.Equal(state.DefaultPublicFolderMaxItemSize) {
+		if v := plan.DefaultPublicFolderMaxItemSize.ValueString(); v != "" {
+			sp.DefaultPublicFolderMaxItemSize = objectParam(v)
+		}
 	}
-	if v := plan.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
-		sp.DefaultPublicFolderMovedItemRetention = objectParam(v)
+	if !plan.DefaultPublicFolderMovedItemRetention.Equal(state.DefaultPublicFolderMovedItemRetention) {
+		if v := plan.DefaultPublicFolderMovedItemRetention.ValueString(); v != "" {
+			sp.DefaultPublicFolderMovedItemRetention = objectParam(v)
+		}
 	}
-	if v := plan.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
-		sp.DefaultPublicFolderProhibitPostQuota = objectParam(v)
+	if !plan.DefaultPublicFolderProhibitPostQuota.Equal(state.DefaultPublicFolderProhibitPostQuota) {
+		if v := plan.DefaultPublicFolderProhibitPostQuota.ValueString(); v != "" {
+			sp.DefaultPublicFolderProhibitPostQuota = objectParam(v)
+		}
 	}
 	if !plan.DelayedDelicensingEnabled.Equal(state.DelayedDelicensingEnabled) {
 		if !plan.DelayedDelicensingEnabled.IsUnknown() {
@@ -1390,8 +1408,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.DisablePlusAddressInRecipients = plan.DisablePlusAddressInRecipients.ValueBoolPointer()
 		}
 	}
-	if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
-		sp.DistributionGroupDefaultOU = objectParam(v)
+	if !plan.DistributionGroupDefaultOU.Equal(state.DistributionGroupDefaultOU) {
+		if v := plan.DistributionGroupDefaultOU.ValueString(); v != "" {
+			sp.DistributionGroupDefaultOU = objectParam(v)
+		}
 	}
 	if !plan.DistributionGroupNameBlockedWordsList.Equal(state.DistributionGroupNameBlockedWordsList) {
 		if !plan.DistributionGroupNameBlockedWordsList.IsNull() && !plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
@@ -1406,8 +1426,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			}
 		}
 	}
-	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
-		sp.DistributionGroupNamingPolicy = objectParam(v)
+	if !plan.DistributionGroupNamingPolicy.Equal(state.DistributionGroupNamingPolicy) {
+		if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
+			sp.DistributionGroupNamingPolicy = objectParam(v)
+		}
 	}
 	if !plan.ElcProcessingDisabled.Equal(state.ElcProcessingDisabled) {
 		if !plan.ElcProcessingDisabled.IsUnknown() {
@@ -1473,8 +1495,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	if !plan.EwsAllowedAppIDs.Equal(state.EwsAllowedAppIDs) {
 		sp.EwsAllowedAppIDs = plan.EwsAllowedAppIDs.ValueString()
 	}
-	if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
-		sp.EwsApplicationAccessPolicy = objectParam(v)
+	if !plan.EwsApplicationAccessPolicy.Equal(state.EwsApplicationAccessPolicy) {
+		if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
+			sp.EwsApplicationAccessPolicy = objectParam(v)
+		}
 	}
 	if !plan.EwsBlockList.Equal(state.EwsBlockList) {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
@@ -1543,8 +1567,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.FocusedInboxOn = plan.FocusedInboxOn.ValueBoolPointer()
 		}
 	}
-	if v := plan.HierarchicalAddressBookRoot.ValueString(); v != "" {
-		sp.HierarchicalAddressBookRoot = objectParam(v)
+	if !plan.HierarchicalAddressBookRoot.Equal(state.HierarchicalAddressBookRoot) {
+		if v := plan.HierarchicalAddressBookRoot.ValueString(); v != "" {
+			sp.HierarchicalAddressBookRoot = objectParam(v)
+		}
 	}
 	if !plan.HybridRSVPEnabled.Equal(state.HybridRSVPEnabled) {
 		if !plan.HybridRSVPEnabled.IsUnknown() {
@@ -1649,8 +1675,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.MessageRecallEnabled = plan.MessageRecallEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.MessageRecallMaxRecallableAge.ValueString(); v != "" {
-		sp.MessageRecallMaxRecallableAge = objectParam(v)
+	if !plan.MessageRecallMaxRecallableAge.Equal(state.MessageRecallMaxRecallableAge) {
+		if v := plan.MessageRecallMaxRecallableAge.ValueString(); v != "" {
+			sp.MessageRecallMaxRecallableAge = objectParam(v)
+		}
 	}
 	if !plan.MessageRemindersEnabled.Equal(state.MessageRemindersEnabled) {
 		if !plan.MessageRemindersEnabled.IsUnknown() {
@@ -1727,8 +1755,10 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.PublicFolderShowClientControl = plan.PublicFolderShowClientControl.ValueBoolPointer()
 		}
 	}
-	if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
-		sp.PublicFoldersEnabled = objectParam(v)
+	if !plan.PublicFoldersEnabled.Equal(state.PublicFoldersEnabled) {
+		if v := plan.PublicFoldersEnabled.ValueString(); v != "" {
+			sp.PublicFoldersEnabled = objectParam(v)
+		}
 	}
 	if !plan.ReadTrackingEnabled.Equal(state.ReadTrackingEnabled) {
 		if !plan.ReadTrackingEnabled.IsUnknown() {
@@ -1783,11 +1813,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 			sp.SharedDomainEmailAddressFlowEnabled = plan.SharedDomainEmailAddressFlowEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
-		sp.ShortenEventScopeDefault = objectParam(v)
+	if !plan.ShortenEventScopeDefault.Equal(state.ShortenEventScopeDefault) {
+		if v := plan.ShortenEventScopeDefault.ValueString(); v != "" {
+			sp.ShortenEventScopeDefault = objectParam(v)
+		}
 	}
-	if v := plan.SiteMailboxCreationURL.ValueString(); v != "" {
-		sp.SiteMailboxCreationURL = objectParam(v)
+	if !plan.SiteMailboxCreationURL.Equal(state.SiteMailboxCreationURL) {
+		if v := plan.SiteMailboxCreationURL.ValueString(); v != "" {
+			sp.SiteMailboxCreationURL = objectParam(v)
+		}
 	}
 	if !plan.SmtpActionableMessagesEnabled.Equal(state.SmtpActionableMessagesEnabled) {
 		if !plan.SmtpActionableMessagesEnabled.IsUnknown() {

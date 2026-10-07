@@ -302,11 +302,15 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	if !plan.Comment.Equal(state.Comment) {
 		sp.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.ConnectorSource.ValueString(); v != "" {
-		sp.ConnectorSource = objectParam(v)
+	if !plan.ConnectorSource.Equal(state.ConnectorSource) {
+		if v := plan.ConnectorSource.ValueString(); v != "" {
+			sp.ConnectorSource = objectParam(v)
+		}
 	}
-	if v := plan.ConnectorType.ValueString(); v != "" {
-		sp.ConnectorType = objectParam(v)
+	if !plan.ConnectorType.Equal(state.ConnectorType) {
+		if v := plan.ConnectorType.ValueString(); v != "" {
+			sp.ConnectorType = objectParam(v)
+		}
 	}
 	if !plan.EFSkipIPs.Equal(state.EFSkipIPs) {
 		if !plan.EFSkipIPs.IsNull() && !plan.EFSkipIPs.IsUnknown() {
@@ -403,8 +407,10 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 			}
 		}
 	}
-	if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
-		sp.TlsSenderCertificateName = objectParam(v)
+	if !plan.TlsSenderCertificateName.Equal(state.TlsSenderCertificateName) {
+		if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
+			sp.TlsSenderCertificateName = objectParam(v)
+		}
 	}
 	if !plan.TreatMessagesAsInternal.Equal(state.TreatMessagesAsInternal) {
 		if !plan.TreatMessagesAsInternal.IsUnknown() {

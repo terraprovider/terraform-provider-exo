@@ -159,8 +159,10 @@ func (r *intraOrganizationConnectorResource) Update(ctx context.Context, req res
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		sp.TargetSharingEpr = objectParam(v)
+	if !plan.TargetSharingEpr.Equal(state.TargetSharingEpr) {
+		if v := plan.TargetSharingEpr.ValueString(); v != "" {
+			sp.TargetSharingEpr = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

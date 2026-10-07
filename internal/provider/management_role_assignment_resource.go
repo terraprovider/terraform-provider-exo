@@ -196,31 +196,45 @@ func (r *managementRoleAssignmentResource) Update(ctx context.Context, req resou
 	id := r.identityOf(state)
 	sp := exo.SetManagementRoleAssignmentParams{}
 	sp.Identity = id
-	if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
-		sp.CustomRecipientWriteScope = objectParam(v)
+	if !plan.CustomRecipientWriteScope.Equal(state.CustomRecipientWriteScope) {
+		if v := plan.CustomRecipientWriteScope.ValueString(); v != "" {
+			sp.CustomRecipientWriteScope = objectParam(v)
+		}
 	}
-	if v := plan.CustomResourceScope.ValueString(); v != "" {
-		sp.CustomResourceScope = objectParam(v)
+	if !plan.CustomResourceScope.Equal(state.CustomResourceScope) {
+		if v := plan.CustomResourceScope.ValueString(); v != "" {
+			sp.CustomResourceScope = objectParam(v)
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ExclusiveRecipientWriteScope.ValueString(); v != "" {
-		sp.ExclusiveRecipientWriteScope = objectParam(v)
+	if !plan.ExclusiveRecipientWriteScope.Equal(state.ExclusiveRecipientWriteScope) {
+		if v := plan.ExclusiveRecipientWriteScope.ValueString(); v != "" {
+			sp.ExclusiveRecipientWriteScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientAdministrativeUnitScope.ValueString(); v != "" {
-		sp.RecipientAdministrativeUnitScope = objectParam(v)
+	if !plan.RecipientAdministrativeUnitScope.Equal(state.RecipientAdministrativeUnitScope) {
+		if v := plan.RecipientAdministrativeUnitScope.ValueString(); v != "" {
+			sp.RecipientAdministrativeUnitScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientGroupScope.ValueString(); v != "" {
-		sp.RecipientGroupScope = objectParam(v)
+	if !plan.RecipientGroupScope.Equal(state.RecipientGroupScope) {
+		if v := plan.RecipientGroupScope.ValueString(); v != "" {
+			sp.RecipientGroupScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientOrganizationalUnitScope.ValueString(); v != "" {
-		sp.RecipientOrganizationalUnitScope = objectParam(v)
+	if !plan.RecipientOrganizationalUnitScope.Equal(state.RecipientOrganizationalUnitScope) {
+		if v := plan.RecipientOrganizationalUnitScope.ValueString(); v != "" {
+			sp.RecipientOrganizationalUnitScope = objectParam(v)
+		}
 	}
-	if v := plan.RecipientRelativeWriteScope.ValueString(); v != "" {
-		sp.RecipientRelativeWriteScope = objectParam(v)
+	if !plan.RecipientRelativeWriteScope.Equal(state.RecipientRelativeWriteScope) {
+		if v := plan.RecipientRelativeWriteScope.ValueString(); v != "" {
+			sp.RecipientRelativeWriteScope = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

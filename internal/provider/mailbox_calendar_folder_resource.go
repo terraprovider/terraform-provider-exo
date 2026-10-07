@@ -160,14 +160,20 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetMailboxCalendarFolderParams{}
 	sp.Identity = id
-	if v := plan.DetailLevel.ValueString(); v != "" {
-		sp.DetailLevel = objectParam(v)
+	if !plan.DetailLevel.Equal(state.DetailLevel) {
+		if v := plan.DetailLevel.ValueString(); v != "" {
+			sp.DetailLevel = objectParam(v)
+		}
 	}
-	if v := plan.PublishDateRangeFrom.ValueString(); v != "" {
-		sp.PublishDateRangeFrom = objectParam(v)
+	if !plan.PublishDateRangeFrom.Equal(state.PublishDateRangeFrom) {
+		if v := plan.PublishDateRangeFrom.ValueString(); v != "" {
+			sp.PublishDateRangeFrom = objectParam(v)
+		}
 	}
-	if v := plan.PublishDateRangeTo.ValueString(); v != "" {
-		sp.PublishDateRangeTo = objectParam(v)
+	if !plan.PublishDateRangeTo.Equal(state.PublishDateRangeTo) {
+		if v := plan.PublishDateRangeTo.ValueString(); v != "" {
+			sp.PublishDateRangeTo = objectParam(v)
+		}
 	}
 	if !plan.PublishEnabled.Equal(state.PublishEnabled) {
 		if !plan.PublishEnabled.IsUnknown() {
@@ -185,8 +191,10 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 	if !plan.SetAsSharingSource.Equal(state.SetAsSharingSource) {
 		sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
 	}
-	if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
-		sp.SharedCalendarSyncStartDate = objectParam(v)
+	if !plan.SharedCalendarSyncStartDate.Equal(state.SharedCalendarSyncStartDate) {
+		if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
+			sp.SharedCalendarSyncStartDate = objectParam(v)
+		}
 	}
 	if !plan.UseHttps.Equal(state.UseHttps) {
 		sp.UseHttps = plan.UseHttps.ValueBool()

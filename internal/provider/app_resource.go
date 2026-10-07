@@ -261,8 +261,10 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		}
 		return cur
 	}
-	if v := plan.DefaultStateForUser.ValueString(); v != "" {
-		sp.DefaultStateForUser = objectParam(v)
+	if !plan.DefaultStateForUser.Equal(state.DefaultStateForUser) {
+		if v := plan.DefaultStateForUser.ValueString(); v != "" {
+			sp.DefaultStateForUser = objectParam(v)
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
@@ -275,8 +277,10 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if !plan.PrivateCatalog.Equal(state.PrivateCatalog) {
 		sp.PrivateCatalog = plan.PrivateCatalog.ValueBool()
 	}
-	if v := plan.ProvidedTo.ValueString(); v != "" {
-		sp.ProvidedTo = objectParam(v)
+	if !plan.ProvidedTo.Equal(state.ProvidedTo) {
+		if v := plan.ProvidedTo.ValueString(); v != "" {
+			sp.ProvidedTo = objectParam(v)
+		}
 	}
 	if !plan.UserList.Equal(state.UserList) {
 		if !plan.UserList.IsNull() && !plan.UserList.IsUnknown() {

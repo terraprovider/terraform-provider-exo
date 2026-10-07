@@ -175,8 +175,10 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 	id := r.identityOf(state)
 	sp := exo.SetRemoteDomainParams{}
 	sp.Identity = id
-	if v := plan.AllowedOOFType.ValueString(); v != "" {
-		sp.AllowedOOFType = objectParam(v)
+	if !plan.AllowedOOFType.Equal(state.AllowedOOFType) {
+		if v := plan.AllowedOOFType.ValueString(); v != "" {
+			sp.AllowedOOFType = objectParam(v)
+		}
 	}
 	if !plan.AutoForwardEnabled.Equal(state.AutoForwardEnabled) {
 		if !plan.AutoForwardEnabled.IsUnknown() {
@@ -188,14 +190,18 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 			sp.AutoReplyEnabled = plan.AutoReplyEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ByteEncoderTypeFor7BitCharsets.ValueString(); v != "" {
-		sp.ByteEncoderTypeFor7BitCharsets = objectParam(v)
+	if !plan.ByteEncoderTypeFor7BitCharsets.Equal(state.ByteEncoderTypeFor7BitCharsets) {
+		if v := plan.ByteEncoderTypeFor7BitCharsets.ValueString(); v != "" {
+			sp.ByteEncoderTypeFor7BitCharsets = objectParam(v)
+		}
 	}
 	if !plan.CharacterSet.Equal(state.CharacterSet) {
 		sp.CharacterSet = plan.CharacterSet.ValueString()
 	}
-	if v := plan.ContentType.ValueString(); v != "" {
-		sp.ContentType = objectParam(v)
+	if !plan.ContentType.Equal(state.ContentType) {
+		if v := plan.ContentType.ValueString(); v != "" {
+			sp.ContentType = objectParam(v)
+		}
 	}
 	if !plan.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
 		if !plan.DeliveryReportEnabled.IsUnknown() {
@@ -212,8 +218,10 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 			sp.IsInternal = plan.IsInternal.ValueBoolPointer()
 		}
 	}
-	if v := plan.LineWrapSize.ValueString(); v != "" {
-		sp.LineWrapSize = objectParam(v)
+	if !plan.LineWrapSize.Equal(state.LineWrapSize) {
+		if v := plan.LineWrapSize.ValueString(); v != "" {
+			sp.LineWrapSize = objectParam(v)
+		}
 	}
 	if !plan.MeetingForwardNotificationEnabled.Equal(state.MeetingForwardNotificationEnabled) {
 		if !plan.MeetingForwardNotificationEnabled.IsUnknown() {
@@ -233,8 +241,10 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.NonMimeCharacterSet.Equal(state.NonMimeCharacterSet) {
 		sp.NonMimeCharacterSet = plan.NonMimeCharacterSet.ValueString()
 	}
-	if v := plan.PreferredInternetCodePageForShiftJis.ValueString(); v != "" {
-		sp.PreferredInternetCodePageForShiftJis = objectParam(v)
+	if !plan.PreferredInternetCodePageForShiftJis.Equal(state.PreferredInternetCodePageForShiftJis) {
+		if v := plan.PreferredInternetCodePageForShiftJis.ValueString(); v != "" {
+			sp.PreferredInternetCodePageForShiftJis = objectParam(v)
+		}
 	}
 	if !plan.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {
 		if !plan.RequiredCharsetCoverage.IsUnknown() {

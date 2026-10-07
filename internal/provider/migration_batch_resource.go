@@ -503,8 +503,10 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
 		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
 	}
-	if v := plan.CompleteAfter.ValueString(); v != "" {
-		sp.CompleteAfter = objectParam(v)
+	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
+		if v := plan.CompleteAfter.ValueString(); v != "" {
+			sp.CompleteAfter = objectParam(v)
+		}
 	}
 	if !plan.MoveOptions.Equal(state.MoveOptions) {
 		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
@@ -532,11 +534,15 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 			}
 		}
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = objectParam(v)
+	if !plan.Partition.Equal(state.Partition) {
+		if v := plan.Partition.ValueString(); v != "" {
+			sp.Partition = objectParam(v)
+		}
 	}
-	if v := plan.ReportInterval.ValueString(); v != "" {
-		sp.ReportInterval = objectParam(v)
+	if !plan.ReportInterval.Equal(state.ReportInterval) {
+		if v := plan.ReportInterval.ValueString(); v != "" {
+			sp.ReportInterval = objectParam(v)
+		}
 	}
 	if !plan.SkipMerging.Equal(state.SkipMerging) {
 		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
@@ -564,8 +570,10 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 			}
 		}
 	}
-	if v := plan.StartAfter.ValueString(); v != "" {
-		sp.StartAfter = objectParam(v)
+	if !plan.StartAfter.Equal(state.StartAfter) {
+		if v := plan.StartAfter.ValueString(); v != "" {
+			sp.StartAfter = objectParam(v)
+		}
 	}
 	if !plan.SyncNow.Equal(state.SyncNow) {
 		sp.SyncNow = plan.SyncNow.ValueBool()

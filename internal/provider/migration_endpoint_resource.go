@@ -296,40 +296,54 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	if !plan.ApplicationId.Equal(state.ApplicationId) {
 		sp.ApplicationId = plan.ApplicationId.ValueString()
 	}
-	if v := plan.Authentication.ValueString(); v != "" {
-		sp.Authentication = objectParam(v)
+	if !plan.Authentication.Equal(state.Authentication) {
+		if v := plan.Authentication.ValueString(); v != "" {
+			sp.Authentication = objectParam(v)
+		}
 	}
 	if !plan.ExchangeServer.Equal(state.ExchangeServer) {
 		sp.ExchangeServer = plan.ExchangeServer.ValueString()
 	}
-	if v := plan.MailboxPermission.ValueString(); v != "" {
-		sp.MailboxPermission = objectParam(v)
+	if !plan.MailboxPermission.Equal(state.MailboxPermission) {
+		if v := plan.MailboxPermission.ValueString(); v != "" {
+			sp.MailboxPermission = objectParam(v)
+		}
 	}
-	if v := plan.MaxConcurrentIncrementalSyncs.ValueString(); v != "" {
-		sp.MaxConcurrentIncrementalSyncs = objectParam(v)
+	if !plan.MaxConcurrentIncrementalSyncs.Equal(state.MaxConcurrentIncrementalSyncs) {
+		if v := plan.MaxConcurrentIncrementalSyncs.ValueString(); v != "" {
+			sp.MaxConcurrentIncrementalSyncs = objectParam(v)
+		}
 	}
-	if v := plan.MaxConcurrentMigrations.ValueString(); v != "" {
-		sp.MaxConcurrentMigrations = objectParam(v)
+	if !plan.MaxConcurrentMigrations.Equal(state.MaxConcurrentMigrations) {
+		if v := plan.MaxConcurrentMigrations.ValueString(); v != "" {
+			sp.MaxConcurrentMigrations = objectParam(v)
+		}
 	}
 	if !plan.NspiServer.Equal(state.NspiServer) {
 		sp.NspiServer = plan.NspiServer.ValueString()
 	}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = objectParam(v)
+	if !plan.Partition.Equal(state.Partition) {
+		if v := plan.Partition.ValueString(); v != "" {
+			sp.Partition = objectParam(v)
+		}
 	}
 	if !plan.Port.Equal(state.Port) {
 		if !plan.Port.IsUnknown() {
 			sp.Port = plan.Port.ValueInt64Pointer()
 		}
 	}
-	if v := plan.Security.ValueString(); v != "" {
-		sp.Security = objectParam(v)
+	if !plan.Security.Equal(state.Security) {
+		if v := plan.Security.ValueString(); v != "" {
+			sp.Security = objectParam(v)
+		}
 	}
 	if !plan.SkipVerification.Equal(state.SkipVerification) {
 		sp.SkipVerification = plan.SkipVerification.ValueBool()
 	}
-	if v := plan.TestMailbox.ValueString(); v != "" {
-		sp.TestMailbox = objectParam(v)
+	if !plan.TestMailbox.Equal(state.TestMailbox) {
+		if v := plan.TestMailbox.ValueString(); v != "" {
+			sp.TestMailbox = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

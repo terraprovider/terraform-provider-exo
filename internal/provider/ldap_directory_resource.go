@@ -166,8 +166,10 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.NoSsl.Equal(state.NoSsl) {
 		sp.NoSsl = plan.NoSsl.ValueBool()
 	}
-	if v := plan.Organization.ValueString(); v != "" {
-		sp.Organization = objectParam(v)
+	if !plan.Organization.Equal(state.Organization) {
+		if v := plan.Organization.ValueString(); v != "" {
+			sp.Organization = objectParam(v)
+		}
 	}
 	if !plan.Port.Equal(state.Port) {
 		if !plan.Port.IsUnknown() {

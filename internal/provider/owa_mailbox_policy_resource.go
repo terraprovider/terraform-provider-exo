@@ -387,8 +387,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.AccountTransferEnabled = plan.AccountTransferEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ActionForUnknownFileAndMIMETypes.ValueString(); v != "" {
-		sp.ActionForUnknownFileAndMIMETypes = objectParam(v)
+	if !plan.ActionForUnknownFileAndMIMETypes.Equal(state.ActionForUnknownFileAndMIMETypes) {
+		if v := plan.ActionForUnknownFileAndMIMETypes.ValueString(); v != "" {
+			sp.ActionForUnknownFileAndMIMETypes = objectParam(v)
+		}
 	}
 	if !plan.ActiveSyncIntegrationEnabled.Equal(state.ActiveSyncIntegrationEnabled) {
 		if !plan.ActiveSyncIntegrationEnabled.IsUnknown() {
@@ -415,8 +417,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.AllowCopyContactsToDeviceAddressBook = plan.AllowCopyContactsToDeviceAddressBook.ValueBoolPointer()
 		}
 	}
-	if v := plan.AllowOfflineOn.ValueString(); v != "" {
-		sp.AllowOfflineOn = objectParam(v)
+	if !plan.AllowOfflineOn.Equal(state.AllowOfflineOn) {
+		if v := plan.AllowOfflineOn.ValueString(); v != "" {
+			sp.AllowOfflineOn = objectParam(v)
+		}
 	}
 	if !plan.AllowedFileTypes.Equal(state.AllowedFileTypes) {
 		if !plan.AllowedFileTypes.IsNull() && !plan.AllowedFileTypes.IsUnknown() {
@@ -493,8 +497,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	if !plan.BookingsMailboxDomain.Equal(state.BookingsMailboxDomain) {
 		sp.BookingsMailboxDomain = plan.BookingsMailboxDomain.ValueString()
 	}
-	if v := plan.BulkImportEMLEnabled.ValueString(); v != "" {
-		sp.BulkImportEMLEnabled = objectParam(v)
+	if !plan.BulkImportEMLEnabled.Equal(state.BulkImportEMLEnabled) {
+		if v := plan.BulkImportEMLEnabled.ValueString(); v != "" {
+			sp.BulkImportEMLEnabled = objectParam(v)
+		}
 	}
 	if !plan.CalendarEnabled.Equal(state.CalendarEnabled) {
 		if !plan.CalendarEnabled.IsUnknown() {
@@ -516,8 +522,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.ClassicAttachmentsEnabled = plan.ClassicAttachmentsEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ConditionalAccessPolicy.ValueString(); v != "" {
-		sp.ConditionalAccessPolicy = objectParam(v)
+	if !plan.ConditionalAccessPolicy.Equal(state.ConditionalAccessPolicy) {
+		if v := plan.ConditionalAccessPolicy.ValueString(); v != "" {
+			sp.ConditionalAccessPolicy = objectParam(v)
+		}
 	}
 	if !plan.ContactsEnabled.Equal(state.ContactsEnabled) {
 		if !plan.ContactsEnabled.IsUnknown() {
@@ -654,8 +662,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.InstantMessagingEnabled = plan.InstantMessagingEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.InstantMessagingType.ValueString(); v != "" {
-		sp.InstantMessagingType = objectParam(v)
+	if !plan.InstantMessagingType.Equal(state.InstantMessagingType) {
+		if v := plan.InstantMessagingType.ValueString(); v != "" {
+			sp.InstantMessagingType = objectParam(v)
+		}
 	}
 	if !plan.InterestingCalendarsEnabled.Equal(state.InterestingCalendarsEnabled) {
 		if !plan.InterestingCalendarsEnabled.IsUnknown() {
@@ -758,25 +768,35 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.OrganizationEnabled = plan.OrganizationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.OutboundCharset.ValueString(); v != "" {
-		sp.OutboundCharset = objectParam(v)
+	if !plan.OutboundCharset.Equal(state.OutboundCharset) {
+		if v := plan.OutboundCharset.ValueString(); v != "" {
+			sp.OutboundCharset = objectParam(v)
+		}
 	}
 	if !plan.OutlookBetaToggleEnabled.Equal(state.OutlookBetaToggleEnabled) {
 		if !plan.OutlookBetaToggleEnabled.IsUnknown() {
 			sp.OutlookBetaToggleEnabled = plan.OutlookBetaToggleEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.OutlookDataFile.ValueString(); v != "" {
-		sp.OutlookDataFile = objectParam(v)
+	if !plan.OutlookDataFile.Equal(state.OutlookDataFile) {
+		if v := plan.OutlookDataFile.ValueString(); v != "" {
+			sp.OutlookDataFile = objectParam(v)
+		}
 	}
-	if v := plan.OutlookNewslettersAccessLevel.ValueString(); v != "" {
-		sp.OutlookNewslettersAccessLevel = objectParam(v)
+	if !plan.OutlookNewslettersAccessLevel.Equal(state.OutlookNewslettersAccessLevel) {
+		if v := plan.OutlookNewslettersAccessLevel.ValueString(); v != "" {
+			sp.OutlookNewslettersAccessLevel = objectParam(v)
+		}
 	}
-	if v := plan.OutlookNewslettersReactions.ValueString(); v != "" {
-		sp.OutlookNewslettersReactions = objectParam(v)
+	if !plan.OutlookNewslettersReactions.Equal(state.OutlookNewslettersReactions) {
+		if v := plan.OutlookNewslettersReactions.ValueString(); v != "" {
+			sp.OutlookNewslettersReactions = objectParam(v)
+		}
 	}
-	if v := plan.OutlookNewslettersShowMore.ValueString(); v != "" {
-		sp.OutlookNewslettersShowMore = objectParam(v)
+	if !plan.OutlookNewslettersShowMore.Equal(state.OutlookNewslettersShowMore) {
+		if v := plan.OutlookNewslettersShowMore.ValueString(); v != "" {
+			sp.OutlookNewslettersShowMore = objectParam(v)
+		}
 	}
 	if !plan.PersonalAccountCalendarsEnabled.Equal(state.PersonalAccountCalendarsEnabled) {
 		if !plan.PersonalAccountCalendarsEnabled.IsUnknown() {
@@ -981,8 +1001,10 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 			sp.WeatherEnabled = plan.WeatherEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.WebPartsFrameOptionsType.ValueString(); v != "" {
-		sp.WebPartsFrameOptionsType = objectParam(v)
+	if !plan.WebPartsFrameOptionsType.Equal(state.WebPartsFrameOptionsType) {
+		if v := plan.WebPartsFrameOptionsType.ValueString(); v != "" {
+			sp.WebPartsFrameOptionsType = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

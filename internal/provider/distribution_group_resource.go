@@ -600,11 +600,15 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 			}
 		}
 	}
-	if v := plan.MemberDepartRestriction.ValueString(); v != "" {
-		sp.MemberDepartRestriction = objectParam(v)
+	if !plan.MemberDepartRestriction.Equal(state.MemberDepartRestriction) {
+		if v := plan.MemberDepartRestriction.ValueString(); v != "" {
+			sp.MemberDepartRestriction = objectParam(v)
+		}
 	}
-	if v := plan.MemberJoinRestriction.ValueString(); v != "" {
-		sp.MemberJoinRestriction = objectParam(v)
+	if !plan.MemberJoinRestriction.Equal(state.MemberJoinRestriction) {
+		if v := plan.MemberJoinRestriction.ValueString(); v != "" {
+			sp.MemberJoinRestriction = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -624,8 +628,10 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 			sp.ModerationEnabled = plan.ModerationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
-		sp.PrimarySmtpAddress = objectParam(v)
+	if !plan.PrimarySmtpAddress.Equal(state.PrimarySmtpAddress) {
+		if v := plan.PrimarySmtpAddress.ValueString(); v != "" {
+			sp.PrimarySmtpAddress = objectParam(v)
+		}
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -687,8 +693,10 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 	if !plan.RoomList.Equal(state.RoomList) {
 		sp.RoomList = plan.RoomList.ValueBool()
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
 	if !plan.SendOofMessageToOriginatorEnabled.Equal(state.SendOofMessageToOriginatorEnabled) {
 		if !plan.SendOofMessageToOriginatorEnabled.IsUnknown() {
@@ -701,8 +709,10 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 	if !plan.UpdateMemberCount.Equal(state.UpdateMemberCount) {
 		sp.UpdateMemberCount = plan.UpdateMemberCount.ValueBool()
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

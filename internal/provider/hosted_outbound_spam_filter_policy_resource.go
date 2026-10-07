@@ -214,14 +214,18 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 		}
 		return cur
 	}
-	if v := plan.ActionWhenThresholdReached.ValueString(); v != "" {
-		sp.ActionWhenThresholdReached = objectParam(v)
+	if !plan.ActionWhenThresholdReached.Equal(state.ActionWhenThresholdReached) {
+		if v := plan.ActionWhenThresholdReached.ValueString(); v != "" {
+			sp.ActionWhenThresholdReached = objectParam(v)
+		}
 	}
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
-	if v := plan.AutoForwardingMode.ValueString(); v != "" {
-		sp.AutoForwardingMode = objectParam(v)
+	if !plan.AutoForwardingMode.Equal(state.AutoForwardingMode) {
+		if v := plan.AutoForwardingMode.ValueString(); v != "" {
+			sp.AutoForwardingMode = objectParam(v)
+		}
 	}
 	if !plan.BccSuspiciousOutboundAdditionalRecipients.Equal(state.BccSuspiciousOutboundAdditionalRecipients) {
 		if !plan.BccSuspiciousOutboundAdditionalRecipients.IsNull() && !plan.BccSuspiciousOutboundAdditionalRecipients.IsUnknown() {

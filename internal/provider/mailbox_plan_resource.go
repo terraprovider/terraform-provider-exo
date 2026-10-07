@@ -164,32 +164,50 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 	if !plan.IsDefault.Equal(state.IsDefault) {
 		sp.IsDefault = plan.IsDefault.ValueBool()
 	}
-	if v := plan.IssueWarningQuota.ValueString(); v != "" {
-		sp.IssueWarningQuota = objectParam(v)
+	if !plan.IssueWarningQuota.Equal(state.IssueWarningQuota) {
+		if v := plan.IssueWarningQuota.ValueString(); v != "" {
+			sp.IssueWarningQuota = objectParam(v)
+		}
 	}
-	if v := plan.MaxReceiveSize.ValueString(); v != "" {
-		sp.MaxReceiveSize = objectParam(v)
+	if !plan.MaxReceiveSize.Equal(state.MaxReceiveSize) {
+		if v := plan.MaxReceiveSize.ValueString(); v != "" {
+			sp.MaxReceiveSize = objectParam(v)
+		}
 	}
-	if v := plan.MaxSendSize.ValueString(); v != "" {
-		sp.MaxSendSize = objectParam(v)
+	if !plan.MaxSendSize.Equal(state.MaxSendSize) {
+		if v := plan.MaxSendSize.ValueString(); v != "" {
+			sp.MaxSendSize = objectParam(v)
+		}
 	}
-	if v := plan.ProhibitSendQuota.ValueString(); v != "" {
-		sp.ProhibitSendQuota = objectParam(v)
+	if !plan.ProhibitSendQuota.Equal(state.ProhibitSendQuota) {
+		if v := plan.ProhibitSendQuota.ValueString(); v != "" {
+			sp.ProhibitSendQuota = objectParam(v)
+		}
 	}
-	if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
-		sp.ProhibitSendReceiveQuota = objectParam(v)
+	if !plan.ProhibitSendReceiveQuota.Equal(state.ProhibitSendReceiveQuota) {
+		if v := plan.ProhibitSendReceiveQuota.ValueString(); v != "" {
+			sp.ProhibitSendReceiveQuota = objectParam(v)
+		}
 	}
-	if v := plan.RecipientLimits.ValueString(); v != "" {
-		sp.RecipientLimits = objectParam(v)
+	if !plan.RecipientLimits.Equal(state.RecipientLimits) {
+		if v := plan.RecipientLimits.ValueString(); v != "" {
+			sp.RecipientLimits = objectParam(v)
+		}
 	}
-	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
-		sp.RetainDeletedItemsFor = objectParam(v)
+	if !plan.RetainDeletedItemsFor.Equal(state.RetainDeletedItemsFor) {
+		if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
+			sp.RetainDeletedItemsFor = objectParam(v)
+		}
 	}
-	if v := plan.RetentionPolicy.ValueString(); v != "" {
-		sp.RetentionPolicy = objectParam(v)
+	if !plan.RetentionPolicy.Equal(state.RetentionPolicy) {
+		if v := plan.RetentionPolicy.ValueString(); v != "" {
+			sp.RetentionPolicy = objectParam(v)
+		}
 	}
-	if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
-		sp.RoleAssignmentPolicy = objectParam(v)
+	if !plan.RoleAssignmentPolicy.Equal(state.RoleAssignmentPolicy) {
+		if v := plan.RoleAssignmentPolicy.ValueString(); v != "" {
+			sp.RoleAssignmentPolicy = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -221,8 +221,10 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 			sp.AllowRMSSupportForUnenlightenedApps = plan.AllowRMSSupportForUnenlightenedApps.ValueBoolPointer()
 		}
 	}
-	if v := plan.DefaultAccessLevel.ValueString(); v != "" {
-		sp.DefaultAccessLevel = objectParam(v)
+	if !plan.DefaultAccessLevel.Equal(state.DefaultAccessLevel) {
+		if v := plan.DefaultAccessLevel.ValueString(); v != "" {
+			sp.DefaultAccessLevel = objectParam(v)
+		}
 	}
 	if !plan.EnableMobileMailboxPolicyWhenCAInplace.Equal(state.EnableMobileMailboxPolicyWhenCAInplace) {
 		if !plan.EnableMobileMailboxPolicyWhenCAInplace.IsUnknown() {
@@ -232,8 +234,10 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	if !plan.OtaNotificationMailInsert.Equal(state.OtaNotificationMailInsert) {
 		sp.OtaNotificationMailInsert = plan.OtaNotificationMailInsert.ValueString()
 	}
-	if v := plan.TenantAdminPreference.ValueString(); v != "" {
-		sp.TenantAdminPreference = objectParam(v)
+	if !plan.TenantAdminPreference.Equal(state.TenantAdminPreference) {
+		if v := plan.TenantAdminPreference.ValueString(); v != "" {
+			sp.TenantAdminPreference = objectParam(v)
+		}
 	}
 	if !plan.UserMailInsert.Equal(state.UserMailInsert) {
 		sp.UserMailInsert = plan.UserMailInsert.ValueString()

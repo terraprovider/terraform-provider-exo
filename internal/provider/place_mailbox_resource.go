@@ -202,14 +202,18 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.City.Equal(state.City) {
 		sp.City = plan.City.ValueString()
 	}
-	if v := plan.CountryOrRegion.ValueString(); v != "" {
-		sp.CountryOrRegion = objectParam(v)
+	if !plan.CountryOrRegion.Equal(state.CountryOrRegion) {
+		if v := plan.CountryOrRegion.ValueString(); v != "" {
+			sp.CountryOrRegion = objectParam(v)
+		}
 	}
 	if !plan.DisplayName.Equal(state.DisplayName) {
 		sp.DisplayName = plan.DisplayName.ValueString()
 	}
-	if v := plan.GeoCoordinates.ValueString(); v != "" {
-		sp.GeoCoordinates = objectParam(v)
+	if !plan.GeoCoordinates.Equal(state.GeoCoordinates) {
+		if v := plan.GeoCoordinates.ValueString(); v != "" {
+			sp.GeoCoordinates = objectParam(v)
+		}
 	}
 	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
 		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
@@ -222,11 +226,15 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.PostalCode.Equal(state.PostalCode) {
 		sp.PostalCode = plan.PostalCode.ValueString()
 	}
-	if v := plan.ResourceCapacity.ValueString(); v != "" {
-		sp.ResourceCapacity = objectParam(v)
+	if !plan.ResourceCapacity.Equal(state.ResourceCapacity) {
+		if v := plan.ResourceCapacity.ValueString(); v != "" {
+			sp.ResourceCapacity = objectParam(v)
+		}
 	}
-	if v := plan.ResourceType.ValueString(); v != "" {
-		sp.ResourceType = objectParam(v)
+	if !plan.ResourceType.Equal(state.ResourceType) {
+		if v := plan.ResourceType.ValueString(); v != "" {
+			sp.ResourceType = objectParam(v)
+		}
 	}
 	if !plan.StateOrProvince.Equal(state.StateOrProvince) {
 		sp.StateOrProvince = plan.StateOrProvince.ValueString()

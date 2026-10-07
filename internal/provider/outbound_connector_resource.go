@@ -271,11 +271,15 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	if !plan.Comment.Equal(state.Comment) {
 		sp.Comment = plan.Comment.ValueString()
 	}
-	if v := plan.ConnectorSource.ValueString(); v != "" {
-		sp.ConnectorSource = objectParam(v)
+	if !plan.ConnectorSource.Equal(state.ConnectorSource) {
+		if v := plan.ConnectorSource.ValueString(); v != "" {
+			sp.ConnectorSource = objectParam(v)
+		}
 	}
-	if v := plan.ConnectorType.ValueString(); v != "" {
-		sp.ConnectorType = objectParam(v)
+	if !plan.ConnectorType.Equal(state.ConnectorType) {
+		if v := plan.ConnectorType.ValueString(); v != "" {
+			sp.ConnectorType = objectParam(v)
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
@@ -292,11 +296,15 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 			sp.IsValidated = plan.IsValidated.ValueBoolPointer()
 		}
 	}
-	if v := plan.LastValidationTimestamp.ValueString(); v != "" {
-		sp.LastValidationTimestamp = objectParam(v)
+	if !plan.LastValidationTimestamp.Equal(state.LastValidationTimestamp) {
+		if v := plan.LastValidationTimestamp.ValueString(); v != "" {
+			sp.LastValidationTimestamp = objectParam(v)
+		}
 	}
-	if v := plan.MtaStsMode.ValueString(); v != "" {
-		sp.MtaStsMode = objectParam(v)
+	if !plan.MtaStsMode.Equal(state.MtaStsMode) {
+		if v := plan.MtaStsMode.ValueString(); v != "" {
+			sp.MtaStsMode = objectParam(v)
+		}
 	}
 	if !plan.RecipientDomains.Equal(state.RecipientDomains) {
 		if !plan.RecipientDomains.IsNull() && !plan.RecipientDomains.IsUnknown() {
@@ -334,19 +342,25 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 			}
 		}
 	}
-	if v := plan.SmtpDaneMode.ValueString(); v != "" {
-		sp.SmtpDaneMode = objectParam(v)
+	if !plan.SmtpDaneMode.Equal(state.SmtpDaneMode) {
+		if v := plan.SmtpDaneMode.ValueString(); v != "" {
+			sp.SmtpDaneMode = objectParam(v)
+		}
 	}
 	if !plan.TestMode.Equal(state.TestMode) {
 		if !plan.TestMode.IsUnknown() {
 			sp.TestMode = plan.TestMode.ValueBoolPointer()
 		}
 	}
-	if v := plan.TlsDomain.ValueString(); v != "" {
-		sp.TlsDomain = objectParam(v)
+	if !plan.TlsDomain.Equal(state.TlsDomain) {
+		if v := plan.TlsDomain.ValueString(); v != "" {
+			sp.TlsDomain = objectParam(v)
+		}
 	}
-	if v := plan.TlsSettings.ValueString(); v != "" {
-		sp.TlsSettings = objectParam(v)
+	if !plan.TlsSettings.Equal(state.TlsSettings) {
+		if v := plan.TlsSettings.ValueString(); v != "" {
+			sp.TlsSettings = objectParam(v)
+		}
 	}
 	if !plan.UseMXRecord.Equal(state.UseMXRecord) {
 		if !plan.UseMXRecord.IsUnknown() {

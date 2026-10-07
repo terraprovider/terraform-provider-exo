@@ -490,8 +490,10 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.MacAttachmentFormat.ValueString(); v != "" {
-		sp.MacAttachmentFormat = objectParam(v)
+	if !plan.MacAttachmentFormat.Equal(state.MacAttachmentFormat) {
+		if v := plan.MacAttachmentFormat.ValueString(); v != "" {
+			sp.MacAttachmentFormat = objectParam(v)
+		}
 	}
 	if !plan.MailTip.Equal(state.MailTip) {
 		sp.MailTip = plan.MailTip.ValueString()
@@ -509,11 +511,15 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 			}
 		}
 	}
-	if v := plan.MessageBodyFormat.ValueString(); v != "" {
-		sp.MessageBodyFormat = objectParam(v)
+	if !plan.MessageBodyFormat.Equal(state.MessageBodyFormat) {
+		if v := plan.MessageBodyFormat.ValueString(); v != "" {
+			sp.MessageBodyFormat = objectParam(v)
+		}
 	}
-	if v := plan.MessageFormat.ValueString(); v != "" {
-		sp.MessageFormat = objectParam(v)
+	if !plan.MessageFormat.Equal(state.MessageFormat) {
+		if v := plan.MessageFormat.ValueString(); v != "" {
+			sp.MessageFormat = objectParam(v)
+		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
@@ -577,14 +583,18 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 			sp.RequireSenderAuthenticationEnabled = plan.RequireSenderAuthenticationEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.SendModerationNotifications.ValueString(); v != "" {
-		sp.SendModerationNotifications = objectParam(v)
+	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
+		if v := plan.SendModerationNotifications.ValueString(); v != "" {
+			sp.SendModerationNotifications = objectParam(v)
+		}
 	}
 	if !plan.SimpleDisplayName.Equal(state.SimpleDisplayName) {
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
 	}
-	if v := plan.UseMapiRichTextFormat.ValueString(); v != "" {
-		sp.UseMapiRichTextFormat = objectParam(v)
+	if !plan.UseMapiRichTextFormat.Equal(state.UseMapiRichTextFormat) {
+		if v := plan.UseMapiRichTextFormat.ValueString(); v != "" {
+			sp.UseMapiRichTextFormat = objectParam(v)
+		}
 	}
 	if !plan.UsePreferMessageFormat.Equal(state.UsePreferMessageFormat) {
 		if !plan.UsePreferMessageFormat.IsUnknown() {
@@ -617,8 +627,10 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 			}
 		}
 	}
-	if v := plan.WindowsEmailAddress.ValueString(); v != "" {
-		sp.WindowsEmailAddress = objectParam(v)
+	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
+		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
+			sp.WindowsEmailAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

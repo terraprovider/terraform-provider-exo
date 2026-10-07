@@ -113,8 +113,10 @@ func (r *migrationConfigResource) Update(ctx context.Context, req resource.Updat
 	}
 	id := r.identityOf(state)
 	sp := exo.SetMigrationConfigParams{}
-	if v := plan.Partition.ValueString(); v != "" {
-		sp.Partition = objectParam(v)
+	if !plan.Partition.Equal(state.Partition) {
+		if v := plan.Partition.ValueString(); v != "" {
+			sp.Partition = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

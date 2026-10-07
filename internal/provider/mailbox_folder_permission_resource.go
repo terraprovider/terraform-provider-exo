@@ -148,11 +148,15 @@ func (r *mailboxFolderPermissionResource) Update(ctx context.Context, req resour
 			sp.SendNotificationToUser = plan.SendNotificationToUser.ValueBoolPointer()
 		}
 	}
-	if v := plan.SharingPermissionFlags.ValueString(); v != "" {
-		sp.SharingPermissionFlags = objectParam(v)
+	if !plan.SharingPermissionFlags.Equal(state.SharingPermissionFlags) {
+		if v := plan.SharingPermissionFlags.ValueString(); v != "" {
+			sp.SharingPermissionFlags = objectParam(v)
+		}
 	}
-	if v := plan.User.ValueString(); v != "" {
-		sp.User = objectParam(v)
+	if !plan.User.Equal(state.User) {
+		if v := plan.User.ValueString(); v != "" {
+			sp.User = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

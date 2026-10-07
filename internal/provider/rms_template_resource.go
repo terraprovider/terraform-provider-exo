@@ -115,8 +115,10 @@ func (r *rMSTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetRMSTemplateParams{}
 	sp.Identity = id
-	if v := plan.Type.ValueString(); v != "" {
-		sp.Type = objectParam(v)
+	if !plan.Type.Equal(state.Type) {
+		if v := plan.Type.ValueString(); v != "" {
+			sp.Type = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

@@ -115,8 +115,10 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Update(ctx context.Co
 	}
 	id := r.identityOf(state)
 	sp := exo.SetM365DataAtRestEncryptionPolicyAssignmentParams{}
-	if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
-		sp.DataEncryptionPolicy = objectParam(v)
+	if !plan.DataEncryptionPolicy.Equal(state.DataEncryptionPolicy) {
+		if v := plan.DataEncryptionPolicy.ValueString(); v != "" {
+			sp.DataEncryptionPolicy = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

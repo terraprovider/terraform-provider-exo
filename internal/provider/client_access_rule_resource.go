@@ -295,8 +295,10 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 		}
 		return cur
 	}
-	if v := plan.Action.ValueString(); v != "" {
-		sp.Action = objectParam(v)
+	if !plan.Action.Equal(state.Action) {
+		if v := plan.Action.ValueString(); v != "" {
+			sp.Action = objectParam(v)
+		}
 	}
 	if !plan.AnyOfAuthenticationTypes.Equal(state.AnyOfAuthenticationTypes) {
 		if !plan.AnyOfAuthenticationTypes.IsNull() && !plan.AnyOfAuthenticationTypes.IsUnknown() {
@@ -402,8 +404,10 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 			sp.Priority = plan.Priority.ValueInt64Pointer()
 		}
 	}
-	if v := plan.Scope.ValueString(); v != "" {
-		sp.Scope = objectParam(v)
+	if !plan.Scope.Equal(state.Scope) {
+		if v := plan.Scope.ValueString(); v != "" {
+			sp.Scope = objectParam(v)
+		}
 	}
 	if !plan.UserRecipientFilter.Equal(state.UserRecipientFilter) {
 		sp.UserRecipientFilter = plan.UserRecipientFilter.ValueString()

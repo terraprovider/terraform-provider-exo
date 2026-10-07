@@ -491,8 +491,10 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	id := r.identityOf(state)
 	sp := exo.SetMailboxMessageConfigurationParams{}
 	sp.Identity = id
-	if v := plan.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
-		sp.AfterMoveOrDeleteBehavior = objectParam(v)
+	if !plan.AfterMoveOrDeleteBehavior.Equal(state.AfterMoveOrDeleteBehavior) {
+		if v := plan.AfterMoveOrDeleteBehavior.ValueString(); v != "" {
+			sp.AfterMoveOrDeleteBehavior = objectParam(v)
+		}
 	}
 	if !plan.AlwaysShowBcc.Equal(state.AlwaysShowBcc) {
 		if !plan.AlwaysShowBcc.IsUnknown() {
@@ -529,14 +531,18 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 			sp.CheckForReportJunkDialog = plan.CheckForReportJunkDialog.ValueBoolPointer()
 		}
 	}
-	if v := plan.ConversationSortOrder.ValueString(); v != "" {
-		sp.ConversationSortOrder = objectParam(v)
+	if !plan.ConversationSortOrder.Equal(state.ConversationSortOrder) {
+		if v := plan.ConversationSortOrder.ValueString(); v != "" {
+			sp.ConversationSortOrder = objectParam(v)
+		}
 	}
 	if !plan.DefaultFontColor.Equal(state.DefaultFontColor) {
 		sp.DefaultFontColor = plan.DefaultFontColor.ValueString()
 	}
-	if v := plan.DefaultFontFlags.ValueString(); v != "" {
-		sp.DefaultFontFlags = objectParam(v)
+	if !plan.DefaultFontFlags.Equal(state.DefaultFontFlags) {
+		if v := plan.DefaultFontFlags.ValueString(); v != "" {
+			sp.DefaultFontFlags = objectParam(v)
+		}
 	}
 	if !plan.DefaultFontName.Equal(state.DefaultFontName) {
 		sp.DefaultFontName = plan.DefaultFontName.ValueString()
@@ -546,8 +552,10 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 			sp.DefaultFontSize = plan.DefaultFontSize.ValueInt64Pointer()
 		}
 	}
-	if v := plan.DefaultFormat.ValueString(); v != "" {
-		sp.DefaultFormat = objectParam(v)
+	if !plan.DefaultFormat.Equal(state.DefaultFormat) {
+		if v := plan.DefaultFormat.ValueString(); v != "" {
+			sp.DefaultFormat = objectParam(v)
+		}
 	}
 	if !plan.DefaultSignature.Equal(state.DefaultSignature) {
 		sp.DefaultSignature = plan.DefaultSignature.ValueString()
@@ -558,16 +566,20 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	if !plan.DeleteSignatureName.Equal(state.DeleteSignatureName) {
 		sp.DeleteSignatureName = plan.DeleteSignatureName.ValueString()
 	}
-	if v := plan.DisplayDensityMode.ValueString(); v != "" {
-		sp.DisplayDensityMode = objectParam(v)
+	if !plan.DisplayDensityMode.Equal(state.DisplayDensityMode) {
+		if v := plan.DisplayDensityMode.ValueString(); v != "" {
+			sp.DisplayDensityMode = objectParam(v)
+		}
 	}
 	if !plan.EchoGroupMessageBackToSubscribedSender.Equal(state.EchoGroupMessageBackToSubscribedSender) {
 		if !plan.EchoGroupMessageBackToSubscribedSender.IsUnknown() {
 			sp.EchoGroupMessageBackToSubscribedSender = plan.EchoGroupMessageBackToSubscribedSender.ValueBoolPointer()
 		}
 	}
-	if v := plan.EmailComposeMode.ValueString(); v != "" {
-		sp.EmailComposeMode = objectParam(v)
+	if !plan.EmailComposeMode.Equal(state.EmailComposeMode) {
+		if v := plan.EmailComposeMode.ValueString(); v != "" {
+			sp.EmailComposeMode = objectParam(v)
+		}
 	}
 	if !plan.EmptyDeletedItemsOnLogoff.Equal(state.EmptyDeletedItemsOnLogoff) {
 		if !plan.EmptyDeletedItemsOnLogoff.IsUnknown() {
@@ -579,8 +591,10 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 			sp.FavoritesBitFlags = plan.FavoritesBitFlags.ValueInt64Pointer()
 		}
 	}
-	if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
-		sp.GlobalReadingPanePosition = objectParam(v)
+	if !plan.GlobalReadingPanePosition.Equal(state.GlobalReadingPanePosition) {
+		if v := plan.GlobalReadingPanePosition.ValueString(); v != "" {
+			sp.GlobalReadingPanePosition = objectParam(v)
+		}
 	}
 	if !plan.HideDeletedItems.Equal(state.HideDeletedItems) {
 		if !plan.HideDeletedItems.IsUnknown() {
@@ -637,30 +651,40 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 			sp.NavigationBarWidth = plan.NavigationBarWidth.ValueInt64Pointer()
 		}
 	}
-	if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
-		sp.NavigationPaneViewOption = objectParam(v)
+	if !plan.NavigationPaneViewOption.Equal(state.NavigationPaneViewOption) {
+		if v := plan.NavigationPaneViewOption.ValueString(); v != "" {
+			sp.NavigationPaneViewOption = objectParam(v)
+		}
 	}
-	if v := plan.NewEnabledPonts.ValueString(); v != "" {
-		sp.NewEnabledPonts = objectParam(v)
+	if !plan.NewEnabledPonts.Equal(state.NewEnabledPonts) {
+		if v := plan.NewEnabledPonts.ValueString(); v != "" {
+			sp.NewEnabledPonts = objectParam(v)
+		}
 	}
-	if v := plan.NewItemNotification.ValueString(); v != "" {
-		sp.NewItemNotification = objectParam(v)
+	if !plan.NewItemNotification.Equal(state.NewItemNotification) {
+		if v := plan.NewItemNotification.ValueString(); v != "" {
+			sp.NewItemNotification = objectParam(v)
+		}
 	}
 	if !plan.PreferAccessibleContent.Equal(state.PreferAccessibleContent) {
 		if !plan.PreferAccessibleContent.IsUnknown() {
 			sp.PreferAccessibleContent = plan.PreferAccessibleContent.ValueBoolPointer()
 		}
 	}
-	if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
-		sp.PreviewMarkAsReadBehavior = objectParam(v)
+	if !plan.PreviewMarkAsReadBehavior.Equal(state.PreviewMarkAsReadBehavior) {
+		if v := plan.PreviewMarkAsReadBehavior.ValueString(); v != "" {
+			sp.PreviewMarkAsReadBehavior = objectParam(v)
+		}
 	}
 	if !plan.PreviewMarkAsReadDelaytime.Equal(state.PreviewMarkAsReadDelaytime) {
 		if !plan.PreviewMarkAsReadDelaytime.IsUnknown() {
 			sp.PreviewMarkAsReadDelaytime = plan.PreviewMarkAsReadDelaytime.ValueInt64Pointer()
 		}
 	}
-	if v := plan.ReadReceiptResponse.ValueString(); v != "" {
-		sp.ReadReceiptResponse = objectParam(v)
+	if !plan.ReadReceiptResponse.Equal(state.ReadReceiptResponse) {
+		if v := plan.ReadReceiptResponse.ValueString(); v != "" {
+			sp.ReadReceiptResponse = objectParam(v)
+		}
 	}
 	if !plan.ReportJunkSelected.Equal(state.ReportJunkSelected) {
 		if !plan.ReportJunkSelected.IsUnknown() {

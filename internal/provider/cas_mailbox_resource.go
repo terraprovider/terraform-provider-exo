@@ -443,8 +443,10 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 			sp.ActiveSyncEnabled = plan.ActiveSyncEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.ActiveSyncMailboxPolicy.ValueString(); v != "" {
-		sp.ActiveSyncMailboxPolicy = objectParam(v)
+	if !plan.ActiveSyncMailboxPolicy.Equal(state.ActiveSyncMailboxPolicy) {
+		if v := plan.ActiveSyncMailboxPolicy.ValueString(); v != "" {
+			sp.ActiveSyncMailboxPolicy = objectParam(v)
+		}
 	}
 	if !plan.ActiveSyncSuppressReadReceipt.Equal(state.ActiveSyncSuppressReadReceipt) {
 		if !plan.ActiveSyncSuppressReadReceipt.IsUnknown() {
@@ -479,8 +481,10 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 			sp.EwsAllowOutlook = plan.EwsAllowOutlook.ValueBoolPointer()
 		}
 	}
-	if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
-		sp.EwsApplicationAccessPolicy = objectParam(v)
+	if !plan.EwsApplicationAccessPolicy.Equal(state.EwsApplicationAccessPolicy) {
+		if v := plan.EwsApplicationAccessPolicy.ValueString(); v != "" {
+			sp.EwsApplicationAccessPolicy = objectParam(v)
+		}
 	}
 	if !plan.EwsBlockList.Equal(state.EwsBlockList) {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
@@ -510,8 +514,10 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 			sp.ImapForceICalForCalendarRetrievalOption = plan.ImapForceICalForCalendarRetrievalOption.ValueBoolPointer()
 		}
 	}
-	if v := plan.ImapMessagesRetrievalMimeFormat.ValueString(); v != "" {
-		sp.ImapMessagesRetrievalMimeFormat = objectParam(v)
+	if !plan.ImapMessagesRetrievalMimeFormat.Equal(state.ImapMessagesRetrievalMimeFormat) {
+		if v := plan.ImapMessagesRetrievalMimeFormat.ValueString(); v != "" {
+			sp.ImapMessagesRetrievalMimeFormat = objectParam(v)
+		}
 	}
 	if !plan.ImapSuppressReadReceipt.Equal(state.ImapSuppressReadReceipt) {
 		if !plan.ImapSuppressReadReceipt.IsUnknown() {
@@ -558,8 +564,10 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 			sp.OutlookMobileEnabled = plan.OutlookMobileEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.OwaMailboxPolicy.ValueString(); v != "" {
-		sp.OwaMailboxPolicy = objectParam(v)
+	if !plan.OwaMailboxPolicy.Equal(state.OwaMailboxPolicy) {
+		if v := plan.OwaMailboxPolicy.ValueString(); v != "" {
+			sp.OwaMailboxPolicy = objectParam(v)
+		}
 	}
 	if !plan.PopEnabled.Equal(state.PopEnabled) {
 		if !plan.PopEnabled.IsUnknown() {
@@ -571,8 +579,10 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 			sp.PopForceICalForCalendarRetrievalOption = plan.PopForceICalForCalendarRetrievalOption.ValueBoolPointer()
 		}
 	}
-	if v := plan.PopMessagesRetrievalMimeFormat.ValueString(); v != "" {
-		sp.PopMessagesRetrievalMimeFormat = objectParam(v)
+	if !plan.PopMessagesRetrievalMimeFormat.Equal(state.PopMessagesRetrievalMimeFormat) {
+		if v := plan.PopMessagesRetrievalMimeFormat.ValueString(); v != "" {
+			sp.PopMessagesRetrievalMimeFormat = objectParam(v)
+		}
 	}
 	if !plan.PopSuppressReadReceipt.Equal(state.PopSuppressReadReceipt) {
 		if !plan.PopSuppressReadReceipt.IsUnknown() {

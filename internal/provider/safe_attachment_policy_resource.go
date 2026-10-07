@@ -171,8 +171,10 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetSafeAttachmentPolicyParams{}
 	sp.Identity = id
-	if v := plan.Action.ValueString(); v != "" {
-		sp.Action = objectParam(v)
+	if !plan.Action.Equal(state.Action) {
+		if v := plan.Action.ValueString(); v != "" {
+			sp.Action = objectParam(v)
+		}
 	}
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
@@ -190,8 +192,10 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 			sp.Redirect = plan.Redirect.ValueBoolPointer()
 		}
 	}
-	if v := plan.RedirectAddress.ValueString(); v != "" {
-		sp.RedirectAddress = objectParam(v)
+	if !plan.RedirectAddress.Equal(state.RedirectAddress) {
+		if v := plan.RedirectAddress.ValueString(); v != "" {
+			sp.RedirectAddress = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return

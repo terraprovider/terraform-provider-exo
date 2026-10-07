@@ -282,25 +282,35 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 			sp.FreeBusyAccessEnabled = plan.FreeBusyAccessEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.FreeBusyAccessLevel.ValueString(); v != "" {
-		sp.FreeBusyAccessLevel = objectParam(v)
+	if !plan.FreeBusyAccessLevel.Equal(state.FreeBusyAccessLevel) {
+		if v := plan.FreeBusyAccessLevel.ValueString(); v != "" {
+			sp.FreeBusyAccessLevel = objectParam(v)
+		}
 	}
-	if v := plan.FreeBusyAccessScope.ValueString(); v != "" {
-		sp.FreeBusyAccessScope = objectParam(v)
+	if !plan.FreeBusyAccessScope.Equal(state.FreeBusyAccessScope) {
+		if v := plan.FreeBusyAccessScope.ValueString(); v != "" {
+			sp.FreeBusyAccessScope = objectParam(v)
+		}
 	}
 	if !plan.MailTipsAccessEnabled.Equal(state.MailTipsAccessEnabled) {
 		if !plan.MailTipsAccessEnabled.IsUnknown() {
 			sp.MailTipsAccessEnabled = plan.MailTipsAccessEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.MailTipsAccessLevel.ValueString(); v != "" {
-		sp.MailTipsAccessLevel = objectParam(v)
+	if !plan.MailTipsAccessLevel.Equal(state.MailTipsAccessLevel) {
+		if v := plan.MailTipsAccessLevel.ValueString(); v != "" {
+			sp.MailTipsAccessLevel = objectParam(v)
+		}
 	}
-	if v := plan.MailTipsAccessScope.ValueString(); v != "" {
-		sp.MailTipsAccessScope = objectParam(v)
+	if !plan.MailTipsAccessScope.Equal(state.MailTipsAccessScope) {
+		if v := plan.MailTipsAccessScope.ValueString(); v != "" {
+			sp.MailTipsAccessScope = objectParam(v)
+		}
 	}
-	if v := plan.MailboxMoveCapability.ValueString(); v != "" {
-		sp.MailboxMoveCapability = objectParam(v)
+	if !plan.MailboxMoveCapability.Equal(state.MailboxMoveCapability) {
+		if v := plan.MailboxMoveCapability.ValueString(); v != "" {
+			sp.MailboxMoveCapability = objectParam(v)
+		}
 	}
 	if !plan.MailboxMoveEnabled.Equal(state.MailboxMoveEnabled) {
 		if !plan.MailboxMoveEnabled.IsUnknown() {
@@ -323,25 +333,35 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	if !plan.OAuthApplicationId.Equal(state.OAuthApplicationId) {
 		sp.OAuthApplicationId = plan.OAuthApplicationId.ValueString()
 	}
-	if v := plan.OrganizationContact.ValueString(); v != "" {
-		sp.OrganizationContact = objectParam(v)
+	if !plan.OrganizationContact.Equal(state.OrganizationContact) {
+		if v := plan.OrganizationContact.ValueString(); v != "" {
+			sp.OrganizationContact = objectParam(v)
+		}
 	}
 	if !plan.PhotosEnabled.Equal(state.PhotosEnabled) {
 		if !plan.PhotosEnabled.IsUnknown() {
 			sp.PhotosEnabled = plan.PhotosEnabled.ValueBoolPointer()
 		}
 	}
-	if v := plan.TargetApplicationUri.ValueString(); v != "" {
-		sp.TargetApplicationUri = objectParam(v)
+	if !plan.TargetApplicationUri.Equal(state.TargetApplicationUri) {
+		if v := plan.TargetApplicationUri.ValueString(); v != "" {
+			sp.TargetApplicationUri = objectParam(v)
+		}
 	}
-	if v := plan.TargetAutodiscoverEpr.ValueString(); v != "" {
-		sp.TargetAutodiscoverEpr = objectParam(v)
+	if !plan.TargetAutodiscoverEpr.Equal(state.TargetAutodiscoverEpr) {
+		if v := plan.TargetAutodiscoverEpr.ValueString(); v != "" {
+			sp.TargetAutodiscoverEpr = objectParam(v)
+		}
 	}
-	if v := plan.TargetOwaURL.ValueString(); v != "" {
-		sp.TargetOwaURL = objectParam(v)
+	if !plan.TargetOwaURL.Equal(state.TargetOwaURL) {
+		if v := plan.TargetOwaURL.ValueString(); v != "" {
+			sp.TargetOwaURL = objectParam(v)
+		}
 	}
-	if v := plan.TargetSharingEpr.ValueString(); v != "" {
-		sp.TargetSharingEpr = objectParam(v)
+	if !plan.TargetSharingEpr.Equal(state.TargetSharingEpr) {
+		if v := plan.TargetSharingEpr.ValueString(); v != "" {
+			sp.TargetSharingEpr = objectParam(v)
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
