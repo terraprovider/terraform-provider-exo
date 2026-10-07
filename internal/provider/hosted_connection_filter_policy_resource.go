@@ -164,13 +164,16 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	sp := exo.SetHostedConnectionFilterPolicyParams{}
 	sp.Identity = id
 	var cur *hostedConnectionFilterPolicyModel
+	curRead := false
 	current := func() *hostedConnectionFilterPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m hostedConnectionFilterPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-HostedConnectionFilterPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

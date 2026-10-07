@@ -134,13 +134,16 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetAvailabilityConfigParams{}
 	var cur *availabilityConfigModel
+	curRead := false
 	current := func() *availabilityConfigModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m availabilityConfigModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-AvailabilityConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

@@ -265,13 +265,16 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	sp := exo.SetMoveRequestParams{}
 	sp.Identity = id
 	var cur *moveRequestModel
+	curRead := false
 	current := func() *moveRequestModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m moveRequestModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MoveRequest failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

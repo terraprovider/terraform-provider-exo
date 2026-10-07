@@ -554,13 +554,16 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	sp := exo.SetMailboxParams{}
 	sp.Identity = id
 	var cur *mailboxModel
+	curRead := false
 	current := func() *mailboxModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mailboxModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-Mailbox failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

@@ -559,13 +559,16 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	sp := exo.SetReportSubmissionPolicyParams{}
 	sp.Identity = id
 	var cur *reportSubmissionPolicyModel
+	curRead := false
 	current := func() *reportSubmissionPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m reportSubmissionPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ReportSubmissionPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

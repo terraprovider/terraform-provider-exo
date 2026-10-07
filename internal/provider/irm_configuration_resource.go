@@ -105,13 +105,16 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 	}
 	sp := exo.SetIRMConfigurationParams{}
 	var cur *iRMConfigurationModel
+	curRead := false
 	current := func() *iRMConfigurationModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m iRMConfigurationModel
-			if !r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-IRMConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -238,13 +241,16 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetIRMConfigurationParams{}
 	var cur *iRMConfigurationModel
+	curRead := false
 	current := func() *iRMConfigurationModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m iRMConfigurationModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-IRMConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

@@ -335,13 +335,16 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 	sp := exo.SetDistributionGroupParams{}
 	sp.Identity = id
 	var cur *distributionGroupModel
+	curRead := false
 	current := func() *distributionGroupModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m distributionGroupModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-DistributionGroup failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

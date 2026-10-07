@@ -140,13 +140,16 @@ func (r *contactResource) Create(ctx context.Context, req resource.CreateRequest
 	sp := exo.SetContactParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *contactModel
+	curRead := false
 	current := func() *contactModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m contactModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-Contact failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -331,13 +334,16 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	sp := exo.SetContactParams{}
 	sp.Identity = id
 	var cur *contactModel
+	curRead := false
 	current := func() *contactModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m contactModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-Contact failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

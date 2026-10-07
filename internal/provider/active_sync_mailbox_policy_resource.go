@@ -477,13 +477,16 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 	sp := exo.SetActiveSyncMailboxPolicyParams{}
 	sp.Identity = id
 	var cur *activeSyncMailboxPolicyModel
+	curRead := false
 	current := func() *activeSyncMailboxPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m activeSyncMailboxPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ActiveSyncMailboxPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

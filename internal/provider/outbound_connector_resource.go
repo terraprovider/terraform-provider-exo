@@ -245,13 +245,16 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	sp := exo.SetOutboundConnectorParams{}
 	sp.Identity = id
 	var cur *outboundConnectorModel
+	curRead := false
 	current := func() *outboundConnectorModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m outboundConnectorModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OutboundConnector failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

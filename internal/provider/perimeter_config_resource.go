@@ -75,13 +75,16 @@ func (r *perimeterConfigResource) Create(ctx context.Context, req resource.Creat
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *perimeterConfigModel
+	curRead := false
 	current := func() *perimeterConfigModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m perimeterConfigModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-PerimeterConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -138,13 +141,16 @@ func (r *perimeterConfigResource) Update(ctx context.Context, req resource.Updat
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = id
 	var cur *perimeterConfigModel
+	curRead := false
 	current := func() *perimeterConfigModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m perimeterConfigModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-PerimeterConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

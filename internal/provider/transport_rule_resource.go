@@ -1216,13 +1216,16 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	sp := exo.SetTransportRuleParams{}
 	sp.Identity = id
 	var cur *transportRuleModel
+	curRead := false
 	current := func() *transportRuleModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m transportRuleModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-TransportRule failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

@@ -74,13 +74,16 @@ func (r *resourceConfigResource) Create(ctx context.Context, req resource.Create
 	}
 	sp := exo.SetResourceConfigParams{}
 	var cur *resourceConfigModel
+	curRead := false
 	current := func() *resourceConfigModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m resourceConfigModel
-			if !r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ResourceConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -136,13 +139,16 @@ func (r *resourceConfigResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetResourceConfigParams{}
 	var cur *resourceConfigModel
+	curRead := false
 	current := func() *resourceConfigModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m resourceConfigModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ResourceConfig failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

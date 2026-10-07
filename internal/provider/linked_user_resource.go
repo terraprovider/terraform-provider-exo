@@ -75,13 +75,16 @@ func (r *linkedUserResource) Create(ctx context.Context, req resource.CreateRequ
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *linkedUserModel
+	curRead := false
 	current := func() *linkedUserModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m linkedUserModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-LinkedUser failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -138,13 +141,16 @@ func (r *linkedUserResource) Update(ctx context.Context, req resource.UpdateRequ
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = id
 	var cur *linkedUserModel
+	curRead := false
 	current := func() *linkedUserModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m linkedUserModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-LinkedUser failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

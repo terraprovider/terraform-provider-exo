@@ -648,13 +648,16 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	sp := exo.SetInboxRuleParams{}
 	sp.Identity = id
 	var cur *inboxRuleModel
+	curRead := false
 	current := func() *inboxRuleModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m inboxRuleModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-InboxRule failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

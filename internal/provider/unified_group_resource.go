@@ -343,13 +343,16 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	sp := exo.SetUnifiedGroupParams{}
 	sp.Identity = id
 	var cur *unifiedGroupModel
+	curRead := false
 	current := func() *unifiedGroupModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m unifiedGroupModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-UnifiedGroup failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

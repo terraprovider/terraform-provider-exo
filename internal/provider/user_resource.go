@@ -173,13 +173,16 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	sp := exo.SetUserParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *userModel
+	curRead := false
 	current := func() *userModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m userModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-User failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -426,13 +429,16 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	sp := exo.SetUserParams{}
 	sp.Identity = id
 	var cur *userModel
+	curRead := false
 	current := func() *userModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m userModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-User failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

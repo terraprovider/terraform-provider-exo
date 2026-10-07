@@ -152,13 +152,16 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	sp := exo.SetSecOpsOverridePolicyParams{}
 	sp.Identity = id
 	var cur *secOpsOverridePolicyModel
+	curRead := false
 	current := func() *secOpsOverridePolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m secOpsOverridePolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-SecOpsOverridePolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

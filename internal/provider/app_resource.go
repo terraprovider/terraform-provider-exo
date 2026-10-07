@@ -250,13 +250,16 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	sp := exo.SetAppParams{}
 	sp.Identity = id
 	var cur *appModel
+	curRead := false
 	current := func() *appModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m appModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-App failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

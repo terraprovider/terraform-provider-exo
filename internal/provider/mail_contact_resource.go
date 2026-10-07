@@ -283,13 +283,16 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 	sp := exo.SetMailContactParams{}
 	sp.Identity = id
 	var cur *mailContactModel
+	curRead := false
 	current := func() *mailContactModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mailContactModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailContact failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

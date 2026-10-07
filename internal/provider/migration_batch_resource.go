@@ -485,13 +485,16 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	sp := exo.SetMigrationBatchParams{}
 	sp.Identity = id
 	var cur *migrationBatchModel
+	curRead := false
 	current := func() *migrationBatchModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m migrationBatchModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MigrationBatch failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

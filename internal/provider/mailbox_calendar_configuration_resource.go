@@ -171,13 +171,16 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *mailboxCalendarConfigurationModel
+	curRead := false
 	current := func() *mailboxCalendarConfigurationModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mailboxCalendarConfigurationModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxCalendarConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -430,13 +433,16 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = id
 	var cur *mailboxCalendarConfigurationModel
+	curRead := false
 	current := func() *mailboxCalendarConfigurationModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mailboxCalendarConfigurationModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailboxCalendarConfiguration failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

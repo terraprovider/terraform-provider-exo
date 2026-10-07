@@ -103,13 +103,16 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *clientAccessRuleModel
+	curRead := false
 	current := func() *clientAccessRuleModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m clientAccessRuleModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ClientAccessRule failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -279,13 +282,16 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = id
 	var cur *clientAccessRuleModel
+	curRead := false
 	current := func() *clientAccessRuleModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m clientAccessRuleModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-ClientAccessRule failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

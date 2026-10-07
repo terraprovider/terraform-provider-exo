@@ -201,13 +201,16 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	sp := exo.SetHostedOutboundSpamFilterPolicyParams{}
 	sp.Identity = id
 	var cur *hostedOutboundSpamFilterPolicyModel
+	curRead := false
 	current := func() *hostedOutboundSpamFilterPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m hostedOutboundSpamFilterPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-HostedOutboundSpamFilterPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

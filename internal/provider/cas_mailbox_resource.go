@@ -144,13 +144,16 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = plan.Identity.ValueString()
 	var cur *cASMailboxModel
+	curRead := false
 	current := func() *cASMailboxModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m cASMailboxModel
-			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-CASMailbox failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
@@ -391,13 +394,16 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = id
 	var cur *cASMailboxModel
+	curRead := false
 	current := func() *cASMailboxModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m cASMailboxModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-CASMailbox failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

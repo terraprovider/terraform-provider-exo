@@ -174,13 +174,16 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	sp := exo.SetRoleGroupParams{}
 	sp.Identity = id
 	var cur *roleGroupModel
+	curRead := false
 	current := func() *roleGroupModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m roleGroupModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-RoleGroup failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

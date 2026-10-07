@@ -247,13 +247,16 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	sp := exo.SetSafeLinksPolicyParams{}
 	sp.Identity = id
 	var cur *safeLinksPolicyModel
+	curRead := false
 	current := func() *safeLinksPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m safeLinksPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-SafeLinksPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

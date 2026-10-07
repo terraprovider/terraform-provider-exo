@@ -369,13 +369,16 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	sp := exo.SetAntiPhishPolicyParams{}
 	sp.Identity = id
 	var cur *antiPhishPolicyModel
+	curRead := false
 	current := func() *antiPhishPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m antiPhishPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-AntiPhishPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

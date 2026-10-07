@@ -365,13 +365,16 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	sp := exo.SetMailUserParams{}
 	sp.Identity = id
 	var cur *mailUserModel
+	curRead := false
 	current := func() *mailUserModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mailUserModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MailUser failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

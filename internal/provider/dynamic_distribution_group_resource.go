@@ -412,13 +412,16 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	sp := exo.SetDynamicDistributionGroupParams{}
 	sp.Identity = id
 	var cur *dynamicDistributionGroupModel
+	curRead := false
 	current := func() *dynamicDistributionGroupModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m dynamicDistributionGroupModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-DynamicDistributionGroup failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

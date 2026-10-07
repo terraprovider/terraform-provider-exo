@@ -484,13 +484,16 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	sp := exo.SetMobileDeviceMailboxPolicyParams{}
 	sp.Identity = id
 	var cur *mobileDeviceMailboxPolicyModel
+	curRead := false
 	current := func() *mobileDeviceMailboxPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m mobileDeviceMailboxPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-MobileDeviceMailboxPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

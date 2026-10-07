@@ -210,13 +210,16 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	sp := exo.SetRetentionPolicyTagParams{}
 	sp.Identity = id
 	var cur *retentionPolicyTagModel
+	curRead := false
 	current := func() *retentionPolicyTagModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m retentionPolicyTagModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-RetentionPolicyTag failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}

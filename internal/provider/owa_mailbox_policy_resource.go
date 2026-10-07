@@ -369,13 +369,16 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	sp := exo.SetOwaMailboxPolicyParams{}
 	sp.Identity = id
 	var cur *owaMailboxPolicyModel
+	curRead := false
 	current := func() *owaMailboxPolicyModel {
-		if cur == nil {
+		if !curRead {
+			curRead = true
 			var m owaMailboxPolicyModel
-			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
-				return nil
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OwaMailboxPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
 			}
-			cur = &m
 		}
 		return cur
 	}
