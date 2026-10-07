@@ -302,7 +302,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"provide_consent":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvideConsent parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"provisioned_for_office_graph":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvisionedForOfficeGraph parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"proxy_email_address":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProxyEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"public_folder":                                   schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter."},
+			"public_folder":                                   schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"recalculate_inactive_mailbox":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"reject_messages_from":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -1096,9 +1096,6 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.ProvisionedForOfficeGraph.Equal(state.ProvisionedForOfficeGraph) {
 		sp.ProvisionedForOfficeGraph = plan.ProvisionedForOfficeGraph.ValueBool()
-	}
-	if !plan.PublicFolder.Equal(state.PublicFolder) {
-		sp.PublicFolder = plan.PublicFolder.ValueBool()
 	}
 	if !plan.RecalculateInactiveMailbox.Equal(state.RecalculateInactiveMailbox) {
 		sp.RecalculateInactiveMailbox = plan.RecalculateInactiveMailbox.ValueBool()

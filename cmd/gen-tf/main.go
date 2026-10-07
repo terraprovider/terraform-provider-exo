@@ -159,8 +159,11 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		kindConflict := inC && inU && firstParam(name, newCmd).Kind() != firstParam(name, setCmd).Kind()
 		// A parameter mandatory on New but also accepted by Set (e.g. DKIM
 		// -Enabled) is updated in place. Naming params stay replace-only: Set
-		// renames the object, and the name often is its identity.
-		replace := (required && (!inU || namingParam[name])) || (inC && !inU) || kindConflict
+		// renames the object, and the name often is its identity. So do
+		// mandatory switches: they select a parameter set (e.g. Set-Mailbox
+		// -PublicFolder) rather than change a setting.
+		selector := required && firstParam(name, newCmd).Kind() == spec.KindSwitch
+		replace := (required && (!inU || namingParam[name] || selector)) || (inC && !inU) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}
