@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -56,13 +55,13 @@ func (r *onPremisesOrganizationResource) Schema(_ context.Context, _ resource.Sc
 			"id":                        schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                  schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comment":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comment parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"hybrid_domains":            schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -HybridDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
-			"inbound_connector":         schema.StringAttribute{Required: true, Description: "Maps to the -InboundConnector parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"hybrid_domains":            schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -HybridDomains parameter."},
+			"inbound_connector":         schema.StringAttribute{Required: true, Description: "Maps to the -InboundConnector parameter."},
 			"name":                      schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organization_guid":         schema.StringAttribute{Required: true, Description: "Maps to the -OrganizationGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organization_name":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"organization_relationship": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationRelationship parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"outbound_connector":        schema.StringAttribute{Required: true, Description: "Maps to the -OutboundConnector parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"outbound_connector":        schema.StringAttribute{Required: true, Description: "Maps to the -OutboundConnector parameter."},
 		},
 	}
 }
@@ -164,8 +163,40 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 	id := r.identityOf(state)
 	sp := exo.SetOnPremisesOrganizationParams{}
 	sp.Identity = id
+	var cur *onPremisesOrganizationModel
+	curRead := false
+	current := func() *onPremisesOrganizationModel {
+		if !curRead {
+			curRead = true
+			var m onPremisesOrganizationModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-OnPremisesOrganization failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
 	if !plan.Comment.Equal(state.Comment) {
 		sp.Comment = plan.Comment.ValueString()
+	}
+	if !plan.HybridDomains.Equal(state.HybridDomains) {
+		if !plan.HybridDomains.IsNull() && !plan.HybridDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.HybridDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.HybridDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.HybridDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.HybridDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.InboundConnector.Equal(state.InboundConnector) {
+		if v := plan.InboundConnector.ValueString(); v != "" {
+			sp.InboundConnector = objectParam(v)
+		}
 	}
 	if !plan.OrganizationName.Equal(state.OrganizationName) {
 		sp.OrganizationName = plan.OrganizationName.ValueString()
@@ -173,6 +204,11 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 	if !plan.OrganizationRelationship.Equal(state.OrganizationRelationship) {
 		if v := plan.OrganizationRelationship.ValueString(); v != "" {
 			sp.OrganizationRelationship = objectParam(v)
+		}
+	}
+	if !plan.OutboundConnector.Equal(state.OutboundConnector) {
+		if v := plan.OutboundConnector.ValueString(); v != "" {
+			sp.OutboundConnector = objectParam(v)
 		}
 	}
 	if resp.Diagnostics.HasError() {

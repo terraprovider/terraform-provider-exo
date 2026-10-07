@@ -69,7 +69,7 @@ func (r *hostedOutboundSpamFilterRuleResource) Schema(_ context.Context, _ resou
 			"except_if_sender_domain_is":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSenderDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"from":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -From parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"from_member_of":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"hosted_outbound_spam_filter_policy": schema.StringAttribute{Required: true, Description: "Maps to the -HostedOutboundSpamFilterPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"hosted_outbound_spam_filter_policy": schema.StringAttribute{Required: true, Description: "Maps to the -HostedOutboundSpamFilterPolicy parameter."},
 			"name":                               schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                           schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"sender_domain_is":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -223,6 +223,11 @@ func (r *hostedOutboundSpamFilterRuleResource) Update(ctx context.Context, req r
 	if !plan.FromMemberOf.Equal(state.FromMemberOf) {
 		if !plan.FromMemberOf.IsNull() && !plan.FromMemberOf.IsUnknown() {
 			sp.FromMemberOf = append([]string{}, toStringSlice(ctx, plan.FromMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.HostedOutboundSpamFilterPolicy.Equal(state.HostedOutboundSpamFilterPolicy) {
+		if v := plan.HostedOutboundSpamFilterPolicy.ValueString(); v != "" {
+			sp.HostedOutboundSpamFilterPolicy = objectParam(v)
 		}
 	}
 	if !plan.Priority.Equal(state.Priority) {

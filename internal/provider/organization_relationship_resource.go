@@ -73,7 +73,7 @@ func (r *organizationRelationshipResource) Schema(_ context.Context, _ resource.
 			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"archive_access_enabled":        schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ArchiveAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"delivery_report_enabled":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliveryReportEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"domain_names":                  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -DomainNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"domain_names":                  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -DomainNames parameter."},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"free_busy_access_enabled":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -FreeBusyAccessEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"free_busy_access_level":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FreeBusyAccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -270,6 +270,19 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	if !plan.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
 		if !plan.DeliveryReportEnabled.IsUnknown() {
 			sp.DeliveryReportEnabled = plan.DeliveryReportEnabled.ValueBoolPointer()
+		}
+	}
+	if !plan.DomainNames.Equal(state.DomainNames) {
+		if !plan.DomainNames.IsNull() && !plan.DomainNames.IsUnknown() {
+			if v := toStringSlice(ctx, plan.DomainNames, &resp.Diagnostics); len(v) > 0 {
+				sp.DomainNames = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DomainNames, &resp.Diagnostics); len(rm) > 0 {
+						sp.DomainNamesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {

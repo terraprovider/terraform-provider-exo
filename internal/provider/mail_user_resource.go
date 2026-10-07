@@ -164,8 +164,8 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"extension_custom_attribute3":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"extension_custom_attribute4":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"extension_custom_attribute5":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"external_email_address":                           schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"federated_identity":                               schema.StringAttribute{Required: true, Description: "Maps to the -FederatedIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"external_email_address":                           schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter."},
+			"federated_identity":                               schema.StringAttribute{Required: true, Description: "Maps to the -FederatedIdentity parameter."},
 			"first_name":                                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"grant_send_on_behalf_to":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -183,7 +183,7 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"max_send_size":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxSendSize parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_body_format":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageBodyFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_format":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageFormat parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"microsoft_online_services_id":                     schema.StringAttribute{Required: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"microsoft_online_services_id":                     schema.StringAttribute{Required: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter."},
 			"moderated_by":                                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -576,6 +576,14 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 			}
 		}
 	}
+	if !plan.ExternalEmailAddress.Equal(state.ExternalEmailAddress) {
+		if v := plan.ExternalEmailAddress.ValueString(); v != "" {
+			sp.ExternalEmailAddress = objectParam(v)
+		}
+	}
+	if !plan.FederatedIdentity.Equal(state.FederatedIdentity) {
+		sp.FederatedIdentity = plan.FederatedIdentity.ValueString()
+	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
 		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
 	}
@@ -650,6 +658,11 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.MessageFormat.Equal(state.MessageFormat) {
 		if v := plan.MessageFormat.ValueString(); v != "" {
 			sp.MessageFormat = objectParam(v)
+		}
+	}
+	if !plan.MicrosoftOnlineServicesID.Equal(state.MicrosoftOnlineServicesID) {
+		if v := plan.MicrosoftOnlineServicesID.ValueString(); v != "" {
+			sp.MicrosoftOnlineServicesID = objectParam(v)
 		}
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
@@ -830,6 +843,7 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 		"CustomAttribute9":  cfg.CustomAttribute9,
 		"DisplayName":       cfg.DisplayName,
 		"ExchangeGuid":      cfg.ExchangeGuid,
+		"FederatedIdentity": cfg.FederatedIdentity,
 		"ImmutableId":       cfg.ImmutableId,
 		"MailTip":           cfg.MailTip,
 		"MailboxRegion":     cfg.MailboxRegion,

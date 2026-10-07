@@ -174,7 +174,7 @@ func (r *dynamicDistributionGroupResource) Schema(_ context.Context, _ resource.
 			"force_upgrade":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"grant_send_on_behalf_to":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"hidden_from_address_lists_enabled":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"included_recipients":                       schema.StringAttribute{Required: true, Description: "Maps to the -IncludedRecipients parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"included_recipients":                       schema.StringAttribute{Required: true, Description: "Maps to the -IncludedRecipients parameter."},
 			"mail_tip":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MailTip parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mail_tip_translations":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MailTipTranslations parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"managed_by":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ManagedBy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -186,7 +186,7 @@ func (r *dynamicDistributionGroupResource) Schema(_ context.Context, _ resource.
 			"phonetic_display_name":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PhoneticDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recipient_container":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientContainer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"recipient_filter":                          schema.StringAttribute{Required: true, Description: "Maps to the -RecipientFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"recipient_filter":                          schema.StringAttribute{Required: true, Description: "Maps to the -RecipientFilter parameter."},
 			"reject_messages_from":                      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"reject_messages_from_dl_members":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromDLMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"reject_messages_from_senders_or_members":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFromSendersOrMembers parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -861,6 +861,11 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 			sp.HiddenFromAddressListsEnabled = plan.HiddenFromAddressListsEnabled.ValueBoolPointer()
 		}
 	}
+	if !plan.IncludedRecipients.Equal(state.IncludedRecipients) {
+		if v := plan.IncludedRecipients.ValueString(); v != "" {
+			sp.IncludedRecipients = objectParam(v)
+		}
+	}
 	if !plan.MailTip.Equal(state.MailTip) {
 		sp.MailTip = plan.MailTip.ValueString()
 	}
@@ -915,6 +920,9 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 		if v := plan.RecipientContainer.ValueString(); v != "" {
 			sp.RecipientContainer = objectParam(v)
 		}
+	}
+	if !plan.RecipientFilter.Equal(state.RecipientFilter) {
+		sp.RecipientFilter = plan.RecipientFilter.ValueString()
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
@@ -1020,6 +1028,7 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 		"MailTip":             cfg.MailTip,
 		"Notes":               cfg.Notes,
 		"PhoneticDisplayName": cfg.PhoneticDisplayName,
+		"RecipientFilter":     cfg.RecipientFilter,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)

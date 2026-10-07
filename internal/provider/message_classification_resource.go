@@ -57,14 +57,14 @@ func (r *messageClassificationResource) Schema(_ context.Context, _ resource.Sch
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"classification_id":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassificationID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"display_name":                  schema.StringAttribute{Required: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"display_name":                  schema.StringAttribute{Required: true, Description: "Maps to the -DisplayName parameter."},
 			"display_precedence":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayPrecedence parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"locale":                        schema.StringAttribute{Required: true, Description: "Maps to the -Locale parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"permission_menu_visible":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PermissionMenuVisible parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_description":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientDescription parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"retain_classification_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RetainClassificationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"sender_description":            schema.StringAttribute{Required: true, Description: "Maps to the -SenderDescription parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"sender_description":            schema.StringAttribute{Required: true, Description: "Maps to the -SenderDescription parameter."},
 		},
 	}
 }
@@ -174,6 +174,9 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	if !plan.ClassificationID.Equal(state.ClassificationID) {
 		sp.ClassificationID = plan.ClassificationID.ValueString()
 	}
+	if !plan.DisplayName.Equal(state.DisplayName) {
+		sp.DisplayName = plan.DisplayName.ValueString()
+	}
 	if !plan.DisplayPrecedence.Equal(state.DisplayPrecedence) {
 		if v := plan.DisplayPrecedence.ValueString(); v != "" {
 			sp.DisplayPrecedence = objectParam(v)
@@ -192,6 +195,9 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 			sp.RetainClassificationEnabled = plan.RetainClassificationEnabled.ValueBoolPointer()
 		}
 	}
+	if !plan.SenderDescription.Equal(state.SenderDescription) {
+		sp.SenderDescription = plan.SenderDescription.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -202,7 +208,9 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"ClassificationID":     cfg.ClassificationID,
+		"DisplayName":          cfg.DisplayName,
 		"RecipientDescription": cfg.RecipientDescription,
+		"SenderDescription":    cfg.SenderDescription,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)

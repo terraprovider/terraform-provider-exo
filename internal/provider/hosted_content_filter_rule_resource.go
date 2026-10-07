@@ -67,7 +67,7 @@ func (r *hostedContentFilterRuleResource) Schema(_ context.Context, _ resource.S
 			"except_if_recipient_domain_is": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_sent_to_member_of":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfSentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"hosted_content_filter_policy":  schema.StringAttribute{Required: true, Description: "Maps to the -HostedContentFilterPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"hosted_content_filter_policy":  schema.StringAttribute{Required: true, Description: "Maps to the -HostedContentFilterPolicy parameter."},
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -213,6 +213,11 @@ func (r *hostedContentFilterRuleResource) Update(ctx context.Context, req resour
 	if !plan.ExceptIfSentToMemberOf.Equal(state.ExceptIfSentToMemberOf) {
 		if !plan.ExceptIfSentToMemberOf.IsNull() && !plan.ExceptIfSentToMemberOf.IsUnknown() {
 			sp.ExceptIfSentToMemberOf = append([]string{}, toStringSlice(ctx, plan.ExceptIfSentToMemberOf, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.HostedContentFilterPolicy.Equal(state.HostedContentFilterPolicy) {
+		if v := plan.HostedContentFilterPolicy.ValueString(); v != "" {
+			sp.HostedContentFilterPolicy = objectParam(v)
 		}
 	}
 	if !plan.Priority.Equal(state.Priority) {

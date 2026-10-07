@@ -87,7 +87,7 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"authentication":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Authentication parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"autodiscover":                     schema.BoolAttribute{Required: true, Description: "Maps to the -Autodiscover parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"compliance":                       schema.BoolAttribute{Required: true, Description: "Maps to the -Compliance parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"credentials":                      schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -Credentials parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"credentials":                      schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -Credentials parameter."},
 			"email_address":                    schema.StringAttribute{Required: true, Description: "Maps to the -EmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"exchange_outlook_anywhere":        schema.BoolAttribute{Required: true, Description: "Maps to the -ExchangeOutlookAnywhere parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"exchange_remote_move":             schema.BoolAttribute{Required: true, Description: "Maps to the -ExchangeRemoteMove parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
@@ -103,16 +103,16 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"partition":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"port":                             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_folder":                    schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"public_folder_database_server_legacy_dn": schema.StringAttribute{Required: true, Description: "Maps to the -PublicFolderDatabaseServerLegacyDN parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"public_folder_database_server_legacy_dn": schema.StringAttribute{Required: true, Description: "Maps to the -PublicFolderDatabaseServerLegacyDN parameter."},
 			"public_folder_to_unified_group":          schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolderToUnifiedGroup parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-			"rpc_proxy_server":                        schema.StringAttribute{Required: true, Description: "Maps to the -RPCProxyServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"rpc_proxy_server":                        schema.StringAttribute{Required: true, Description: "Maps to the -RPCProxyServer parameter."},
 			"redirect_uri":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RedirectUri parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"remote_server":                           schema.StringAttribute{Required: true, Description: "Maps to the -RemoteServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"remote_server":                           schema.StringAttribute{Required: true, Description: "Maps to the -RemoteServer parameter."},
 			"remote_tenant":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteTenant parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"security":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Security parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"service_account_key_file_data":           schema.StringAttribute{Required: true, Description: "Maps to the -ServiceAccountKeyFileData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"service_account_key_file_data":           schema.StringAttribute{Required: true, Description: "Maps to the -ServiceAccountKeyFileData parameter."},
 			"skip_verification":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipVerification parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"source_mailbox_legacy_dn":                schema.StringAttribute{Required: true, Description: "Maps to the -SourceMailboxLegacyDN parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"source_mailbox_legacy_dn":                schema.StringAttribute{Required: true, Description: "Maps to the -SourceMailboxLegacyDN parameter."},
 			"test_mailbox":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TestMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -301,6 +301,11 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 			sp.Authentication = objectParam(v)
 		}
 	}
+	if !plan.Credentials.Equal(state.Credentials) {
+		if v := plan.Credentials.ValueString(); v != "" {
+			sp.Credentials = objectParam(v)
+		}
+	}
 	if !plan.ExchangeServer.Equal(state.ExchangeServer) {
 		sp.ExchangeServer = plan.ExchangeServer.ValueString()
 	}
@@ -332,13 +337,34 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 			sp.Port = plan.Port.ValueInt64Pointer()
 		}
 	}
+	if !plan.PublicFolderDatabaseServerLegacyDN.Equal(state.PublicFolderDatabaseServerLegacyDN) {
+		sp.PublicFolderDatabaseServerLegacyDN = plan.PublicFolderDatabaseServerLegacyDN.ValueString()
+	}
+	if !plan.RPCProxyServer.Equal(state.RPCProxyServer) {
+		if v := plan.RPCProxyServer.ValueString(); v != "" {
+			sp.RPCProxyServer = objectParam(v)
+		}
+	}
+	if !plan.RemoteServer.Equal(state.RemoteServer) {
+		if v := plan.RemoteServer.ValueString(); v != "" {
+			sp.RemoteServer = objectParam(v)
+		}
+	}
 	if !plan.Security.Equal(state.Security) {
 		if v := plan.Security.ValueString(); v != "" {
 			sp.Security = objectParam(v)
 		}
 	}
+	if !plan.ServiceAccountKeyFileData.Equal(state.ServiceAccountKeyFileData) {
+		if v := plan.ServiceAccountKeyFileData.ValueString(); v != "" {
+			sp.ServiceAccountKeyFileData = objectParam(v)
+		}
+	}
 	if !plan.SkipVerification.Equal(state.SkipVerification) {
 		sp.SkipVerification = plan.SkipVerification.ValueBool()
+	}
+	if !plan.SourceMailboxLegacyDN.Equal(state.SourceMailboxLegacyDN) {
+		sp.SourceMailboxLegacyDN = plan.SourceMailboxLegacyDN.ValueString()
 	}
 	if !plan.TestMailbox.Equal(state.TestMailbox) {
 		if v := plan.TestMailbox.ValueString(); v != "" {
@@ -354,10 +380,12 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
-		"AppSecretKeyVaultUrl": cfg.AppSecretKeyVaultUrl,
-		"ApplicationId":        cfg.ApplicationId,
-		"ExchangeServer":       cfg.ExchangeServer,
-		"NspiServer":           cfg.NspiServer,
+		"AppSecretKeyVaultUrl":               cfg.AppSecretKeyVaultUrl,
+		"ApplicationId":                      cfg.ApplicationId,
+		"ExchangeServer":                     cfg.ExchangeServer,
+		"NspiServer":                         cfg.NspiServer,
+		"PublicFolderDatabaseServerLegacyDN": cfg.PublicFolderDatabaseServerLegacyDN,
+		"SourceMailboxLegacyDN":              cfg.SourceMailboxLegacyDN,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)

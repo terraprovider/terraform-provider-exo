@@ -87,7 +87,7 @@ func (r *inboundConnectorResource) Schema(_ context.Context, _ resource.SchemaRe
 			"restrict_domains_to_certificate":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RestrictDomainsToCertificate parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"restrict_domains_to_ip_addresses": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RestrictDomainsToIPAddresses parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"scan_and_drop_recipients":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ScanAndDropRecipients parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"sender_domains":                   schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SenderDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"sender_domains":                   schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SenderDomains parameter."},
 			"sender_ip_addresses":              schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderIPAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"tls_sender_certificate_name":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TlsSenderCertificateName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"treat_messages_as_internal":       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -TreatMessagesAsInternal parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -389,6 +389,19 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 				if c := current(); c != nil {
 					if rm := toStringSlice(ctx, c.ScanAndDropRecipients, &resp.Diagnostics); len(rm) > 0 {
 						sp.ScanAndDropRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
+	if !plan.SenderDomains.Equal(state.SenderDomains) {
+		if !plan.SenderDomains.IsNull() && !plan.SenderDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.SenderDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.SenderDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SenderDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.SenderDomainsDelta = listRemoveDelta(rm)
 					}
 				}
 			}

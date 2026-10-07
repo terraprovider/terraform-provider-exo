@@ -51,7 +51,7 @@ func (r *activeSyncDeviceAccessRuleResource) Schema(_ context.Context, _ resourc
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"access_level":   schema.StringAttribute{Required: true, Description: "Maps to the -AccessLevel parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"access_level":   schema.StringAttribute{Required: true, Description: "Maps to the -AccessLevel parameter."},
 			"characteristic": schema.StringAttribute{Required: true, Description: "Maps to the -Characteristic parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"query_string":   schema.StringAttribute{Required: true, Description: "Maps to the -QueryString parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -138,6 +138,11 @@ func (r *activeSyncDeviceAccessRuleResource) Update(ctx context.Context, req res
 	id := r.identityOf(state)
 	sp := exo.SetActiveSyncDeviceAccessRuleParams{}
 	sp.Identity = id
+	if !plan.AccessLevel.Equal(state.AccessLevel) {
+		if v := plan.AccessLevel.ValueString(); v != "" {
+			sp.AccessLevel = objectParam(v)
+		}
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}

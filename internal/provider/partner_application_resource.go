@@ -58,7 +58,7 @@ func (r *partnerApplicationResource) Schema(_ context.Context, _ resource.Schema
 			"accept_security_identifier_information": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AcceptSecurityIdentifierInformation parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"account_type":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AccountType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"act_as_permissions":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ActAsPermissions parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"application_identifier":                 schema.StringAttribute{Required: true, Description: "Maps to the -ApplicationIdentifier parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"application_identifier":                 schema.StringAttribute{Required: true, Description: "Maps to the -ApplicationIdentifier parameter."},
 			"enabled":                                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"linked_account":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LinkedAccount parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                                   schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -174,6 +174,9 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 			sp.ActAsPermissions = append([]string{}, toStringSlice(ctx, plan.ActAsPermissions, &resp.Diagnostics)...)
 		}
 	}
+	if !plan.ApplicationIdentifier.Equal(state.ApplicationIdentifier) {
+		sp.ApplicationIdentifier = plan.ApplicationIdentifier.ValueString()
+	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
@@ -192,7 +195,9 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{
+		"ApplicationIdentifier": cfg.ApplicationIdentifier,
+	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
