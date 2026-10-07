@@ -355,6 +355,17 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 	sp := exo.SetOrganizationConfigParams{}
+	var cur *organizationConfigModel
+	current := func() *organizationConfigModel {
+		if cur == nil {
+			var m organizationConfigModel
+			if !r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.ActionableMessagesExtenalAccessTokenEnabled.IsNull() {
 		if !plan.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() {
 			sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBoolPointer()
@@ -626,7 +637,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.DistributionGroupNameBlockedWordsList.IsNull() {
 		if !plan.DistributionGroupNameBlockedWordsList.IsNull() && !plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
-			sp.DistributionGroupNameBlockedWordsList = append([]string{}, toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(v) > 0 {
+				sp.DistributionGroupNameBlockedWordsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.DistributionGroupNameBlockedWordsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := config.DistributionGroupNamingPolicy.ValueString(); v != "" {
@@ -672,7 +691,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.EwsAllowList.IsNull() {
 		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
-			sp.EwsAllowList = append([]string{}, toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.EwsAllowMacOutlook.IsNull() {
@@ -693,7 +720,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.EwsBlockList.IsNull() {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
-			sp.EwsBlockList = append([]string{}, toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.EwsEnabled.IsNull() {
@@ -714,7 +749,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.ExchangeNotificationRecipients.IsNull() {
 		if !plan.ExchangeNotificationRecipients.IsNull() && !plan.ExchangeNotificationRecipients.IsUnknown() {
-			sp.ExchangeNotificationRecipients = append([]string{}, toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ExchangeNotificationRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExchangeNotificationRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExchangeNotificationRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.FindTimeAttendeeAuthenticationEnabled.IsNull() {
@@ -752,7 +795,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.IPListBlocked.IsNull() {
 		if !plan.IPListBlocked.IsNull() && !plan.IPListBlocked.IsUnknown() {
-			sp.IPListBlocked = append([]string{}, toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics); len(v) > 0 {
+				sp.IPListBlocked = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPListBlocked, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPListBlockedDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.InRegionRoutingEnabled.IsNull() {
@@ -948,7 +999,15 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !config.RemotePublicFolderMailboxes.IsNull() {
 		if !plan.RemotePublicFolderMailboxes.IsNull() && !plan.RemotePublicFolderMailboxes.IsUnknown() {
-			sp.RemotePublicFolderMailboxes = append([]string{}, toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics); len(v) > 0 {
+				sp.RemotePublicFolderMailboxes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemotePublicFolderMailboxes, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemotePublicFolderMailboxesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.RequiredCharsetCoverage.IsNull() {
@@ -1048,6 +1107,17 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	id := r.identityOf(state)
 	sp := exo.SetOrganizationConfigParams{}
+	var cur *organizationConfigModel
+	current := func() *organizationConfigModel {
+		if cur == nil {
+			var m organizationConfigModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.ActionableMessagesExtenalAccessTokenEnabled.Equal(state.ActionableMessagesExtenalAccessTokenEnabled) {
 		if !plan.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() {
 			sp.ActionableMessagesExtenalAccessTokenEnabled = plan.ActionableMessagesExtenalAccessTokenEnabled.ValueBoolPointer()
@@ -1319,7 +1389,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.DistributionGroupNameBlockedWordsList.Equal(state.DistributionGroupNameBlockedWordsList) {
 		if !plan.DistributionGroupNameBlockedWordsList.IsNull() && !plan.DistributionGroupNameBlockedWordsList.IsUnknown() {
-			sp.DistributionGroupNameBlockedWordsList = append([]string{}, toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(v) > 0 {
+				sp.DistributionGroupNameBlockedWordsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DistributionGroupNameBlockedWordsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.DistributionGroupNameBlockedWordsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.DistributionGroupNamingPolicy.ValueString(); v != "" {
@@ -1365,7 +1443,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.EwsAllowList.Equal(state.EwsAllowList) {
 		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
-			sp.EwsAllowList = append([]string{}, toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EwsAllowMacOutlook.Equal(state.EwsAllowMacOutlook) {
@@ -1386,7 +1472,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.EwsBlockList.Equal(state.EwsBlockList) {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
-			sp.EwsBlockList = append([]string{}, toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EwsEnabled.Equal(state.EwsEnabled) {
@@ -1407,7 +1501,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.ExchangeNotificationRecipients.Equal(state.ExchangeNotificationRecipients) {
 		if !plan.ExchangeNotificationRecipients.IsNull() && !plan.ExchangeNotificationRecipients.IsUnknown() {
-			sp.ExchangeNotificationRecipients = append([]string{}, toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExchangeNotificationRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ExchangeNotificationRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExchangeNotificationRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExchangeNotificationRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.FindTimeAttendeeAuthenticationEnabled.Equal(state.FindTimeAttendeeAuthenticationEnabled) {
@@ -1445,7 +1547,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.IPListBlocked.Equal(state.IPListBlocked) {
 		if !plan.IPListBlocked.IsNull() && !plan.IPListBlocked.IsUnknown() {
-			sp.IPListBlocked = append([]string{}, toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.IPListBlocked, &resp.Diagnostics); len(v) > 0 {
+				sp.IPListBlocked = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPListBlocked, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPListBlockedDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.InRegionRoutingEnabled.Equal(state.InRegionRoutingEnabled) {
@@ -1641,7 +1751,15 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.RemotePublicFolderMailboxes.Equal(state.RemotePublicFolderMailboxes) {
 		if !plan.RemotePublicFolderMailboxes.IsNull() && !plan.RemotePublicFolderMailboxes.IsUnknown() {
-			sp.RemotePublicFolderMailboxes = append([]string{}, toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RemotePublicFolderMailboxes, &resp.Diagnostics); len(v) > 0 {
+				sp.RemotePublicFolderMailboxes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemotePublicFolderMailboxes, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemotePublicFolderMailboxesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {

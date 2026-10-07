@@ -209,6 +209,17 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetRetentionPolicyTagParams{}
 	sp.Identity = id
+	var cur *retentionPolicyTagModel
+	current := func() *retentionPolicyTagModel {
+		if cur == nil {
+			var m retentionPolicyTagModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := plan.AgeLimitForRetention.ValueString(); v != "" {
 		sp.AgeLimitForRetention = objectParam(v)
 	}
@@ -220,12 +231,28 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	}
 	if !plan.LocalizedComment.Equal(state.LocalizedComment) {
 		if !plan.LocalizedComment.IsNull() && !plan.LocalizedComment.IsUnknown() {
-			sp.LocalizedComment = append([]string{}, toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics); len(v) > 0 {
+				sp.LocalizedComment = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LocalizedComment, &resp.Diagnostics); len(rm) > 0 {
+						sp.LocalizedCommentDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.LocalizedRetentionPolicyTagName.Equal(state.LocalizedRetentionPolicyTagName) {
 		if !plan.LocalizedRetentionPolicyTagName.IsNull() && !plan.LocalizedRetentionPolicyTagName.IsUnknown() {
-			sp.LocalizedRetentionPolicyTagName = append([]string{}, toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.LocalizedRetentionPolicyTagName, &resp.Diagnostics); len(v) > 0 {
+				sp.LocalizedRetentionPolicyTagName = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LocalizedRetentionPolicyTagName, &resp.Diagnostics); len(rm) > 0 {
+						sp.LocalizedRetentionPolicyTagNameDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.Mailbox.ValueString(); v != "" {

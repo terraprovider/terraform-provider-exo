@@ -163,6 +163,17 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetHostedConnectionFilterPolicyParams{}
 	sp.Identity = id
+	var cur *hostedConnectionFilterPolicyModel
+	current := func() *hostedConnectionFilterPolicyModel {
+		if cur == nil {
+			var m hostedConnectionFilterPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
@@ -176,12 +187,28 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 	}
 	if !plan.IPAllowList.Equal(state.IPAllowList) {
 		if !plan.IPAllowList.IsNull() && !plan.IPAllowList.IsUnknown() {
-			sp.IPAllowList = append([]string{}, toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.IPAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.IPAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.IPBlockList.Equal(state.IPBlockList) {
 		if !plan.IPBlockList.IsNull() && !plan.IPBlockList.IsUnknown() {
-			sp.IPBlockList = append([]string{}, toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.IPBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.IPBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.IPBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.IPBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MakeDefault.Equal(state.MakeDefault) {

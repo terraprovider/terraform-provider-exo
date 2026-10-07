@@ -246,6 +246,17 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetSafeLinksPolicyParams{}
 	sp.Identity = id
+	var cur *safeLinksPolicyModel
+	current := func() *safeLinksPolicyModel {
+		if cur == nil {
+			var m safeLinksPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
@@ -272,7 +283,15 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.DoNotRewriteUrls.Equal(state.DoNotRewriteUrls) {
 		if !plan.DoNotRewriteUrls.IsNull() && !plan.DoNotRewriteUrls.IsUnknown() {
-			sp.DoNotRewriteUrls = append([]string{}, toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.DoNotRewriteUrls, &resp.Diagnostics); len(v) > 0 {
+				sp.DoNotRewriteUrls = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DoNotRewriteUrls, &resp.Diagnostics); len(rm) > 0 {
+						sp.DoNotRewriteUrlsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EnableForInternalSenders.Equal(state.EnableForInternalSenders) {

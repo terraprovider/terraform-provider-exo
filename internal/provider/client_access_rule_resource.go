@@ -102,22 +102,57 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	}
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *clientAccessRuleModel
+	current := func() *clientAccessRuleModel {
+		if cur == nil {
+			var m clientAccessRuleModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := config.Action.ValueString(); v != "" {
 		sp.Action = objectParam(v)
 	}
 	if !config.AnyOfAuthenticationTypes.IsNull() {
 		if !plan.AnyOfAuthenticationTypes.IsNull() && !plan.AnyOfAuthenticationTypes.IsUnknown() {
-			sp.AnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfAuthenticationTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfAuthenticationTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfAuthenticationTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.AnyOfClientIPAddressesOrRanges.IsNull() {
 		if !plan.AnyOfClientIPAddressesOrRanges.IsNull() && !plan.AnyOfClientIPAddressesOrRanges.IsUnknown() {
-			sp.AnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfClientIPAddressesOrRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfClientIPAddressesOrRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.AnyOfProtocols.IsNull() {
 		if !plan.AnyOfProtocols.IsNull() && !plan.AnyOfProtocols.IsUnknown() {
-			sp.AnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfProtocols = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfProtocols, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfProtocolsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Enabled.IsNull() {
@@ -127,22 +162,54 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.ExceptAnyOfAuthenticationTypes.IsNull() {
 		if !plan.ExceptAnyOfAuthenticationTypes.IsNull() && !plan.ExceptAnyOfAuthenticationTypes.IsUnknown() {
-			sp.ExceptAnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfAuthenticationTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfAuthenticationTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExceptAnyOfClientIPAddressesOrRanges.IsNull() {
 		if !plan.ExceptAnyOfClientIPAddressesOrRanges.IsNull() && !plan.ExceptAnyOfClientIPAddressesOrRanges.IsUnknown() {
-			sp.ExceptAnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfClientIPAddressesOrRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfClientIPAddressesOrRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExceptAnyOfProtocols.IsNull() {
 		if !plan.ExceptAnyOfProtocols.IsNull() && !plan.ExceptAnyOfProtocols.IsUnknown() {
-			sp.ExceptAnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfProtocols = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfProtocols, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfProtocolsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExceptUsernameMatchesAnyOfPatterns.IsNull() {
 		if !plan.ExceptUsernameMatchesAnyOfPatterns.IsNull() && !plan.ExceptUsernameMatchesAnyOfPatterns.IsUnknown() {
-			sp.ExceptUsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptUsernameMatchesAnyOfPatterns = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptUsernameMatchesAnyOfPatternsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Name.IsNull() {
@@ -161,7 +228,15 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.UsernameMatchesAnyOfPatterns.IsNull() {
 		if !plan.UsernameMatchesAnyOfPatterns.IsNull() && !plan.UsernameMatchesAnyOfPatterns.IsUnknown() {
-			sp.UsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(v) > 0 {
+				sp.UsernameMatchesAnyOfPatterns = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(rm) > 0 {
+						sp.UsernameMatchesAnyOfPatternsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {
@@ -203,22 +278,57 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetClientAccessRuleParams{}
 	sp.Identity = id
+	var cur *clientAccessRuleModel
+	current := func() *clientAccessRuleModel {
+		if cur == nil {
+			var m clientAccessRuleModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := plan.Action.ValueString(); v != "" {
 		sp.Action = objectParam(v)
 	}
 	if !plan.AnyOfAuthenticationTypes.Equal(state.AnyOfAuthenticationTypes) {
 		if !plan.AnyOfAuthenticationTypes.IsNull() && !plan.AnyOfAuthenticationTypes.IsUnknown() {
-			sp.AnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfAuthenticationTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfAuthenticationTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfAuthenticationTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfAuthenticationTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AnyOfClientIPAddressesOrRanges.Equal(state.AnyOfClientIPAddressesOrRanges) {
 		if !plan.AnyOfClientIPAddressesOrRanges.IsNull() && !plan.AnyOfClientIPAddressesOrRanges.IsUnknown() {
-			sp.AnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfClientIPAddressesOrRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfClientIPAddressesOrRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AnyOfProtocols.Equal(state.AnyOfProtocols) {
 		if !plan.AnyOfProtocols.IsNull() && !plan.AnyOfProtocols.IsUnknown() {
-			sp.AnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AnyOfProtocols, &resp.Diagnostics); len(v) > 0 {
+				sp.AnyOfProtocols = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AnyOfProtocols, &resp.Diagnostics); len(rm) > 0 {
+						sp.AnyOfProtocolsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
@@ -228,22 +338,54 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.ExceptAnyOfAuthenticationTypes.Equal(state.ExceptAnyOfAuthenticationTypes) {
 		if !plan.ExceptAnyOfAuthenticationTypes.IsNull() && !plan.ExceptAnyOfAuthenticationTypes.IsUnknown() {
-			sp.ExceptAnyOfAuthenticationTypes = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfAuthenticationTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfAuthenticationTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfAuthenticationTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptAnyOfClientIPAddressesOrRanges.Equal(state.ExceptAnyOfClientIPAddressesOrRanges) {
 		if !plan.ExceptAnyOfClientIPAddressesOrRanges.IsNull() && !plan.ExceptAnyOfClientIPAddressesOrRanges.IsUnknown() {
-			sp.ExceptAnyOfClientIPAddressesOrRanges = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfClientIPAddressesOrRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfClientIPAddressesOrRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfClientIPAddressesOrRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptAnyOfProtocols.Equal(state.ExceptAnyOfProtocols) {
 		if !plan.ExceptAnyOfProtocols.IsNull() && !plan.ExceptAnyOfProtocols.IsUnknown() {
-			sp.ExceptAnyOfProtocols = append([]string{}, toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptAnyOfProtocols, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptAnyOfProtocols = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptAnyOfProtocols, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptAnyOfProtocolsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptUsernameMatchesAnyOfPatterns.Equal(state.ExceptUsernameMatchesAnyOfPatterns) {
 		if !plan.ExceptUsernameMatchesAnyOfPatterns.IsNull() && !plan.ExceptUsernameMatchesAnyOfPatterns.IsUnknown() {
-			sp.ExceptUsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptUsernameMatchesAnyOfPatterns = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptUsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptUsernameMatchesAnyOfPatternsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Name.Equal(state.Name) {
@@ -262,7 +404,15 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.UsernameMatchesAnyOfPatterns.Equal(state.UsernameMatchesAnyOfPatterns) {
 		if !plan.UsernameMatchesAnyOfPatterns.IsNull() && !plan.UsernameMatchesAnyOfPatterns.IsUnknown() {
-			sp.UsernameMatchesAnyOfPatterns = append([]string{}, toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(v) > 0 {
+				sp.UsernameMatchesAnyOfPatterns = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UsernameMatchesAnyOfPatterns, &resp.Diagnostics); len(rm) > 0 {
+						sp.UsernameMatchesAnyOfPatternsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

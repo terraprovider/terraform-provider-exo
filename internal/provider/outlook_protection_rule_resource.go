@@ -174,6 +174,17 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 	id := r.identityOf(state)
 	sp := exo.SetOutlookProtectionRuleParams{}
 	sp.Identity = id
+	var cur *outlookProtectionRuleModel
+	current := func() *outlookProtectionRuleModel {
+		if cur == nil {
+			var m outlookProtectionRuleModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.FromDepartment.Equal(state.FromDepartment) {
 		if !plan.FromDepartment.IsNull() && !plan.FromDepartment.IsUnknown() {
 			sp.FromDepartment = append([]string{}, toStringSlice(ctx, plan.FromDepartment, &resp.Diagnostics)...)
@@ -186,7 +197,15 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 	}
 	if !plan.SentTo.Equal(state.SentTo) {
 		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {
-			sp.SentTo = append([]string{}, toStringSlice(ctx, plan.SentTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SentTo, &resp.Diagnostics); len(v) > 0 {
+				sp.SentTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SentTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.SentToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.SentToScope.ValueString(); v != "" {

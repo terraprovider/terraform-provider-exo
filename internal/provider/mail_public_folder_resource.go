@@ -179,19 +179,54 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	sp := exo.SetMailPublicFolderParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *mailPublicFolderModel
+	current := func() *mailPublicFolderModel {
+		if cur == nil {
+			var m mailPublicFolderModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AcceptMessagesOnlyFrom.IsNull() {
 		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
-			sp.AcceptMessagesOnlyFrom = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.AcceptMessagesOnlyFromDLMembers.IsNull() {
 		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromDLMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.AcceptMessagesOnlyFromSendersOrMembers.IsNull() {
 		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Alias.IsNull() {
@@ -199,7 +234,15 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.BypassModerationFromSendersOrMembers.IsNull() {
 		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
-			sp.BypassModerationFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Contacts.IsNull() {
@@ -275,27 +318,67 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.ExtensionCustomAttribute1.IsNull() {
 		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
-			sp.ExtensionCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExtensionCustomAttribute2.IsNull() {
 		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
-			sp.ExtensionCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExtensionCustomAttribute3.IsNull() {
 		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
-			sp.ExtensionCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExtensionCustomAttribute4.IsNull() {
 		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
-			sp.ExtensionCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ExtensionCustomAttribute5.IsNull() {
 		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
-			sp.ExtensionCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := config.ExternalEmailAddress.ValueString(); v != "" {
@@ -306,7 +389,15 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.GrantSendOnBehalfTo.IsNull() {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
-			sp.GrantSendOnBehalfTo = append([]string{}, toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.HiddenFromAddressListsEnabled.IsNull() {
@@ -324,7 +415,15 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.MailTipTranslations.IsNull() {
 		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
-			sp.MailTipTranslations = append([]string{}, toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := config.MaxReceiveSize.ValueString(); v != "" {
@@ -335,7 +434,15 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.ModeratedBy.IsNull() {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
-			sp.ModeratedBy = append([]string{}, toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ModerationEnabled.IsNull() {
@@ -357,17 +464,41 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.RejectMessagesFrom.IsNull() {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
-			sp.RejectMessagesFrom = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.RejectMessagesFromDLMembers.IsNull() {
 		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
-			sp.RejectMessagesFromDLMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.RejectMessagesFromSendersOrMembers.IsNull() {
 		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
-			sp.RejectMessagesFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.RequireSenderAuthenticationEnabled.IsNull() {
@@ -423,19 +554,54 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetMailPublicFolderParams{}
 	sp.Identity = id
+	var cur *mailPublicFolderModel
+	current := func() *mailPublicFolderModel {
+		if cur == nil {
+			var m mailPublicFolderModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AcceptMessagesOnlyFrom.Equal(state.AcceptMessagesOnlyFrom) {
 		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
-			sp.AcceptMessagesOnlyFrom = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromDLMembers.Equal(state.AcceptMessagesOnlyFromDLMembers) {
 		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromDLMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromSendersOrMembers.Equal(state.AcceptMessagesOnlyFromSendersOrMembers) {
 		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Alias.Equal(state.Alias) {
@@ -443,7 +609,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.BypassModerationFromSendersOrMembers.Equal(state.BypassModerationFromSendersOrMembers) {
 		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
-			sp.BypassModerationFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Contacts.Equal(state.Contacts) {
@@ -519,27 +693,67 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.ExtensionCustomAttribute1.Equal(state.ExtensionCustomAttribute1) {
 		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
-			sp.ExtensionCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute2.Equal(state.ExtensionCustomAttribute2) {
 		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
-			sp.ExtensionCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute3.Equal(state.ExtensionCustomAttribute3) {
 		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
-			sp.ExtensionCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute4.Equal(state.ExtensionCustomAttribute4) {
 		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
-			sp.ExtensionCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute5.Equal(state.ExtensionCustomAttribute5) {
 		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
-			sp.ExtensionCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ExternalEmailAddress.ValueString(); v != "" {
@@ -550,7 +764,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
-			sp.GrantSendOnBehalfTo = append([]string{}, toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
@@ -568,7 +790,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.MailTipTranslations.Equal(state.MailTipTranslations) {
 		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
-			sp.MailTipTranslations = append([]string{}, toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.MaxReceiveSize.ValueString(); v != "" {
@@ -579,7 +809,15 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
-			sp.ModeratedBy = append([]string{}, toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ModerationEnabled.Equal(state.ModerationEnabled) {
@@ -601,17 +839,41 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
-			sp.RejectMessagesFrom = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromDLMembers.Equal(state.RejectMessagesFromDLMembers) {
 		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
-			sp.RejectMessagesFromDLMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
 		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
-			sp.RejectMessagesFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {

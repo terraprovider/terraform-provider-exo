@@ -143,14 +143,41 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *cASMailboxModel
+	current := func() *cASMailboxModel {
+		if cur == nil {
+			var m cASMailboxModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.ActiveSyncAllowedDeviceIDs.IsNull() {
 		if !plan.ActiveSyncAllowedDeviceIDs.IsNull() && !plan.ActiveSyncAllowedDeviceIDs.IsUnknown() {
-			sp.ActiveSyncAllowedDeviceIDs = append([]string{}, toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics); len(v) > 0 {
+				sp.ActiveSyncAllowedDeviceIDs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics); len(rm) > 0 {
+						sp.ActiveSyncAllowedDeviceIDsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ActiveSyncBlockedDeviceIDs.IsNull() {
 		if !plan.ActiveSyncBlockedDeviceIDs.IsNull() && !plan.ActiveSyncBlockedDeviceIDs.IsUnknown() {
-			sp.ActiveSyncBlockedDeviceIDs = append([]string{}, toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics); len(v) > 0 {
+				sp.ActiveSyncBlockedDeviceIDs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics); len(rm) > 0 {
+						sp.ActiveSyncBlockedDeviceIDsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ActiveSyncDebugLogging.IsNull() {
@@ -178,7 +205,15 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if !config.EwsAllowList.IsNull() {
 		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
-			sp.EwsAllowList = append([]string{}, toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.EwsAllowMacOutlook.IsNull() {
@@ -196,7 +231,15 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if !config.EwsBlockList.IsNull() {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
-			sp.EwsBlockList = append([]string{}, toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.EwsEnabled.IsNull() {
@@ -347,14 +390,41 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	id := r.identityOf(state)
 	sp := exo.SetCASMailboxParams{}
 	sp.Identity = id
+	var cur *cASMailboxModel
+	current := func() *cASMailboxModel {
+		if cur == nil {
+			var m cASMailboxModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.ActiveSyncAllowedDeviceIDs.Equal(state.ActiveSyncAllowedDeviceIDs) {
 		if !plan.ActiveSyncAllowedDeviceIDs.IsNull() && !plan.ActiveSyncAllowedDeviceIDs.IsUnknown() {
-			sp.ActiveSyncAllowedDeviceIDs = append([]string{}, toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics); len(v) > 0 {
+				sp.ActiveSyncAllowedDeviceIDs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ActiveSyncAllowedDeviceIDs, &resp.Diagnostics); len(rm) > 0 {
+						sp.ActiveSyncAllowedDeviceIDsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ActiveSyncBlockedDeviceIDs.Equal(state.ActiveSyncBlockedDeviceIDs) {
 		if !plan.ActiveSyncBlockedDeviceIDs.IsNull() && !plan.ActiveSyncBlockedDeviceIDs.IsUnknown() {
-			sp.ActiveSyncBlockedDeviceIDs = append([]string{}, toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics); len(v) > 0 {
+				sp.ActiveSyncBlockedDeviceIDs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ActiveSyncBlockedDeviceIDs, &resp.Diagnostics); len(rm) > 0 {
+						sp.ActiveSyncBlockedDeviceIDsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ActiveSyncDebugLogging.Equal(state.ActiveSyncDebugLogging) {
@@ -382,7 +452,15 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if !plan.EwsAllowList.Equal(state.EwsAllowList) {
 		if !plan.EwsAllowList.IsNull() && !plan.EwsAllowList.IsUnknown() {
-			sp.EwsAllowList = append([]string{}, toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsAllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsAllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsAllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsAllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EwsAllowMacOutlook.Equal(state.EwsAllowMacOutlook) {
@@ -400,7 +478,15 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if !plan.EwsBlockList.Equal(state.EwsBlockList) {
 		if !plan.EwsBlockList.IsNull() && !plan.EwsBlockList.IsUnknown() {
-			sp.EwsBlockList = append([]string{}, toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EwsBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.EwsBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EwsBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.EwsBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EwsEnabled.Equal(state.EwsEnabled) {

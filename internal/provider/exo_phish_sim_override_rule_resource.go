@@ -161,14 +161,41 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetExoPhishSimOverrideRuleParams{}
 	sp.Identity = id
+	var cur *exoPhishSimOverrideRuleModel
+	current := func() *exoPhishSimOverrideRuleModel {
+		if cur == nil {
+			var m exoPhishSimOverrideRuleModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AddDomains.Equal(state.AddDomains) {
 		if !plan.AddDomains.IsNull() && !plan.AddDomains.IsUnknown() {
-			sp.AddDomains = append([]string{}, toStringSlice(ctx, plan.AddDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AddDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.AddDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AddDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.AddDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AddSenderIpRanges.Equal(state.AddSenderIpRanges) {
 		if !plan.AddSenderIpRanges.IsNull() && !plan.AddSenderIpRanges.IsUnknown() {
-			sp.AddSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.AddSenderIpRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AddSenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.AddSenderIpRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AddSenderIpRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.AddSenderIpRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Comment.Equal(state.Comment) {
@@ -176,12 +203,28 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 	}
 	if !plan.RemoveDomains.Equal(state.RemoveDomains) {
 		if !plan.RemoveDomains.IsNull() && !plan.RemoveDomains.IsUnknown() {
-			sp.RemoveDomains = append([]string{}, toStringSlice(ctx, plan.RemoveDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RemoveDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.RemoveDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemoveDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemoveDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RemoveSenderIpRanges.Equal(state.RemoveSenderIpRanges) {
 		if !plan.RemoveSenderIpRanges.IsNull() && !plan.RemoveSenderIpRanges.IsUnknown() {
-			sp.RemoveSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.RemoveSenderIpRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RemoveSenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.RemoveSenderIpRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemoveSenderIpRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemoveSenderIpRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

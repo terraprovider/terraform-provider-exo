@@ -73,9 +73,28 @@ func (r *resourceConfigResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	sp := exo.SetResourceConfigParams{}
+	var cur *resourceConfigModel
+	current := func() *resourceConfigModel {
+		if cur == nil {
+			var m resourceConfigModel
+			if !r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.ResourcePropertySchema.IsNull() {
 		if !plan.ResourcePropertySchema.IsNull() && !plan.ResourcePropertySchema.IsUnknown() {
-			sp.ResourcePropertySchema = append([]string{}, toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics); len(v) > 0 {
+				sp.ResourcePropertySchema = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ResourcePropertySchema, &resp.Diagnostics); len(rm) > 0 {
+						sp.ResourcePropertySchemaDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {
@@ -116,9 +135,28 @@ func (r *resourceConfigResource) Update(ctx context.Context, req resource.Update
 	}
 	id := r.identityOf(state)
 	sp := exo.SetResourceConfigParams{}
+	var cur *resourceConfigModel
+	current := func() *resourceConfigModel {
+		if cur == nil {
+			var m resourceConfigModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.ResourcePropertySchema.Equal(state.ResourcePropertySchema) {
 		if !plan.ResourcePropertySchema.IsNull() && !plan.ResourcePropertySchema.IsUnknown() {
-			sp.ResourcePropertySchema = append([]string{}, toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ResourcePropertySchema, &resp.Diagnostics); len(v) > 0 {
+				sp.ResourcePropertySchema = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ResourcePropertySchema, &resp.Diagnostics); len(rm) > 0 {
+						sp.ResourcePropertySchemaDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

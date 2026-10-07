@@ -173,6 +173,17 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetRoleGroupParams{}
 	sp.Identity = id
+	var cur *roleGroupModel
+	current := func() *roleGroupModel {
+		if cur == nil {
+			var m roleGroupModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.Description.Equal(state.Description) {
 		sp.Description = plan.Description.ValueString()
 	}
@@ -181,7 +192,15 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ManagedBy.Equal(state.ManagedBy) {
 		if !plan.ManagedBy.IsNull() && !plan.ManagedBy.IsUnknown() {
-			sp.ManagedBy = append([]string{}, toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ManagedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ManagedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ManagedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.WellKnownObject.Equal(state.WellKnownObject) {

@@ -647,6 +647,17 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	id := r.identityOf(state)
 	sp := exo.SetInboxRuleParams{}
 	sp.Identity = id
+	var cur *inboxRuleModel
+	current := func() *inboxRuleModel {
+		if cur == nil {
+			var m inboxRuleModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AlwaysDeleteOutlookRulesBlob.Equal(state.AlwaysDeleteOutlookRulesBlob) {
 		sp.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
 	}
@@ -657,12 +668,28 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ApplyCategory.Equal(state.ApplyCategory) {
 		if !plan.ApplyCategory.IsNull() && !plan.ApplyCategory.IsUnknown() {
-			sp.ApplyCategory = append([]string{}, toStringSlice(ctx, plan.ApplyCategory, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ApplyCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.ApplyCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ApplyCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.ApplyCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ApplySystemCategory.Equal(state.ApplySystemCategory) {
 		if !plan.ApplySystemCategory.IsNull() && !plan.ApplySystemCategory.IsUnknown() {
-			sp.ApplySystemCategory = append([]string{}, toStringSlice(ctx, plan.ApplySystemCategory, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ApplySystemCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.ApplySystemCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ApplySystemCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.ApplySystemCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AssignedCategories.Equal(state.AssignedCategories) {
@@ -672,7 +699,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.BodyContainsWords.Equal(state.BodyContainsWords) {
 		if !plan.BodyContainsWords.IsNull() && !plan.BodyContainsWords.IsUnknown() {
-			sp.BodyContainsWords = append([]string{}, toStringSlice(ctx, plan.BodyContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.BodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.BodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BulkCategory.Equal(state.BulkCategory) {
@@ -703,7 +738,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.DeleteSystemCategory.Equal(state.DeleteSystemCategory) {
 		if !plan.DeleteSystemCategory.IsNull() && !plan.DeleteSystemCategory.IsUnknown() {
-			sp.DeleteSystemCategory = append([]string{}, toStringSlice(ctx, plan.DeleteSystemCategory, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.DeleteSystemCategory, &resp.Diagnostics); len(v) > 0 {
+				sp.DeleteSystemCategory = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DeleteSystemCategory, &resp.Diagnostics); len(rm) > 0 {
+						sp.DeleteSystemCategoryDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.DisplayAlert.Equal(state.DisplayAlert) {
@@ -721,7 +764,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ExceptIfBodyContainsWords.Equal(state.ExceptIfBodyContainsWords) {
 		if !plan.ExceptIfBodyContainsWords.IsNull() && !plan.ExceptIfBodyContainsWords.IsUnknown() {
-			sp.ExceptIfBodyContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfBodyContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptIfBulkCategory.Equal(state.ExceptIfBulkCategory) {
@@ -737,7 +788,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ExceptIfFromAddressContainsWords.Equal(state.ExceptIfFromAddressContainsWords) {
 		if !plan.ExceptIfFromAddressContainsWords.IsNull() && !plan.ExceptIfFromAddressContainsWords.IsUnknown() {
-			sp.ExceptIfFromAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfFromAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfFromAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfFromAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptIfHasAttachment.Equal(state.ExceptIfHasAttachment) {
@@ -752,7 +811,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ExceptIfHeaderContainsWords.Equal(state.ExceptIfHeaderContainsWords) {
 		if !plan.ExceptIfHeaderContainsWords.IsNull() && !plan.ExceptIfHeaderContainsWords.IsUnknown() {
-			sp.ExceptIfHeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfHeaderContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfHeaderContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfHeaderContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptIfIsExternal.Equal(state.ExceptIfIsExternal) {
@@ -796,7 +863,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ExceptIfRecipientAddressContainsWords.Equal(state.ExceptIfRecipientAddressContainsWords) {
 		if !plan.ExceptIfRecipientAddressContainsWords.IsNull() && !plan.ExceptIfRecipientAddressContainsWords.IsUnknown() {
-			sp.ExceptIfRecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfRecipientAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfRecipientAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfRecipientAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptIfSentOnlyToMe.Equal(state.ExceptIfSentOnlyToMe) {
@@ -811,12 +886,28 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.ExceptIfSubjectContainsWords.Equal(state.ExceptIfSubjectContainsWords) {
 		if !plan.ExceptIfSubjectContainsWords.IsNull() && !plan.ExceptIfSubjectContainsWords.IsUnknown() {
-			sp.ExceptIfSubjectContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfSubjectContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfSubjectContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfSubjectContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExceptIfSubjectOrBodyContainsWords.Equal(state.ExceptIfSubjectOrBodyContainsWords) {
 		if !plan.ExceptIfSubjectOrBodyContainsWords.IsNull() && !plan.ExceptIfSubjectOrBodyContainsWords.IsUnknown() {
-			sp.ExceptIfSubjectOrBodyContainsWords = append([]string{}, toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfSubjectOrBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfSubjectOrBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfSubjectOrBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ExceptIfWithImportance.ValueString(); v != "" {
@@ -854,7 +945,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.FromAddressContainsWords.Equal(state.FromAddressContainsWords) {
 		if !plan.FromAddressContainsWords.IsNull() && !plan.FromAddressContainsWords.IsUnknown() {
-			sp.FromAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.FromAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.FromAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.FromAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.FromAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.HasAttachment.Equal(state.HasAttachment) {
@@ -869,7 +968,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.HeaderContainsWords.Equal(state.HeaderContainsWords) {
 		if !plan.HeaderContainsWords.IsNull() && !plan.HeaderContainsWords.IsUnknown() {
-			sp.HeaderContainsWords = append([]string{}, toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.HeaderContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.HeaderContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.HeaderContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.HeaderContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.IsExternal.Equal(state.IsExternal) {
@@ -945,7 +1052,15 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.RecipientAddressContainsWords.Equal(state.RecipientAddressContainsWords) {
 		if !plan.RecipientAddressContainsWords.IsNull() && !plan.RecipientAddressContainsWords.IsUnknown() {
-			sp.RecipientAddressContainsWords = append([]string{}, toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RecipientAddressContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.RecipientAddressContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RecipientAddressContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.RecipientAddressContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RedirectTo.Equal(state.RedirectTo) {
@@ -975,12 +1090,28 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	if !plan.SubjectContainsWords.Equal(state.SubjectContainsWords) {
 		if !plan.SubjectContainsWords.IsNull() && !plan.SubjectContainsWords.IsUnknown() {
-			sp.SubjectContainsWords = append([]string{}, toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SubjectContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.SubjectContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SubjectContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.SubjectContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.SubjectOrBodyContainsWords.Equal(state.SubjectOrBodyContainsWords) {
 		if !plan.SubjectOrBodyContainsWords.IsNull() && !plan.SubjectOrBodyContainsWords.IsUnknown() {
-			sp.SubjectOrBodyContainsWords = append([]string{}, toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SubjectOrBodyContainsWords, &resp.Diagnostics); len(v) > 0 {
+				sp.SubjectOrBodyContainsWords = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SubjectOrBodyContainsWords, &resp.Diagnostics); len(rm) > 0 {
+						sp.SubjectOrBodyContainsWordsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.WithImportance.ValueString(); v != "" {

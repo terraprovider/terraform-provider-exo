@@ -91,9 +91,28 @@ func (r *activeSyncOrganizationSettingsResource) Create(ctx context.Context, req
 	}
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *activeSyncOrganizationSettingsModel
+	current := func() *activeSyncOrganizationSettingsModel {
+		if cur == nil {
+			var m activeSyncOrganizationSettingsModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AdminMailRecipients.IsNull() {
 		if !plan.AdminMailRecipients.IsNull() && !plan.AdminMailRecipients.IsUnknown() {
-			sp.AdminMailRecipients = append([]string{}, toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.AdminMailRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AdminMailRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.AdminMailRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.AllowAccessForUnSupportedPlatform.IsNull() {
@@ -162,9 +181,28 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetActiveSyncOrganizationSettingsParams{}
 	sp.Identity = id
+	var cur *activeSyncOrganizationSettingsModel
+	current := func() *activeSyncOrganizationSettingsModel {
+		if cur == nil {
+			var m activeSyncOrganizationSettingsModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AdminMailRecipients.Equal(state.AdminMailRecipients) {
 		if !plan.AdminMailRecipients.IsNull() && !plan.AdminMailRecipients.IsUnknown() {
-			sp.AdminMailRecipients = append([]string{}, toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AdminMailRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.AdminMailRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AdminMailRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.AdminMailRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AllowAccessForUnSupportedPlatform.Equal(state.AllowAccessForUnSupportedPlatform) {

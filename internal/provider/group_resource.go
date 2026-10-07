@@ -96,9 +96,28 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	sp := exo.SetGroupParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *groupModel
+	current := func() *groupModel {
+		if cur == nil {
+			var m groupModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.Description.IsNull() {
 		if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-			sp.Description = append([]string{}, toStringSlice(ctx, plan.Description, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.Description, &resp.Diagnostics); len(v) > 0 {
+				sp.Description = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.Description, &resp.Diagnostics); len(rm) > 0 {
+						sp.DescriptionDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.DisplayName.IsNull() {
@@ -176,9 +195,28 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	id := r.identityOf(state)
 	sp := exo.SetGroupParams{}
 	sp.Identity = id
+	var cur *groupModel
+	current := func() *groupModel {
+		if cur == nil {
+			var m groupModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.Description.Equal(state.Description) {
 		if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-			sp.Description = append([]string{}, toStringSlice(ctx, plan.Description, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.Description, &resp.Diagnostics); len(v) > 0 {
+				sp.Description = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.Description, &resp.Diagnostics); len(rm) > 0 {
+						sp.DescriptionDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.DisplayName.Equal(state.DisplayName) {

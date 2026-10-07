@@ -170,6 +170,17 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	}
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *mailboxCalendarConfigurationModel
+	current := func() *mailboxCalendarConfigurationModel {
+		if cur == nil {
+			var m mailboxCalendarConfigurationModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AgendaMailEnabled.IsNull() {
 		if !plan.AgendaMailEnabled.IsUnknown() {
 			sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBoolPointer()
@@ -345,7 +356,15 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	}
 	if !config.WeatherLocations.IsNull() {
 		if !plan.WeatherLocations.IsNull() && !plan.WeatherLocations.IsUnknown() {
-			sp.WeatherLocations = append([]string{}, toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics); len(v) > 0 {
+				sp.WeatherLocations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.WeatherLocations, &resp.Diagnostics); len(rm) > 0 {
+						sp.WeatherLocationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := config.WeatherUnit.ValueString(); v != "" {
@@ -410,6 +429,17 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetMailboxCalendarConfigurationParams{}
 	sp.Identity = id
+	var cur *mailboxCalendarConfigurationModel
+	current := func() *mailboxCalendarConfigurationModel {
+		if cur == nil {
+			var m mailboxCalendarConfigurationModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AgendaMailEnabled.Equal(state.AgendaMailEnabled) {
 		if !plan.AgendaMailEnabled.IsUnknown() {
 			sp.AgendaMailEnabled = plan.AgendaMailEnabled.ValueBoolPointer()
@@ -585,7 +615,15 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	}
 	if !plan.WeatherLocations.Equal(state.WeatherLocations) {
 		if !plan.WeatherLocations.IsNull() && !plan.WeatherLocations.IsUnknown() {
-			sp.WeatherLocations = append([]string{}, toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.WeatherLocations, &resp.Diagnostics); len(v) > 0 {
+				sp.WeatherLocations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.WeatherLocations, &resp.Diagnostics); len(rm) > 0 {
+						sp.WeatherLocationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.WeatherUnit.ValueString(); v != "" {

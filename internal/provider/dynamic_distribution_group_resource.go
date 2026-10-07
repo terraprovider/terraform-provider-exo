@@ -411,19 +411,54 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	id := r.identityOf(state)
 	sp := exo.SetDynamicDistributionGroupParams{}
 	sp.Identity = id
+	var cur *dynamicDistributionGroupModel
+	current := func() *dynamicDistributionGroupModel {
+		if cur == nil {
+			var m dynamicDistributionGroupModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AcceptMessagesOnlyFrom.Equal(state.AcceptMessagesOnlyFrom) {
 		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
-			sp.AcceptMessagesOnlyFrom = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromDLMembers.Equal(state.AcceptMessagesOnlyFromDLMembers) {
 		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromDLMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromSendersOrMembers.Equal(state.AcceptMessagesOnlyFromSendersOrMembers) {
 		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Alias.Equal(state.Alias) {
@@ -431,97 +466,249 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.BypassModerationFromSendersOrMembers.Equal(state.BypassModerationFromSendersOrMembers) {
 		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
-			sp.BypassModerationFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCompany.Equal(state.ConditionalCompany) {
 		if !plan.ConditionalCompany.IsNull() && !plan.ConditionalCompany.IsUnknown() {
-			sp.ConditionalCompany = append([]string{}, toStringSlice(ctx, plan.ConditionalCompany, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCompany, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCompany = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCompany, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCompanyDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute1.Equal(state.ConditionalCustomAttribute1) {
 		if !plan.ConditionalCustomAttribute1.IsNull() && !plan.ConditionalCustomAttribute1.IsUnknown() {
-			sp.ConditionalCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute1, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute10.Equal(state.ConditionalCustomAttribute10) {
 		if !plan.ConditionalCustomAttribute10.IsNull() && !plan.ConditionalCustomAttribute10.IsUnknown() {
-			sp.ConditionalCustomAttribute10 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute10, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute10, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute10 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute10, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute10Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute11.Equal(state.ConditionalCustomAttribute11) {
 		if !plan.ConditionalCustomAttribute11.IsNull() && !plan.ConditionalCustomAttribute11.IsUnknown() {
-			sp.ConditionalCustomAttribute11 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute11, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute11, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute11 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute11, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute11Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute12.Equal(state.ConditionalCustomAttribute12) {
 		if !plan.ConditionalCustomAttribute12.IsNull() && !plan.ConditionalCustomAttribute12.IsUnknown() {
-			sp.ConditionalCustomAttribute12 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute12, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute12, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute12 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute12, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute12Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute13.Equal(state.ConditionalCustomAttribute13) {
 		if !plan.ConditionalCustomAttribute13.IsNull() && !plan.ConditionalCustomAttribute13.IsUnknown() {
-			sp.ConditionalCustomAttribute13 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute13, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute13, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute13 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute13, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute13Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute14.Equal(state.ConditionalCustomAttribute14) {
 		if !plan.ConditionalCustomAttribute14.IsNull() && !plan.ConditionalCustomAttribute14.IsUnknown() {
-			sp.ConditionalCustomAttribute14 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute14, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute14, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute14 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute14, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute14Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute15.Equal(state.ConditionalCustomAttribute15) {
 		if !plan.ConditionalCustomAttribute15.IsNull() && !plan.ConditionalCustomAttribute15.IsUnknown() {
-			sp.ConditionalCustomAttribute15 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute15, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute15, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute15 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute15, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute15Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute2.Equal(state.ConditionalCustomAttribute2) {
 		if !plan.ConditionalCustomAttribute2.IsNull() && !plan.ConditionalCustomAttribute2.IsUnknown() {
-			sp.ConditionalCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute2, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute3.Equal(state.ConditionalCustomAttribute3) {
 		if !plan.ConditionalCustomAttribute3.IsNull() && !plan.ConditionalCustomAttribute3.IsUnknown() {
-			sp.ConditionalCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute3, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute4.Equal(state.ConditionalCustomAttribute4) {
 		if !plan.ConditionalCustomAttribute4.IsNull() && !plan.ConditionalCustomAttribute4.IsUnknown() {
-			sp.ConditionalCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute4, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute5.Equal(state.ConditionalCustomAttribute5) {
 		if !plan.ConditionalCustomAttribute5.IsNull() && !plan.ConditionalCustomAttribute5.IsUnknown() {
-			sp.ConditionalCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute5, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute6.Equal(state.ConditionalCustomAttribute6) {
 		if !plan.ConditionalCustomAttribute6.IsNull() && !plan.ConditionalCustomAttribute6.IsUnknown() {
-			sp.ConditionalCustomAttribute6 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute6, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute6, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute6 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute6, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute6Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute7.Equal(state.ConditionalCustomAttribute7) {
 		if !plan.ConditionalCustomAttribute7.IsNull() && !plan.ConditionalCustomAttribute7.IsUnknown() {
-			sp.ConditionalCustomAttribute7 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute7, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute7, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute7 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute7, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute7Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute8.Equal(state.ConditionalCustomAttribute8) {
 		if !plan.ConditionalCustomAttribute8.IsNull() && !plan.ConditionalCustomAttribute8.IsUnknown() {
-			sp.ConditionalCustomAttribute8 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute8, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute8, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute8 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute8, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute8Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalCustomAttribute9.Equal(state.ConditionalCustomAttribute9) {
 		if !plan.ConditionalCustomAttribute9.IsNull() && !plan.ConditionalCustomAttribute9.IsUnknown() {
-			sp.ConditionalCustomAttribute9 = append([]string{}, toStringSlice(ctx, plan.ConditionalCustomAttribute9, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalCustomAttribute9, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalCustomAttribute9 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalCustomAttribute9, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalCustomAttribute9Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalDepartment.Equal(state.ConditionalDepartment) {
 		if !plan.ConditionalDepartment.IsNull() && !plan.ConditionalDepartment.IsUnknown() {
-			sp.ConditionalDepartment = append([]string{}, toStringSlice(ctx, plan.ConditionalDepartment, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalDepartment, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalDepartment = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalDepartment, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalDepartmentDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ConditionalStateOrProvince.Equal(state.ConditionalStateOrProvince) {
 		if !plan.ConditionalStateOrProvince.IsNull() && !plan.ConditionalStateOrProvince.IsUnknown() {
-			sp.ConditionalStateOrProvince = append([]string{}, toStringSlice(ctx, plan.ConditionalStateOrProvince, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ConditionalStateOrProvince, &resp.Diagnostics); len(v) > 0 {
+				sp.ConditionalStateOrProvince = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ConditionalStateOrProvince, &resp.Diagnostics); len(rm) > 0 {
+						sp.ConditionalStateOrProvinceDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.CustomAttribute1.Equal(state.CustomAttribute1) {
@@ -584,27 +771,67 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.ExtensionCustomAttribute1.Equal(state.ExtensionCustomAttribute1) {
 		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
-			sp.ExtensionCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute2.Equal(state.ExtensionCustomAttribute2) {
 		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
-			sp.ExtensionCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute3.Equal(state.ExtensionCustomAttribute3) {
 		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
-			sp.ExtensionCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute4.Equal(state.ExtensionCustomAttribute4) {
 		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
-			sp.ExtensionCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute5.Equal(state.ExtensionCustomAttribute5) {
 		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
-			sp.ExtensionCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ForceMembershipRefresh.Equal(state.ForceMembershipRefresh) {
@@ -615,7 +842,15 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
-			sp.GrantSendOnBehalfTo = append([]string{}, toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
@@ -628,7 +863,15 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.MailTipTranslations.Equal(state.MailTipTranslations) {
 		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
-			sp.MailTipTranslations = append([]string{}, toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ManagedBy.ValueString(); v != "" {
@@ -636,7 +879,15 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
-			sp.ModeratedBy = append([]string{}, toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ModerationEnabled.Equal(state.ModerationEnabled) {
@@ -658,17 +909,41 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
-			sp.RejectMessagesFrom = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromDLMembers.Equal(state.RejectMessagesFromDLMembers) {
 		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
-			sp.RejectMessagesFromDLMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
 		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
-			sp.RejectMessagesFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ReportToManagerEnabled.Equal(state.ReportToManagerEnabled) {

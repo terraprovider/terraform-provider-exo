@@ -74,9 +74,28 @@ func (r *linkedUserResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *linkedUserModel
+	current := func() *linkedUserModel {
+		if cur == nil {
+			var m linkedUserModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.CertificateSubject.IsNull() {
 		if !plan.CertificateSubject.IsNull() && !plan.CertificateSubject.IsUnknown() {
-			sp.CertificateSubject = append([]string{}, toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.CertificateSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.CertificateSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.CertificateSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {
@@ -118,9 +137,28 @@ func (r *linkedUserResource) Update(ctx context.Context, req resource.UpdateRequ
 	id := r.identityOf(state)
 	sp := exo.SetLinkedUserParams{}
 	sp.Identity = id
+	var cur *linkedUserModel
+	current := func() *linkedUserModel {
+		if cur == nil {
+			var m linkedUserModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.CertificateSubject.Equal(state.CertificateSubject) {
 		if !plan.CertificateSubject.IsNull() && !plan.CertificateSubject.IsUnknown() {
-			sp.CertificateSubject = append([]string{}, toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.CertificateSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.CertificateSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.CertificateSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.CertificateSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

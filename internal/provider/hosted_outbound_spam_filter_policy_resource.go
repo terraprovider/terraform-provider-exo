@@ -200,6 +200,17 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetHostedOutboundSpamFilterPolicyParams{}
 	sp.Identity = id
+	var cur *hostedOutboundSpamFilterPolicyModel
+	current := func() *hostedOutboundSpamFilterPolicyModel {
+		if cur == nil {
+			var m hostedOutboundSpamFilterPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := plan.ActionWhenThresholdReached.ValueString(); v != "" {
 		sp.ActionWhenThresholdReached = objectParam(v)
 	}
@@ -211,7 +222,15 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	}
 	if !plan.BccSuspiciousOutboundAdditionalRecipients.Equal(state.BccSuspiciousOutboundAdditionalRecipients) {
 		if !plan.BccSuspiciousOutboundAdditionalRecipients.IsNull() && !plan.BccSuspiciousOutboundAdditionalRecipients.IsUnknown() {
-			sp.BccSuspiciousOutboundAdditionalRecipients = append([]string{}, toStringSlice(ctx, plan.BccSuspiciousOutboundAdditionalRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BccSuspiciousOutboundAdditionalRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.BccSuspiciousOutboundAdditionalRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BccSuspiciousOutboundAdditionalRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.BccSuspiciousOutboundAdditionalRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BccSuspiciousOutboundMail.Equal(state.BccSuspiciousOutboundMail) {
@@ -226,7 +245,15 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	}
 	if !plan.NotifyOutboundSpamRecipients.Equal(state.NotifyOutboundSpamRecipients) {
 		if !plan.NotifyOutboundSpamRecipients.IsNull() && !plan.NotifyOutboundSpamRecipients.IsUnknown() {
-			sp.NotifyOutboundSpamRecipients = append([]string{}, toStringSlice(ctx, plan.NotifyOutboundSpamRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.NotifyOutboundSpamRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.NotifyOutboundSpamRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NotifyOutboundSpamRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.NotifyOutboundSpamRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RecipientLimitExternalPerHour.Equal(state.RecipientLimitExternalPerHour) {

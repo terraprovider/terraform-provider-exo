@@ -558,6 +558,17 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	id := r.identityOf(state)
 	sp := exo.SetReportSubmissionPolicyParams{}
 	sp.Identity = id
+	var cur *reportSubmissionPolicyModel
+	current := func() *reportSubmissionPolicyModel {
+		if cur == nil {
+			var m reportSubmissionPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.DisableQuarantineReportingOption.Equal(state.DisableQuarantineReportingOption) {
 		if !plan.DisableQuarantineReportingOption.IsUnknown() {
 			sp.DisableQuarantineReportingOption = plan.DisableQuarantineReportingOption.ValueBoolPointer()
@@ -703,7 +714,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.MultiLanguageSetting.Equal(state.MultiLanguageSetting) {
 		if !plan.MultiLanguageSetting.IsNull() && !plan.MultiLanguageSetting.IsUnknown() {
-			sp.MultiLanguageSetting = append([]string{}, toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSetting = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSetting, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSettingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.NotJunkReviewResultMessage.Equal(state.NotJunkReviewResultMessage) {
@@ -714,7 +733,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.NotificationSenderAddress.Equal(state.NotificationSenderAddress) {
 		if !plan.NotificationSenderAddress.IsNull() && !plan.NotificationSenderAddress.IsUnknown() {
-			sp.NotificationSenderAddress = append([]string{}, toStringSlice(ctx, plan.NotificationSenderAddress, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.NotificationSenderAddress, &resp.Diagnostics); len(v) > 0 {
+				sp.NotificationSenderAddress = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NotificationSenderAddress, &resp.Diagnostics); len(rm) > 0 {
+						sp.NotificationSenderAddressDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.NotificationsForCleanSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForCleanSubmissionAirInvestigationsEnabled) {
@@ -815,7 +842,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.ReportJunkAddresses.Equal(state.ReportJunkAddresses) {
 		if !plan.ReportJunkAddresses.IsNull() && !plan.ReportJunkAddresses.IsUnknown() {
-			sp.ReportJunkAddresses = append([]string{}, toStringSlice(ctx, plan.ReportJunkAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ReportJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportJunkAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportJunkAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportJunkAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ReportJunkToCustomizedAddress.Equal(state.ReportJunkToCustomizedAddress) {
@@ -825,7 +860,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.ReportNotJunkAddresses.Equal(state.ReportNotJunkAddresses) {
 		if !plan.ReportNotJunkAddresses.IsNull() && !plan.ReportNotJunkAddresses.IsUnknown() {
-			sp.ReportNotJunkAddresses = append([]string{}, toStringSlice(ctx, plan.ReportNotJunkAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ReportNotJunkAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportNotJunkAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportNotJunkAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportNotJunkAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ReportNotJunkToCustomizedAddress.Equal(state.ReportNotJunkToCustomizedAddress) {
@@ -835,7 +878,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.ReportPhishAddresses.Equal(state.ReportPhishAddresses) {
 		if !plan.ReportPhishAddresses.IsNull() && !plan.ReportPhishAddresses.IsUnknown() {
-			sp.ReportPhishAddresses = append([]string{}, toStringSlice(ctx, plan.ReportPhishAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ReportPhishAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ReportPhishAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ReportPhishAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ReportPhishAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ReportPhishToCustomizedAddress.Equal(state.ReportPhishToCustomizedAddress) {
@@ -845,7 +896,15 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	}
 	if !plan.ThirdPartyReportAddresses.Equal(state.ThirdPartyReportAddresses) {
 		if !plan.ThirdPartyReportAddresses.IsNull() && !plan.ThirdPartyReportAddresses.IsUnknown() {
-			sp.ThirdPartyReportAddresses = append([]string{}, toStringSlice(ctx, plan.ThirdPartyReportAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ThirdPartyReportAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.ThirdPartyReportAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ThirdPartyReportAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.ThirdPartyReportAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.UserSubmissionOptions.Equal(state.UserSubmissionOptions) {

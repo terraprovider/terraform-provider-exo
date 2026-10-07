@@ -264,6 +264,17 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetMoveRequestParams{}
 	sp.Identity = id
+	var cur *moveRequestModel
+	current := func() *moveRequestModel {
+		if cur == nil {
+			var m moveRequestModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
 		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
 	}
@@ -281,7 +292,15 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	if !plan.MoveOptions.Equal(state.MoveOptions) {
 		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
-			sp.MoveOptions = append([]string{}, toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+				sp.MoveOptions = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MoveOptions, &resp.Diagnostics); len(rm) > 0 {
+						sp.MoveOptionsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ProxyToMailbox.ValueString(); v != "" {

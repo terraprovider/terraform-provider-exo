@@ -484,6 +484,17 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetMigrationBatchParams{}
 	sp.Identity = id
+	var cur *migrationBatchModel
+	current := func() *migrationBatchModel {
+		if cur == nil {
+			var m migrationBatchModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AddUsers.Equal(state.AddUsers) {
 		sp.AddUsers = plan.AddUsers.ValueBool()
 	}
@@ -500,12 +511,28 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	}
 	if !plan.MoveOptions.Equal(state.MoveOptions) {
 		if !plan.MoveOptions.IsNull() && !plan.MoveOptions.IsUnknown() {
-			sp.MoveOptions = append([]string{}, toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
+				sp.MoveOptions = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MoveOptions, &resp.Diagnostics); len(rm) > 0 {
+						sp.MoveOptionsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.NotificationEmails.Equal(state.NotificationEmails) {
 		if !plan.NotificationEmails.IsNull() && !plan.NotificationEmails.IsUnknown() {
-			sp.NotificationEmails = append([]string{}, toStringSlice(ctx, plan.NotificationEmails, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.NotificationEmails, &resp.Diagnostics); len(v) > 0 {
+				sp.NotificationEmails = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NotificationEmails, &resp.Diagnostics); len(rm) > 0 {
+						sp.NotificationEmailsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.Partition.ValueString(); v != "" {
@@ -516,12 +543,28 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	}
 	if !plan.SkipMerging.Equal(state.SkipMerging) {
 		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
-			sp.SkipMerging = append([]string{}, toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics); len(v) > 0 {
+				sp.SkipMerging = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SkipMerging, &resp.Diagnostics); len(rm) > 0 {
+						sp.SkipMergingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.SkipMoving.Equal(state.SkipMoving) {
 		if !plan.SkipMoving.IsNull() && !plan.SkipMoving.IsUnknown() {
-			sp.SkipMoving = append([]string{}, toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SkipMoving, &resp.Diagnostics); len(v) > 0 {
+				sp.SkipMoving = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SkipMoving, &resp.Diagnostics); len(rm) > 0 {
+						sp.SkipMovingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.StartAfter.ValueString(); v != "" {

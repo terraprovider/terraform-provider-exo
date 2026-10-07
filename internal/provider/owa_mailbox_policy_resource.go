@@ -368,6 +368,17 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetOwaMailboxPolicyParams{}
 	sp.Identity = id
+	var cur *owaMailboxPolicyModel
+	current := func() *owaMailboxPolicyModel {
+		if cur == nil {
+			var m owaMailboxPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AccountTransferEnabled.Equal(state.AccountTransferEnabled) {
 		if !plan.AccountTransferEnabled.IsUnknown() {
 			sp.AccountTransferEnabled = plan.AccountTransferEnabled.ValueBoolPointer()
@@ -406,12 +417,28 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.AllowedFileTypes.Equal(state.AllowedFileTypes) {
 		if !plan.AllowedFileTypes.IsNull() && !plan.AllowedFileTypes.IsUnknown() {
-			sp.AllowedFileTypes = append([]string{}, toStringSlice(ctx, plan.AllowedFileTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowedFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AllowedMimeTypes.Equal(state.AllowedMimeTypes) {
 		if !plan.AllowedMimeTypes.IsNull() && !plan.AllowedMimeTypes.IsUnknown() {
-			sp.AllowedMimeTypes = append([]string{}, toStringSlice(ctx, plan.AllowedMimeTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowedMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AllowedOrganizationAccountDomains.Equal(state.AllowedOrganizationAccountDomains) {
@@ -431,12 +458,28 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.BlockedFileTypes.Equal(state.BlockedFileTypes) {
 		if !plan.BlockedFileTypes.IsNull() && !plan.BlockedFileTypes.IsUnknown() {
-			sp.BlockedFileTypes = append([]string{}, toStringSlice(ctx, plan.BlockedFileTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BlockedMimeTypes.Equal(state.BlockedMimeTypes) {
 		if !plan.BlockedMimeTypes.IsNull() && !plan.BlockedMimeTypes.IsUnknown() {
-			sp.BlockedMimeTypes = append([]string{}, toStringSlice(ctx, plan.BlockedMimeTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BookingsMailboxCreationEnabled.Equal(state.BookingsMailboxCreationEnabled) {
@@ -544,12 +587,28 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.ForceSaveFileTypes.Equal(state.ForceSaveFileTypes) {
 		if !plan.ForceSaveFileTypes.IsNull() && !plan.ForceSaveFileTypes.IsUnknown() {
-			sp.ForceSaveFileTypes = append([]string{}, toStringSlice(ctx, plan.ForceSaveFileTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ForceSaveFileTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ForceSaveFileTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ForceSaveFileTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ForceSaveFileTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ForceSaveMimeTypes.Equal(state.ForceSaveMimeTypes) {
 		if !plan.ForceSaveMimeTypes.IsNull() && !plan.ForceSaveMimeTypes.IsUnknown() {
-			sp.ForceSaveMimeTypes = append([]string{}, toStringSlice(ctx, plan.ForceSaveMimeTypes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ForceSaveMimeTypes, &resp.Diagnostics); len(v) > 0 {
+				sp.ForceSaveMimeTypes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ForceSaveMimeTypes, &resp.Diagnostics); len(rm) > 0 {
+						sp.ForceSaveMimeTypesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ForceWacViewingFirstOnPrivateComputers.Equal(state.ForceWacViewingFirstOnPrivateComputers) {

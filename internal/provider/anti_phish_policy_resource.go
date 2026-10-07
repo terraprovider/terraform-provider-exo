@@ -368,6 +368,17 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetAntiPhishPolicyParams{}
 	sp.Identity = id
+	var cur *antiPhishPolicyModel
+	current := func() *antiPhishPolicyModel {
+		if cur == nil {
+			var m antiPhishPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AdminDisplayName.Equal(state.AdminDisplayName) {
 		sp.AdminDisplayName = plan.AdminDisplayName.ValueString()
 	}
@@ -447,12 +458,28 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.ExcludedDomains.Equal(state.ExcludedDomains) {
 		if !plan.ExcludedDomains.IsNull() && !plan.ExcludedDomains.IsUnknown() {
-			sp.ExcludedDomains = append([]string{}, toStringSlice(ctx, plan.ExcludedDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExcludedDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.ExcludedDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExcludedDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExcludedDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExcludedSenders.Equal(state.ExcludedSenders) {
 		if !plan.ExcludedSenders.IsNull() && !plan.ExcludedSenders.IsUnknown() {
-			sp.ExcludedSenders = append([]string{}, toStringSlice(ctx, plan.ExcludedSenders, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExcludedSenders, &resp.Diagnostics); len(v) > 0 {
+				sp.ExcludedSenders = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExcludedSenders, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExcludedSendersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.HonorDmarcPolicy.Equal(state.HonorDmarcPolicy) {
@@ -468,7 +495,15 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.MailboxIntelligenceProtectionActionRecipients.Equal(state.MailboxIntelligenceProtectionActionRecipients) {
 		if !plan.MailboxIntelligenceProtectionActionRecipients.IsNull() && !plan.MailboxIntelligenceProtectionActionRecipients.IsUnknown() {
-			sp.MailboxIntelligenceProtectionActionRecipients = append([]string{}, toStringSlice(ctx, plan.MailboxIntelligenceProtectionActionRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailboxIntelligenceProtectionActionRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.MailboxIntelligenceProtectionActionRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailboxIntelligenceProtectionActionRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailboxIntelligenceProtectionActionRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MailboxIntelligenceQuarantineTag.Equal(state.MailboxIntelligenceQuarantineTag) {
@@ -490,7 +525,15 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.TargetedDomainActionRecipients.Equal(state.TargetedDomainActionRecipients) {
 		if !plan.TargetedDomainActionRecipients.IsNull() && !plan.TargetedDomainActionRecipients.IsUnknown() {
-			sp.TargetedDomainActionRecipients = append([]string{}, toStringSlice(ctx, plan.TargetedDomainActionRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TargetedDomainActionRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.TargetedDomainActionRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TargetedDomainActionRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.TargetedDomainActionRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.TargetedDomainProtectionAction.ValueString(); v != "" {
@@ -501,12 +544,28 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.TargetedDomainsToProtect.Equal(state.TargetedDomainsToProtect) {
 		if !plan.TargetedDomainsToProtect.IsNull() && !plan.TargetedDomainsToProtect.IsUnknown() {
-			sp.TargetedDomainsToProtect = append([]string{}, toStringSlice(ctx, plan.TargetedDomainsToProtect, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TargetedDomainsToProtect, &resp.Diagnostics); len(v) > 0 {
+				sp.TargetedDomainsToProtect = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TargetedDomainsToProtect, &resp.Diagnostics); len(rm) > 0 {
+						sp.TargetedDomainsToProtectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.TargetedUserActionRecipients.Equal(state.TargetedUserActionRecipients) {
 		if !plan.TargetedUserActionRecipients.IsNull() && !plan.TargetedUserActionRecipients.IsUnknown() {
-			sp.TargetedUserActionRecipients = append([]string{}, toStringSlice(ctx, plan.TargetedUserActionRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TargetedUserActionRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.TargetedUserActionRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TargetedUserActionRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.TargetedUserActionRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.TargetedUserProtectionAction.ValueString(); v != "" {
@@ -517,7 +576,15 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 	}
 	if !plan.TargetedUsersToProtect.Equal(state.TargetedUsersToProtect) {
 		if !plan.TargetedUsersToProtect.IsNull() && !plan.TargetedUsersToProtect.IsUnknown() {
-			sp.TargetedUsersToProtect = append([]string{}, toStringSlice(ctx, plan.TargetedUsersToProtect, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TargetedUsersToProtect, &resp.Diagnostics); len(v) > 0 {
+				sp.TargetedUsersToProtect = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TargetedUsersToProtect, &resp.Diagnostics); len(rm) > 0 {
+						sp.TargetedUsersToProtectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

@@ -74,9 +74,28 @@ func (r *perimeterConfigResource) Create(ctx context.Context, req resource.Creat
 	}
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *perimeterConfigModel
+	current := func() *perimeterConfigModel {
+		if cur == nil {
+			var m perimeterConfigModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.GatewayIPAddresses.IsNull() {
 		if !plan.GatewayIPAddresses.IsNull() && !plan.GatewayIPAddresses.IsUnknown() {
-			sp.GatewayIPAddresses = append([]string{}, toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.GatewayIPAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GatewayIPAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.GatewayIPAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {
@@ -118,9 +137,28 @@ func (r *perimeterConfigResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetPerimeterConfigParams{}
 	sp.Identity = id
+	var cur *perimeterConfigModel
+	current := func() *perimeterConfigModel {
+		if cur == nil {
+			var m perimeterConfigModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.GatewayIPAddresses.Equal(state.GatewayIPAddresses) {
 		if !plan.GatewayIPAddresses.IsNull() && !plan.GatewayIPAddresses.IsUnknown() {
-			sp.GatewayIPAddresses = append([]string{}, toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GatewayIPAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.GatewayIPAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GatewayIPAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.GatewayIPAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

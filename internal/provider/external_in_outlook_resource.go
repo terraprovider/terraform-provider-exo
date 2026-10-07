@@ -77,9 +77,28 @@ func (r *externalInOutlookResource) Create(ctx context.Context, req resource.Cre
 	}
 	sp := exo.SetExternalInOutlookParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *externalInOutlookModel
+	current := func() *externalInOutlookModel {
+		if cur == nil {
+			var m externalInOutlookModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AllowList.IsNull() {
 		if !plan.AllowList.IsNull() && !plan.AllowList.IsUnknown() {
-			sp.AllowList = append([]string{}, toStringSlice(ctx, plan.AllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Enabled.IsNull() {
@@ -126,9 +145,28 @@ func (r *externalInOutlookResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetExternalInOutlookParams{}
 	sp.Identity = id
+	var cur *externalInOutlookModel
+	current := func() *externalInOutlookModel {
+		if cur == nil {
+			var m externalInOutlookModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AllowList.Equal(state.AllowList) {
 		if !plan.AllowList.IsNull() && !plan.AllowList.IsUnknown() {
-			sp.AllowList = append([]string{}, toStringSlice(ctx, plan.AllowList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowList, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowList, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {

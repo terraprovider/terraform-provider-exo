@@ -262,6 +262,17 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetQuarantinePolicyParams{}
 	sp.Identity = id
+	var cur *quarantinePolicyModel
+	current := func() *quarantinePolicyModel {
+		if cur == nil {
+			var m quarantinePolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AdminNotificationFrequencyInDays.Equal(state.AdminNotificationFrequencyInDays) {
 		if !plan.AdminNotificationFrequencyInDays.IsUnknown() {
 			sp.AdminNotificationFrequencyInDays = plan.AdminNotificationFrequencyInDays.ValueInt64Pointer()
@@ -277,7 +288,15 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.AdminQuarantinePermissionsList.Equal(state.AdminQuarantinePermissionsList) {
 		if !plan.AdminQuarantinePermissionsList.IsNull() && !plan.AdminQuarantinePermissionsList.IsUnknown() {
-			sp.AdminQuarantinePermissionsList = append([]string{}, toStringSlice(ctx, plan.AdminQuarantinePermissionsList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AdminQuarantinePermissionsList, &resp.Diagnostics); len(v) > 0 {
+				sp.AdminQuarantinePermissionsList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AdminQuarantinePermissionsList, &resp.Diagnostics); len(rm) > 0 {
+						sp.AdminQuarantinePermissionsListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.CustomDisclaimer.Equal(state.CustomDisclaimer) {
@@ -312,7 +331,15 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.EsnCustomSubject.Equal(state.EsnCustomSubject) {
 		if !plan.EsnCustomSubject.IsNull() && !plan.EsnCustomSubject.IsUnknown() {
-			sp.EsnCustomSubject = append([]string{}, toStringSlice(ctx, plan.EsnCustomSubject, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EsnCustomSubject, &resp.Diagnostics); len(v) > 0 {
+				sp.EsnCustomSubject = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EsnCustomSubject, &resp.Diagnostics); len(rm) > 0 {
+						sp.EsnCustomSubjectDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
@@ -325,17 +352,41 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.MultiLanguageCustomDisclaimer.Equal(state.MultiLanguageCustomDisclaimer) {
 		if !plan.MultiLanguageCustomDisclaimer.IsNull() && !plan.MultiLanguageCustomDisclaimer.IsUnknown() {
-			sp.MultiLanguageCustomDisclaimer = append([]string{}, toStringSlice(ctx, plan.MultiLanguageCustomDisclaimer, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MultiLanguageCustomDisclaimer, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageCustomDisclaimer = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageCustomDisclaimer, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageCustomDisclaimerDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MultiLanguageSenderName.Equal(state.MultiLanguageSenderName) {
 		if !plan.MultiLanguageSenderName.IsNull() && !plan.MultiLanguageSenderName.IsUnknown() {
-			sp.MultiLanguageSenderName = append([]string{}, toStringSlice(ctx, plan.MultiLanguageSenderName, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MultiLanguageSenderName, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSenderName = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSenderName, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSenderNameDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MultiLanguageSetting.Equal(state.MultiLanguageSetting) {
 		if !plan.MultiLanguageSetting.IsNull() && !plan.MultiLanguageSetting.IsUnknown() {
-			sp.MultiLanguageSetting = append([]string{}, toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MultiLanguageSetting, &resp.Diagnostics); len(v) > 0 {
+				sp.MultiLanguageSetting = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MultiLanguageSetting, &resp.Diagnostics); len(rm) > 0 {
+						sp.MultiLanguageSettingDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.OrganizationBrandingEnabled.Equal(state.OrganizationBrandingEnabled) {

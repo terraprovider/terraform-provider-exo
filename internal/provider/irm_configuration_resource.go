@@ -104,6 +104,17 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 	sp := exo.SetIRMConfigurationParams{}
+	var cur *iRMConfigurationModel
+	current := func() *iRMConfigurationModel {
+		if cur == nil {
+			var m iRMConfigurationModel
+			if !r.refresh(ctx, "", &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AutomaticServiceUpdateEnabled.IsNull() {
 		if !plan.AutomaticServiceUpdateEnabled.IsUnknown() {
 			sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBoolPointer()
@@ -146,7 +157,15 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 	}
 	if !config.LicensingLocation.IsNull() {
 		if !plan.LicensingLocation.IsNull() && !plan.LicensingLocation.IsUnknown() {
-			sp.LicensingLocation = append([]string{}, toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics); len(v) > 0 {
+				sp.LicensingLocation = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LicensingLocation, &resp.Diagnostics); len(rm) > 0 {
+						sp.LicensingLocationDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := config.RMSOnlineKeySharingLocation.ValueString(); v != "" {
@@ -218,6 +237,17 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	id := r.identityOf(state)
 	sp := exo.SetIRMConfigurationParams{}
+	var cur *iRMConfigurationModel
+	current := func() *iRMConfigurationModel {
+		if cur == nil {
+			var m iRMConfigurationModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AutomaticServiceUpdateEnabled.Equal(state.AutomaticServiceUpdateEnabled) {
 		if !plan.AutomaticServiceUpdateEnabled.IsUnknown() {
 			sp.AutomaticServiceUpdateEnabled = plan.AutomaticServiceUpdateEnabled.ValueBoolPointer()
@@ -260,7 +290,15 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.LicensingLocation.Equal(state.LicensingLocation) {
 		if !plan.LicensingLocation.IsNull() && !plan.LicensingLocation.IsUnknown() {
-			sp.LicensingLocation = append([]string{}, toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.LicensingLocation, &resp.Diagnostics); len(v) > 0 {
+				sp.LicensingLocation = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LicensingLocation, &resp.Diagnostics); len(rm) > 0 {
+						sp.LicensingLocationDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.RMSOnlineKeySharingLocation.ValueString(); v != "" {

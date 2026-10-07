@@ -133,9 +133,28 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 	}
 	id := r.identityOf(state)
 	sp := exo.SetAvailabilityConfigParams{}
+	var cur *availabilityConfigModel
+	current := func() *availabilityConfigModel {
+		if cur == nil {
+			var m availabilityConfigModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AllowedTenantIds.Equal(state.AllowedTenantIds) {
 		if !plan.AllowedTenantIds.IsNull() && !plan.AllowedTenantIds.IsUnknown() {
-			sp.AllowedTenantIds = append([]string{}, toStringSlice(ctx, plan.AllowedTenantIds, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowedTenantIds, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedTenantIds = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedTenantIds, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedTenantIdsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.OrgWideAccount.ValueString(); v != "" {

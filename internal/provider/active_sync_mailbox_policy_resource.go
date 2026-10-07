@@ -476,6 +476,17 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 	id := r.identityOf(state)
 	sp := exo.SetActiveSyncMailboxPolicyParams{}
 	sp.Identity = id
+	var cur *activeSyncMailboxPolicyModel
+	current := func() *activeSyncMailboxPolicyModel {
+		if cur == nil {
+			var m activeSyncMailboxPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AllowApplePushNotifications.Equal(state.AllowApplePushNotifications) {
 		if !plan.AllowApplePushNotifications.IsUnknown() {
 			sp.AllowApplePushNotifications = plan.AllowApplePushNotifications.ValueBoolPointer()
@@ -707,7 +718,15 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 	}
 	if !plan.UnapprovedInROMApplicationList.Equal(state.UnapprovedInROMApplicationList) {
 		if !plan.UnapprovedInROMApplicationList.IsNull() && !plan.UnapprovedInROMApplicationList.IsUnknown() {
-			sp.UnapprovedInROMApplicationList = append([]string{}, toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UnapprovedInROMApplicationList, &resp.Diagnostics); len(v) > 0 {
+				sp.UnapprovedInROMApplicationList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UnapprovedInROMApplicationList, &resp.Diagnostics); len(rm) > 0 {
+						sp.UnapprovedInROMApplicationListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.WSSAccessEnabled.Equal(state.WSSAccessEnabled) {

@@ -172,6 +172,17 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	sp := exo.SetUserParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *userModel
+	current := func() *userModel {
+		if cur == nil {
+			var m userModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.AssistantName.IsNull() {
 		sp.AssistantName = plan.AssistantName.ValueString()
 	}
@@ -263,17 +274,41 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	if !config.OtherFax.IsNull() {
 		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
-			sp.OtherFax = append([]string{}, toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.OtherHomePhone.IsNull() {
 		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
-			sp.OtherHomePhone = append([]string{}, toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.OtherTelephone.IsNull() {
 		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
-			sp.OtherTelephone = append([]string{}, toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.Pager.IsNull() {
@@ -290,7 +325,15 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	if !config.PostOfficeBox.IsNull() {
 		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
-			sp.PostOfficeBox = append([]string{}, toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.PostalCode.IsNull() {
@@ -382,6 +425,17 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	id := r.identityOf(state)
 	sp := exo.SetUserParams{}
 	sp.Identity = id
+	var cur *userModel
+	current := func() *userModel {
+		if cur == nil {
+			var m userModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AssistantName.Equal(state.AssistantName) {
 		sp.AssistantName = plan.AssistantName.ValueString()
 	}
@@ -473,17 +527,41 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 	if !plan.OtherFax.Equal(state.OtherFax) {
 		if !plan.OtherFax.IsNull() && !plan.OtherFax.IsUnknown() {
-			sp.OtherFax = append([]string{}, toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherFax, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherFax = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherFax, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherFaxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.OtherHomePhone.Equal(state.OtherHomePhone) {
 		if !plan.OtherHomePhone.IsNull() && !plan.OtherHomePhone.IsUnknown() {
-			sp.OtherHomePhone = append([]string{}, toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherHomePhone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherHomePhone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherHomePhone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherHomePhoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.OtherTelephone.Equal(state.OtherTelephone) {
 		if !plan.OtherTelephone.IsNull() && !plan.OtherTelephone.IsUnknown() {
-			sp.OtherTelephone = append([]string{}, toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.OtherTelephone, &resp.Diagnostics); len(v) > 0 {
+				sp.OtherTelephone = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.OtherTelephone, &resp.Diagnostics); len(rm) > 0 {
+						sp.OtherTelephoneDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Pager.Equal(state.Pager) {
@@ -500,7 +578,15 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 	if !plan.PostOfficeBox.Equal(state.PostOfficeBox) {
 		if !plan.PostOfficeBox.IsNull() && !plan.PostOfficeBox.IsUnknown() {
-			sp.PostOfficeBox = append([]string{}, toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.PostOfficeBox, &resp.Diagnostics); len(v) > 0 {
+				sp.PostOfficeBox = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.PostOfficeBox, &resp.Diagnostics); len(rm) > 0 {
+						sp.PostOfficeBoxDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.PostalCode.Equal(state.PostalCode) {

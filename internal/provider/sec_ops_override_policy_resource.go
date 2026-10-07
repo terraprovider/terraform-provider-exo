@@ -151,9 +151,28 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	id := r.identityOf(state)
 	sp := exo.SetSecOpsOverridePolicyParams{}
 	sp.Identity = id
+	var cur *secOpsOverridePolicyModel
+	current := func() *secOpsOverridePolicyModel {
+		if cur == nil {
+			var m secOpsOverridePolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AddSentTo.Equal(state.AddSentTo) {
 		if !plan.AddSentTo.IsNull() && !plan.AddSentTo.IsUnknown() {
-			sp.AddSentTo = append([]string{}, toStringSlice(ctx, plan.AddSentTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AddSentTo, &resp.Diagnostics); len(v) > 0 {
+				sp.AddSentTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AddSentTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.AddSentToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Comment.Equal(state.Comment) {
@@ -166,7 +185,15 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	}
 	if !plan.RemoveSentTo.Equal(state.RemoveSentTo) {
 		if !plan.RemoveSentTo.IsNull() && !plan.RemoveSentTo.IsUnknown() {
-			sp.RemoveSentTo = append([]string{}, toStringSlice(ctx, plan.RemoveSentTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RemoveSentTo, &resp.Diagnostics); len(v) > 0 {
+				sp.RemoveSentTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RemoveSentTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.RemoveSentToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

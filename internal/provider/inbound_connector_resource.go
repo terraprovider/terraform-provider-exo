@@ -267,9 +267,28 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	id := r.identityOf(state)
 	sp := exo.SetInboundConnectorParams{}
 	sp.Identity = id
+	var cur *inboundConnectorModel
+	current := func() *inboundConnectorModel {
+		if cur == nil {
+			var m inboundConnectorModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AssociatedAcceptedDomains.Equal(state.AssociatedAcceptedDomains) {
 		if !plan.AssociatedAcceptedDomains.IsNull() && !plan.AssociatedAcceptedDomains.IsUnknown() {
-			sp.AssociatedAcceptedDomains = append([]string{}, toStringSlice(ctx, plan.AssociatedAcceptedDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AssociatedAcceptedDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.AssociatedAcceptedDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AssociatedAcceptedDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.AssociatedAcceptedDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.CloudServicesMailEnabled.Equal(state.CloudServicesMailEnabled) {
@@ -288,7 +307,15 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.EFSkipIPs.Equal(state.EFSkipIPs) {
 		if !plan.EFSkipIPs.IsNull() && !plan.EFSkipIPs.IsUnknown() {
-			sp.EFSkipIPs = append([]string{}, toStringSlice(ctx, plan.EFSkipIPs, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EFSkipIPs, &resp.Diagnostics); len(v) > 0 {
+				sp.EFSkipIPs = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFSkipIPs, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFSkipIPsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EFSkipLastIP.Equal(state.EFSkipLastIP) {
@@ -298,7 +325,15 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.EFSkipMailGateway.Equal(state.EFSkipMailGateway) {
 		if !plan.EFSkipMailGateway.IsNull() && !plan.EFSkipMailGateway.IsUnknown() {
-			sp.EFSkipMailGateway = append([]string{}, toStringSlice(ctx, plan.EFSkipMailGateway, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EFSkipMailGateway, &resp.Diagnostics); len(v) > 0 {
+				sp.EFSkipMailGateway = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFSkipMailGateway, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFSkipMailGatewayDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EFTestMode.Equal(state.EFTestMode) {
@@ -308,7 +343,15 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.EFUsers.Equal(state.EFUsers) {
 		if !plan.EFUsers.IsNull() && !plan.EFUsers.IsUnknown() {
-			sp.EFUsers = append([]string{}, toStringSlice(ctx, plan.EFUsers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EFUsers, &resp.Diagnostics); len(v) > 0 {
+				sp.EFUsers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EFUsers, &resp.Diagnostics); len(rm) > 0 {
+						sp.EFUsersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
@@ -333,12 +376,28 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.ScanAndDropRecipients.Equal(state.ScanAndDropRecipients) {
 		if !plan.ScanAndDropRecipients.IsNull() && !plan.ScanAndDropRecipients.IsUnknown() {
-			sp.ScanAndDropRecipients = append([]string{}, toStringSlice(ctx, plan.ScanAndDropRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ScanAndDropRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.ScanAndDropRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ScanAndDropRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.ScanAndDropRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.SenderIPAddresses.Equal(state.SenderIPAddresses) {
 		if !plan.SenderIPAddresses.IsNull() && !plan.SenderIPAddresses.IsUnknown() {
-			sp.SenderIPAddresses = append([]string{}, toStringSlice(ctx, plan.SenderIPAddresses, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SenderIPAddresses, &resp.Diagnostics); len(v) > 0 {
+				sp.SenderIPAddresses = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SenderIPAddresses, &resp.Diagnostics); len(rm) > 0 {
+						sp.SenderIPAddressesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.TlsSenderCertificateName.ValueString(); v != "" {
@@ -351,7 +410,15 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	}
 	if !plan.TrustedOrganizations.Equal(state.TrustedOrganizations) {
 		if !plan.TrustedOrganizations.IsNull() && !plan.TrustedOrganizations.IsUnknown() {
-			sp.TrustedOrganizations = append([]string{}, toStringSlice(ctx, plan.TrustedOrganizations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TrustedOrganizations, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedOrganizations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedOrganizations, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedOrganizationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

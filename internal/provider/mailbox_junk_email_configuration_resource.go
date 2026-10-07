@@ -91,9 +91,28 @@ func (r *mailboxJunkEmailConfigurationResource) Create(ctx context.Context, req 
 	}
 	sp := exo.SetMailboxJunkEmailConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
+	var cur *mailboxJunkEmailConfigurationModel
+	current := func() *mailboxJunkEmailConfigurationModel {
+		if cur == nil {
+			var m mailboxJunkEmailConfigurationModel
+			if !r.refresh(ctx, plan.Identity.ValueString(), &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !config.BlockedSendersAndDomains.IsNull() {
 		if !plan.BlockedSendersAndDomains.IsNull() && !plan.BlockedSendersAndDomains.IsUnknown() {
-			sp.BlockedSendersAndDomains = append([]string{}, toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.ContactsTrusted.IsNull() {
@@ -123,12 +142,28 @@ func (r *mailboxJunkEmailConfigurationResource) Create(ctx context.Context, req 
 	}
 	if !config.TrustedRecipientsAndDomains.IsNull() {
 		if !plan.TrustedRecipientsAndDomains.IsNull() && !plan.TrustedRecipientsAndDomains.IsUnknown() {
-			sp.TrustedRecipientsAndDomains = append([]string{}, toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedRecipientsAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedRecipientsAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedRecipientsAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !config.TrustedSendersAndDomains.IsNull() {
 		if !plan.TrustedSendersAndDomains.IsNull() && !plan.TrustedSendersAndDomains.IsUnknown() {
-			sp.TrustedSendersAndDomains = append([]string{}, toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {
@@ -170,9 +205,28 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 	id := r.identityOf(state)
 	sp := exo.SetMailboxJunkEmailConfigurationParams{}
 	sp.Identity = id
+	var cur *mailboxJunkEmailConfigurationModel
+	current := func() *mailboxJunkEmailConfigurationModel {
+		if cur == nil {
+			var m mailboxJunkEmailConfigurationModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.BlockedSendersAndDomains.Equal(state.BlockedSendersAndDomains) {
 		if !plan.BlockedSendersAndDomains.IsNull() && !plan.BlockedSendersAndDomains.IsUnknown() {
-			sp.BlockedSendersAndDomains = append([]string{}, toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ContactsTrusted.Equal(state.ContactsTrusted) {
@@ -202,12 +256,28 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 	}
 	if !plan.TrustedRecipientsAndDomains.Equal(state.TrustedRecipientsAndDomains) {
 		if !plan.TrustedRecipientsAndDomains.IsNull() && !plan.TrustedRecipientsAndDomains.IsUnknown() {
-			sp.TrustedRecipientsAndDomains = append([]string{}, toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TrustedRecipientsAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedRecipientsAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedRecipientsAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedRecipientsAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.TrustedSendersAndDomains.Equal(state.TrustedSendersAndDomains) {
 		if !plan.TrustedSendersAndDomains.IsNull() && !plan.TrustedSendersAndDomains.IsUnknown() {
-			sp.TrustedSendersAndDomains = append([]string{}, toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TrustedSendersAndDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TrustedSendersAndDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TrustedSendersAndDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TrustedSendersAndDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

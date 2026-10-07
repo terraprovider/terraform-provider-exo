@@ -249,6 +249,17 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	id := r.identityOf(state)
 	sp := exo.SetAppParams{}
 	sp.Identity = id
+	var cur *appModel
+	current := func() *appModel {
+		if cur == nil {
+			var m appModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := plan.DefaultStateForUser.ValueString(); v != "" {
 		sp.DefaultStateForUser = objectParam(v)
 	}
@@ -268,7 +279,15 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 	if !plan.UserList.Equal(state.UserList) {
 		if !plan.UserList.IsNull() && !plan.UserList.IsUnknown() {
-			sp.UserList = append([]string{}, toStringSlice(ctx, plan.UserList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UserList, &resp.Diagnostics); len(v) > 0 {
+				sp.UserList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UserList, &resp.Diagnostics); len(rm) > 0 {
+						sp.UserListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

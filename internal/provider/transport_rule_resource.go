@@ -1215,6 +1215,17 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetTransportRuleParams{}
 	sp.Identity = id
+	var cur *transportRuleModel
+	current := func() *transportRuleModel {
+		if cur == nil {
+			var m transportRuleModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if v := plan.ActivationDate.ValueString(); v != "" {
 		sp.ActivationDate = objectParam(v)
 	}
@@ -1619,7 +1630,15 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	if !plan.ExceptIfSenderIpRanges.Equal(state.ExceptIfSenderIpRanges) {
 		if !plan.ExceptIfSenderIpRanges.IsNull() && !plan.ExceptIfSenderIpRanges.IsUnknown() {
-			sp.ExceptIfSenderIpRanges = append([]string{}, toStringSlice(ctx, plan.ExceptIfSenderIpRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExceptIfSenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.ExceptIfSenderIpRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExceptIfSenderIpRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExceptIfSenderIpRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ExceptIfSenderManagementRelationship.ValueString(); v != "" {
@@ -1882,7 +1901,15 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	if !plan.SenderIpRanges.Equal(state.SenderIpRanges) {
 		if !plan.SenderIpRanges.IsNull() && !plan.SenderIpRanges.IsUnknown() {
-			sp.SenderIpRanges = append([]string{}, toStringSlice(ctx, plan.SenderIpRanges, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SenderIpRanges, &resp.Diagnostics); len(v) > 0 {
+				sp.SenderIpRanges = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SenderIpRanges, &resp.Diagnostics); len(rm) > 0 {
+						sp.SenderIpRangesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.SenderManagementRelationship.ValueString(); v != "" {

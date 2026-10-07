@@ -451,6 +451,17 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	id := r.identityOf(state)
 	sp := exo.SetHostedContentFilterPolicyParams{}
 	sp.Identity = id
+	var cur *hostedContentFilterPolicyModel
+	current := func() *hostedContentFilterPolicyModel {
+		if cur == nil {
+			var m hostedContentFilterPolicyModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AddXHeaderValue.Equal(state.AddXHeaderValue) {
 		sp.AddXHeaderValue = plan.AddXHeaderValue.ValueString()
 	}
@@ -459,22 +470,54 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	}
 	if !plan.AllowedSenderDomains.Equal(state.AllowedSenderDomains) {
 		if !plan.AllowedSenderDomains.IsNull() && !plan.AllowedSenderDomains.IsUnknown() {
-			sp.AllowedSenderDomains = append([]string{}, toStringSlice(ctx, plan.AllowedSenderDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedSenderDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedSenderDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedSenderDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AllowedSenders.Equal(state.AllowedSenders) {
 		if !plan.AllowedSenders.IsNull() && !plan.AllowedSenders.IsUnknown() {
-			sp.AllowedSenders = append([]string{}, toStringSlice(ctx, plan.AllowedSenders, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AllowedSenders, &resp.Diagnostics); len(v) > 0 {
+				sp.AllowedSenders = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AllowedSenders, &resp.Diagnostics); len(rm) > 0 {
+						sp.AllowedSendersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BlockedSenderDomains.Equal(state.BlockedSenderDomains) {
 		if !plan.BlockedSenderDomains.IsNull() && !plan.BlockedSenderDomains.IsUnknown() {
-			sp.BlockedSenderDomains = append([]string{}, toStringSlice(ctx, plan.BlockedSenderDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedSenderDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSenderDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSenderDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSenderDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.BlockedSenders.Equal(state.BlockedSenders) {
 		if !plan.BlockedSenders.IsNull() && !plan.BlockedSenders.IsUnknown() {
-			sp.BlockedSenders = append([]string{}, toStringSlice(ctx, plan.BlockedSenders, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BlockedSenders, &resp.Diagnostics); len(v) > 0 {
+				sp.BlockedSenders = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BlockedSenders, &resp.Diagnostics); len(rm) > 0 {
+						sp.BlockedSendersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.BulkMovesEnabled.ValueString(); v != "" {
@@ -567,7 +610,15 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	}
 	if !plan.LanguageBlockList.Equal(state.LanguageBlockList) {
 		if !plan.LanguageBlockList.IsNull() && !plan.LanguageBlockList.IsUnknown() {
-			sp.LanguageBlockList = append([]string{}, toStringSlice(ctx, plan.LanguageBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.LanguageBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.LanguageBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.LanguageBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.LanguageBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MakeDefault.Equal(state.MakeDefault) {
@@ -630,12 +681,28 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	}
 	if !plan.RedirectToRecipients.Equal(state.RedirectToRecipients) {
 		if !plan.RedirectToRecipients.IsNull() && !plan.RedirectToRecipients.IsUnknown() {
-			sp.RedirectToRecipients = append([]string{}, toStringSlice(ctx, plan.RedirectToRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RedirectToRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.RedirectToRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RedirectToRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.RedirectToRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RegionBlockList.Equal(state.RegionBlockList) {
 		if !plan.RegionBlockList.IsNull() && !plan.RegionBlockList.IsUnknown() {
-			sp.RegionBlockList = append([]string{}, toStringSlice(ctx, plan.RegionBlockList, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RegionBlockList, &resp.Diagnostics); len(v) > 0 {
+				sp.RegionBlockList = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RegionBlockList, &resp.Diagnostics); len(rm) > 0 {
+						sp.RegionBlockListDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.SpamAction.ValueString(); v != "" {
@@ -654,7 +721,15 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	}
 	if !plan.TestModeBccToRecipients.Equal(state.TestModeBccToRecipients) {
 		if !plan.TestModeBccToRecipients.IsNull() && !plan.TestModeBccToRecipients.IsUnknown() {
-			sp.TestModeBccToRecipients = append([]string{}, toStringSlice(ctx, plan.TestModeBccToRecipients, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.TestModeBccToRecipients, &resp.Diagnostics); len(v) > 0 {
+				sp.TestModeBccToRecipients = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TestModeBccToRecipients, &resp.Diagnostics); len(rm) > 0 {
+						sp.TestModeBccToRecipientsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if resp.Diagnostics.HasError() {

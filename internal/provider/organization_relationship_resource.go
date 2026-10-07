@@ -248,6 +248,17 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	id := r.identityOf(state)
 	sp := exo.SetOrganizationRelationshipParams{}
 	sp.Identity = id
+	var cur *organizationRelationshipModel
+	current := func() *organizationRelationshipModel {
+		if cur == nil {
+			var m organizationRelationshipModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.ArchiveAccessEnabled.Equal(state.ArchiveAccessEnabled) {
 		if !plan.ArchiveAccessEnabled.IsUnknown() {
 			sp.ArchiveAccessEnabled = plan.ArchiveAccessEnabled.ValueBoolPointer()
@@ -295,7 +306,15 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	}
 	if !plan.MailboxMovePublishedScopes.Equal(state.MailboxMovePublishedScopes) {
 		if !plan.MailboxMovePublishedScopes.IsNull() && !plan.MailboxMovePublishedScopes.IsUnknown() {
-			sp.MailboxMovePublishedScopes = append([]string{}, toStringSlice(ctx, plan.MailboxMovePublishedScopes, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailboxMovePublishedScopes, &resp.Diagnostics); len(v) > 0 {
+				sp.MailboxMovePublishedScopes = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailboxMovePublishedScopes, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailboxMovePublishedScopesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.OAuthApplicationId.Equal(state.OAuthApplicationId) {

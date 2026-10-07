@@ -553,19 +553,54 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	id := r.identityOf(state)
 	sp := exo.SetMailboxParams{}
 	sp.Identity = id
+	var cur *mailboxModel
+	current := func() *mailboxModel {
+		if cur == nil {
+			var m mailboxModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AcceptMessagesOnlyFrom.Equal(state.AcceptMessagesOnlyFrom) {
 		if !plan.AcceptMessagesOnlyFrom.IsNull() && !plan.AcceptMessagesOnlyFrom.IsUnknown() {
-			sp.AcceptMessagesOnlyFrom = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromDLMembers.Equal(state.AcceptMessagesOnlyFromDLMembers) {
 		if !plan.AcceptMessagesOnlyFromDLMembers.IsNull() && !plan.AcceptMessagesOnlyFromDLMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromDLMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AcceptMessagesOnlyFromSendersOrMembers.Equal(state.AcceptMessagesOnlyFromSendersOrMembers) {
 		if !plan.AcceptMessagesOnlyFromSendersOrMembers.IsNull() && !plan.AcceptMessagesOnlyFromSendersOrMembers.IsUnknown() {
-			sp.AcceptMessagesOnlyFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.AcceptMessagesOnlyFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AcceptMessagesOnlyFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.AcceptMessagesOnlyFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AccountDisabled.Equal(state.AccountDisabled) {
@@ -584,17 +619,41 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.ArchiveName.Equal(state.ArchiveName) {
 		if !plan.ArchiveName.IsNull() && !plan.ArchiveName.IsUnknown() {
-			sp.ArchiveName = append([]string{}, toStringSlice(ctx, plan.ArchiveName, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ArchiveName, &resp.Diagnostics); len(v) > 0 {
+				sp.ArchiveName = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ArchiveName, &resp.Diagnostics); len(rm) > 0 {
+						sp.ArchiveNameDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AuditAdmin.Equal(state.AuditAdmin) {
 		if !plan.AuditAdmin.IsNull() && !plan.AuditAdmin.IsUnknown() {
-			sp.AuditAdmin = append([]string{}, toStringSlice(ctx, plan.AuditAdmin, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AuditAdmin, &resp.Diagnostics); len(v) > 0 {
+				sp.AuditAdmin = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AuditAdmin, &resp.Diagnostics); len(rm) > 0 {
+						sp.AuditAdminDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AuditDelegate.Equal(state.AuditDelegate) {
 		if !plan.AuditDelegate.IsNull() && !plan.AuditDelegate.IsUnknown() {
-			sp.AuditDelegate = append([]string{}, toStringSlice(ctx, plan.AuditDelegate, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AuditDelegate, &resp.Diagnostics); len(v) > 0 {
+				sp.AuditDelegate = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AuditDelegate, &resp.Diagnostics); len(rm) > 0 {
+						sp.AuditDelegateDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AuditEnabled.Equal(state.AuditEnabled) {
@@ -607,7 +666,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.AuditOwner.Equal(state.AuditOwner) {
 		if !plan.AuditOwner.IsNull() && !plan.AuditOwner.IsUnknown() {
-			sp.AuditOwner = append([]string{}, toStringSlice(ctx, plan.AuditOwner, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.AuditOwner, &resp.Diagnostics); len(v) > 0 {
+				sp.AuditOwner = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.AuditOwner, &resp.Diagnostics); len(rm) > 0 {
+						sp.AuditOwnerDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.AutoArchivingEnabled.Equal(state.AutoArchivingEnabled) {
@@ -617,7 +684,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.BypassModerationFromSendersOrMembers.Equal(state.BypassModerationFromSendersOrMembers) {
 		if !plan.BypassModerationFromSendersOrMembers.IsNull() && !plan.BypassModerationFromSendersOrMembers.IsUnknown() {
-			sp.BypassModerationFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.BypassModerationFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.BypassModerationFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.BypassModerationFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.CalendarRepairDisabled.Equal(state.CalendarRepairDisabled) {
@@ -683,7 +758,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.DefaultAuditSet.Equal(state.DefaultAuditSet) {
 		if !plan.DefaultAuditSet.IsNull() && !plan.DefaultAuditSet.IsUnknown() {
-			sp.DefaultAuditSet = append([]string{}, toStringSlice(ctx, plan.DefaultAuditSet, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.DefaultAuditSet, &resp.Diagnostics); len(v) > 0 {
+				sp.DefaultAuditSet = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.DefaultAuditSet, &resp.Diagnostics); len(rm) > 0 {
+						sp.DefaultAuditSetDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.DefaultPublicFolderMailbox.ValueString(); v != "" {
@@ -704,7 +787,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.EmailAddressDisplayNames.Equal(state.EmailAddressDisplayNames) {
 		if !plan.EmailAddressDisplayNames.IsNull() && !plan.EmailAddressDisplayNames.IsUnknown() {
-			sp.EmailAddressDisplayNames = append([]string{}, toStringSlice(ctx, plan.EmailAddressDisplayNames, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.EmailAddressDisplayNames, &resp.Diagnostics); len(v) > 0 {
+				sp.EmailAddressDisplayNames = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.EmailAddressDisplayNames, &resp.Diagnostics); len(rm) > 0 {
+						sp.EmailAddressDisplayNamesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.EmailAddresses.Equal(state.EmailAddresses) {
@@ -731,27 +822,67 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.ExtensionCustomAttribute1.Equal(state.ExtensionCustomAttribute1) {
 		if !plan.ExtensionCustomAttribute1.IsNull() && !plan.ExtensionCustomAttribute1.IsUnknown() {
-			sp.ExtensionCustomAttribute1 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute1, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute1 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute1, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute1Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute2.Equal(state.ExtensionCustomAttribute2) {
 		if !plan.ExtensionCustomAttribute2.IsNull() && !plan.ExtensionCustomAttribute2.IsUnknown() {
-			sp.ExtensionCustomAttribute2 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute2, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute2 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute2, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute2Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute3.Equal(state.ExtensionCustomAttribute3) {
 		if !plan.ExtensionCustomAttribute3.IsNull() && !plan.ExtensionCustomAttribute3.IsUnknown() {
-			sp.ExtensionCustomAttribute3 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute3, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute3 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute3, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute3Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute4.Equal(state.ExtensionCustomAttribute4) {
 		if !plan.ExtensionCustomAttribute4.IsNull() && !plan.ExtensionCustomAttribute4.IsUnknown() {
-			sp.ExtensionCustomAttribute4 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute4, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute4 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute4, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute4Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ExtensionCustomAttribute5.Equal(state.ExtensionCustomAttribute5) {
 		if !plan.ExtensionCustomAttribute5.IsNull() && !plan.ExtensionCustomAttribute5.IsUnknown() {
-			sp.ExtensionCustomAttribute5 = append([]string{}, toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ExtensionCustomAttribute5, &resp.Diagnostics); len(v) > 0 {
+				sp.ExtensionCustomAttribute5 = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ExtensionCustomAttribute5, &resp.Diagnostics); len(rm) > 0 {
+						sp.ExtensionCustomAttribute5Delta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.ExternalOofOptions.ValueString(); v != "" {
@@ -765,7 +896,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
-			sp.GrantSendOnBehalfTo = append([]string{}, toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.GrantSendOnBehalfTo, &resp.Diagnostics); len(v) > 0 {
+				sp.GrantSendOnBehalfTo = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.GrantSendOnBehalfTo, &resp.Diagnostics); len(rm) > 0 {
+						sp.GrantSendOnBehalfToDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.GroupMailbox.Equal(state.GroupMailbox) {
@@ -797,7 +936,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.Languages.Equal(state.Languages) {
 		if !plan.Languages.IsNull() && !plan.Languages.IsUnknown() {
-			sp.Languages = append([]string{}, toStringSlice(ctx, plan.Languages, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.Languages, &resp.Diagnostics); len(v) > 0 {
+				sp.Languages = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.Languages, &resp.Diagnostics); len(rm) > 0 {
+						sp.LanguagesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.LitigationHoldDate.ValueString(); v != "" {
@@ -819,7 +966,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.MailTipTranslations.Equal(state.MailTipTranslations) {
 		if !plan.MailTipTranslations.IsNull() && !plan.MailTipTranslations.IsUnknown() {
-			sp.MailTipTranslations = append([]string{}, toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.MailTipTranslations, &resp.Diagnostics); len(v) > 0 {
+				sp.MailTipTranslations = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.MailTipTranslations, &resp.Diagnostics); len(rm) > 0 {
+						sp.MailTipTranslationsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.MailboxRegion.Equal(state.MailboxRegion) {
@@ -853,7 +1008,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.ModeratedBy.Equal(state.ModeratedBy) {
 		if !plan.ModeratedBy.IsNull() && !plan.ModeratedBy.IsUnknown() {
-			sp.ModeratedBy = append([]string{}, toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
+				sp.ModeratedBy = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ModeratedBy, &resp.Diagnostics); len(rm) > 0 {
+						sp.ModeratedByDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.ModerationEnabled.Equal(state.ModerationEnabled) {
@@ -863,7 +1026,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.NonCompliantDevices.Equal(state.NonCompliantDevices) {
 		if !plan.NonCompliantDevices.IsNull() && !plan.NonCompliantDevices.IsUnknown() {
-			sp.NonCompliantDevices = append([]string{}, toStringSlice(ctx, plan.NonCompliantDevices, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.NonCompliantDevices, &resp.Diagnostics); len(v) > 0 {
+				sp.NonCompliantDevices = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.NonCompliantDevices, &resp.Diagnostics); len(rm) > 0 {
+						sp.NonCompliantDevicesDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.Office.Equal(state.Office) {
@@ -889,17 +1060,41 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.RejectMessagesFrom.Equal(state.RejectMessagesFrom) {
 		if !plan.RejectMessagesFrom.IsNull() && !plan.RejectMessagesFrom.IsUnknown() {
-			sp.RejectMessagesFrom = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFrom, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFrom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFrom, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromDLMembers.Equal(state.RejectMessagesFromDLMembers) {
 		if !plan.RejectMessagesFromDLMembers.IsNull() && !plan.RejectMessagesFromDLMembers.IsUnknown() {
-			sp.RejectMessagesFromDLMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromDLMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromDLMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromDLMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromDLMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RejectMessagesFromSendersOrMembers.Equal(state.RejectMessagesFromSendersOrMembers) {
 		if !plan.RejectMessagesFromSendersOrMembers.IsNull() && !plan.RejectMessagesFromSendersOrMembers.IsUnknown() {
-			sp.RejectMessagesFromSendersOrMembers = append([]string{}, toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(v) > 0 {
+				sp.RejectMessagesFromSendersOrMembers = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RejectMessagesFromSendersOrMembers, &resp.Diagnostics); len(rm) > 0 {
+						sp.RejectMessagesFromSendersOrMembersDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RemoveComplianceTagHoldApplied.Equal(state.RemoveComplianceTagHoldApplied) {
@@ -934,7 +1129,15 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.ResourceCustom.Equal(state.ResourceCustom) {
 		if !plan.ResourceCustom.IsNull() && !plan.ResourceCustom.IsUnknown() {
-			sp.ResourceCustom = append([]string{}, toStringSlice(ctx, plan.ResourceCustom, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.ResourceCustom, &resp.Diagnostics); len(v) > 0 {
+				sp.ResourceCustom = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.ResourceCustom, &resp.Diagnostics); len(rm) > 0 {
+						sp.ResourceCustomDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.RetainDeletedItemsFor.ValueString(); v != "" {
@@ -1014,12 +1217,28 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	if !plan.UserCertificate.Equal(state.UserCertificate) {
 		if !plan.UserCertificate.IsNull() && !plan.UserCertificate.IsUnknown() {
-			sp.UserCertificate = append([]string{}, toStringSlice(ctx, plan.UserCertificate, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UserCertificate, &resp.Diagnostics); len(v) > 0 {
+				sp.UserCertificate = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UserCertificate, &resp.Diagnostics); len(rm) > 0 {
+						sp.UserCertificateDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.UserSMimeCertificate.Equal(state.UserSMimeCertificate) {
 		if !plan.UserSMimeCertificate.IsNull() && !plan.UserSMimeCertificate.IsUnknown() {
-			sp.UserSMimeCertificate = append([]string{}, toStringSlice(ctx, plan.UserSMimeCertificate, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.UserSMimeCertificate, &resp.Diagnostics); len(v) > 0 {
+				sp.UserSMimeCertificate = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.UserSMimeCertificate, &resp.Diagnostics); len(rm) > 0 {
+						sp.UserSMimeCertificateDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.WindowsEmailAddress.ValueString(); v != "" {

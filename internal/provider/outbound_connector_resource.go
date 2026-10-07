@@ -244,6 +244,17 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	id := r.identityOf(state)
 	sp := exo.SetOutboundConnectorParams{}
 	sp.Identity = id
+	var cur *outboundConnectorModel
+	current := func() *outboundConnectorModel {
+		if cur == nil {
+			var m outboundConnectorModel
+			if !r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				return nil
+			}
+			cur = &m
+		}
+		return cur
+	}
 	if !plan.AllAcceptedDomains.Equal(state.AllAcceptedDomains) {
 		if !plan.AllAcceptedDomains.IsUnknown() {
 			sp.AllAcceptedDomains = plan.AllAcceptedDomains.ValueBoolPointer()
@@ -286,7 +297,15 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	}
 	if !plan.RecipientDomains.Equal(state.RecipientDomains) {
 		if !plan.RecipientDomains.IsNull() && !plan.RecipientDomains.IsUnknown() {
-			sp.RecipientDomains = append([]string{}, toStringSlice(ctx, plan.RecipientDomains, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.RecipientDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.RecipientDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.RecipientDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.RecipientDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.RouteAllMessagesViaOnPremises.Equal(state.RouteAllMessagesViaOnPremises) {
@@ -301,7 +320,15 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	}
 	if !plan.SmartHosts.Equal(state.SmartHosts) {
 		if !plan.SmartHosts.IsNull() && !plan.SmartHosts.IsUnknown() {
-			sp.SmartHosts = append([]string{}, toStringSlice(ctx, plan.SmartHosts, &resp.Diagnostics)...)
+			if v := toStringSlice(ctx, plan.SmartHosts, &resp.Diagnostics); len(v) > 0 {
+				sp.SmartHosts = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.SmartHosts, &resp.Diagnostics); len(rm) > 0 {
+						sp.SmartHostsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if v := plan.SmtpDaneMode.ValueString(); v != "" {
