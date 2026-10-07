@@ -54,7 +54,7 @@ func (r *reportSubmissionRuleResource) Schema(_ context.Context, _ resource.Sche
 			"id":                       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                 schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"comments":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"report_submission_policy": schema.StringAttribute{Required: true, Description: "Maps to the -ReportSubmissionPolicy parameter."},
 			"sent_to":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -172,10 +172,27 @@ func (r *reportSubmissionRuleResource) Update(ctx context.Context, req resource.
 		resp.Diagnostics.AddError("Set-ReportSubmissionRule failed", err.Error())
 		return
 	}
+	if !plan.Enabled.IsUnknown() && !plan.Enabled.IsNull() && !plan.Enabled.Equal(state.Enabled) {
+		if plan.Enabled.ValueBool() {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.EnableReportSubmissionRule, exo.EnableReportSubmissionRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Enable-ReportSubmissionRule failed", err.Error())
+				return
+			}
+		} else {
+			if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.DisableReportSubmissionRule, exo.DisableReportSubmissionRuleParams{Identity: id}, isNotFound); err != nil {
+				resp.Diagnostics.AddError("Disable-ReportSubmissionRule failed", err.Error())
+				return
+			}
+		}
+	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Comments": cfg.Comments,
 	}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
@@ -240,7 +257,7 @@ func readReportSubmissionRule(ctx context.Context, obj map[string]any, m *report
 	m.ID = types.StringValue(firstNonEmptyStr(getString(obj, "Guid"), getString(obj, "Id"), getString(obj, "Identity")))
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.Comments = types.StringValue(getString(obj, "Comments"))
-	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
+	m.Enabled = types.BoolValue(getStateBool(obj, "State", "Enabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.ReportSubmissionPolicy = types.StringValue(getObjectJSON(obj, "ReportSubmissionPolicy"))
 	m.SentTo = stringSetValue(ctx, getStringSlice(obj, "SentTo"))
