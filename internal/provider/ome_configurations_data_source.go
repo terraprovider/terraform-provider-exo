@@ -44,7 +44,7 @@ func (d *oMEConfigurationListDataSource) Schema(_ context.Context, _ datasource.
 				"disclaimer_text":              schema.StringAttribute{Computed: true, Description: "Maps to the -DisclaimerText parameter."},
 				"email_text":                   schema.StringAttribute{Computed: true, Description: "Maps to the -EmailText parameter."},
 				"external_mail_expiry_in_days": schema.StringAttribute{Computed: true, Description: "Maps to the -ExternalMailExpiryInDays parameter."},
-				"image":                        schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Image parameter."},
+				"image":                        schema.StringAttribute{Computed: true, Description: "Maps to the -Image parameter."},
 				"introduction_text":            schema.StringAttribute{Computed: true, Description: "Maps to the -IntroductionText parameter."},
 				"otp_enabled":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OTPEnabled parameter."},
 				"portal_text":                  schema.StringAttribute{Computed: true, Description: "Maps to the -PortalText parameter."},

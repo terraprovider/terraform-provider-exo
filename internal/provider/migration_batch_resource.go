@@ -48,7 +48,7 @@ type migrationBatchModel struct {
 	AutoProvisioning           types.Bool   `tfsdk:"auto_provisioning"`
 	AutoStart                  types.Bool   `tfsdk:"auto_start"`
 	AvoidMergeOverlap          types.Bool   `tfsdk:"avoid_merge_overlap"`
-	CSVData                    types.Set    `tfsdk:"csv_data"`
+	CSVData                    types.String `tfsdk:"csv_data"`
 	CompleteAfter              types.String `tfsdk:"complete_after"`
 	ConnectionLogicalId        types.String `tfsdk:"connection_logical_id"`
 	ContentFilter              types.String `tfsdk:"content_filter"`
@@ -89,7 +89,7 @@ type migrationBatchModel struct {
 	SlackPublicDataConnector   types.Bool   `tfsdk:"slack_public_data_connector"`
 	SlackWorkspaceId           types.String `tfsdk:"slack_workspace_id"`
 	SourceEndpoint             types.String `tfsdk:"source_endpoint"`
-	SourceMappings             types.Set    `tfsdk:"source_mappings"`
+	SourceMappings             types.String `tfsdk:"source_mappings"`
 	SourcePFPrimaryMailboxGuid types.String `tfsdk:"source_pf_primary_mailbox_guid"`
 	StagedRollOutGroupId       types.String `tfsdk:"staged_roll_out_group_id"`
 	StartAfter                 types.String `tfsdk:"start_after"`
@@ -104,7 +104,7 @@ type migrationBatchModel struct {
 	Users                      types.Set    `tfsdk:"users"`
 	WorkflowControlFlags       types.String `tfsdk:"workflow_control_flags"`
 	WorkflowTemplate           types.String `tfsdk:"workflow_template"`
-	XMLData                    types.Set    `tfsdk:"xml_data"`
+	XMLData                    types.String `tfsdk:"xml_data"`
 }
 
 func (r *migrationBatchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -129,7 +129,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"auto_provisioning":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoProvisioning parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"auto_start":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoStart parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"avoid_merge_overlap":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AvoidMergeOverlap parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"csv_data":                       schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -CSVData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"csv_data":                       schema.StringAttribute{Required: true, Description: "Maps to the -CSVData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"complete_after":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CompleteAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"connection_logical_id":          schema.StringAttribute{Required: true, Description: "Maps to the -ConnectionLogicalId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"content_filter":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ContentFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -170,7 +170,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"slack_public_data_connector":    schema.BoolAttribute{Required: true, Description: "Maps to the -SlackPublicDataConnector parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"slack_workspace_id":             schema.StringAttribute{Required: true, Description: "Maps to the -SlackWorkspaceId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"source_endpoint":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourceEndpoint parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"source_mappings":                schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SourceMappings parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"source_mappings":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourceMappings parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"source_pf_primary_mailbox_guid": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourcePFPrimaryMailboxGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"staged_roll_out_group_id":       schema.StringAttribute{Required: true, Description: "Maps to the -StagedRollOutGroupId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"start_after":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -StartAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -185,7 +185,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"users":                          schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Users parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
 			"workflow_control_flags":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkflowControlFlags parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"workflow_template":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -WorkflowTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"xml_data":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -XMLData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"xml_data":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -XMLData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -243,10 +243,8 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 	if !config.AvoidMergeOverlap.IsNull() {
 		p.AvoidMergeOverlap = plan.AvoidMergeOverlap.ValueBool()
 	}
-	if !config.CSVData.IsNull() {
-		if v := toStringSlice(ctx, plan.CSVData, &resp.Diagnostics); len(v) > 0 {
-			p.CSVData = v
-		}
+	if v := config.CSVData.ValueString(); v != "" {
+		p.CSVData = objectParam(v)
 	}
 	if v := config.CompleteAfter.ValueString(); v != "" {
 		p.CompleteAfter = objectParam(v)
@@ -380,10 +378,8 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 	if v := config.SourceEndpoint.ValueString(); v != "" {
 		p.SourceEndpoint = objectParam(v)
 	}
-	if !config.SourceMappings.IsNull() {
-		if v := toStringSlice(ctx, plan.SourceMappings, &resp.Diagnostics); len(v) > 0 {
-			p.SourceMappings = v
-		}
+	if v := config.SourceMappings.ValueString(); v != "" {
+		p.SourceMappings = objectParam(v)
 	}
 	if !config.SourcePFPrimaryMailboxGuid.IsNull() {
 		p.SourcePFPrimaryMailboxGuid = plan.SourcePFPrimaryMailboxGuid.ValueString()
@@ -429,10 +425,8 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 	if !config.WorkflowTemplate.IsNull() {
 		p.WorkflowTemplate = plan.WorkflowTemplate.ValueString()
 	}
-	if !config.XMLData.IsNull() {
-		if v := toStringSlice(ctx, plan.XMLData, &resp.Diagnostics); len(v) > 0 {
-			p.XMLData = v
-		}
+	if v := config.XMLData.ValueString(); v != "" {
+		p.XMLData = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -660,7 +654,7 @@ func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBat
 	m.AutoProvisioning = types.BoolValue(getBool(obj, "AutoProvisioning"))
 	m.AutoStart = types.BoolValue(getBool(obj, "AutoStart"))
 	m.AvoidMergeOverlap = types.BoolValue(getBool(obj, "AvoidMergeOverlap"))
-	m.CSVData = stringSetValue(ctx, getStringSlice(obj, "CSVData"))
+	m.CSVData = types.StringValue(getObjectJSON(obj, "CSVData"))
 	m.CompleteAfter = types.StringValue(getObjectJSON(obj, "CompleteAfter"))
 	m.ConnectionLogicalId = types.StringValue(getString(obj, "ConnectionLogicalId"))
 	m.ContentFilter = types.StringValue(getString(obj, "ContentFilter"))
@@ -701,7 +695,7 @@ func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBat
 	m.SlackPublicDataConnector = types.BoolValue(getBool(obj, "SlackPublicDataConnector"))
 	m.SlackWorkspaceId = types.StringValue(getString(obj, "SlackWorkspaceId"))
 	m.SourceEndpoint = types.StringValue(getObjectJSON(obj, "SourceEndpoint"))
-	m.SourceMappings = stringSetValue(ctx, getStringSlice(obj, "SourceMappings"))
+	m.SourceMappings = types.StringValue(getObjectJSON(obj, "SourceMappings"))
 	m.SourcePFPrimaryMailboxGuid = types.StringValue(getString(obj, "SourcePFPrimaryMailboxGuid"))
 	m.StagedRollOutGroupId = types.StringValue(getString(obj, "StagedRollOutGroupId"))
 	m.StartAfter = types.StringValue(getObjectJSON(obj, "StartAfter"))
@@ -716,7 +710,7 @@ func readMigrationBatch(ctx context.Context, obj map[string]any, m *migrationBat
 	m.Users = stringSetValue(ctx, getStringSlice(obj, "Users"))
 	m.WorkflowControlFlags = types.StringValue(getObjectJSON(obj, "WorkflowControlFlags"))
 	m.WorkflowTemplate = types.StringValue(getString(obj, "WorkflowTemplate"))
-	m.XMLData = stringSetValue(ctx, getStringSlice(obj, "XMLData"))
+	m.XMLData = types.StringValue(getObjectJSON(obj, "XMLData"))
 	_ = ctx
 }
 
@@ -733,7 +727,7 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.AutoProvisioning = reconcile.KeepBool(cfg.AutoProvisioning, read.AutoProvisioning)
 	read.AutoStart = reconcile.KeepBool(cfg.AutoStart, read.AutoStart)
 	read.AvoidMergeOverlap = reconcile.KeepBool(cfg.AvoidMergeOverlap, read.AvoidMergeOverlap)
-	read.CSVData = reconcile.KeepSet(cfg.CSVData, read.CSVData)
+	read.CSVData = reconcile.KeepStr(cfg.CSVData, read.CSVData)
 	read.CompleteAfter = reconcile.KeepStr(cfg.CompleteAfter, read.CompleteAfter)
 	read.ConnectionLogicalId = reconcile.KeepStr(cfg.ConnectionLogicalId, read.ConnectionLogicalId)
 	read.ContentFilter = reconcile.KeepStr(cfg.ContentFilter, read.ContentFilter)
@@ -774,7 +768,7 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.SlackPublicDataConnector = reconcile.KeepBool(cfg.SlackPublicDataConnector, read.SlackPublicDataConnector)
 	read.SlackWorkspaceId = reconcile.KeepStr(cfg.SlackWorkspaceId, read.SlackWorkspaceId)
 	read.SourceEndpoint = reconcile.KeepStr(cfg.SourceEndpoint, read.SourceEndpoint)
-	read.SourceMappings = reconcile.KeepSet(cfg.SourceMappings, read.SourceMappings)
+	read.SourceMappings = reconcile.KeepStr(cfg.SourceMappings, read.SourceMappings)
 	read.SourcePFPrimaryMailboxGuid = reconcile.KeepStr(cfg.SourcePFPrimaryMailboxGuid, read.SourcePFPrimaryMailboxGuid)
 	read.StagedRollOutGroupId = reconcile.KeepStr(cfg.StagedRollOutGroupId, read.StagedRollOutGroupId)
 	read.StartAfter = reconcile.KeepStr(cfg.StartAfter, read.StartAfter)
@@ -789,5 +783,5 @@ func (r *migrationBatchResource) reconcileState(cfg, read *migrationBatchModel) 
 	read.Users = reconcile.KeepSet(cfg.Users, read.Users)
 	read.WorkflowControlFlags = reconcile.KeepStr(cfg.WorkflowControlFlags, read.WorkflowControlFlags)
 	read.WorkflowTemplate = reconcile.KeepStr(cfg.WorkflowTemplate, read.WorkflowTemplate)
-	read.XMLData = reconcile.KeepSet(cfg.XMLData, read.XMLData)
+	read.XMLData = reconcile.KeepStr(cfg.XMLData, read.XMLData)
 }

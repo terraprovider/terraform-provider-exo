@@ -47,7 +47,7 @@ func (d *appListDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				"download_only":                 schema.BoolAttribute{Computed: true, Description: "Maps to the -DownloadOnly parameter."},
 				"enabled":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -Enabled parameter."},
 				"etoken":                        schema.StringAttribute{Computed: true, Description: "Maps to the -Etoken parameter."},
-				"file_data":                     schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -FileData parameter."},
+				"file_data":                     schema.StringAttribute{Computed: true, Description: "Maps to the -FileData parameter."},
 				"file_stream":                   schema.StringAttribute{Computed: true, Description: "Maps to the -FileStream parameter."},
 				"mailbox":                       schema.StringAttribute{Computed: true, Description: "Maps to the -Mailbox parameter."},
 				"marketplace_asset_id":          schema.StringAttribute{Computed: true, Description: "Maps to the -MarketplaceAssetID parameter."},

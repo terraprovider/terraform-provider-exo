@@ -19,7 +19,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 
 - `analyze` (Boolean) Maps to the -Analyze parameter.
 - `connection_logical_id` (String) Maps to the -ConnectionLogicalId parameter.
-- `csv_data` (Set of String) Maps to the -CSVData parameter.
+- `csv_data` (String) Maps to the -CSVData parameter.
 - `google_resource` (Boolean) Maps to the -GoogleResource parameter.
 - `managed_gmail_teams` (Boolean) Maps to the -ManagedGmailTeams parameter.
 - `name` (String) Maps to the -Name parameter.
@@ -76,7 +76,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `skip_reports` (Boolean) Maps to the -SkipReports parameter.
 - `skip_rules` (Boolean) Maps to the -SkipRules parameter.
 - `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
-- `source_mappings` (Set of String) Maps to the -SourceMappings parameter.
+- `source_mappings` (String) Maps to the -SourceMappings parameter.
 - `source_pf_primary_mailbox_guid` (String) Maps to the -SourcePFPrimaryMailboxGuid parameter.
 - `start_after` (String) Maps to the -StartAfter parameter.
 - `sync_now` (Boolean) Maps to the -SyncNow parameter.
@@ -88,7 +88,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `update` (Boolean) Maps to the -Update parameter.
 - `workflow_control_flags` (String) Maps to the -WorkflowControlFlags parameter.
 - `workflow_template` (String) Maps to the -WorkflowTemplate parameter.
-- `xml_data` (Set of String) Maps to the -XMLData parameter.
+- `xml_data` (String) Maps to the -XMLData parameter.
 
 ### Read-Only
 

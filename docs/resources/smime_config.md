@@ -46,7 +46,7 @@ Manages the SmimeConfig configuration via Set-SmimeConfig.
 - `owacrl_connection_timeout` (Number) Maps to the -OWACRLConnectionTimeout parameter.
 - `owacrl_retrieval_timeout` (Number) Maps to the -OWACRLRetrievalTimeout parameter.
 - `owadl_expansion_timeout` (Number) Maps to the -OWADLExpansionTimeout parameter.
-- `smime_certificate_issuing_ca` (Set of String) Maps to the -SMIMECertificateIssuingCA parameter.
+- `smime_certificate_issuing_ca` (String) Maps to the -SMIMECertificateIssuingCA parameter.
 
 ### Read-Only
 

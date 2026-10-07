@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,7 +39,7 @@ type oMEConfigurationModel struct {
 	DisclaimerText           types.String `tfsdk:"disclaimer_text"`
 	EmailText                types.String `tfsdk:"email_text"`
 	ExternalMailExpiryInDays types.String `tfsdk:"external_mail_expiry_in_days"`
-	Image                    types.Set    `tfsdk:"image"`
+	Image                    types.String `tfsdk:"image"`
 	IntroductionText         types.String `tfsdk:"introduction_text"`
 	OTPEnabled               types.Bool   `tfsdk:"otp_enabled"`
 	PortalText               types.String `tfsdk:"portal_text"`
@@ -63,7 +62,7 @@ func (r *oMEConfigurationResource) Schema(_ context.Context, _ resource.SchemaRe
 			"disclaimer_text":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisclaimerText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"email_text":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EmailText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"external_mail_expiry_in_days": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalMailExpiryInDays parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"image":                        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Image parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"image":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Image parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"introduction_text":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -IntroductionText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"otp_enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OTPEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"portal_text":                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PortalText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -107,10 +106,8 @@ func (r *oMEConfigurationResource) Create(ctx context.Context, req resource.Crea
 	if v := config.ExternalMailExpiryInDays.ValueString(); v != "" {
 		p.ExternalMailExpiryInDays = objectParam(v)
 	}
-	if !config.Image.IsNull() {
-		if v := toStringSlice(ctx, plan.Image, &resp.Diagnostics); len(v) > 0 {
-			p.Image = v
-		}
+	if v := config.Image.ValueString(); v != "" {
+		p.Image = objectParam(v)
 	}
 	if !config.IntroductionText.IsNull() {
 		p.IntroductionText = plan.IntroductionText.ValueString()
@@ -196,10 +193,8 @@ func (r *oMEConfigurationResource) Update(ctx context.Context, req resource.Upda
 	if v := plan.ExternalMailExpiryInDays.ValueString(); v != "" {
 		sp.ExternalMailExpiryInDays = objectParam(v)
 	}
-	if !plan.Image.Equal(state.Image) {
-		if !plan.Image.IsNull() && !plan.Image.IsUnknown() {
-			sp.Image = append([]string{}, toStringSlice(ctx, plan.Image, &resp.Diagnostics)...)
-		}
+	if v := plan.Image.ValueString(); v != "" {
+		sp.Image = objectParam(v)
 	}
 	if !plan.IntroductionText.Equal(state.IntroductionText) {
 		sp.IntroductionText = plan.IntroductionText.ValueString()
@@ -304,7 +299,7 @@ func readOMEConfiguration(ctx context.Context, obj map[string]any, m *oMEConfigu
 	m.DisclaimerText = types.StringValue(getString(obj, "DisclaimerText"))
 	m.EmailText = types.StringValue(getString(obj, "EmailText"))
 	m.ExternalMailExpiryInDays = types.StringValue(getObjectJSON(obj, "ExternalMailExpiryInDays"))
-	m.Image = stringSetValue(ctx, getStringSlice(obj, "Image"))
+	m.Image = types.StringValue(getObjectJSON(obj, "Image"))
 	m.IntroductionText = types.StringValue(getString(obj, "IntroductionText"))
 	m.OTPEnabled = types.BoolValue(getBool(obj, "OTPEnabled"))
 	m.PortalText = types.StringValue(getString(obj, "PortalText"))
@@ -319,7 +314,7 @@ func (r *oMEConfigurationResource) reconcileState(cfg, read *oMEConfigurationMod
 	read.DisclaimerText = reconcile.KeepStr(cfg.DisclaimerText, read.DisclaimerText)
 	read.EmailText = reconcile.KeepStr(cfg.EmailText, read.EmailText)
 	read.ExternalMailExpiryInDays = reconcile.KeepStr(cfg.ExternalMailExpiryInDays, read.ExternalMailExpiryInDays)
-	read.Image = reconcile.KeepSet(cfg.Image, read.Image)
+	read.Image = reconcile.KeepStr(cfg.Image, read.Image)
 	read.IntroductionText = reconcile.KeepStr(cfg.IntroductionText, read.IntroductionText)
 	read.OTPEnabled = reconcile.KeepBool(cfg.OTPEnabled, read.OTPEnabled)
 	read.PortalText = reconcile.KeepStr(cfg.PortalText, read.PortalText)

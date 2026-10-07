@@ -114,7 +114,7 @@ type transportRuleModel struct {
 	ExceptIfHeaderMatchesPatterns                types.Set    `tfsdk:"except_if_header_matches_patterns"`
 	ExceptIfManagerAddresses                     types.Set    `tfsdk:"except_if_manager_addresses"`
 	ExceptIfManagerForEvaluatedUser              types.String `tfsdk:"except_if_manager_for_evaluated_user"`
-	ExceptIfMessageContainsDataClassifications   types.Set    `tfsdk:"except_if_message_contains_data_classifications"`
+	ExceptIfMessageContainsDataClassifications   types.String `tfsdk:"except_if_message_contains_data_classifications"`
 	ExceptIfMessageSizeOver                      types.String `tfsdk:"except_if_message_size_over"`
 	ExceptIfMessageTypeMatches                   types.String `tfsdk:"except_if_message_type_matches"`
 	ExceptIfRecipientADAttributeContainsWords    types.Set    `tfsdk:"except_if_recipient_ad_attribute_contains_words"`
@@ -157,7 +157,7 @@ type transportRuleModel struct {
 	LogEventText                                 types.String `tfsdk:"log_event_text"`
 	ManagerAddresses                             types.Set    `tfsdk:"manager_addresses"`
 	ManagerForEvaluatedUser                      types.String `tfsdk:"manager_for_evaluated_user"`
-	MessageContainsDataClassifications           types.Set    `tfsdk:"message_contains_data_classifications"`
+	MessageContainsDataClassifications           types.String `tfsdk:"message_contains_data_classifications"`
 	MessageSizeOver                              types.String `tfsdk:"message_size_over"`
 	MessageTypeMatches                           types.String `tfsdk:"message_type_matches"`
 	Mode                                         types.String `tfsdk:"mode"`
@@ -299,7 +299,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"except_if_header_matches_patterns":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfHeaderMatchesPatterns parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_manager_addresses":                         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfManagerAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"except_if_manager_for_evaluated_user":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfManagerForEvaluatedUser parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"except_if_message_contains_data_classifications":     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfMessageContainsDataClassifications parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"except_if_message_contains_data_classifications":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfMessageContainsDataClassifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_message_size_over":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfMessageSizeOver parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_message_type_matches":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExceptIfMessageTypeMatches parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"except_if_recipient_ad_attribute_contains_words":     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientADAttributeContainsWords parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -342,7 +342,7 @@ func (r *transportRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"log_event_text":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -LogEventText parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"manager_addresses":                                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ManagerAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"manager_for_evaluated_user":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ManagerForEvaluatedUser parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"message_contains_data_classifications":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -MessageContainsDataClassifications parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"message_contains_data_classifications":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageContainsDataClassifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_size_over":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageSizeOver parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"message_type_matches":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageTypeMatches parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"mode":                                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -763,10 +763,8 @@ func (r *transportRuleResource) Create(ctx context.Context, req resource.CreateR
 	if v := config.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
 		p.ExceptIfManagerForEvaluatedUser = objectParam(v)
 	}
-	if !config.ExceptIfMessageContainsDataClassifications.IsNull() {
-		if v := toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics); len(v) > 0 {
-			p.ExceptIfMessageContainsDataClassifications = v
-		}
+	if v := config.ExceptIfMessageContainsDataClassifications.ValueString(); v != "" {
+		p.ExceptIfMessageContainsDataClassifications = objectParam(v)
 	}
 	if v := config.ExceptIfMessageSizeOver.ValueString(); v != "" {
 		p.ExceptIfMessageSizeOver = objectParam(v)
@@ -948,10 +946,8 @@ func (r *transportRuleResource) Create(ctx context.Context, req resource.CreateR
 	if v := config.ManagerForEvaluatedUser.ValueString(); v != "" {
 		p.ManagerForEvaluatedUser = objectParam(v)
 	}
-	if !config.MessageContainsDataClassifications.IsNull() {
-		if v := toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics); len(v) > 0 {
-			p.MessageContainsDataClassifications = v
-		}
+	if v := config.MessageContainsDataClassifications.ValueString(); v != "" {
+		p.MessageContainsDataClassifications = objectParam(v)
 	}
 	if v := config.MessageSizeOver.ValueString(); v != "" {
 		p.MessageSizeOver = objectParam(v)
@@ -1567,10 +1563,8 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if v := plan.ExceptIfManagerForEvaluatedUser.ValueString(); v != "" {
 		sp.ExceptIfManagerForEvaluatedUser = objectParam(v)
 	}
-	if !plan.ExceptIfMessageContainsDataClassifications.Equal(state.ExceptIfMessageContainsDataClassifications) {
-		if !plan.ExceptIfMessageContainsDataClassifications.IsNull() && !plan.ExceptIfMessageContainsDataClassifications.IsUnknown() {
-			sp.ExceptIfMessageContainsDataClassifications = append([]string{}, toStringSlice(ctx, plan.ExceptIfMessageContainsDataClassifications, &resp.Diagnostics)...)
-		}
+	if v := plan.ExceptIfMessageContainsDataClassifications.ValueString(); v != "" {
+		sp.ExceptIfMessageContainsDataClassifications = objectParam(v)
 	}
 	if v := plan.ExceptIfMessageSizeOver.ValueString(); v != "" {
 		sp.ExceptIfMessageSizeOver = objectParam(v)
@@ -1760,10 +1754,8 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if v := plan.ManagerForEvaluatedUser.ValueString(); v != "" {
 		sp.ManagerForEvaluatedUser = objectParam(v)
 	}
-	if !plan.MessageContainsDataClassifications.Equal(state.MessageContainsDataClassifications) {
-		if !plan.MessageContainsDataClassifications.IsNull() && !plan.MessageContainsDataClassifications.IsUnknown() {
-			sp.MessageContainsDataClassifications = append([]string{}, toStringSlice(ctx, plan.MessageContainsDataClassifications, &resp.Diagnostics)...)
-		}
+	if v := plan.MessageContainsDataClassifications.ValueString(); v != "" {
+		sp.MessageContainsDataClassifications = objectParam(v)
 	}
 	if v := plan.MessageSizeOver.ValueString(); v != "" {
 		sp.MessageSizeOver = objectParam(v)
@@ -2130,7 +2122,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.ExceptIfHeaderMatchesPatterns = stringSetValue(ctx, getStringSlice(obj, "ExceptIfHeaderMatchesPatterns"))
 	m.ExceptIfManagerAddresses = stringSetValue(ctx, getStringSlice(obj, "ExceptIfManagerAddresses"))
 	m.ExceptIfManagerForEvaluatedUser = types.StringValue(getObjectJSON(obj, "ExceptIfManagerForEvaluatedUser"))
-	m.ExceptIfMessageContainsDataClassifications = stringSetValue(ctx, getStringSlice(obj, "ExceptIfMessageContainsDataClassifications"))
+	m.ExceptIfMessageContainsDataClassifications = types.StringValue(getObjectJSON(obj, "ExceptIfMessageContainsDataClassifications"))
 	m.ExceptIfMessageSizeOver = types.StringValue(getObjectJSON(obj, "ExceptIfMessageSizeOver"))
 	m.ExceptIfMessageTypeMatches = types.StringValue(getObjectJSON(obj, "ExceptIfMessageTypeMatches"))
 	m.ExceptIfRecipientADAttributeContainsWords = stringSetValue(ctx, getStringSlice(obj, "ExceptIfRecipientADAttributeContainsWords"))
@@ -2173,7 +2165,7 @@ func readTransportRule(ctx context.Context, obj map[string]any, m *transportRule
 	m.LogEventText = types.StringValue(getObjectJSON(obj, "LogEventText"))
 	m.ManagerAddresses = stringSetValue(ctx, getStringSlice(obj, "ManagerAddresses"))
 	m.ManagerForEvaluatedUser = types.StringValue(getObjectJSON(obj, "ManagerForEvaluatedUser"))
-	m.MessageContainsDataClassifications = stringSetValue(ctx, getStringSlice(obj, "MessageContainsDataClassifications"))
+	m.MessageContainsDataClassifications = types.StringValue(getObjectJSON(obj, "MessageContainsDataClassifications"))
 	m.MessageSizeOver = types.StringValue(getObjectJSON(obj, "MessageSizeOver"))
 	m.MessageTypeMatches = types.StringValue(getObjectJSON(obj, "MessageTypeMatches"))
 	m.Mode = types.StringValue(getObjectJSON(obj, "Mode"))
@@ -2307,7 +2299,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.ExceptIfHeaderMatchesPatterns = reconcile.KeepSet(cfg.ExceptIfHeaderMatchesPatterns, read.ExceptIfHeaderMatchesPatterns)
 	read.ExceptIfManagerAddresses = reconcile.KeepSet(cfg.ExceptIfManagerAddresses, read.ExceptIfManagerAddresses)
 	read.ExceptIfManagerForEvaluatedUser = reconcile.KeepStr(cfg.ExceptIfManagerForEvaluatedUser, read.ExceptIfManagerForEvaluatedUser)
-	read.ExceptIfMessageContainsDataClassifications = reconcile.KeepSet(cfg.ExceptIfMessageContainsDataClassifications, read.ExceptIfMessageContainsDataClassifications)
+	read.ExceptIfMessageContainsDataClassifications = reconcile.KeepStr(cfg.ExceptIfMessageContainsDataClassifications, read.ExceptIfMessageContainsDataClassifications)
 	read.ExceptIfMessageSizeOver = reconcile.KeepStr(cfg.ExceptIfMessageSizeOver, read.ExceptIfMessageSizeOver)
 	read.ExceptIfMessageTypeMatches = reconcile.KeepStr(cfg.ExceptIfMessageTypeMatches, read.ExceptIfMessageTypeMatches)
 	read.ExceptIfRecipientADAttributeContainsWords = reconcile.KeepSet(cfg.ExceptIfRecipientADAttributeContainsWords, read.ExceptIfRecipientADAttributeContainsWords)
@@ -2350,7 +2342,7 @@ func (r *transportRuleResource) reconcileState(cfg, read *transportRuleModel) {
 	read.LogEventText = reconcile.KeepStr(cfg.LogEventText, read.LogEventText)
 	read.ManagerAddresses = reconcile.KeepSet(cfg.ManagerAddresses, read.ManagerAddresses)
 	read.ManagerForEvaluatedUser = reconcile.KeepStr(cfg.ManagerForEvaluatedUser, read.ManagerForEvaluatedUser)
-	read.MessageContainsDataClassifications = reconcile.KeepSet(cfg.MessageContainsDataClassifications, read.MessageContainsDataClassifications)
+	read.MessageContainsDataClassifications = reconcile.KeepStr(cfg.MessageContainsDataClassifications, read.MessageContainsDataClassifications)
 	read.MessageSizeOver = reconcile.KeepStr(cfg.MessageSizeOver, read.MessageSizeOver)
 	read.MessageTypeMatches = reconcile.KeepStr(cfg.MessageTypeMatches, read.MessageTypeMatches)
 	read.Mode = reconcile.KeepStr(cfg.Mode, read.Mode)

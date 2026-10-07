@@ -26,7 +26,7 @@ Manages the App object via New-App / Get-App / Set-App / Remove-App.
 - `download_only` (Boolean) Maps to the -DownloadOnly parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `etoken` (String) Maps to the -Etoken parameter.
-- `file_data` (Set of String) Maps to the -FileData parameter.
+- `file_data` (String) Maps to the -FileData parameter.
 - `file_stream` (String) Maps to the -FileStream parameter.
 - `mailbox` (String) Maps to the -Mailbox parameter.
 - `marketplace_asset_id` (String) Maps to the -MarketplaceAssetID parameter.

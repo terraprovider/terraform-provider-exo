@@ -63,7 +63,7 @@ func (d *smimeConfigListDataSource) Schema(_ context.Context, _ datasource.Schem
 				"owa_triple_wrap_signed_encrypted_mail":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OWATripleWrapSignedEncryptedMail parameter."},
 				"owa_use_key_identifier":                                 schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseKeyIdentifier parameter."},
 				"owa_use_secondary_proxies_when_finding_certificates":    schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseSecondaryProxiesWhenFindingCertificates parameter."},
-				"smime_certificate_issuing_ca":                           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
+				"smime_certificate_issuing_ca":                           schema.StringAttribute{Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
 			}}},
 		},
 	}

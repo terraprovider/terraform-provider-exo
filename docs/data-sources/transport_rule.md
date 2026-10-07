@@ -99,7 +99,7 @@ Look up an existing TransportRule object. Set identity or name to select it.
 - `except_if_header_matches_patterns` (Set of String) Maps to the -ExceptIfHeaderMatchesPatterns parameter.
 - `except_if_manager_addresses` (Set of String) Maps to the -ExceptIfManagerAddresses parameter.
 - `except_if_manager_for_evaluated_user` (String) Maps to the -ExceptIfManagerForEvaluatedUser parameter.
-- `except_if_message_contains_data_classifications` (Set of String) Maps to the -ExceptIfMessageContainsDataClassifications parameter.
+- `except_if_message_contains_data_classifications` (String) Maps to the -ExceptIfMessageContainsDataClassifications parameter.
 - `except_if_message_size_over` (String) Maps to the -ExceptIfMessageSizeOver parameter.
 - `except_if_message_type_matches` (String) Maps to the -ExceptIfMessageTypeMatches parameter.
 - `except_if_recipient_ad_attribute_contains_words` (Set of String) Maps to the -ExceptIfRecipientADAttributeContainsWords parameter.
@@ -143,7 +143,7 @@ Look up an existing TransportRule object. Set identity or name to select it.
 - `log_event_text` (String) Maps to the -LogEventText parameter.
 - `manager_addresses` (Set of String) Maps to the -ManagerAddresses parameter.
 - `manager_for_evaluated_user` (String) Maps to the -ManagerForEvaluatedUser parameter.
-- `message_contains_data_classifications` (Set of String) Maps to the -MessageContainsDataClassifications parameter.
+- `message_contains_data_classifications` (String) Maps to the -MessageContainsDataClassifications parameter.
 - `message_size_over` (String) Maps to the -MessageSizeOver parameter.
 - `message_type_matches` (String) Maps to the -MessageTypeMatches parameter.
 - `mode` (String) Maps to the -Mode parameter.

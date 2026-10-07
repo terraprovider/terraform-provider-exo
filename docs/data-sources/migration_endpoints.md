@@ -55,7 +55,7 @@ Read-Only:
 - `remote_tenant` (String) Maps to the -RemoteTenant parameter.
 - `rpc_proxy_server` (String) Maps to the -RPCProxyServer parameter.
 - `security` (String) Maps to the -Security parameter.
-- `service_account_key_file_data` (Set of String) Maps to the -ServiceAccountKeyFileData parameter.
+- `service_account_key_file_data` (String) Maps to the -ServiceAccountKeyFileData parameter.
 - `skip_verification` (Boolean) Maps to the -SkipVerification parameter.
 - `source_mailbox_legacy_dn` (String) Maps to the -SourceMailboxLegacyDN parameter.
 - `test_mailbox` (String) Maps to the -TestMailbox parameter.

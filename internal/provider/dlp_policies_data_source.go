@@ -44,7 +44,7 @@ func (d *dlpPolicyListDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				"parameters":    schema.StringAttribute{Computed: true, Description: "Maps to the -Parameters parameter."},
 				"state":         schema.StringAttribute{Computed: true, Description: "Maps to the -State parameter."},
 				"template":      schema.StringAttribute{Computed: true, Description: "Maps to the -Template parameter."},
-				"template_data": schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -TemplateData parameter."},
+				"template_data": schema.StringAttribute{Computed: true, Description: "Maps to the -TemplateData parameter."},
 			}}},
 		},
 	}

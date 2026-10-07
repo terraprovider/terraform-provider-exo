@@ -47,7 +47,7 @@ func (d *migrationBatchDataSource) Schema(_ context.Context, _ datasource.Schema
 			"auto_provisioning":              schema.BoolAttribute{Computed: true, Description: "Maps to the -AutoProvisioning parameter."},
 			"auto_start":                     schema.BoolAttribute{Computed: true, Description: "Maps to the -AutoStart parameter."},
 			"avoid_merge_overlap":            schema.BoolAttribute{Computed: true, Description: "Maps to the -AvoidMergeOverlap parameter."},
-			"csv_data":                       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -CSVData parameter."},
+			"csv_data":                       schema.StringAttribute{Computed: true, Description: "Maps to the -CSVData parameter."},
 			"complete_after":                 schema.StringAttribute{Computed: true, Description: "Maps to the -CompleteAfter parameter."},
 			"connection_logical_id":          schema.StringAttribute{Computed: true, Description: "Maps to the -ConnectionLogicalId parameter."},
 			"content_filter":                 schema.StringAttribute{Computed: true, Description: "Maps to the -ContentFilter parameter."},
@@ -88,7 +88,7 @@ func (d *migrationBatchDataSource) Schema(_ context.Context, _ datasource.Schema
 			"slack_public_data_connector":    schema.BoolAttribute{Computed: true, Description: "Maps to the -SlackPublicDataConnector parameter."},
 			"slack_workspace_id":             schema.StringAttribute{Computed: true, Description: "Maps to the -SlackWorkspaceId parameter."},
 			"source_endpoint":                schema.StringAttribute{Computed: true, Description: "Maps to the -SourceEndpoint parameter."},
-			"source_mappings":                schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SourceMappings parameter."},
+			"source_mappings":                schema.StringAttribute{Computed: true, Description: "Maps to the -SourceMappings parameter."},
 			"source_pf_primary_mailbox_guid": schema.StringAttribute{Computed: true, Description: "Maps to the -SourcePFPrimaryMailboxGuid parameter."},
 			"staged_roll_out_group_id":       schema.StringAttribute{Computed: true, Description: "Maps to the -StagedRollOutGroupId parameter."},
 			"start_after":                    schema.StringAttribute{Computed: true, Description: "Maps to the -StartAfter parameter."},
@@ -103,7 +103,7 @@ func (d *migrationBatchDataSource) Schema(_ context.Context, _ datasource.Schema
 			"users":                          schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -Users parameter."},
 			"workflow_control_flags":         schema.StringAttribute{Computed: true, Description: "Maps to the -WorkflowControlFlags parameter."},
 			"workflow_template":              schema.StringAttribute{Computed: true, Description: "Maps to the -WorkflowTemplate parameter."},
-			"xml_data":                       schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -XMLData parameter."},
+			"xml_data":                       schema.StringAttribute{Computed: true, Description: "Maps to the -XMLData parameter."},
 		},
 	}
 }

@@ -45,7 +45,7 @@ type appModel struct {
 	DownloadOnly               types.Bool   `tfsdk:"download_only"`
 	Enabled                    types.Bool   `tfsdk:"enabled"`
 	Etoken                     types.String `tfsdk:"etoken"`
-	FileData                   types.Set    `tfsdk:"file_data"`
+	FileData                   types.String `tfsdk:"file_data"`
 	FileStream                 types.String `tfsdk:"file_stream"`
 	Mailbox                    types.String `tfsdk:"mailbox"`
 	MarketplaceAssetID         types.String `tfsdk:"marketplace_asset_id"`
@@ -81,7 +81,7 @@ func (r *appResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"download_only":                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DownloadOnly parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"etoken":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Etoken parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"file_data":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
+			"file_data":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FileData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"file_stream":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FileStream parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"mailbox":                       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"marketplace_asset_id":          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MarketplaceAssetID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -150,10 +150,8 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if !config.Etoken.IsNull() {
 		p.Etoken = plan.Etoken.ValueString()
 	}
-	if !config.FileData.IsNull() {
-		if v := toStringSlice(ctx, plan.FileData, &resp.Diagnostics); len(v) > 0 {
-			p.FileData = v
-		}
+	if v := config.FileData.ValueString(); v != "" {
+		p.FileData = objectParam(v)
 	}
 	if v := config.FileStream.ValueString(); v != "" {
 		p.FileStream = objectParam(v)
@@ -371,7 +369,7 @@ func readApp(ctx context.Context, obj map[string]any, m *appModel) {
 	m.DownloadOnly = types.BoolValue(getBool(obj, "DownloadOnly"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.Etoken = types.StringValue(getString(obj, "Etoken"))
-	m.FileData = stringSetValue(ctx, getStringSlice(obj, "FileData"))
+	m.FileData = types.StringValue(getObjectJSON(obj, "FileData"))
 	m.FileStream = types.StringValue(getObjectJSON(obj, "FileStream"))
 	m.Mailbox = types.StringValue(getObjectJSON(obj, "Mailbox"))
 	m.MarketplaceAssetID = types.StringValue(getString(obj, "MarketplaceAssetID"))
@@ -399,7 +397,7 @@ func (r *appResource) reconcileState(cfg, read *appModel) {
 	read.DownloadOnly = reconcile.KeepBool(cfg.DownloadOnly, read.DownloadOnly)
 	read.Enabled = reconcile.KeepBool(cfg.Enabled, read.Enabled)
 	read.Etoken = reconcile.KeepStr(cfg.Etoken, read.Etoken)
-	read.FileData = reconcile.KeepSet(cfg.FileData, read.FileData)
+	read.FileData = reconcile.KeepStr(cfg.FileData, read.FileData)
 	read.FileStream = reconcile.KeepStr(cfg.FileStream, read.FileStream)
 	read.Mailbox = reconcile.KeepStr(cfg.Mailbox, read.Mailbox)
 	read.MarketplaceAssetID = reconcile.KeepStr(cfg.MarketplaceAssetID, read.MarketplaceAssetID)

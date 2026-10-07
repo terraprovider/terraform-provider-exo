@@ -32,7 +32,7 @@ Manages the MigrationEndpoint object via New-MigrationEndpoint / Get-MigrationEn
 - `public_folder_to_unified_group` (Boolean) Maps to the -PublicFolderToUnifiedGroup parameter.
 - `remote_server` (String) Maps to the -RemoteServer parameter.
 - `rpc_proxy_server` (String) Maps to the -RPCProxyServer parameter.
-- `service_account_key_file_data` (Set of String) Maps to the -ServiceAccountKeyFileData parameter.
+- `service_account_key_file_data` (String) Maps to the -ServiceAccountKeyFileData parameter.
 - `source_mailbox_legacy_dn` (String) Maps to the -SourceMailboxLegacyDN parameter.
 
 ### Optional

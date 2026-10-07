@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/exo"
 	"github.com/terraprovider/go-msadmin/consistency"
@@ -60,7 +59,7 @@ func (d *smimeConfigDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"owa_triple_wrap_signed_encrypted_mail":                  schema.BoolAttribute{Computed: true, Description: "Maps to the -OWATripleWrapSignedEncryptedMail parameter."},
 			"owa_use_key_identifier":                                 schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseKeyIdentifier parameter."},
 			"owa_use_secondary_proxies_when_finding_certificates":    schema.BoolAttribute{Computed: true, Description: "Maps to the -OWAUseSecondaryProxiesWhenFindingCertificates parameter."},
-			"smime_certificate_issuing_ca":                           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
+			"smime_certificate_issuing_ca":                           schema.StringAttribute{Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter."},
 		},
 	}
 }

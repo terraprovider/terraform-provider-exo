@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -63,7 +62,7 @@ type smimeConfigModel struct {
 	OWATripleWrapSignedEncryptedMail                 types.Bool   `tfsdk:"owa_triple_wrap_signed_encrypted_mail"`
 	OWAUseKeyIdentifier                              types.Bool   `tfsdk:"owa_use_key_identifier"`
 	OWAUseSecondaryProxiesWhenFindingCertificates    types.Bool   `tfsdk:"owa_use_secondary_proxies_when_finding_certificates"`
-	SMIMECertificateIssuingCA                        types.Set    `tfsdk:"smime_certificate_issuing_ca"`
+	SMIMECertificateIssuingCA                        types.String `tfsdk:"smime_certificate_issuing_ca"`
 }
 
 func (r *smimeConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -101,7 +100,7 @@ func (r *smimeConfigResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"owa_triple_wrap_signed_encrypted_mail":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWATripleWrapSignedEncryptedMail parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_use_key_identifier":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAUseKeyIdentifier parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"owa_use_secondary_proxies_when_finding_certificates":    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OWAUseSecondaryProxiesWhenFindingCertificates parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"smime_certificate_issuing_ca":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"smime_certificate_issuing_ca":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SMIMECertificateIssuingCA parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
@@ -245,10 +244,8 @@ func (r *smimeConfigResource) Create(ctx context.Context, req resource.CreateReq
 			sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBoolPointer()
 		}
 	}
-	if !config.SMIMECertificateIssuingCA.IsNull() {
-		if !plan.SMIMECertificateIssuingCA.IsNull() && !plan.SMIMECertificateIssuingCA.IsUnknown() {
-			sp.SMIMECertificateIssuingCA = append([]string{}, toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)...)
-		}
+	if v := config.SMIMECertificateIssuingCA.ValueString(); v != "" {
+		sp.SMIMECertificateIssuingCA = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -408,10 +405,8 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 			sp.OWAUseSecondaryProxiesWhenFindingCertificates = plan.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBoolPointer()
 		}
 	}
-	if !plan.SMIMECertificateIssuingCA.Equal(state.SMIMECertificateIssuingCA) {
-		if !plan.SMIMECertificateIssuingCA.IsNull() && !plan.SMIMECertificateIssuingCA.IsUnknown() {
-			sp.SMIMECertificateIssuingCA = append([]string{}, toStringSlice(ctx, plan.SMIMECertificateIssuingCA, &resp.Diagnostics)...)
-		}
+	if v := plan.SMIMECertificateIssuingCA.ValueString(); v != "" {
+		sp.SMIMECertificateIssuingCA = objectParam(v)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -611,7 +606,7 @@ func readSmimeConfig(ctx context.Context, obj map[string]any, m *smimeConfigMode
 	m.OWATripleWrapSignedEncryptedMail = types.BoolValue(getBool(obj, "OWATripleWrapSignedEncryptedMail"))
 	m.OWAUseKeyIdentifier = types.BoolValue(getBool(obj, "OWAUseKeyIdentifier"))
 	m.OWAUseSecondaryProxiesWhenFindingCertificates = types.BoolValue(getBool(obj, "OWAUseSecondaryProxiesWhenFindingCertificates"))
-	m.SMIMECertificateIssuingCA = stringSetValue(ctx, getStringSlice(obj, "SMIMECertificateIssuingCA"))
+	m.SMIMECertificateIssuingCA = types.StringValue(getObjectJSON(obj, "SMIMECertificateIssuingCA"))
 	_ = ctx
 }
 
@@ -641,5 +636,5 @@ func (r *smimeConfigResource) reconcileState(cfg, read *smimeConfigModel) {
 	read.OWATripleWrapSignedEncryptedMail = reconcile.KeepBool(cfg.OWATripleWrapSignedEncryptedMail, read.OWATripleWrapSignedEncryptedMail)
 	read.OWAUseKeyIdentifier = reconcile.KeepBool(cfg.OWAUseKeyIdentifier, read.OWAUseKeyIdentifier)
 	read.OWAUseSecondaryProxiesWhenFindingCertificates = reconcile.KeepBool(cfg.OWAUseSecondaryProxiesWhenFindingCertificates, read.OWAUseSecondaryProxiesWhenFindingCertificates)
-	read.SMIMECertificateIssuingCA = reconcile.KeepSet(cfg.SMIMECertificateIssuingCA, read.SMIMECertificateIssuingCA)
+	read.SMIMECertificateIssuingCA = reconcile.KeepStr(cfg.SMIMECertificateIssuingCA, read.SMIMECertificateIssuingCA)
 }

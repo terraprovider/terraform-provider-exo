@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
-	github.com/terraprovider/go-exoscc v0.2.1-0.20261007101926-8e20867cc7c3
+	github.com/terraprovider/go-exoscc v0.2.1-0.20261007102906-1f620e65df5d
 )
 
 require (

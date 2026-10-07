@@ -40,7 +40,7 @@ Read-Only:
 - `connection_logical_id` (String) Maps to the -ConnectionLogicalId parameter.
 - `content_filter` (String) Maps to the -ContentFilter parameter.
 - `content_filter_language` (String) Maps to the -ContentFilterLanguage parameter.
-- `csv_data` (Set of String) Maps to the -CSVData parameter.
+- `csv_data` (String) Maps to the -CSVData parameter.
 - `daily` (Boolean) Maps to the -Daily parameter.
 - `data_fusion` (Boolean) Maps to the -DataFusion parameter.
 - `disable_on_copy` (Boolean) Maps to the -DisableOnCopy parameter.
@@ -79,7 +79,7 @@ Read-Only:
 - `slack_public_data_connector` (Boolean) Maps to the -SlackPublicDataConnector parameter.
 - `slack_workspace_id` (String) Maps to the -SlackWorkspaceId parameter.
 - `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
-- `source_mappings` (Set of String) Maps to the -SourceMappings parameter.
+- `source_mappings` (String) Maps to the -SourceMappings parameter.
 - `source_pf_primary_mailbox_guid` (String) Maps to the -SourcePFPrimaryMailboxGuid parameter.
 - `staged_roll_out_group_id` (String) Maps to the -StagedRollOutGroupId parameter.
 - `start_after` (String) Maps to the -StartAfter parameter.
@@ -94,4 +94,4 @@ Read-Only:
 - `users` (Set of String) Maps to the -Users parameter.
 - `workflow_control_flags` (String) Maps to the -WorkflowControlFlags parameter.
 - `workflow_template` (String) Maps to the -WorkflowTemplate parameter.
-- `xml_data` (Set of String) Maps to the -XMLData parameter.
+- `xml_data` (String) Maps to the -XMLData parameter.

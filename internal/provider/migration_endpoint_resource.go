@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -66,7 +65,7 @@ type migrationEndpointModel struct {
 	RemoteServer                       types.String `tfsdk:"remote_server"`
 	RemoteTenant                       types.String `tfsdk:"remote_tenant"`
 	Security                           types.String `tfsdk:"security"`
-	ServiceAccountKeyFileData          types.Set    `tfsdk:"service_account_key_file_data"`
+	ServiceAccountKeyFileData          types.String `tfsdk:"service_account_key_file_data"`
 	SkipVerification                   types.Bool   `tfsdk:"skip_verification"`
 	SourceMailboxLegacyDN              types.String `tfsdk:"source_mailbox_legacy_dn"`
 	TestMailbox                        types.String `tfsdk:"test_mailbox"`
@@ -111,7 +110,7 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"remote_server":                           schema.StringAttribute{Required: true, Description: "Maps to the -RemoteServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"remote_tenant":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteTenant parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"security":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Security parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"service_account_key_file_data":           schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -ServiceAccountKeyFileData parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"service_account_key_file_data":           schema.StringAttribute{Required: true, Description: "Maps to the -ServiceAccountKeyFileData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"skip_verification":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipVerification parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"source_mailbox_legacy_dn":                schema.StringAttribute{Required: true, Description: "Maps to the -SourceMailboxLegacyDN parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"test_mailbox":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TestMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -229,10 +228,8 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 	if v := config.Security.ValueString(); v != "" {
 		p.Security = objectParam(v)
 	}
-	if !config.ServiceAccountKeyFileData.IsNull() {
-		if v := toStringSlice(ctx, plan.ServiceAccountKeyFileData, &resp.Diagnostics); len(v) > 0 {
-			p.ServiceAccountKeyFileData = v
-		}
+	if v := config.ServiceAccountKeyFileData.ValueString(); v != "" {
+		p.ServiceAccountKeyFileData = objectParam(v)
 	}
 	if !config.SkipVerification.IsNull() {
 		p.SkipVerification = plan.SkipVerification.ValueBool()
@@ -437,7 +434,7 @@ func readMigrationEndpoint(ctx context.Context, obj map[string]any, m *migration
 	m.RemoteServer = types.StringValue(getObjectJSON(obj, "RemoteServer"))
 	m.RemoteTenant = types.StringValue(getString(obj, "RemoteTenant"))
 	m.Security = types.StringValue(getObjectJSON(obj, "Security"))
-	m.ServiceAccountKeyFileData = stringSetValue(ctx, getStringSlice(obj, "ServiceAccountKeyFileData"))
+	m.ServiceAccountKeyFileData = types.StringValue(getObjectJSON(obj, "ServiceAccountKeyFileData"))
 	m.SkipVerification = types.BoolValue(getBool(obj, "SkipVerification"))
 	m.SourceMailboxLegacyDN = types.StringValue(getString(obj, "SourceMailboxLegacyDN"))
 	m.TestMailbox = types.StringValue(getObjectJSON(obj, "TestMailbox"))
@@ -474,7 +471,7 @@ func (r *migrationEndpointResource) reconcileState(cfg, read *migrationEndpointM
 	read.RemoteServer = reconcile.KeepStr(cfg.RemoteServer, read.RemoteServer)
 	read.RemoteTenant = reconcile.KeepStr(cfg.RemoteTenant, read.RemoteTenant)
 	read.Security = reconcile.KeepStr(cfg.Security, read.Security)
-	read.ServiceAccountKeyFileData = reconcile.KeepSet(cfg.ServiceAccountKeyFileData, read.ServiceAccountKeyFileData)
+	read.ServiceAccountKeyFileData = reconcile.KeepStr(cfg.ServiceAccountKeyFileData, read.ServiceAccountKeyFileData)
 	read.SkipVerification = reconcile.KeepBool(cfg.SkipVerification, read.SkipVerification)
 	read.SourceMailboxLegacyDN = reconcile.KeepStr(cfg.SourceMailboxLegacyDN, read.SourceMailboxLegacyDN)
 	read.TestMailbox = reconcile.KeepStr(cfg.TestMailbox, read.TestMailbox)

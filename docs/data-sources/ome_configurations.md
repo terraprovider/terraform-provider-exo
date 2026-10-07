@@ -30,7 +30,7 @@ Read-Only:
 - `external_mail_expiry_in_days` (String) Maps to the -ExternalMailExpiryInDays parameter.
 - `id` (String) Object identifier (GUID).
 - `identity` (String) Identity used to target the object.
-- `image` (Set of String) Maps to the -Image parameter.
+- `image` (String) Maps to the -Image parameter.
 - `introduction_text` (String) Maps to the -IntroductionText parameter.
 - `otp_enabled` (Boolean) Maps to the -OTPEnabled parameter.
 - `portal_text` (String) Maps to the -PortalText parameter.

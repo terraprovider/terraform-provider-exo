@@ -69,7 +69,7 @@ func (d *migrationEndpointListDataSource) Schema(_ context.Context, _ datasource
 				"remote_server":                           schema.StringAttribute{Computed: true, Description: "Maps to the -RemoteServer parameter."},
 				"remote_tenant":                           schema.StringAttribute{Computed: true, Description: "Maps to the -RemoteTenant parameter."},
 				"security":                                schema.StringAttribute{Computed: true, Description: "Maps to the -Security parameter."},
-				"service_account_key_file_data":           schema.SetAttribute{ElementType: types.StringType, Computed: true, Description: "Maps to the -ServiceAccountKeyFileData parameter."},
+				"service_account_key_file_data":           schema.StringAttribute{Computed: true, Description: "Maps to the -ServiceAccountKeyFileData parameter."},
 				"skip_verification":                       schema.BoolAttribute{Computed: true, Description: "Maps to the -SkipVerification parameter."},
 				"source_mailbox_legacy_dn":                schema.StringAttribute{Computed: true, Description: "Maps to the -SourceMailboxLegacyDN parameter."},
 				"test_mailbox":                            schema.StringAttribute{Computed: true, Description: "Maps to the -TestMailbox parameter."},
