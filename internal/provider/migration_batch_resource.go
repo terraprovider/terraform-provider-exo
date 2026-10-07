@@ -129,7 +129,7 @@ func (r *migrationBatchResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"auto_provisioning":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoProvisioning parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"auto_start":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AutoStart parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"avoid_merge_overlap":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -AvoidMergeOverlap parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"csv_data":                       schema.StringAttribute{Required: true, Description: "Maps to the -CSVData parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"csv_data":                       schema.StringAttribute{Required: true, Description: "Maps to the -CSVData parameter."},
 			"complete_after":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -CompleteAfter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"connection_logical_id":          schema.StringAttribute{Required: true, Description: "Maps to the -ConnectionLogicalId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"content_filter":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ContentFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -502,6 +502,11 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	}
 	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
 		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+	}
+	if !plan.CSVData.Equal(state.CSVData) {
+		if v := plan.CSVData.ValueString(); v != "" {
+			sp.CSVData = objectParam(v)
+		}
 	}
 	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
 		if v := plan.CompleteAfter.ValueString(); v != "" {

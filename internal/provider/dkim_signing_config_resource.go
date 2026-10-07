@@ -58,7 +58,7 @@ func (r *dkimSigningConfigResource) Schema(_ context.Context, _ resource.SchemaR
 			"admin_display_name":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -AdminDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"body_canonicalization":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -BodyCanonicalization parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"domain_name":             schema.StringAttribute{Required: true, Description: "Maps to the -DomainName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"enabled":                 schema.BoolAttribute{Required: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"enabled":                 schema.BoolAttribute{Required: true, Description: "Maps to the -Enabled parameter."},
 			"header_canonicalization": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -HeaderCanonicalization parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"key_size":                schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -KeySize parameter. Allowed values: 1024, 2048.", PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace(), int64planmodifier.UseStateForUnknown()}},
 			"publish_txt_records":     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublishTxtRecords parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -165,6 +165,11 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	if !plan.BodyCanonicalization.Equal(state.BodyCanonicalization) {
 		if v := plan.BodyCanonicalization.ValueString(); v != "" {
 			sp.BodyCanonicalization = objectParam(v)
+		}
+	}
+	if !plan.Enabled.Equal(state.Enabled) {
+		if !plan.Enabled.IsUnknown() {
+			sp.Enabled = plan.Enabled.ValueBoolPointer()
 		}
 	}
 	if !plan.HeaderCanonicalization.Equal(state.HeaderCanonicalization) {

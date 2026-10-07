@@ -105,7 +105,7 @@ func (r *mailboxRestoreRequestResource) Schema(_ context.Context, _ resource.Sch
 			"rehome_request":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RehomeRequest parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remote_credential":                  schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -RemoteCredential parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"remote_database_guid":               schema.StringAttribute{Required: true, Description: "Maps to the -RemoteDatabaseGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"remote_host_name":                   schema.StringAttribute{Required: true, Description: "Maps to the -RemoteHostName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"remote_host_name":                   schema.StringAttribute{Required: true, Description: "Maps to the -RemoteHostName parameter."},
 			"remote_restore_type":                schema.StringAttribute{Required: true, Description: "Maps to the -RemoteRestoreType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"request_expiry_interval":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RequestExpiryInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"skip_initial_connection_validation": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SkipInitialConnectionValidation parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -323,6 +323,11 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	}
 	if !plan.RehomeRequest.Equal(state.RehomeRequest) {
 		sp.RehomeRequest = plan.RehomeRequest.ValueBool()
+	}
+	if !plan.RemoteHostName.Equal(state.RemoteHostName) {
+		if v := plan.RemoteHostName.ValueString(); v != "" {
+			sp.RemoteHostName = objectParam(v)
+		}
 	}
 	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
 		if v := plan.RequestExpiryInterval.ValueString(); v != "" {

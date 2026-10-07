@@ -68,7 +68,7 @@ func (r *safeAttachmentRuleResource) Schema(_ context.Context, _ resource.Schema
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"safe_attachment_policy":        schema.StringAttribute{Required: true, Description: "Maps to the -SafeAttachmentPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"safe_attachment_policy":        schema.StringAttribute{Required: true, Description: "Maps to the -SafeAttachmentPolicy parameter."},
 			"sent_to":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_member_of":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
@@ -221,6 +221,11 @@ func (r *safeAttachmentRuleResource) Update(ctx context.Context, req resource.Up
 	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
 		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
 			sp.RecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SafeAttachmentPolicy.Equal(state.SafeAttachmentPolicy) {
+		if v := plan.SafeAttachmentPolicy.ValueString(); v != "" {
+			sp.SafeAttachmentPolicy = objectParam(v)
 		}
 	}
 	if !plan.SentTo.Equal(state.SentTo) {

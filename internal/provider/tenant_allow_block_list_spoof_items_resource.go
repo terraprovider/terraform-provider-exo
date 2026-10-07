@@ -54,7 +54,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) Schema(_ context.Context, _ res
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"action":                 schema.StringAttribute{Required: true, Description: "Maps to the -Action parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"action":                 schema.StringAttribute{Required: true, Description: "Maps to the -Action parameter."},
 			"ids":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -Ids parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sending_infrastructure": schema.StringAttribute{Required: true, Description: "Maps to the -SendingInfrastructure parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"spoof_type":             schema.StringAttribute{Required: true, Description: "Maps to the -SpoofType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -146,6 +146,9 @@ func (r *tenantAllowBlockListSpoofItemsResource) Update(ctx context.Context, req
 	id := r.identityOf(state)
 	sp := exo.SetTenantAllowBlockListSpoofItemsParams{}
 	sp.Identity = id
+	if !plan.Action.Equal(state.Action) {
+		sp.Action = plan.Action.ValueString()
+	}
 	if !plan.Ids.Equal(state.Ids) {
 		if !plan.Ids.IsNull() && !plan.Ids.IsUnknown() {
 			sp.Ids = append([]string{}, toStringSlice(ctx, plan.Ids, &resp.Diagnostics)...)
@@ -159,7 +162,9 @@ func (r *tenantAllowBlockListSpoofItemsResource) Update(ctx context.Context, req
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{
+		"Action": cfg.Action,
+	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

@@ -56,7 +56,7 @@ func (r *reportSubmissionRuleResource) Schema(_ context.Context, _ resource.Sche
 			"comments":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"report_submission_policy": schema.StringAttribute{Required: true, Description: "Maps to the -ReportSubmissionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"report_submission_policy": schema.StringAttribute{Required: true, Description: "Maps to the -ReportSubmissionPolicy parameter."},
 			"sent_to":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -154,6 +154,11 @@ func (r *reportSubmissionRuleResource) Update(ctx context.Context, req resource.
 	sp.Identity = id
 	if !plan.Comments.Equal(state.Comments) {
 		sp.Comments = plan.Comments.ValueString()
+	}
+	if !plan.ReportSubmissionPolicy.Equal(state.ReportSubmissionPolicy) {
+		if v := plan.ReportSubmissionPolicy.ValueString(); v != "" {
+			sp.ReportSubmissionPolicy = objectParam(v)
+		}
 	}
 	if !plan.SentTo.Equal(state.SentTo) {
 		if !plan.SentTo.IsNull() && !plan.SentTo.IsUnknown() {

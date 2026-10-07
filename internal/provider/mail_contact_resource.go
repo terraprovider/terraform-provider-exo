@@ -129,7 +129,7 @@ func (r *mailContactResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"extension_custom_attribute3":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute3 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"extension_custom_attribute4":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"extension_custom_attribute5":               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"external_email_address":                    schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"external_email_address":                    schema.StringAttribute{Required: true, Description: "Maps to the -ExternalEmailAddress parameter."},
 			"first_name":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"grant_send_on_behalf_to":                   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -GrantSendOnBehalfTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -467,6 +467,11 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 					}
 				}
 			}
+		}
+	}
+	if !plan.ExternalEmailAddress.Equal(state.ExternalEmailAddress) {
+		if v := plan.ExternalEmailAddress.ValueString(); v != "" {
+			sp.ExternalEmailAddress = objectParam(v)
 		}
 	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {

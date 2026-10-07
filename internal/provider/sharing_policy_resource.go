@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -53,7 +52,7 @@ func (r *sharingPolicyResource) Schema(_ context.Context, _ resource.SchemaReque
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"default":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Default parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"domains":  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Domains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"domains":  schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Domains parameter."},
 			"enabled":  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":     schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
@@ -147,8 +146,35 @@ func (r *sharingPolicyResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetSharingPolicyParams{}
 	sp.Identity = id
+	var cur *sharingPolicyModel
+	curRead := false
+	current := func() *sharingPolicyModel {
+		if !curRead {
+			curRead = true
+			var m sharingPolicyModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-SharingPolicy failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
 	if !plan.Default.Equal(state.Default) {
 		sp.Default = plan.Default.ValueBool()
+	}
+	if !plan.Domains.Equal(state.Domains) {
+		if !plan.Domains.IsNull() && !plan.Domains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.Domains, &resp.Diagnostics); len(v) > 0 {
+				sp.Domains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.Domains, &resp.Diagnostics); len(rm) > 0 {
+						sp.DomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
 	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {

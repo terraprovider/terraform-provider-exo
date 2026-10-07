@@ -53,7 +53,7 @@ func (r *elevatedAccessApprovalPolicyResource) Schema(_ context.Context, _ resou
 		Attributes: map[string]schema.Attribute{
 			"id":             schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"approval_type":  schema.StringAttribute{Required: true, Description: "Maps to the -ApprovalType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"approval_type":  schema.StringAttribute{Required: true, Description: "Maps to the -ApprovalType parameter."},
 			"approver_group": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApproverGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"role":           schema.StringAttribute{Required: true, Description: "Maps to the -Role parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"role_group":     schema.StringAttribute{Required: true, Description: "Maps to the -RoleGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -148,6 +148,11 @@ func (r *elevatedAccessApprovalPolicyResource) Update(ctx context.Context, req r
 	id := r.identityOf(state)
 	sp := exo.SetElevatedAccessApprovalPolicyParams{}
 	sp.Identity = id
+	if !plan.ApprovalType.Equal(state.ApprovalType) {
+		if v := plan.ApprovalType.ValueString(); v != "" {
+			sp.ApprovalType = objectParam(v)
+		}
+	}
 	if !plan.ApproverGroup.Equal(state.ApproverGroup) {
 		if v := plan.ApproverGroup.ValueString(); v != "" {
 			sp.ApproverGroup = objectParam(v)

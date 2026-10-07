@@ -57,7 +57,7 @@ func (r *outlookProtectionRuleResource) Schema(_ context.Context, _ resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"id":                               schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                         schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"apply_rights_protection_template": schema.StringAttribute{Required: true, Description: "Maps to the -ApplyRightsProtectionTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"apply_rights_protection_template": schema.StringAttribute{Required: true, Description: "Maps to the -ApplyRightsProtectionTemplate parameter."},
 			"enabled":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"from_department":                  schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -FromDepartment parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -187,6 +187,11 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 			}
 		}
 		return cur
+	}
+	if !plan.ApplyRightsProtectionTemplate.Equal(state.ApplyRightsProtectionTemplate) {
+		if v := plan.ApplyRightsProtectionTemplate.ValueString(); v != "" {
+			sp.ApplyRightsProtectionTemplate = objectParam(v)
+		}
 	}
 	if !plan.FromDepartment.Equal(state.FromDepartment) {
 		if !plan.FromDepartment.IsNull() && !plan.FromDepartment.IsUnknown() {

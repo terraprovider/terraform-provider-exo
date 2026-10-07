@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -55,10 +54,10 @@ func (r *intraOrganizationConnectorResource) Schema(_ context.Context, _ resourc
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":               schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"discovery_endpoint":     schema.StringAttribute{Required: true, Description: "Maps to the -DiscoveryEndpoint parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"discovery_endpoint":     schema.StringAttribute{Required: true, Description: "Maps to the -DiscoveryEndpoint parameter."},
 			"enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                   schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"target_address_domains": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -TargetAddressDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"target_address_domains": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -TargetAddressDomains parameter."},
 			"target_sharing_epr":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -TargetSharingEpr parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -154,9 +153,41 @@ func (r *intraOrganizationConnectorResource) Update(ctx context.Context, req res
 	id := r.identityOf(state)
 	sp := exo.SetIntraOrganizationConnectorParams{}
 	sp.Identity = id
+	var cur *intraOrganizationConnectorModel
+	curRead := false
+	current := func() *intraOrganizationConnectorModel {
+		if !curRead {
+			curRead = true
+			var m intraOrganizationConnectorModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-IntraOrganizationConnector failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
+	if !plan.DiscoveryEndpoint.Equal(state.DiscoveryEndpoint) {
+		if v := plan.DiscoveryEndpoint.ValueString(); v != "" {
+			sp.DiscoveryEndpoint = objectParam(v)
+		}
+	}
 	if !plan.Enabled.Equal(state.Enabled) {
 		if !plan.Enabled.IsUnknown() {
 			sp.Enabled = plan.Enabled.ValueBoolPointer()
+		}
+	}
+	if !plan.TargetAddressDomains.Equal(state.TargetAddressDomains) {
+		if !plan.TargetAddressDomains.IsNull() && !plan.TargetAddressDomains.IsUnknown() {
+			if v := toStringSlice(ctx, plan.TargetAddressDomains, &resp.Diagnostics); len(v) > 0 {
+				sp.TargetAddressDomains = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.TargetAddressDomains, &resp.Diagnostics); len(rm) > 0 {
+						sp.TargetAddressDomainsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
 		}
 	}
 	if !plan.TargetSharingEpr.Equal(state.TargetSharingEpr) {

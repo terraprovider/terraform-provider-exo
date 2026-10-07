@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -55,8 +54,8 @@ func (r *dataClassificationResource) Schema(_ context.Context, _ resource.Schema
 			"id":       schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity": schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"classification_rule_collection_identity": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ClassificationRuleCollectionIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"description":  schema.StringAttribute{Required: true, Description: "Maps to the -Description parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"fingerprints": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Fingerprints parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"description":  schema.StringAttribute{Required: true, Description: "Maps to the -Description parameter."},
+			"fingerprints": schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -Fingerprints parameter."},
 			"is_default":   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsDefault parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"locale":       schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Locale parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -152,6 +151,36 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 	id := r.identityOf(state)
 	sp := exo.SetDataClassificationParams{}
 	sp.Identity = id
+	var cur *dataClassificationModel
+	curRead := false
+	current := func() *dataClassificationModel {
+		if !curRead {
+			curRead = true
+			var m dataClassificationModel
+			if r.refresh(ctx, id, &m, &resp.Diagnostics, nil) {
+				cur = &m
+			} else if !resp.Diagnostics.HasError() {
+				resp.Diagnostics.AddError("Get-DataClassification failed", "the object could not be read to determine the list values to remove; nothing was changed")
+			}
+		}
+		return cur
+	}
+	if !plan.Description.Equal(state.Description) {
+		sp.Description = plan.Description.ValueString()
+	}
+	if !plan.Fingerprints.Equal(state.Fingerprints) {
+		if !plan.Fingerprints.IsNull() && !plan.Fingerprints.IsUnknown() {
+			if v := toStringSlice(ctx, plan.Fingerprints, &resp.Diagnostics); len(v) > 0 {
+				sp.Fingerprints = v
+			} else {
+				if c := current(); c != nil {
+					if rm := toStringSlice(ctx, c.Fingerprints, &resp.Diagnostics); len(rm) > 0 {
+						sp.FingerprintsDelta = listRemoveDelta(rm)
+					}
+				}
+			}
+		}
+	}
 	if !plan.IsDefault.Equal(state.IsDefault) {
 		sp.IsDefault = plan.IsDefault.ValueBool()
 	}
@@ -168,7 +197,9 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{
+		"Description": cfg.Description,
+	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

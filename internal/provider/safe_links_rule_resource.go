@@ -68,7 +68,7 @@ func (r *safeLinksRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 			"name":                          schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                      schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"recipient_domain_is":           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"safe_links_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -SafeLinksPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"safe_links_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -SafeLinksPolicy parameter."},
 			"sent_to":                       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentTo parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"sent_to_member_of":             schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SentToMemberOf parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 		},
@@ -221,6 +221,11 @@ func (r *safeLinksRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.RecipientDomainIs.Equal(state.RecipientDomainIs) {
 		if !plan.RecipientDomainIs.IsNull() && !plan.RecipientDomainIs.IsUnknown() {
 			sp.RecipientDomainIs = append([]string{}, toStringSlice(ctx, plan.RecipientDomainIs, &resp.Diagnostics)...)
+		}
+	}
+	if !plan.SafeLinksPolicy.Equal(state.SafeLinksPolicy) {
+		if v := plan.SafeLinksPolicy.ValueString(); v != "" {
+			sp.SafeLinksPolicy = objectParam(v)
 		}
 	}
 	if !plan.SentTo.Equal(state.SentTo) {

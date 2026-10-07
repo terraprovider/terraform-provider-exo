@@ -63,17 +63,17 @@ func (r *reportScheduleResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"id":                  schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":            schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"direction":           schema.StringAttribute{Required: true, Description: "Maps to the -Direction parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"direction":           schema.StringAttribute{Required: true, Description: "Maps to the -Direction parameter."},
 			"dlp_rule_id":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DlpRuleId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"encryption_template": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EncryptionTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"encryption_type":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EncryptionType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"expiry_date":         schema.StringAttribute{Required: true, Description: "Maps to the -ExpiryDate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"expiry_date":         schema.StringAttribute{Required: true, Description: "Maps to the -ExpiryDate parameter."},
 			"include_dlp":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IncludeDLP parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"locale":              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Locale parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"notification_email":  schema.StringAttribute{Required: true, Description: "Maps to the -NotificationEmail parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"notification_email":  schema.StringAttribute{Required: true, Description: "Maps to the -NotificationEmail parameter."},
 			"recipient_address":   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"report_frequency":    schema.StringAttribute{Required: true, Description: "Maps to the -ReportFrequency parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"report_type":         schema.StringAttribute{Required: true, Description: "Maps to the -ReportType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"report_frequency":    schema.StringAttribute{Required: true, Description: "Maps to the -ReportFrequency parameter."},
+			"report_type":         schema.StringAttribute{Required: true, Description: "Maps to the -ReportType parameter."},
 			"schedule_id":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ScheduleID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"schedule_name":       schema.StringAttribute{Required: true, Description: "Maps to the -ScheduleName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"sender_address":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SenderAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -199,6 +199,11 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 	id := r.identityOf(state)
 	sp := exo.SetReportScheduleParams{}
 	sp.Identity = id
+	if !plan.Direction.Equal(state.Direction) {
+		if v := plan.Direction.ValueString(); v != "" {
+			sp.Direction = objectParam(v)
+		}
+	}
 	if !plan.DlpRuleId.Equal(state.DlpRuleId) {
 		if v := plan.DlpRuleId.ValueString(); v != "" {
 			sp.DlpRuleId = objectParam(v)
@@ -214,11 +219,31 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 			sp.EncryptionType = objectParam(v)
 		}
 	}
+	if !plan.ExpiryDate.Equal(state.ExpiryDate) {
+		if v := plan.ExpiryDate.ValueString(); v != "" {
+			sp.ExpiryDate = objectParam(v)
+		}
+	}
 	if !plan.IncludeDLP.Equal(state.IncludeDLP) {
 		sp.IncludeDLP = plan.IncludeDLP.ValueBool()
 	}
+	if !plan.NotificationEmail.Equal(state.NotificationEmail) {
+		if v := plan.NotificationEmail.ValueString(); v != "" {
+			sp.NotificationEmail = objectParam(v)
+		}
+	}
 	if !plan.RecipientAddress.Equal(state.RecipientAddress) {
 		sp.RecipientAddress = plan.RecipientAddress.ValueString()
+	}
+	if !plan.ReportFrequency.Equal(state.ReportFrequency) {
+		if v := plan.ReportFrequency.ValueString(); v != "" {
+			sp.ReportFrequency = objectParam(v)
+		}
+	}
+	if !plan.ReportType.Equal(state.ReportType) {
+		if v := plan.ReportType.ValueString(); v != "" {
+			sp.ReportType = objectParam(v)
+		}
 	}
 	if !plan.ScheduleID.Equal(state.ScheduleID) {
 		if v := plan.ScheduleID.ValueString(); v != "" {

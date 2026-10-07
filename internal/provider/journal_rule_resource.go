@@ -53,7 +53,7 @@ func (r *journalRuleResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"id":                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
-			"journal_email_address": schema.StringAttribute{Required: true, Description: "Maps to the -JournalEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"journal_email_address": schema.StringAttribute{Required: true, Description: "Maps to the -JournalEmailAddress parameter."},
 			"name":                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"recipient":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Recipient parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"scope":                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Scope parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -149,6 +149,11 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	id := r.identityOf(state)
 	sp := exo.SetJournalRuleParams{}
 	sp.Identity = id
+	if !plan.JournalEmailAddress.Equal(state.JournalEmailAddress) {
+		if v := plan.JournalEmailAddress.ValueString(); v != "" {
+			sp.JournalEmailAddress = objectParam(v)
+		}
+	}
 	if !plan.Recipient.Equal(state.Recipient) {
 		if v := plan.Recipient.ValueString(); v != "" {
 			sp.Recipient = objectParam(v)

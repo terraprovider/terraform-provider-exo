@@ -64,7 +64,7 @@ func (r *sweepRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"keep_latest":        schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -KeepLatest parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"mailbox":            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Mailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":               schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"provider_":          schema.StringAttribute{Required: true, Description: "Maps to the -Provider parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"provider_":          schema.StringAttribute{Required: true, Description: "Maps to the -Provider parameter."},
 			"sender":             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Sender parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source_folder":      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SourceFolder parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"system_category":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SystemCategory parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -204,6 +204,9 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 			sp.Mailbox = objectParam(v)
 		}
 	}
+	if !plan.Provider.Equal(state.Provider) {
+		sp.Provider = plan.Provider.ValueString()
+	}
 	if !plan.Sender.Equal(state.Sender) {
 		if v := plan.Sender.ValueString(); v != "" {
 			sp.Sender = objectParam(v)
@@ -227,7 +230,9 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{
+		"Provider": cfg.Provider,
+	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

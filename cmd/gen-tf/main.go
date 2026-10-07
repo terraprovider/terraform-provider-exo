@@ -102,6 +102,11 @@ func main() {
 // were only read back — e.g. 0 for a deprecated property Get no longer returns
 // (EndUserSpamNotificationFrequency), which Set rejects as out of range.
 
+// namingParam lists New-mandatory params that name the object. Set accepts
+// them as a rename, which can change the identity the provider reads back, so
+// they force replacement instead.
+var namingParam = map[string]bool{"Name": true, "ScheduleName": true}
+
 // buildResource maps a noun's CRUD cmdlets into a genframework.Resource.
 func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]map[string]spec.Cmdlet) (genframework.Resource, bool, string) {
 	newCmd := verbs["New"]
@@ -152,7 +157,10 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		// New but a Boolean on Set): one attribute cannot write both fields, so
 		// it follows New and becomes create-time only.
 		kindConflict := inC && inU && firstParam(name, newCmd).Kind() != firstParam(name, setCmd).Kind()
-		replace := required || (inC && !inU) || kindConflict
+		// A parameter mandatory on New but also accepted by Set (e.g. DKIM
+		// -Enabled) is updated in place. Naming params stay replace-only: Set
+		// renames the object, and the name often is its identity.
+		replace := (required && (!inU || namingParam[name])) || (inC && !inU) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}

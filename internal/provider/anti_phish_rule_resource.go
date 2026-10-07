@@ -60,7 +60,7 @@ func (r *antiPhishRuleResource) Schema(_ context.Context, _ resource.SchemaReque
 		Attributes: map[string]schema.Attribute{
 			"id":                            schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                      schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"anti_phish_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -AntiPhishPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"anti_phish_policy":             schema.StringAttribute{Required: true, Description: "Maps to the -AntiPhishPolicy parameter."},
 			"comments":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Comments parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enabled":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Enabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"except_if_recipient_domain_is": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExceptIfRecipientDomainIs parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -195,6 +195,11 @@ func (r *antiPhishRuleResource) Update(ctx context.Context, req resource.UpdateR
 	id := r.identityOf(state)
 	sp := exo.SetAntiPhishRuleParams{}
 	sp.Identity = id
+	if !plan.AntiPhishPolicy.Equal(state.AntiPhishPolicy) {
+		if v := plan.AntiPhishPolicy.ValueString(); v != "" {
+			sp.AntiPhishPolicy = objectParam(v)
+		}
+	}
 	if !plan.Comments.Equal(state.Comments) {
 		sp.Comments = plan.Comments.ValueString()
 	}

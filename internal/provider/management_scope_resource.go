@@ -53,7 +53,7 @@ func (r *managementScopeResource) Schema(_ context.Context, _ resource.SchemaReq
 			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"exclusive":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Exclusive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"recipient_restriction_filter": schema.StringAttribute{Required: true, Description: "Maps to the -RecipientRestrictionFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"recipient_restriction_filter": schema.StringAttribute{Required: true, Description: "Maps to the -RecipientRestrictionFilter parameter."},
 			"recipient_root":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientRoot parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
@@ -142,6 +142,9 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 	id := r.identityOf(state)
 	sp := exo.SetManagementScopeParams{}
 	sp.Identity = id
+	if !plan.RecipientRestrictionFilter.Equal(state.RecipientRestrictionFilter) {
+		sp.RecipientRestrictionFilter = plan.RecipientRestrictionFilter.ValueString()
+	}
 	if !plan.RecipientRoot.Equal(state.RecipientRoot) {
 		if v := plan.RecipientRoot.ValueString(); v != "" {
 			sp.RecipientRoot = objectParam(v)
@@ -155,7 +158,9 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	cfg := plan
-	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	reflected := reconcile.ReflectsFields(map[string]types.String{
+		"RecipientRestrictionFilter": cfg.RecipientRestrictionFilter,
+	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

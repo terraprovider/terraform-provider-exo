@@ -91,9 +91,9 @@ func (r *moveRequestResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"proxy_to_mailbox":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProxyToMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"remote":                         schema.BoolAttribute{Required: true, Description: "Maps to the -Remote parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"remote_archive_target_database": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteArchiveTargetDatabase parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"remote_credential":              schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -RemoteCredential parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"remote_global_catalog":          schema.StringAttribute{Required: true, Description: "Maps to the -RemoteGlobalCatalog parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"remote_host_name":               schema.StringAttribute{Required: true, Description: "Maps to the -RemoteHostName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"remote_credential":              schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -RemoteCredential parameter."},
+			"remote_global_catalog":          schema.StringAttribute{Required: true, Description: "Maps to the -RemoteGlobalCatalog parameter."},
+			"remote_host_name":               schema.StringAttribute{Required: true, Description: "Maps to the -RemoteHostName parameter."},
 			"remote_target_database":         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteTargetDatabase parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"request_expiry_interval":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RequestExpiryInterval parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"skip_moving":                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SkipMoving parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -315,6 +315,21 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	if !plan.ProxyToMailbox.Equal(state.ProxyToMailbox) {
 		if v := plan.ProxyToMailbox.ValueString(); v != "" {
 			sp.ProxyToMailbox = objectParam(v)
+		}
+	}
+	if !plan.RemoteCredential.Equal(state.RemoteCredential) {
+		if v := plan.RemoteCredential.ValueString(); v != "" {
+			sp.RemoteCredential = objectParam(v)
+		}
+	}
+	if !plan.RemoteGlobalCatalog.Equal(state.RemoteGlobalCatalog) {
+		if v := plan.RemoteGlobalCatalog.ValueString(); v != "" {
+			sp.RemoteGlobalCatalog = objectParam(v)
+		}
+	}
+	if !plan.RemoteHostName.Equal(state.RemoteHostName) {
+		if v := plan.RemoteHostName.ValueString(); v != "" {
+			sp.RemoteHostName = objectParam(v)
 		}
 	}
 	if !plan.RequestExpiryInterval.Equal(state.RequestExpiryInterval) {
