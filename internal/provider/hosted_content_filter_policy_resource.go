@@ -404,7 +404,7 @@ func (r *hostedContentFilterPolicyResource) Create(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewHostedContentFilterPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewHostedContentFilterPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-HostedContentFilterPolicy failed", err.Error())
 		return
@@ -790,7 +790,7 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHostedContentFilterPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHostedContentFilterPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HostedContentFilterPolicy failed", err.Error())
 		return
 	}

@@ -95,7 +95,7 @@ func (r *accessToCustomerDataRequestResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAccessToCustomerDataRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAccessToCustomerDataRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AccessToCustomerDataRequest failed", err.Error())
 		return
 	}
@@ -149,7 +149,7 @@ func (r *accessToCustomerDataRequestResource) Update(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAccessToCustomerDataRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAccessToCustomerDataRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AccessToCustomerDataRequest failed", err.Error())
 		return
 	}

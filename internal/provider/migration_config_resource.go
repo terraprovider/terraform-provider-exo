@@ -78,7 +78,7 @@ func (r *migrationConfigResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationConfig failed", err.Error())
 		return
 	}
@@ -121,7 +121,7 @@ func (r *migrationConfigResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationConfig failed", err.Error())
 		return
 	}

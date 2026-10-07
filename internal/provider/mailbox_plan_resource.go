@@ -125,7 +125,7 @@ func (r *mailboxPlanResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxPlan(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxPlan, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxPlan failed", err.Error())
 		return
 	}
@@ -212,7 +212,7 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxPlan(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxPlan, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxPlan failed", err.Error())
 		return
 	}

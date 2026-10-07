@@ -81,7 +81,7 @@ func (r *hVEAccountBillingPolicyResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHVEAccountBillingPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHVEAccountBillingPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HVEAccountBillingPolicy failed", err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (r *hVEAccountBillingPolicyResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHVEAccountBillingPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHVEAccountBillingPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HVEAccountBillingPolicy failed", err.Error())
 		return
 	}

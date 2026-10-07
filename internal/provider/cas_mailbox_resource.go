@@ -357,7 +357,7 @@ func (r *cASMailboxResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCASMailbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCASMailbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CASMailbox failed", err.Error())
 		return
 	}
@@ -617,7 +617,7 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCASMailbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCASMailbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CASMailbox failed", err.Error())
 		return
 	}

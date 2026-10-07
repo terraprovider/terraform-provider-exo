@@ -110,7 +110,7 @@ func (r *mailboxSearchResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMailboxSearch(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMailboxSearch, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MailboxSearch failed", err.Error())
 		return
@@ -178,7 +178,7 @@ func (r *mailboxSearchResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxSearch(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxSearch, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxSearch failed", err.Error())
 		return
 	}

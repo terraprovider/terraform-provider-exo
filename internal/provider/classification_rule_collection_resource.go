@@ -81,7 +81,7 @@ func (r *classificationRuleCollectionResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewClassificationRuleCollection(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewClassificationRuleCollection, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ClassificationRuleCollection failed", err.Error())
 		return
@@ -130,7 +130,7 @@ func (r *classificationRuleCollectionResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetClassificationRuleCollection(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetClassificationRuleCollection, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ClassificationRuleCollection failed", err.Error())
 		return
 	}

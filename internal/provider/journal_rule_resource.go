@@ -102,7 +102,7 @@ func (r *journalRuleResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewJournalRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewJournalRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-JournalRule failed", err.Error())
 		return
@@ -167,7 +167,7 @@ func (r *journalRuleResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetJournalRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetJournalRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-JournalRule failed", err.Error())
 		return
 	}

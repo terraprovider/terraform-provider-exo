@@ -243,7 +243,7 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMigrationEndpoint(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMigrationEndpoint, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MigrationEndpoint failed", err.Error())
 		return
@@ -374,7 +374,7 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationEndpoint(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationEndpoint, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationEndpoint failed", err.Error())
 		return
 	}

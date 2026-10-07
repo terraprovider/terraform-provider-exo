@@ -127,7 +127,7 @@ func (r *acceptedDomainResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAcceptedDomain(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAcceptedDomain, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AcceptedDomain failed", err.Error())
 		return
 	}
@@ -204,7 +204,7 @@ func (r *acceptedDomainResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAcceptedDomain(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAcceptedDomain, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AcceptedDomain failed", err.Error())
 		return
 	}

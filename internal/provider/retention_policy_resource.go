@@ -103,7 +103,7 @@ func (r *retentionPolicyResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewRetentionPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewRetentionPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-RetentionPolicy failed", err.Error())
 		return
@@ -167,7 +167,7 @@ func (r *retentionPolicyResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRetentionPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRetentionPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RetentionPolicy failed", err.Error())
 		return
 	}

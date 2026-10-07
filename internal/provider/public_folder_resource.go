@@ -111,7 +111,7 @@ func (r *publicFolderResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewPublicFolder(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewPublicFolder, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-PublicFolder failed", err.Error())
 		return
@@ -211,7 +211,7 @@ func (r *publicFolderResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPublicFolder(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPublicFolder, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PublicFolder failed", err.Error())
 		return
 	}

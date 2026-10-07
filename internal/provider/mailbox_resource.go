@@ -506,7 +506,7 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMailbox(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMailbox, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-Mailbox failed", err.Error())
 		return
@@ -1318,7 +1318,7 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Mailbox failed", err.Error())
 		return
 	}

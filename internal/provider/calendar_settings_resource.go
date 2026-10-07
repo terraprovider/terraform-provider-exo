@@ -79,7 +79,7 @@ func (r *calendarSettingsResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCalendarSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCalendarSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CalendarSettings failed", err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (r *calendarSettingsResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCalendarSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCalendarSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CalendarSettings failed", err.Error())
 		return
 	}

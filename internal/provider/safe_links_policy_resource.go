@@ -199,7 +199,7 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewSafeLinksPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewSafeLinksPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-SafeLinksPolicy failed", err.Error())
 		return
@@ -352,7 +352,7 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSafeLinksPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSafeLinksPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SafeLinksPolicy failed", err.Error())
 		return
 	}

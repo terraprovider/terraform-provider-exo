@@ -295,7 +295,7 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewUnifiedGroup(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewUnifiedGroup, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-UnifiedGroup failed", err.Error())
 		return
@@ -646,7 +646,7 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetUnifiedGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetUnifiedGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-UnifiedGroup failed", err.Error())
 		return
 	}

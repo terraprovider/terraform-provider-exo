@@ -317,7 +317,7 @@ func (r *mailUserResource) Create(ctx context.Context, req resource.CreateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMailUser(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMailUser, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MailUser failed", err.Error())
 		return
@@ -818,7 +818,7 @@ func (r *mailUserResource) Update(ctx context.Context, req resource.UpdateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailUser failed", err.Error())
 		return
 	}

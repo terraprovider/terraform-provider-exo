@@ -91,7 +91,7 @@ func (r *activeSyncDeviceAccessRuleResource) Create(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewActiveSyncDeviceAccessRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewActiveSyncDeviceAccessRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ActiveSyncDeviceAccessRule failed", err.Error())
 		return
@@ -146,7 +146,7 @@ func (r *activeSyncDeviceAccessRuleResource) Update(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetActiveSyncDeviceAccessRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetActiveSyncDeviceAccessRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ActiveSyncDeviceAccessRule failed", err.Error())
 		return
 	}

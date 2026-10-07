@@ -104,7 +104,7 @@ func (r *perimeterConfigResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPerimeterConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPerimeterConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PerimeterConfig failed", err.Error())
 		return
 	}
@@ -170,7 +170,7 @@ func (r *perimeterConfigResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPerimeterConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPerimeterConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PerimeterConfig failed", err.Error())
 		return
 	}

@@ -93,7 +93,7 @@ func (r *managementRoleEntryResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetManagementRoleEntry(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetManagementRoleEntry, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ManagementRoleEntry failed", err.Error())
 		return
 	}
@@ -143,7 +143,7 @@ func (r *managementRoleEntryResource) Update(ctx context.Context, req resource.U
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetManagementRoleEntry(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetManagementRoleEntry, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ManagementRoleEntry failed", err.Error())
 		return
 	}

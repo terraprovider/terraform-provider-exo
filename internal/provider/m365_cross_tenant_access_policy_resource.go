@@ -85,7 +85,7 @@ func (r *m365CrossTenantAccessPolicyResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetM365CrossTenantAccessPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetM365CrossTenantAccessPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-M365CrossTenantAccessPolicy failed", err.Error())
 		return
 	}
@@ -129,7 +129,7 @@ func (r *m365CrossTenantAccessPolicyResource) Update(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetM365CrossTenantAccessPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetM365CrossTenantAccessPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-M365CrossTenantAccessPolicy failed", err.Error())
 		return
 	}

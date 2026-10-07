@@ -215,7 +215,7 @@ func (r *quarantinePolicyResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewQuarantinePolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewQuarantinePolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-QuarantinePolicy failed", err.Error())
 		return
@@ -413,7 +413,7 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetQuarantinePolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetQuarantinePolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-QuarantinePolicy failed", err.Error())
 		return
 	}

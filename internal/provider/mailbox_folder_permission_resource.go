@@ -102,7 +102,7 @@ func (r *mailboxFolderPermissionResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxFolderPermission(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxFolderPermission, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxFolderPermission failed", err.Error())
 		return
 	}
@@ -161,7 +161,7 @@ func (r *mailboxFolderPermissionResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxFolderPermission(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxFolderPermission, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxFolderPermission failed", err.Error())
 		return
 	}

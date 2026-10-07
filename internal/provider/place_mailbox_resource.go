@@ -152,7 +152,7 @@ func (r *placeMailboxResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewPlaceMailbox(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewPlaceMailbox, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-PlaceMailbox failed", err.Error())
 		return
@@ -245,7 +245,7 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPlaceMailbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPlaceMailbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PlaceMailbox failed", err.Error())
 		return
 	}

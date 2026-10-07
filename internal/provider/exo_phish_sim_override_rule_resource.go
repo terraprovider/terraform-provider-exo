@@ -114,7 +114,7 @@ func (r *exoPhishSimOverrideRuleResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewExoPhishSimOverrideRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewExoPhishSimOverrideRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ExoPhishSimOverrideRule failed", err.Error())
 		return
@@ -233,7 +233,7 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetExoPhishSimOverrideRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetExoPhishSimOverrideRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ExoPhishSimOverrideRule failed", err.Error())
 		return
 	}

@@ -429,7 +429,7 @@ func (r *activeSyncMailboxPolicyResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewActiveSyncMailboxPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewActiveSyncMailboxPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ActiveSyncMailboxPolicy failed", err.Error())
 		return
@@ -766,7 +766,7 @@ func (r *activeSyncMailboxPolicyResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetActiveSyncMailboxPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetActiveSyncMailboxPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ActiveSyncMailboxPolicy failed", err.Error())
 		return
 	}

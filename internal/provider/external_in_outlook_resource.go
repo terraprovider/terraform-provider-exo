@@ -112,7 +112,7 @@ func (r *externalInOutlookResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetExternalInOutlook(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetExternalInOutlook, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ExternalInOutlook failed", err.Error())
 		return
 	}
@@ -183,7 +183,7 @@ func (r *externalInOutlookResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetExternalInOutlook(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetExternalInOutlook, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ExternalInOutlook failed", err.Error())
 		return
 	}

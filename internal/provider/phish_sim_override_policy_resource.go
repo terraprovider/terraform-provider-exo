@@ -92,7 +92,7 @@ func (r *phishSimOverridePolicyResource) Create(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewPhishSimOverridePolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewPhishSimOverridePolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-PhishSimOverridePolicy failed", err.Error())
 		return
@@ -150,7 +150,7 @@ func (r *phishSimOverridePolicyResource) Update(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPhishSimOverridePolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPhishSimOverridePolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PhishSimOverridePolicy failed", err.Error())
 		return
 	}

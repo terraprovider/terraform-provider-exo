@@ -124,7 +124,7 @@ func (r *messageClassificationResource) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMessageClassification(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMessageClassification, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MessageClassification failed", err.Error())
 		return
@@ -201,7 +201,7 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMessageClassification(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMessageClassification, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MessageClassification failed", err.Error())
 		return
 	}

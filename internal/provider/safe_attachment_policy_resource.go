@@ -124,7 +124,7 @@ func (r *safeAttachmentPolicyResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewSafeAttachmentPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewSafeAttachmentPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-SafeAttachmentPolicy failed", err.Error())
 		return
@@ -200,7 +200,7 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSafeAttachmentPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSafeAttachmentPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SafeAttachmentPolicy failed", err.Error())
 		return
 	}

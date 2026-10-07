@@ -436,7 +436,7 @@ func (r *mobileDeviceMailboxPolicyResource) Create(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMobileDeviceMailboxPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMobileDeviceMailboxPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MobileDeviceMailboxPolicy failed", err.Error())
 		return
@@ -778,7 +778,7 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMobileDeviceMailboxPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMobileDeviceMailboxPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MobileDeviceMailboxPolicy failed", err.Error())
 		return
 	}

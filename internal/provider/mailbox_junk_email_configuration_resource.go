@@ -172,7 +172,7 @@ func (r *mailboxJunkEmailConfigurationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxJunkEmailConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxJunkEmailConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxJunkEmailConfiguration failed", err.Error())
 		return
 	}
@@ -289,7 +289,7 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxJunkEmailConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxJunkEmailConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxJunkEmailConfiguration failed", err.Error())
 		return
 	}

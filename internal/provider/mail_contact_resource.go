@@ -235,7 +235,7 @@ func (r *mailContactResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMailContact(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMailContact, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MailContact failed", err.Error())
 		return
@@ -640,7 +640,7 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailContact(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailContact, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailContact failed", err.Error())
 		return
 	}

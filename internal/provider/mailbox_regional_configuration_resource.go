@@ -117,7 +117,7 @@ func (r *mailboxRegionalConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxRegionalConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxRegionalConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxRegionalConfiguration failed", err.Error())
 		return
 	}
@@ -186,7 +186,7 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxRegionalConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxRegionalConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxRegionalConfiguration failed", err.Error())
 		return
 	}

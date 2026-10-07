@@ -160,7 +160,7 @@ func (r *eOPProtectionPolicyRuleResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewEOPProtectionPolicyRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewEOPProtectionPolicyRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-EOPProtectionPolicyRule failed", err.Error())
 		return
@@ -248,7 +248,7 @@ func (r *eOPProtectionPolicyRuleResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEOPProtectionPolicyRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEOPProtectionPolicyRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EOPProtectionPolicyRule failed", err.Error())
 		return
 	}

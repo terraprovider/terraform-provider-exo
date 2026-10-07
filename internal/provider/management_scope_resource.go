@@ -95,7 +95,7 @@ func (r *managementScopeResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewManagementScope(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewManagementScope, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ManagementScope failed", err.Error())
 		return
@@ -153,7 +153,7 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetManagementScope(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetManagementScope, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ManagementScope failed", err.Error())
 		return
 	}

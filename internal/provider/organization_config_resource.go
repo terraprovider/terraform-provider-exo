@@ -1075,7 +1075,7 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOrganizationConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOrganizationConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OrganizationConfig failed", err.Error())
 		return
 	}
@@ -1864,7 +1864,7 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOrganizationConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOrganizationConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OrganizationConfig failed", err.Error())
 		return
 	}

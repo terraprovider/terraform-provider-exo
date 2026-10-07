@@ -155,7 +155,7 @@ func (r *aTPProtectionPolicyRuleResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewATPProtectionPolicyRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewATPProtectionPolicyRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ATPProtectionPolicyRule failed", err.Error())
 		return
@@ -243,7 +243,7 @@ func (r *aTPProtectionPolicyRuleResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetATPProtectionPolicyRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetATPProtectionPolicyRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ATPProtectionPolicyRule failed", err.Error())
 		return
 	}

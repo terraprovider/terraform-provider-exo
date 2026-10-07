@@ -396,7 +396,7 @@ func (r *mailboxCalendarConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxCalendarConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxCalendarConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxCalendarConfiguration failed", err.Error())
 		return
 	}
@@ -686,7 +686,7 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxCalendarConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxCalendarConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxCalendarConfiguration failed", err.Error())
 		return
 	}

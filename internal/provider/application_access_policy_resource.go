@@ -99,7 +99,7 @@ func (r *applicationAccessPolicyResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewApplicationAccessPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewApplicationAccessPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ApplicationAccessPolicy failed", err.Error())
 		return
@@ -152,7 +152,7 @@ func (r *applicationAccessPolicyResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetApplicationAccessPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetApplicationAccessPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ApplicationAccessPolicy failed", err.Error())
 		return
 	}

@@ -150,7 +150,7 @@ func (r *hostedContentFilterRuleResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewHostedContentFilterRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewHostedContentFilterRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-HostedContentFilterRule failed", err.Error())
 		return
@@ -243,7 +243,7 @@ func (r *hostedContentFilterRuleResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHostedContentFilterRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHostedContentFilterRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HostedContentFilterRule failed", err.Error())
 		return
 	}

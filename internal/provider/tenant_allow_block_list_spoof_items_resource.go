@@ -99,7 +99,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) Create(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewTenantAllowBlockListSpoofItems(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewTenantAllowBlockListSpoofItems, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-TenantAllowBlockListSpoofItems failed", err.Error())
 		return
@@ -157,7 +157,7 @@ func (r *tenantAllowBlockListSpoofItemsResource) Update(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetTenantAllowBlockListSpoofItems(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetTenantAllowBlockListSpoofItems, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-TenantAllowBlockListSpoofItems failed", err.Error())
 		return
 	}

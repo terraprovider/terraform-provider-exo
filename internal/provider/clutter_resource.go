@@ -87,7 +87,7 @@ func (r *clutterResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetClutter(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetClutter, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Clutter failed", err.Error())
 		return
 	}
@@ -134,7 +134,7 @@ func (r *clutterResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetClutter(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetClutter, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Clutter failed", err.Error())
 		return
 	}

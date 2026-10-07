@@ -148,7 +148,7 @@ func (r *activeSyncOrganizationSettingsResource) Create(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetActiveSyncOrganizationSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetActiveSyncOrganizationSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ActiveSyncOrganizationSettings failed", err.Error())
 		return
 	}
@@ -245,7 +245,7 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetActiveSyncOrganizationSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetActiveSyncOrganizationSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ActiveSyncOrganizationSettings failed", err.Error())
 		return
 	}

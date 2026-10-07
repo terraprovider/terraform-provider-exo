@@ -116,7 +116,7 @@ func (r *roleGroupResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewRoleGroup(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewRoleGroup, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-RoleGroup failed", err.Error())
 		return
@@ -212,7 +212,7 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRoleGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRoleGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RoleGroup failed", err.Error())
 		return
 	}

@@ -99,7 +99,7 @@ func (r *sharingPolicyResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewSharingPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewSharingPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-SharingPolicy failed", err.Error())
 		return
@@ -184,7 +184,7 @@ func (r *sharingPolicyResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSharingPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSharingPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SharingPolicy failed", err.Error())
 		return
 	}

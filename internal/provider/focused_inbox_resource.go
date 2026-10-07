@@ -87,7 +87,7 @@ func (r *focusedInboxResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetFocusedInbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetFocusedInbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-FocusedInbox failed", err.Error())
 		return
 	}
@@ -134,7 +134,7 @@ func (r *focusedInboxResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetFocusedInbox(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetFocusedInbox, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-FocusedInbox failed", err.Error())
 		return
 	}

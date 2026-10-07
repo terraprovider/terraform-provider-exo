@@ -392,7 +392,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-User failed", err.Error())
 		return
 	}
@@ -666,7 +666,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-User failed", err.Error())
 		return
 	}

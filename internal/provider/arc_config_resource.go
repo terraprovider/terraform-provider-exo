@@ -81,7 +81,7 @@ func (r *arcConfigResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetArcConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetArcConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ArcConfig failed", err.Error())
 		return
 	}
@@ -124,7 +124,7 @@ func (r *arcConfigResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetArcConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetArcConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ArcConfig failed", err.Error())
 		return
 	}

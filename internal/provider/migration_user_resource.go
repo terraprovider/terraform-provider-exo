@@ -100,7 +100,7 @@ func (r *migrationUserResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationUser failed", err.Error())
 		return
 	}
@@ -160,7 +160,7 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationUser failed", err.Error())
 		return
 	}

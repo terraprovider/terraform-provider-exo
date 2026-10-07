@@ -103,7 +103,7 @@ func (r *mailboxSpellingConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxSpellingConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxSpellingConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxSpellingConfiguration failed", err.Error())
 		return
 	}
@@ -162,7 +162,7 @@ func (r *mailboxSpellingConfigurationResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxSpellingConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxSpellingConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxSpellingConfiguration failed", err.Error())
 		return
 	}
