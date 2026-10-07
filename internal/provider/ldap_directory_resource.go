@@ -119,7 +119,7 @@ func (r *ldapDirectoryResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetLdapDirectory(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetLdapDirectory, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-LdapDirectory failed", err.Error())
 		return
 	}
@@ -187,7 +187,7 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetLdapDirectory(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetLdapDirectory, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-LdapDirectory failed", err.Error())
 		return
 	}

@@ -455,7 +455,7 @@ func (r *mailboxMessageConfigurationResource) Create(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxMessageConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxMessageConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxMessageConfiguration failed", err.Error())
 		return
 	}
@@ -773,7 +773,7 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxMessageConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxMessageConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxMessageConfiguration failed", err.Error())
 		return
 	}

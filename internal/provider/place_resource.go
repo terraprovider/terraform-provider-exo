@@ -182,7 +182,7 @@ func (r *placeResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPlace(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPlace, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Place failed", err.Error())
 		return
 	}
@@ -292,7 +292,7 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPlace(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPlace, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Place failed", err.Error())
 		return
 	}

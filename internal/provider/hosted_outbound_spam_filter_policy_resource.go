@@ -153,7 +153,7 @@ func (r *hostedOutboundSpamFilterPolicyResource) Create(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewHostedOutboundSpamFilterPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewHostedOutboundSpamFilterPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-HostedOutboundSpamFilterPolicy failed", err.Error())
 		return
@@ -281,7 +281,7 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHostedOutboundSpamFilterPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHostedOutboundSpamFilterPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HostedOutboundSpamFilterPolicy failed", err.Error())
 		return
 	}

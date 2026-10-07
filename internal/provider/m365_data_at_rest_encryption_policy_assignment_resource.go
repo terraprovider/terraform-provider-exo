@@ -80,7 +80,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Create(ctx context.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetM365DataAtRestEncryptionPolicyAssignment(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetM365DataAtRestEncryptionPolicyAssignment, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-M365DataAtRestEncryptionPolicyAssignment failed", err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (r *m365DataAtRestEncryptionPolicyAssignmentResource) Update(ctx context.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetM365DataAtRestEncryptionPolicyAssignment(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetM365DataAtRestEncryptionPolicyAssignment, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-M365DataAtRestEncryptionPolicyAssignment failed", err.Error())
 		return
 	}

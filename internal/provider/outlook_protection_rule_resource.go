@@ -127,7 +127,7 @@ func (r *outlookProtectionRuleResource) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewOutlookProtectionRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewOutlookProtectionRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-OutlookProtectionRule failed", err.Error())
 		return
@@ -229,7 +229,7 @@ func (r *outlookProtectionRuleResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOutlookProtectionRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOutlookProtectionRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OutlookProtectionRule failed", err.Error())
 		return
 	}

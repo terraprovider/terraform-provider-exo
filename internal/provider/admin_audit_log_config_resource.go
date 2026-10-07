@@ -81,7 +81,7 @@ func (r *adminAuditLogConfigResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAdminAuditLogConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAdminAuditLogConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AdminAuditLogConfig failed", err.Error())
 		return
 	}
@@ -124,7 +124,7 @@ func (r *adminAuditLogConfigResource) Update(ctx context.Context, req resource.U
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAdminAuditLogConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAdminAuditLogConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AdminAuditLogConfig failed", err.Error())
 		return
 	}

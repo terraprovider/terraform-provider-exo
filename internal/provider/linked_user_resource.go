@@ -104,7 +104,7 @@ func (r *linkedUserResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetLinkedUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetLinkedUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-LinkedUser failed", err.Error())
 		return
 	}
@@ -170,7 +170,7 @@ func (r *linkedUserResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetLinkedUser(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetLinkedUser, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-LinkedUser failed", err.Error())
 		return
 	}

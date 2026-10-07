@@ -105,7 +105,7 @@ func (r *reportSubmissionRuleResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewReportSubmissionRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewReportSubmissionRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ReportSubmissionRule failed", err.Error())
 		return
@@ -168,7 +168,7 @@ func (r *reportSubmissionRuleResource) Update(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetReportSubmissionRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetReportSubmissionRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ReportSubmissionRule failed", err.Error())
 		return
 	}

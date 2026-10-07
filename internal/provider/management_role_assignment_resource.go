@@ -149,7 +149,7 @@ func (r *managementRoleAssignmentResource) Create(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewManagementRoleAssignment(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewManagementRoleAssignment, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ManagementRoleAssignment failed", err.Error())
 		return
@@ -239,7 +239,7 @@ func (r *managementRoleAssignmentResource) Update(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetManagementRoleAssignment(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetManagementRoleAssignment, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ManagementRoleAssignment failed", err.Error())
 		return
 	}

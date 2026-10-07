@@ -220,7 +220,7 @@ func (r *inboundConnectorResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewInboundConnector(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewInboundConnector, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-InboundConnector failed", err.Error())
 		return
@@ -446,7 +446,7 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetInboundConnector(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetInboundConnector, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-InboundConnector failed", err.Error())
 		return
 	}

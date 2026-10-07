@@ -98,7 +98,7 @@ func (r *roleAssignmentPolicyResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewRoleAssignmentPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewRoleAssignmentPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-RoleAssignmentPolicy failed", err.Error())
 		return
@@ -154,7 +154,7 @@ func (r *roleAssignmentPolicyResource) Update(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRoleAssignmentPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRoleAssignmentPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RoleAssignmentPolicy failed", err.Error())
 		return
 	}

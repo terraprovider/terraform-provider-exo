@@ -250,7 +250,7 @@ func (r *smimeConfigResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSmimeConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSmimeConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SmimeConfig failed", err.Error())
 		return
 	}
@@ -413,7 +413,7 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSmimeConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSmimeConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SmimeConfig failed", err.Error())
 		return
 	}

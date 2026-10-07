@@ -101,7 +101,7 @@ func (r *elevatedAccessApprovalPolicyResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewElevatedAccessApprovalPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewElevatedAccessApprovalPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ElevatedAccessApprovalPolicy failed", err.Error())
 		return
@@ -161,7 +161,7 @@ func (r *elevatedAccessApprovalPolicyResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetElevatedAccessApprovalPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetElevatedAccessApprovalPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ElevatedAccessApprovalPolicy failed", err.Error())
 		return
 	}

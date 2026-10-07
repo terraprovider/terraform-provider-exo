@@ -153,7 +153,7 @@ func (r *mailboxAutoReplyConfigurationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxAutoReplyConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxAutoReplyConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxAutoReplyConfiguration failed", err.Error())
 		return
 	}
@@ -249,7 +249,7 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxAutoReplyConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxAutoReplyConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxAutoReplyConfiguration failed", err.Error())
 		return
 	}

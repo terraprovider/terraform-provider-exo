@@ -364,7 +364,7 @@ func (r *dynamicDistributionGroupResource) Create(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewDynamicDistributionGroup(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewDynamicDistributionGroup, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-DynamicDistributionGroup failed", err.Error())
 		return
@@ -1002,7 +1002,7 @@ func (r *dynamicDistributionGroupResource) Update(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetDynamicDistributionGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetDynamicDistributionGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-DynamicDistributionGroup failed", err.Error())
 		return
 	}

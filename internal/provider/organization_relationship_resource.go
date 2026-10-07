@@ -201,7 +201,7 @@ func (r *organizationRelationshipResource) Create(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewOrganizationRelationship(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewOrganizationRelationship, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-OrganizationRelationship failed", err.Error())
 		return
@@ -379,7 +379,7 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOrganizationRelationship(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOrganizationRelationship, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OrganizationRelationship failed", err.Error())
 		return
 	}

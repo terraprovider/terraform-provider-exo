@@ -277,7 +277,7 @@ func (r *distributionGroupResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewDistributionGroup(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewDistributionGroup, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-DistributionGroup failed", err.Error())
 		return
@@ -717,7 +717,7 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetDistributionGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetDistributionGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-DistributionGroup failed", err.Error())
 		return
 	}

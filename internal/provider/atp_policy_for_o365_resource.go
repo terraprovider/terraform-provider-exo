@@ -96,7 +96,7 @@ func (r *atpPolicyForO365Resource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAtpPolicyForO365(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAtpPolicyForO365, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AtpPolicyForO365 failed", err.Error())
 		return
 	}
@@ -150,7 +150,7 @@ func (r *atpPolicyForO365Resource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAtpPolicyForO365(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAtpPolicyForO365, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AtpPolicyForO365 failed", err.Error())
 		return
 	}

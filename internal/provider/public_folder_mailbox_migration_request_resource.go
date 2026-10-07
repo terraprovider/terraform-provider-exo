@@ -100,7 +100,7 @@ func (r *publicFolderMailboxMigrationRequestResource) Create(ctx context.Context
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPublicFolderMailboxMigrationRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPublicFolderMailboxMigrationRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PublicFolderMailboxMigrationRequest failed", err.Error())
 		return
 	}
@@ -155,7 +155,7 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPublicFolderMailboxMigrationRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPublicFolderMailboxMigrationRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PublicFolderMailboxMigrationRequest failed", err.Error())
 		return
 	}

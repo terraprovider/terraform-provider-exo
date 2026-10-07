@@ -129,7 +129,7 @@ func (r *eventsFromEmailConfigurationResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEventsFromEmailConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEventsFromEmailConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EventsFromEmailConfiguration failed", err.Error())
 		return
 	}
@@ -200,7 +200,7 @@ func (r *eventsFromEmailConfigurationResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEventsFromEmailConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEventsFromEmailConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EventsFromEmailConfiguration failed", err.Error())
 		return
 	}

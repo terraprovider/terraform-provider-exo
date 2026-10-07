@@ -104,7 +104,7 @@ func (r *secOpsOverridePolicyResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewSecOpsOverridePolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewSecOpsOverridePolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-SecOpsOverridePolicy failed", err.Error())
 		return
@@ -202,7 +202,7 @@ func (r *secOpsOverridePolicyResource) Update(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSecOpsOverridePolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSecOpsOverridePolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SecOpsOverridePolicy failed", err.Error())
 		return
 	}

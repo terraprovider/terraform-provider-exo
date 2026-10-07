@@ -297,7 +297,7 @@ func (r *contactResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetContact(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetContact, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Contact failed", err.Error())
 		return
 	}
@@ -499,7 +499,7 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetContact(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetContact, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Contact failed", err.Error())
 		return
 	}

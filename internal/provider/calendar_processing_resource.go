@@ -337,7 +337,7 @@ func (r *calendarProcessingResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCalendarProcessing(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCalendarProcessing, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CalendarProcessing failed", err.Error())
 		return
 	}
@@ -564,7 +564,7 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetCalendarProcessing(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetCalendarProcessing, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-CalendarProcessing failed", err.Error())
 		return
 	}

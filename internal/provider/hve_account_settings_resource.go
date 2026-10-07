@@ -79,7 +79,7 @@ func (r *hVEAccountSettingsResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHVEAccountSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHVEAccountSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HVEAccountSettings failed", err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (r *hVEAccountSettingsResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetHVEAccountSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetHVEAccountSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-HVEAccountSettings failed", err.Error())
 		return
 	}

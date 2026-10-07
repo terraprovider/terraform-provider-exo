@@ -140,7 +140,7 @@ func (r *authenticationPolicyResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewAuthenticationPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewAuthenticationPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-AuthenticationPolicy failed", err.Error())
 		return
@@ -226,7 +226,7 @@ func (r *authenticationPolicyResource) Update(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAuthenticationPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAuthenticationPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AuthenticationPolicy failed", err.Error())
 		return
 	}

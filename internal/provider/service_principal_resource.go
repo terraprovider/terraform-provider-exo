@@ -97,7 +97,7 @@ func (r *servicePrincipalResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewServicePrincipal(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewServicePrincipal, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ServicePrincipal failed", err.Error())
 		return
@@ -155,7 +155,7 @@ func (r *servicePrincipalResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetServicePrincipal(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetServicePrincipal, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ServicePrincipal failed", err.Error())
 		return
 	}

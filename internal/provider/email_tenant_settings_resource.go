@@ -87,7 +87,7 @@ func (r *emailTenantSettingsResource) Create(ctx context.Context, req resource.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEmailTenantSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEmailTenantSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EmailTenantSettings failed", err.Error())
 		return
 	}
@@ -134,7 +134,7 @@ func (r *emailTenantSettingsResource) Update(ctx context.Context, req resource.U
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEmailTenantSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEmailTenantSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EmailTenantSettings failed", err.Error())
 		return
 	}

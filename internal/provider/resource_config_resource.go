@@ -103,7 +103,7 @@ func (r *resourceConfigResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetResourceConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetResourceConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ResourceConfig failed", err.Error())
 		return
 	}
@@ -168,7 +168,7 @@ func (r *resourceConfigResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetResourceConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetResourceConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ResourceConfig failed", err.Error())
 		return
 	}

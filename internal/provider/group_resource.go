@@ -162,7 +162,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Group failed", err.Error())
 		return
 	}
@@ -266,7 +266,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetGroup(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetGroup, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-Group failed", err.Error())
 		return
 	}

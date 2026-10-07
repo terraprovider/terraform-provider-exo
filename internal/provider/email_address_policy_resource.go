@@ -109,7 +109,7 @@ func (r *emailAddressPolicyResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewEmailAddressPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewEmailAddressPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-EmailAddressPolicy failed", err.Error())
 		return
@@ -175,7 +175,7 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetEmailAddressPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetEmailAddressPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-EmailAddressPolicy failed", err.Error())
 		return
 	}

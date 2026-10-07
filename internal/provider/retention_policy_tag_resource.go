@@ -162,7 +162,7 @@ func (r *retentionPolicyTagResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewRetentionPolicyTag(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewRetentionPolicyTag, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-RetentionPolicyTag failed", err.Error())
 		return
@@ -301,7 +301,7 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRetentionPolicyTag(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRetentionPolicyTag, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RetentionPolicyTag failed", err.Error())
 		return
 	}

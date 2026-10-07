@@ -200,7 +200,7 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewApp(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewApp, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-App failed", err.Error())
 		return
@@ -298,7 +298,7 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetApp(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetApp, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-App failed", err.Error())
 		return
 	}

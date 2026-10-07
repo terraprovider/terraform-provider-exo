@@ -197,7 +197,7 @@ func (r *outboundConnectorResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewOutboundConnector(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewOutboundConnector, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-OutboundConnector failed", err.Error())
 		return
@@ -375,7 +375,7 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOutboundConnector(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOutboundConnector, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OutboundConnector failed", err.Error())
 		return
 	}

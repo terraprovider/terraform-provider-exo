@@ -132,7 +132,7 @@ func (r *sweepRuleResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewSweepRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewSweepRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-SweepRule failed", err.Error())
 		return
@@ -225,7 +225,7 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetSweepRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetSweepRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-SweepRule failed", err.Error())
 		return
 	}

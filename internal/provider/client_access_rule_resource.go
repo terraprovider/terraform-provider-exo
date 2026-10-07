@@ -245,7 +245,7 @@ func (r *clientAccessRuleResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetClientAccessRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetClientAccessRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ClientAccessRule failed", err.Error())
 		return
 	}
@@ -428,7 +428,7 @@ func (r *clientAccessRuleResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetClientAccessRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetClientAccessRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ClientAccessRule failed", err.Error())
 		return
 	}

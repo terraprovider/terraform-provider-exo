@@ -104,7 +104,7 @@ func (r *federatedOrganizationIdentifierResource) Create(ctx context.Context, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetFederatedOrganizationIdentifier(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetFederatedOrganizationIdentifier, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-FederatedOrganizationIdentifier failed", err.Error())
 		return
 	}
@@ -168,7 +168,7 @@ func (r *federatedOrganizationIdentifierResource) Update(ctx context.Context, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetFederatedOrganizationIdentifier(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetFederatedOrganizationIdentifier, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-FederatedOrganizationIdentifier failed", err.Error())
 		return
 	}

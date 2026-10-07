@@ -112,7 +112,7 @@ func (r *partnerApplicationResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewPartnerApplication(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewPartnerApplication, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-PartnerApplication failed", err.Error())
 		return
@@ -190,7 +190,7 @@ func (r *partnerApplicationResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPartnerApplication(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPartnerApplication, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PartnerApplication failed", err.Error())
 		return
 	}

@@ -84,7 +84,7 @@ func (r *mailboxAuditBypassAssociationResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxAuditBypassAssociation(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxAuditBypassAssociation, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxAuditBypassAssociation failed", err.Error())
 		return
 	}
@@ -128,7 +128,7 @@ func (r *mailboxAuditBypassAssociationResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxAuditBypassAssociation(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxAuditBypassAssociation, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxAuditBypassAssociation failed", err.Error())
 		return
 	}

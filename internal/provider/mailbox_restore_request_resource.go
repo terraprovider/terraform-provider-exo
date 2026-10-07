@@ -253,7 +253,7 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMailboxRestoreRequest(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMailboxRestoreRequest, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MailboxRestoreRequest failed", err.Error())
 		return
@@ -360,7 +360,7 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailboxRestoreRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailboxRestoreRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailboxRestoreRequest failed", err.Error())
 		return
 	}

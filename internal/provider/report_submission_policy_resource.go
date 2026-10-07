@@ -511,7 +511,7 @@ func (r *reportSubmissionPolicyResource) Create(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewReportSubmissionPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewReportSubmissionPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-ReportSubmissionPolicy failed", err.Error())
 		return
@@ -921,7 +921,7 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetReportSubmissionPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetReportSubmissionPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-ReportSubmissionPolicy failed", err.Error())
 		return
 	}

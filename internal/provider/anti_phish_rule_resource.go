@@ -148,7 +148,7 @@ func (r *antiPhishRuleResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewAntiPhishRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewAntiPhishRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-AntiPhishRule failed", err.Error())
 		return
@@ -241,7 +241,7 @@ func (r *antiPhishRuleResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAntiPhishRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAntiPhishRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AntiPhishRule failed", err.Error())
 		return
 	}

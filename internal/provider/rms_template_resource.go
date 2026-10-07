@@ -79,7 +79,7 @@ func (r *rMSTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRMSTemplate(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRMSTemplate, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RMSTemplate failed", err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (r *rMSTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRMSTemplate(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRMSTemplate, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RMSTemplate failed", err.Error())
 		return
 	}

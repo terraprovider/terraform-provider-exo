@@ -521,7 +521,7 @@ func (r *mailPublicFolderResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailPublicFolder(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailPublicFolder, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailPublicFolder failed", err.Error())
 		return
 	}
@@ -913,7 +913,7 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMailPublicFolder(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMailPublicFolder, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MailPublicFolder failed", err.Error())
 		return
 	}

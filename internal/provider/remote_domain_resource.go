@@ -128,7 +128,7 @@ func (r *remoteDomainResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewRemoteDomain(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewRemoteDomain, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-RemoteDomain failed", err.Error())
 		return
@@ -279,7 +279,7 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetRemoteDomain(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetRemoteDomain, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-RemoteDomain failed", err.Error())
 		return
 	}

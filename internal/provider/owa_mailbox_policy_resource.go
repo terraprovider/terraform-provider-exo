@@ -321,7 +321,7 @@ func (r *owaMailboxPolicyResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewOwaMailboxPolicy(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewOwaMailboxPolicy, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-OwaMailboxPolicy failed", err.Error())
 		return
@@ -1009,7 +1009,7 @@ func (r *owaMailboxPolicyResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetOwaMailboxPolicy(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetOwaMailboxPolicy, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-OwaMailboxPolicy failed", err.Error())
 		return
 	}

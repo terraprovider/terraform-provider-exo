@@ -600,7 +600,7 @@ func (r *inboxRuleResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewInboxRule(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewInboxRule, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-InboxRule failed", err.Error())
 		return
@@ -1168,7 +1168,7 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetInboxRule(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetInboxRule, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-InboxRule failed", err.Error())
 		return
 	}

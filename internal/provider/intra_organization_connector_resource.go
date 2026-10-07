@@ -106,7 +106,7 @@ func (r *intraOrganizationConnectorResource) Create(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewIntraOrganizationConnector(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewIntraOrganizationConnector, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-IntraOrganizationConnector failed", err.Error())
 		return
@@ -198,7 +198,7 @@ func (r *intraOrganizationConnectorResource) Update(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetIntraOrganizationConnector(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetIntraOrganizationConnector, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-IntraOrganizationConnector failed", err.Error())
 		return
 	}

@@ -87,7 +87,7 @@ func (r *availabilityConfigResource) Create(ctx context.Context, req resource.Cr
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewAvailabilityConfig(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewAvailabilityConfig, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-AvailabilityConfig failed", err.Error())
 		return
@@ -168,7 +168,7 @@ func (r *availabilityConfigResource) Update(ctx context.Context, req resource.Up
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetAvailabilityConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetAvailabilityConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-AvailabilityConfig failed", err.Error())
 		return
 	}

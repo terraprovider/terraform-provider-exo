@@ -258,7 +258,7 @@ func (r *transportConfigResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetTransportConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetTransportConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-TransportConfig failed", err.Error())
 		return
 	}
@@ -441,7 +441,7 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetTransportConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetTransportConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-TransportConfig failed", err.Error())
 		return
 	}

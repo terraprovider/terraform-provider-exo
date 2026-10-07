@@ -205,7 +205,7 @@ func (r *iRMConfigurationResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetIRMConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetIRMConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-IRMConfiguration failed", err.Error())
 		return
 	}
@@ -345,7 +345,7 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetIRMConfiguration(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetIRMConfiguration, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-IRMConfiguration failed", err.Error())
 		return
 	}

@@ -84,7 +84,7 @@ func (r *policyTipConfigResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewPolicyTipConfig(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewPolicyTipConfig, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-PolicyTipConfig failed", err.Error())
 		return
@@ -137,7 +137,7 @@ func (r *policyTipConfigResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetPolicyTipConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetPolicyTipConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-PolicyTipConfig failed", err.Error())
 		return
 	}

@@ -112,7 +112,7 @@ func (r *dkimSigningConfigResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewDkimSigningConfig(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewDkimSigningConfig, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-DkimSigningConfig failed", err.Error())
 		return
@@ -183,7 +183,7 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetDkimSigningConfig(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetDkimSigningConfig, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-DkimSigningConfig failed", err.Error())
 		return
 	}

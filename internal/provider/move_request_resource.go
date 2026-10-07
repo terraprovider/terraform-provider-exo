@@ -217,7 +217,7 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMoveRequest(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMoveRequest, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MoveRequest failed", err.Error())
 		return
@@ -360,7 +360,7 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMoveRequest(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMoveRequest, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MoveRequest failed", err.Error())
 		return
 	}

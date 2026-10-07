@@ -431,7 +431,7 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	res, err := r.client.EXO.NewMigrationBatch(ctx, p)
+	res, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.NewMigrationBatch, p, isNotFound)
 	if err != nil {
 		resp.Diagnostics.AddError("New-MigrationBatch failed", err.Error())
 		return
@@ -589,7 +589,7 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMigrationBatch(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMigrationBatch, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MigrationBatch failed", err.Error())
 		return
 	}

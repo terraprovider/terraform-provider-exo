@@ -80,7 +80,7 @@ func (r *meetingInsightsSettingsResource) Create(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMeetingInsightsSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMeetingInsightsSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MeetingInsightsSettings failed", err.Error())
 		return
 	}
@@ -121,7 +121,7 @@ func (r *meetingInsightsSettingsResource) Update(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if _, err := r.client.EXO.SetMeetingInsightsSettings(ctx, sp); err != nil {
+	if _, err := resourcex.RetryWriteCall(ctx, consistency.Config{}, r.client.EXO.SetMeetingInsightsSettings, sp, isNotFound); err != nil {
 		resp.Diagnostics.AddError("Set-MeetingInsightsSettings failed", err.Error())
 		return
 	}
