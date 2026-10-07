@@ -242,6 +242,9 @@ func (r *exoPhishSimOverrideRuleResource) Update(ctx context.Context, req resour
 		"Comment": cfg.Comment,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -162,6 +162,9 @@ func (r *managementScopeResource) Update(ctx context.Context, req resource.Updat
 		"RecipientRestrictionFilter": cfg.RecipientRestrictionFilter,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
