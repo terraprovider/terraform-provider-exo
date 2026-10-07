@@ -224,6 +224,9 @@ func (r *onPremisesOrganizationResource) Update(ctx context.Context, req resourc
 		"OrganizationName": cfg.OrganizationName,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

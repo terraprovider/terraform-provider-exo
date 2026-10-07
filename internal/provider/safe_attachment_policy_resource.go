@@ -210,6 +210,9 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 		"QuarantineTag":    cfg.QuarantineTag,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

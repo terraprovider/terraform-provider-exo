@@ -596,6 +596,9 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -223,6 +223,9 @@ func (r *roleGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		"WellKnownObject": cfg.WellKnownObject,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	if !plan.Members.Equal(state.Members) {
 		mem := toStringSlice(ctx, plan.Members, &resp.Diagnostics)
 		if merr := resourcex.RetryWrite(ctx, consistency.Config{}, func(ctx context.Context) error {

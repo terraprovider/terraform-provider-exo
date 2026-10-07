@@ -166,6 +166,9 @@ func (r *tenantAllowBlockListSpoofItemsResource) Update(ctx context.Context, req
 		"Action": cfg.Action,
 	}, getString)
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
+	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
+		plan.ID = cfg.ID
+	}
 	r.reconcileState(&cfg, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
