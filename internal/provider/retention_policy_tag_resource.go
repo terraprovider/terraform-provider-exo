@@ -114,10 +114,14 @@ func (r *retentionPolicyTagResource) Create(ctx context.Context, req resource.Cr
 		p.Comment = plan.Comment.ValueString()
 	}
 	if !config.IsDefaultAutoGroupPolicyTag.IsNull() {
-		p.IsDefaultAutoGroupPolicyTag = plan.IsDefaultAutoGroupPolicyTag.ValueBool()
+		if !plan.IsDefaultAutoGroupPolicyTag.IsUnknown() {
+			p.IsDefaultAutoGroupPolicyTag = plan.IsDefaultAutoGroupPolicyTag.ValueBoolPointer()
+		}
 	}
 	if !config.IsDefaultModeratedRecipientsPolicyTag.IsNull() {
-		p.IsDefaultModeratedRecipientsPolicyTag = plan.IsDefaultModeratedRecipientsPolicyTag.ValueBool()
+		if !plan.IsDefaultModeratedRecipientsPolicyTag.IsUnknown() {
+			p.IsDefaultModeratedRecipientsPolicyTag = plan.IsDefaultModeratedRecipientsPolicyTag.ValueBoolPointer()
+		}
 	}
 	if !config.LocalizedComment.IsNull() {
 		if v := toStringSlice(ctx, plan.LocalizedComment, &resp.Diagnostics); len(v) > 0 {
@@ -311,6 +315,24 @@ func (r *retentionPolicyTagResource) Update(ctx context.Context, req resource.Up
 		"MessageClass": cfg.MessageClass,
 		"RetentionId":  cfg.RetentionId,
 	}, getString)
+	if !cfg.MustDisplayCommentEnabled.IsUnknown() && !cfg.MustDisplayCommentEnabled.IsNull() && !cfg.MustDisplayCommentEnabled.Equal(state.MustDisplayCommentEnabled) {
+		prev, want := reflected, cfg.MustDisplayCommentEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MustDisplayCommentEnabled"] == nil || getBool(obj, "MustDisplayCommentEnabled") == want)
+		}
+	}
+	if !cfg.RetentionEnabled.IsUnknown() && !cfg.RetentionEnabled.IsNull() && !cfg.RetentionEnabled.Equal(state.RetentionEnabled) {
+		prev, want := reflected, cfg.RetentionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RetentionEnabled"] == nil || getBool(obj, "RetentionEnabled") == want)
+		}
+	}
+	if !cfg.SystemTag.IsUnknown() && !cfg.SystemTag.IsNull() && !cfg.SystemTag.Equal(state.SystemTag) {
+		prev, want := reflected, cfg.SystemTag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SystemTag"] == nil || getBool(obj, "SystemTag") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

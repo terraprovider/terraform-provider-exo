@@ -454,6 +454,54 @@ func (r *inboundConnectorResource) Update(ctx context.Context, req resource.Upda
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Comment": cfg.Comment,
 	}, getString)
+	if !cfg.CloudServicesMailEnabled.IsUnknown() && !cfg.CloudServicesMailEnabled.IsNull() && !cfg.CloudServicesMailEnabled.Equal(state.CloudServicesMailEnabled) {
+		prev, want := reflected, cfg.CloudServicesMailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CloudServicesMailEnabled"] == nil || getBool(obj, "CloudServicesMailEnabled") == want)
+		}
+	}
+	if !cfg.EFSkipLastIP.IsUnknown() && !cfg.EFSkipLastIP.IsNull() && !cfg.EFSkipLastIP.Equal(state.EFSkipLastIP) {
+		prev, want := reflected, cfg.EFSkipLastIP.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EFSkipLastIP"] == nil || getBool(obj, "EFSkipLastIP") == want)
+		}
+	}
+	if !cfg.EFTestMode.IsUnknown() && !cfg.EFTestMode.IsNull() && !cfg.EFTestMode.Equal(state.EFTestMode) {
+		prev, want := reflected, cfg.EFTestMode.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EFTestMode"] == nil || getBool(obj, "EFTestMode") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.RequireTls.IsUnknown() && !cfg.RequireTls.IsNull() && !cfg.RequireTls.Equal(state.RequireTls) {
+		prev, want := reflected, cfg.RequireTls.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireTls"] == nil || getBool(obj, "RequireTls") == want)
+		}
+	}
+	if !cfg.RestrictDomainsToCertificate.IsUnknown() && !cfg.RestrictDomainsToCertificate.IsNull() && !cfg.RestrictDomainsToCertificate.Equal(state.RestrictDomainsToCertificate) {
+		prev, want := reflected, cfg.RestrictDomainsToCertificate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RestrictDomainsToCertificate"] == nil || getBool(obj, "RestrictDomainsToCertificate") == want)
+		}
+	}
+	if !cfg.RestrictDomainsToIPAddresses.IsUnknown() && !cfg.RestrictDomainsToIPAddresses.IsNull() && !cfg.RestrictDomainsToIPAddresses.Equal(state.RestrictDomainsToIPAddresses) {
+		prev, want := reflected, cfg.RestrictDomainsToIPAddresses.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RestrictDomainsToIPAddresses"] == nil || getBool(obj, "RestrictDomainsToIPAddresses") == want)
+		}
+	}
+	if !cfg.TreatMessagesAsInternal.IsUnknown() && !cfg.TreatMessagesAsInternal.IsNull() && !cfg.TreatMessagesAsInternal.Equal(state.TreatMessagesAsInternal) {
+		prev, want := reflected, cfg.TreatMessagesAsInternal.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TreatMessagesAsInternal"] == nil || getBool(obj, "TreatMessagesAsInternal") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

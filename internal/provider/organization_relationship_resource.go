@@ -387,6 +387,48 @@ func (r *organizationRelationshipResource) Update(ctx context.Context, req resou
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"OAuthApplicationId": cfg.OAuthApplicationId,
 	}, getString)
+	if !cfg.ArchiveAccessEnabled.IsUnknown() && !cfg.ArchiveAccessEnabled.IsNull() && !cfg.ArchiveAccessEnabled.Equal(state.ArchiveAccessEnabled) {
+		prev, want := reflected, cfg.ArchiveAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ArchiveAccessEnabled"] == nil || getBool(obj, "ArchiveAccessEnabled") == want)
+		}
+	}
+	if !cfg.DeliveryReportEnabled.IsUnknown() && !cfg.DeliveryReportEnabled.IsNull() && !cfg.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
+		prev, want := reflected, cfg.DeliveryReportEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeliveryReportEnabled"] == nil || getBool(obj, "DeliveryReportEnabled") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.FreeBusyAccessEnabled.IsUnknown() && !cfg.FreeBusyAccessEnabled.IsNull() && !cfg.FreeBusyAccessEnabled.Equal(state.FreeBusyAccessEnabled) {
+		prev, want := reflected, cfg.FreeBusyAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FreeBusyAccessEnabled"] == nil || getBool(obj, "FreeBusyAccessEnabled") == want)
+		}
+	}
+	if !cfg.MailTipsAccessEnabled.IsUnknown() && !cfg.MailTipsAccessEnabled.IsNull() && !cfg.MailTipsAccessEnabled.Equal(state.MailTipsAccessEnabled) {
+		prev, want := reflected, cfg.MailTipsAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsAccessEnabled"] == nil || getBool(obj, "MailTipsAccessEnabled") == want)
+		}
+	}
+	if !cfg.MailboxMoveEnabled.IsUnknown() && !cfg.MailboxMoveEnabled.IsNull() && !cfg.MailboxMoveEnabled.Equal(state.MailboxMoveEnabled) {
+		prev, want := reflected, cfg.MailboxMoveEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailboxMoveEnabled"] == nil || getBool(obj, "MailboxMoveEnabled") == want)
+		}
+	}
+	if !cfg.PhotosEnabled.IsUnknown() && !cfg.PhotosEnabled.IsNull() && !cfg.PhotosEnabled.Equal(state.PhotosEnabled) {
+		prev, want := reflected, cfg.PhotosEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PhotosEnabled"] == nil || getBool(obj, "PhotosEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

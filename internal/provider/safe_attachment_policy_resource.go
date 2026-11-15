@@ -102,7 +102,9 @@ func (r *safeAttachmentPolicyResource) Create(ctx context.Context, req resource.
 		}
 	}
 	if !config.MakeBuiltInProtection.IsNull() {
-		p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBool()
+		if !plan.MakeBuiltInProtection.IsUnknown() {
+			p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBoolPointer()
+		}
 	}
 	if !config.Name.IsNull() {
 		p.Name = plan.Name.ValueString()
@@ -209,6 +211,18 @@ func (r *safeAttachmentPolicyResource) Update(ctx context.Context, req resource.
 		"AdminDisplayName": cfg.AdminDisplayName,
 		"QuarantineTag":    cfg.QuarantineTag,
 	}, getString)
+	if !cfg.Enable.IsUnknown() && !cfg.Enable.IsNull() && !cfg.Enable.Equal(state.Enable) {
+		prev, want := reflected, cfg.Enable.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enable"] == nil || getBool(obj, "Enable") == want)
+		}
+	}
+	if !cfg.Redirect.IsUnknown() && !cfg.Redirect.IsNull() && !cfg.Redirect.Equal(state.Redirect) {
+		prev, want := reflected, cfg.Redirect.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Redirect"] == nil || getBool(obj, "Redirect") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

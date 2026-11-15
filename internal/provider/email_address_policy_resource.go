@@ -95,7 +95,9 @@ func (r *emailAddressPolicyResource) Create(ctx context.Context, req resource.Cr
 		p.EnabledPrimarySMTPAddressTemplate = plan.EnabledPrimarySMTPAddressTemplate.ValueString()
 	}
 	if !config.IncludeUnifiedGroupRecipients.IsNull() {
-		p.IncludeUnifiedGroupRecipients = plan.IncludeUnifiedGroupRecipients.ValueBool()
+		if !plan.IncludeUnifiedGroupRecipients.IsUnknown() {
+			p.IncludeUnifiedGroupRecipients = plan.IncludeUnifiedGroupRecipients.ValueBoolPointer()
+		}
 	}
 	if !config.ManagedByFilter.IsNull() {
 		p.ManagedByFilter = plan.ManagedByFilter.ValueString()
@@ -165,7 +167,9 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 		sp.EnabledPrimarySMTPAddressTemplate = plan.EnabledPrimarySMTPAddressTemplate.ValueString()
 	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
-		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+		if !plan.ForceUpgrade.IsUnknown() {
+			sp.ForceUpgrade = plan.ForceUpgrade.ValueBoolPointer()
+		}
 	}
 	if !plan.Priority.Equal(state.Priority) {
 		if v := plan.Priority.ValueString(); v != "" {
@@ -183,6 +187,12 @@ func (r *emailAddressPolicyResource) Update(ctx context.Context, req resource.Up
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"EnabledPrimarySMTPAddressTemplate": cfg.EnabledPrimarySMTPAddressTemplate,
 	}, getString)
+	if !cfg.ForceUpgrade.IsUnknown() && !cfg.ForceUpgrade.IsNull() && !cfg.ForceUpgrade.Equal(state.ForceUpgrade) {
+		prev, want := reflected, cfg.ForceUpgrade.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ForceUpgrade"] == nil || getBool(obj, "ForceUpgrade") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

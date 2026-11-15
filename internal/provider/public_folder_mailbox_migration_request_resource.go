@@ -84,10 +84,14 @@ func (r *publicFolderMailboxMigrationRequestResource) Create(ctx context.Context
 	sp := exo.SetPublicFolderMailboxMigrationRequestParams{}
 	sp.Identity = plan.Identity.ValueString()
 	if !config.AcceptLargeDataLoss.IsNull() {
-		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !config.SkipInitialConnectionValidation.IsNull() {
-		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+		if !plan.SkipInitialConnectionValidation.IsUnknown() {
+			sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBoolPointer()
+		}
 	}
 	if !config.SkipMerging.IsNull() {
 		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
@@ -137,10 +141,14 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 	sp := exo.SetPublicFolderMailboxMigrationRequestParams{}
 	sp.Identity = id
 	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
-		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !plan.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
-		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+		if !plan.SkipInitialConnectionValidation.IsUnknown() {
+			sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBoolPointer()
+		}
 	}
 	if !plan.SkipMerging.Equal(state.SkipMerging) {
 		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
@@ -161,6 +169,18 @@ func (r *publicFolderMailboxMigrationRequestResource) Update(ctx context.Context
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AcceptLargeDataLoss.IsUnknown() && !cfg.AcceptLargeDataLoss.IsNull() && !cfg.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		prev, want := reflected, cfg.AcceptLargeDataLoss.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AcceptLargeDataLoss"] == nil || getBool(obj, "AcceptLargeDataLoss") == want)
+		}
+	}
+	if !cfg.SkipInitialConnectionValidation.IsUnknown() && !cfg.SkipInitialConnectionValidation.IsNull() && !cfg.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
+		prev, want := reflected, cfg.SkipInitialConnectionValidation.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SkipInitialConnectionValidation"] == nil || getBool(obj, "SkipInitialConnectionValidation") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -258,6 +258,12 @@ func (r *placeMailboxResource) Update(ctx context.Context, req resource.UpdateRe
 		"StateOrProvince": cfg.StateOrProvince,
 		"StreetAddress":   cfg.StreetAddress,
 	}, getString)
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -215,7 +215,9 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 		}
 	}
 	if !plan.MakeDefault.Equal(state.MakeDefault) {
-		sp.MakeDefault = plan.MakeDefault.ValueBool()
+		if !plan.MakeDefault.IsUnknown() {
+			sp.MakeDefault = plan.MakeDefault.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -229,6 +231,18 @@ func (r *hostedConnectionFilterPolicyResource) Update(ctx context.Context, req r
 		"AdminDisplayName":    cfg.AdminDisplayName,
 		"ConfigurationXmlRaw": cfg.ConfigurationXmlRaw,
 	}, getString)
+	if !cfg.EnableSafeList.IsUnknown() && !cfg.EnableSafeList.IsNull() && !cfg.EnableSafeList.Equal(state.EnableSafeList) {
+		prev, want := reflected, cfg.EnableSafeList.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSafeList"] == nil || getBool(obj, "EnableSafeList") == want)
+		}
+	}
+	if !cfg.MakeDefault.IsUnknown() && !cfg.MakeDefault.IsNull() && !cfg.MakeDefault.Equal(state.MakeDefault) {
+		prev, want := reflected, cfg.MakeDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MakeDefault"] == nil || getBool(obj, "MakeDefault") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

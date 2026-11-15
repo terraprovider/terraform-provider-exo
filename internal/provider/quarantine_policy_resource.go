@@ -354,7 +354,9 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 		}
 	}
 	if !plan.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
-		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+		if !plan.IgnoreDehydratedFlag.IsUnknown() {
+			sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBoolPointer()
+		}
 	}
 	if !plan.IncludeMessagesFromBlockedSenderAddress.Equal(state.IncludeMessagesFromBlockedSenderAddress) {
 		if !plan.IncludeMessagesFromBlockedSenderAddress.IsUnknown() {
@@ -422,6 +424,60 @@ func (r *quarantinePolicyResource) Update(ctx context.Context, req resource.Upda
 		"CustomDisclaimer":                         cfg.CustomDisclaimer,
 		"EndUserSpamNotificationCustomFromAddress": cfg.EndUserSpamNotificationCustomFromAddress,
 	}, getString)
+	if !cfg.AdminNotificationFrequencyInDays.IsUnknown() && !cfg.AdminNotificationFrequencyInDays.IsNull() && !cfg.AdminNotificationFrequencyInDays.Equal(state.AdminNotificationFrequencyInDays) {
+		prev, want := reflected, cfg.AdminNotificationFrequencyInDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AdminNotificationFrequencyInDays"] == nil || getInt(obj, "AdminNotificationFrequencyInDays") == want)
+		}
+	}
+	if !cfg.AdminNotificationsEnabled.IsUnknown() && !cfg.AdminNotificationsEnabled.IsNull() && !cfg.AdminNotificationsEnabled.Equal(state.AdminNotificationsEnabled) {
+		prev, want := reflected, cfg.AdminNotificationsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AdminNotificationsEnabled"] == nil || getBool(obj, "AdminNotificationsEnabled") == want)
+		}
+	}
+	if !cfg.ESNEnabled.IsUnknown() && !cfg.ESNEnabled.IsNull() && !cfg.ESNEnabled.Equal(state.ESNEnabled) {
+		prev, want := reflected, cfg.ESNEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ESNEnabled"] == nil || getBool(obj, "ESNEnabled") == want)
+		}
+	}
+	if !cfg.EndUserQuarantinePermissionsValue.IsUnknown() && !cfg.EndUserQuarantinePermissionsValue.IsNull() && !cfg.EndUserQuarantinePermissionsValue.Equal(state.EndUserQuarantinePermissionsValue) {
+		prev, want := reflected, cfg.EndUserQuarantinePermissionsValue.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserQuarantinePermissionsValue"] == nil || getInt(obj, "EndUserQuarantinePermissionsValue") == want)
+		}
+	}
+	if !cfg.EndUserSpamNotificationFrequencyInDays.IsUnknown() && !cfg.EndUserSpamNotificationFrequencyInDays.IsNull() && !cfg.EndUserSpamNotificationFrequencyInDays.Equal(state.EndUserSpamNotificationFrequencyInDays) {
+		prev, want := reflected, cfg.EndUserSpamNotificationFrequencyInDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserSpamNotificationFrequencyInDays"] == nil || getInt(obj, "EndUserSpamNotificationFrequencyInDays") == want)
+		}
+	}
+	if !cfg.IgnoreDehydratedFlag.IsUnknown() && !cfg.IgnoreDehydratedFlag.IsNull() && !cfg.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
+		prev, want := reflected, cfg.IgnoreDehydratedFlag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreDehydratedFlag"] == nil || getBool(obj, "IgnoreDehydratedFlag") == want)
+		}
+	}
+	if !cfg.IncludeMessagesFromBlockedSenderAddress.IsUnknown() && !cfg.IncludeMessagesFromBlockedSenderAddress.IsNull() && !cfg.IncludeMessagesFromBlockedSenderAddress.Equal(state.IncludeMessagesFromBlockedSenderAddress) {
+		prev, want := reflected, cfg.IncludeMessagesFromBlockedSenderAddress.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IncludeMessagesFromBlockedSenderAddress"] == nil || getBool(obj, "IncludeMessagesFromBlockedSenderAddress") == want)
+		}
+	}
+	if !cfg.OrganizationBrandingEnabled.IsUnknown() && !cfg.OrganizationBrandingEnabled.IsNull() && !cfg.OrganizationBrandingEnabled.Equal(state.OrganizationBrandingEnabled) {
+		prev, want := reflected, cfg.OrganizationBrandingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OrganizationBrandingEnabled"] == nil || getBool(obj, "OrganizationBrandingEnabled") == want)
+		}
+	}
+	if !cfg.QuarantineRetentionDays.IsUnknown() && !cfg.QuarantineRetentionDays.IsNull() && !cfg.QuarantineRetentionDays.Equal(state.QuarantineRetentionDays) {
+		prev, want := reflected, cfg.QuarantineRetentionDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["QuarantineRetentionDays"] == nil || getInt(obj, "QuarantineRetentionDays") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

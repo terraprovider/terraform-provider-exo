@@ -81,7 +81,9 @@ func (r *sharingPolicyResource) Create(ctx context.Context, req resource.CreateR
 
 	p := exo.NewSharingPolicyParams{}
 	if !config.Default.IsNull() {
-		p.Default = plan.Default.ValueBool()
+		if !plan.Default.IsUnknown() {
+			p.Default = plan.Default.ValueBoolPointer()
+		}
 	}
 	if !config.Domains.IsNull() {
 		if v := toStringSlice(ctx, plan.Domains, &resp.Diagnostics); len(v) > 0 {
@@ -161,7 +163,9 @@ func (r *sharingPolicyResource) Update(ctx context.Context, req resource.UpdateR
 		return cur
 	}
 	if !plan.Default.Equal(state.Default) {
-		sp.Default = plan.Default.ValueBool()
+		if !plan.Default.IsUnknown() {
+			sp.Default = plan.Default.ValueBoolPointer()
+		}
 	}
 	if !plan.Domains.Equal(state.Domains) {
 		if !plan.Domains.IsNull() && !plan.Domains.IsUnknown() {
@@ -190,6 +194,18 @@ func (r *sharingPolicyResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Default.IsUnknown() && !cfg.Default.IsNull() && !cfg.Default.Equal(state.Default) {
+		prev, want := reflected, cfg.Default.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Default"] == nil || getBool(obj, "Default") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -943,6 +943,42 @@ func (r *mailPublicFolderResource) Update(ctx context.Context, req resource.Upda
 		"PhoneticDisplayName": cfg.PhoneticDisplayName,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
 	}, getString)
+	if !cfg.DeliverToMailboxAndForward.IsUnknown() && !cfg.DeliverToMailboxAndForward.IsNull() && !cfg.DeliverToMailboxAndForward.Equal(state.DeliverToMailboxAndForward) {
+		prev, want := reflected, cfg.DeliverToMailboxAndForward.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeliverToMailboxAndForward"] == nil || getBool(obj, "DeliverToMailboxAndForward") == want)
+		}
+	}
+	if !cfg.EmailAddressPolicyEnabled.IsUnknown() && !cfg.EmailAddressPolicyEnabled.IsNull() && !cfg.EmailAddressPolicyEnabled.Equal(state.EmailAddressPolicyEnabled) {
+		prev, want := reflected, cfg.EmailAddressPolicyEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EmailAddressPolicyEnabled"] == nil || getBool(obj, "EmailAddressPolicyEnabled") == want)
+		}
+	}
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
+	if !cfg.IgnoreMissingFolderLink.IsUnknown() && !cfg.IgnoreMissingFolderLink.IsNull() && !cfg.IgnoreMissingFolderLink.Equal(state.IgnoreMissingFolderLink) {
+		prev, want := reflected, cfg.IgnoreMissingFolderLink.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreMissingFolderLink"] == nil || getBool(obj, "IgnoreMissingFolderLink") == want)
+		}
+	}
+	if !cfg.ModerationEnabled.IsUnknown() && !cfg.ModerationEnabled.IsNull() && !cfg.ModerationEnabled.Equal(state.ModerationEnabled) {
+		prev, want := reflected, cfg.ModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerationEnabled"] == nil || getBool(obj, "ModerationEnabled") == want)
+		}
+	}
+	if !cfg.RequireSenderAuthenticationEnabled.IsUnknown() && !cfg.RequireSenderAuthenticationEnabled.IsNull() && !cfg.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		prev, want := reflected, cfg.RequireSenderAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSenderAuthenticationEnabled"] == nil || getBool(obj, "RequireSenderAuthenticationEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -91,7 +91,9 @@ func (r *mailboxRegionalConfigurationResource) Create(ctx context.Context, req r
 	sp := exo.SetMailboxRegionalConfigurationParams{}
 	sp.Identity = plan.Identity.ValueString()
 	if !config.Archive.IsNull() {
-		sp.Archive = plan.Archive.ValueBool()
+		if !plan.Archive.IsUnknown() {
+			sp.Archive = plan.Archive.ValueBoolPointer()
+		}
 	}
 	if !config.DateFormat.IsNull() {
 		sp.DateFormat = plan.DateFormat.ValueString()
@@ -100,7 +102,9 @@ func (r *mailboxRegionalConfigurationResource) Create(ctx context.Context, req r
 		sp.Language = objectParam(v)
 	}
 	if !config.LocalizeDefaultFolderName.IsNull() {
-		sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
+		if !plan.LocalizeDefaultFolderName.IsUnknown() {
+			sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBoolPointer()
+		}
 	}
 	if v := config.MailboxLocation.ValueString(); v != "" {
 		sp.MailboxLocation = objectParam(v)
@@ -112,7 +116,9 @@ func (r *mailboxRegionalConfigurationResource) Create(ctx context.Context, req r
 		sp.TimeZone = objectParam(v)
 	}
 	if !config.UseCustomRouting.IsNull() {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -154,7 +160,9 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 	sp := exo.SetMailboxRegionalConfigurationParams{}
 	sp.Identity = id
 	if !plan.Archive.Equal(state.Archive) {
-		sp.Archive = plan.Archive.ValueBool()
+		if !plan.Archive.IsUnknown() {
+			sp.Archive = plan.Archive.ValueBoolPointer()
+		}
 	}
 	if !plan.DateFormat.Equal(state.DateFormat) {
 		sp.DateFormat = plan.DateFormat.ValueString()
@@ -165,7 +173,9 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 		}
 	}
 	if !plan.LocalizeDefaultFolderName.Equal(state.LocalizeDefaultFolderName) {
-		sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBool()
+		if !plan.LocalizeDefaultFolderName.IsUnknown() {
+			sp.LocalizeDefaultFolderName = plan.LocalizeDefaultFolderName.ValueBoolPointer()
+		}
 	}
 	if !plan.MailboxLocation.Equal(state.MailboxLocation) {
 		if v := plan.MailboxLocation.ValueString(); v != "" {
@@ -181,7 +191,9 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 		}
 	}
 	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -195,6 +207,24 @@ func (r *mailboxRegionalConfigurationResource) Update(ctx context.Context, req r
 		"DateFormat": cfg.DateFormat,
 		"TimeFormat": cfg.TimeFormat,
 	}, getString)
+	if !cfg.Archive.IsUnknown() && !cfg.Archive.IsNull() && !cfg.Archive.Equal(state.Archive) {
+		prev, want := reflected, cfg.Archive.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Archive"] == nil || getBool(obj, "Archive") == want)
+		}
+	}
+	if !cfg.LocalizeDefaultFolderName.IsUnknown() && !cfg.LocalizeDefaultFolderName.IsNull() && !cfg.LocalizeDefaultFolderName.Equal(state.LocalizeDefaultFolderName) {
+		prev, want := reflected, cfg.LocalizeDefaultFolderName.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["LocalizeDefaultFolderName"] == nil || getBool(obj, "LocalizeDefaultFolderName") == want)
+		}
+	}
+	if !cfg.UseCustomRouting.IsUnknown() && !cfg.UseCustomRouting.IsNull() && !cfg.UseCustomRouting.Equal(state.UseCustomRouting) {
+		prev, want := reflected, cfg.UseCustomRouting.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseCustomRouting"] == nil || getBool(obj, "UseCustomRouting") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

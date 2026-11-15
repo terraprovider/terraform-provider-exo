@@ -182,7 +182,9 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 		}
 	}
 	if !plan.IsDefault.Equal(state.IsDefault) {
-		sp.IsDefault = plan.IsDefault.ValueBool()
+		if !plan.IsDefault.IsUnknown() {
+			sp.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.Locale.Equal(state.Locale) {
 		if v := plan.Locale.ValueString(); v != "" {
@@ -200,6 +202,12 @@ func (r *dataClassificationResource) Update(ctx context.Context, req resource.Up
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Description": cfg.Description,
 	}, getString)
+	if !cfg.IsDefault.IsUnknown() && !cfg.IsDefault.IsNull() && !cfg.IsDefault.Equal(state.IsDefault) {
+		prev, want := reflected, cfg.IsDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDefault"] == nil || getBool(obj, "IsDefault") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

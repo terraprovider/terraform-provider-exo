@@ -152,10 +152,14 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 
 	p := exo.NewMailboxRestoreRequestParams{}
 	if !config.AcceptLargeDataLoss.IsNull() {
-		p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !config.AllowLegacyDNMismatch.IsNull() {
-		p.AllowLegacyDNMismatch = plan.AllowLegacyDNMismatch.ValueBool()
+		if !plan.AllowLegacyDNMismatch.IsUnknown() {
+			p.AllowLegacyDNMismatch = plan.AllowLegacyDNMismatch.ValueBoolPointer()
+		}
 	}
 	if v := config.AssociatedMessagesCopyOption.ValueString(); v != "" {
 		p.AssociatedMessagesCopyOption = objectParam(v)
@@ -176,10 +180,14 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 		p.ContentFilterLanguage = objectParam(v)
 	}
 	if !config.CrossTenantRestore.IsNull() {
-		p.CrossTenantRestore = plan.CrossTenantRestore.ValueBool()
+		if !plan.CrossTenantRestore.IsUnknown() {
+			p.CrossTenantRestore = plan.CrossTenantRestore.ValueBoolPointer()
+		}
 	}
 	if !config.ExcludeDumpster.IsNull() {
-		p.ExcludeDumpster = plan.ExcludeDumpster.ValueBool()
+		if !plan.ExcludeDumpster.IsUnknown() {
+			p.ExcludeDumpster = plan.ExcludeDumpster.ValueBoolPointer()
+		}
 	}
 	if !config.ExcludeFolders.IsNull() {
 		if v := toStringSlice(ctx, plan.ExcludeFolders, &resp.Diagnostics); len(v) > 0 {
@@ -218,7 +226,9 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 		p.SourceExchangeGuid = plan.SourceExchangeGuid.ValueString()
 	}
 	if !config.SourceIsArchive.IsNull() {
-		p.SourceIsArchive = plan.SourceIsArchive.ValueBool()
+		if !plan.SourceIsArchive.IsUnknown() {
+			p.SourceIsArchive = plan.SourceIsArchive.ValueBoolPointer()
+		}
 	}
 	if v := config.SourceMailbox.ValueString(); v != "" {
 		p.SourceMailbox = objectParam(v)
@@ -233,13 +243,17 @@ func (r *mailboxRestoreRequestResource) Create(ctx context.Context, req resource
 		p.SourceTenant = objectParam(v)
 	}
 	if !config.Suspend.IsNull() {
-		p.Suspend = plan.Suspend.ValueBool()
+		if !plan.Suspend.IsUnknown() {
+			p.Suspend = plan.Suspend.ValueBoolPointer()
+		}
 	}
 	if !config.SuspendComment.IsNull() {
 		p.SuspendComment = plan.SuspendComment.ValueString()
 	}
 	if !config.TargetIsArchive.IsNull() {
-		p.TargetIsArchive = plan.TargetIsArchive.ValueBool()
+		if !plan.TargetIsArchive.IsUnknown() {
+			p.TargetIsArchive = plan.TargetIsArchive.ValueBoolPointer()
+		}
 	}
 	if v := config.TargetMailbox.ValueString(); v != "" {
 		p.TargetMailbox = objectParam(v)
@@ -301,7 +315,9 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	sp := exo.SetMailboxRestoreRequestParams{}
 	sp.Identity = id
 	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
-		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !plan.BatchName.Equal(state.BatchName) {
 		sp.BatchName = plan.BatchName.ValueString()
@@ -322,7 +338,9 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 		}
 	}
 	if !plan.RehomeRequest.Equal(state.RehomeRequest) {
-		sp.RehomeRequest = plan.RehomeRequest.ValueBool()
+		if !plan.RehomeRequest.IsUnknown() {
+			sp.RehomeRequest = plan.RehomeRequest.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoteHostName.Equal(state.RemoteHostName) {
 		if v := plan.RemoteHostName.ValueString(); v != "" {
@@ -335,7 +353,9 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 		}
 	}
 	if !plan.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
-		sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBool()
+		if !plan.SkipInitialConnectionValidation.IsUnknown() {
+			sp.SkipInitialConnectionValidation = plan.SkipInitialConnectionValidation.ValueBoolPointer()
+		}
 	}
 	if !plan.SkipMerging.Equal(state.SkipMerging) {
 		if !plan.SkipMerging.IsNull() && !plan.SkipMerging.IsUnknown() {
@@ -368,6 +388,24 @@ func (r *mailboxRestoreRequestResource) Update(ctx context.Context, req resource
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"BatchName": cfg.BatchName,
 	}, getString)
+	if !cfg.AcceptLargeDataLoss.IsUnknown() && !cfg.AcceptLargeDataLoss.IsNull() && !cfg.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		prev, want := reflected, cfg.AcceptLargeDataLoss.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AcceptLargeDataLoss"] == nil || getBool(obj, "AcceptLargeDataLoss") == want)
+		}
+	}
+	if !cfg.RehomeRequest.IsUnknown() && !cfg.RehomeRequest.IsNull() && !cfg.RehomeRequest.Equal(state.RehomeRequest) {
+		prev, want := reflected, cfg.RehomeRequest.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RehomeRequest"] == nil || getBool(obj, "RehomeRequest") == want)
+		}
+	}
+	if !cfg.SkipInitialConnectionValidation.IsUnknown() && !cfg.SkipInitialConnectionValidation.IsNull() && !cfg.SkipInitialConnectionValidation.Equal(state.SkipInitialConnectionValidation) {
+		prev, want := reflected, cfg.SkipInitialConnectionValidation.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SkipInitialConnectionValidation"] == nil || getBool(obj, "SkipInitialConnectionValidation") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

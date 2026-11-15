@@ -208,22 +208,30 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 		p.Alias = plan.Alias.ValueString()
 	}
 	if !config.AlwaysSubscribeMembersToCalendarEvents.IsNull() {
-		p.AlwaysSubscribeMembersToCalendarEvents = plan.AlwaysSubscribeMembersToCalendarEvents.ValueBool()
+		if !plan.AlwaysSubscribeMembersToCalendarEvents.IsUnknown() {
+			p.AlwaysSubscribeMembersToCalendarEvents = plan.AlwaysSubscribeMembersToCalendarEvents.ValueBoolPointer()
+		}
 	}
 	if !config.AutoSubscribeNewMembers.IsNull() {
-		p.AutoSubscribeNewMembers = plan.AutoSubscribeNewMembers.ValueBool()
+		if !plan.AutoSubscribeNewMembers.IsUnknown() {
+			p.AutoSubscribeNewMembers = plan.AutoSubscribeNewMembers.ValueBoolPointer()
+		}
 	}
 	if !config.Classification.IsNull() {
 		p.Classification = plan.Classification.ValueString()
 	}
 	if !config.ConvertClosedDlToPrivateGroup.IsNull() {
-		p.ConvertClosedDlToPrivateGroup = plan.ConvertClosedDlToPrivateGroup.ValueBool()
+		if !plan.ConvertClosedDlToPrivateGroup.IsUnknown() {
+			p.ConvertClosedDlToPrivateGroup = plan.ConvertClosedDlToPrivateGroup.ValueBoolPointer()
+		}
 	}
 	if v := config.DataEncryptionPolicy.ValueString(); v != "" {
 		p.DataEncryptionPolicy = objectParam(v)
 	}
 	if !config.DeleteDlAfterMigration.IsNull() {
-		p.DeleteDlAfterMigration = plan.DeleteDlAfterMigration.ValueBool()
+		if !plan.DeleteDlAfterMigration.IsUnknown() {
+			p.DeleteDlAfterMigration = plan.DeleteDlAfterMigration.ValueBoolPointer()
+		}
 	}
 	if !config.DisplayName.IsNull() {
 		p.DisplayName = plan.DisplayName.ValueString()
@@ -240,10 +248,14 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 		p.ExecutingUser = objectParam(v)
 	}
 	if !config.ExoErrorAsWarning.IsNull() {
-		p.ExoErrorAsWarning = plan.ExoErrorAsWarning.ValueBool()
+		if !plan.ExoErrorAsWarning.IsUnknown() {
+			p.ExoErrorAsWarning = plan.ExoErrorAsWarning.ValueBoolPointer()
+		}
 	}
 	if !config.HiddenGroupMembershipEnabled.IsNull() {
-		p.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBool()
+		if !plan.HiddenGroupMembershipEnabled.IsUnknown() {
+			p.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBoolPointer()
+		}
 	}
 	if !config.IsMemberAllowedToEditContent.IsNull() {
 		if !plan.IsMemberAllowedToEditContent.IsUnknown() {
@@ -287,10 +299,14 @@ func (r *unifiedGroupResource) Create(ctx context.Context, req resource.CreateRe
 		p.SensitivityLabelId = objectParam(v)
 	}
 	if !config.SubscriptionEnabled.IsNull() {
-		p.SubscriptionEnabled = plan.SubscriptionEnabled.ValueBool()
+		if !plan.SubscriptionEnabled.IsUnknown() {
+			p.SubscriptionEnabled = plan.SubscriptionEnabled.ValueBoolPointer()
+		}
 	}
 	if !config.SuppressWarmupMessage.IsNull() {
-		p.SuppressWarmupMessage = plan.SuppressWarmupMessage.ValueBool()
+		if !plan.SuppressWarmupMessage.IsUnknown() {
+			p.SuppressWarmupMessage = plan.SuppressWarmupMessage.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -378,7 +394,9 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		sp.Alias = plan.Alias.ValueString()
 	}
 	if !plan.AlwaysSubscribeMembersToCalendarEvents.Equal(state.AlwaysSubscribeMembersToCalendarEvents) {
-		sp.AlwaysSubscribeMembersToCalendarEvents = plan.AlwaysSubscribeMembersToCalendarEvents.ValueBool()
+		if !plan.AlwaysSubscribeMembersToCalendarEvents.IsUnknown() {
+			sp.AlwaysSubscribeMembersToCalendarEvents = plan.AlwaysSubscribeMembersToCalendarEvents.ValueBoolPointer()
+		}
 	}
 	if !plan.AuditLogAgeLimit.Equal(state.AuditLogAgeLimit) {
 		if v := plan.AuditLogAgeLimit.ValueString(); v != "" {
@@ -386,16 +404,22 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if !plan.AutoSubscribeNewMembers.Equal(state.AutoSubscribeNewMembers) {
-		sp.AutoSubscribeNewMembers = plan.AutoSubscribeNewMembers.ValueBool()
+		if !plan.AutoSubscribeNewMembers.IsUnknown() {
+			sp.AutoSubscribeNewMembers = plan.AutoSubscribeNewMembers.ValueBoolPointer()
+		}
 	}
 	if !plan.CalendarMemberReadOnly.Equal(state.CalendarMemberReadOnly) {
-		sp.CalendarMemberReadOnly = plan.CalendarMemberReadOnly.ValueBool()
+		if !plan.CalendarMemberReadOnly.IsUnknown() {
+			sp.CalendarMemberReadOnly = plan.CalendarMemberReadOnly.ValueBoolPointer()
+		}
 	}
 	if !plan.Classification.Equal(state.Classification) {
 		sp.Classification = plan.Classification.ValueString()
 	}
 	if !plan.ConnectorsEnabled.Equal(state.ConnectorsEnabled) {
-		sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBool()
+		if !plan.ConnectorsEnabled.IsUnknown() {
+			sp.ConnectorsEnabled = plan.ConnectorsEnabled.ValueBoolPointer()
+		}
 	}
 	if !plan.CustomAttribute1.Equal(state.CustomAttribute1) {
 		sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
@@ -521,7 +545,9 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
-		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+		if !plan.ForceUpgrade.IsUnknown() {
+			sp.ForceUpgrade = plan.ForceUpgrade.ValueBoolPointer()
+		}
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
@@ -542,7 +568,9 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if !plan.HiddenFromExchangeClientsEnabled.Equal(state.HiddenFromExchangeClientsEnabled) {
-		sp.HiddenFromExchangeClientsEnabled = plan.HiddenFromExchangeClientsEnabled.ValueBool()
+		if !plan.HiddenFromExchangeClientsEnabled.IsUnknown() {
+			sp.HiddenFromExchangeClientsEnabled = plan.HiddenFromExchangeClientsEnabled.ValueBoolPointer()
+		}
 	}
 	if !plan.InformationBarrierMode.Equal(state.InformationBarrierMode) {
 		if v := plan.InformationBarrierMode.ValueString(); v != "" {
@@ -638,10 +666,14 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if !plan.SubscriptionEnabled.Equal(state.SubscriptionEnabled) {
-		sp.SubscriptionEnabled = plan.SubscriptionEnabled.ValueBool()
+		if !plan.SubscriptionEnabled.IsUnknown() {
+			sp.SubscriptionEnabled = plan.SubscriptionEnabled.ValueBoolPointer()
+		}
 	}
 	if !plan.UnifiedGroupWelcomeMessageEnabled.Equal(state.UnifiedGroupWelcomeMessageEnabled) {
-		sp.UnifiedGroupWelcomeMessageEnabled = plan.UnifiedGroupWelcomeMessageEnabled.ValueBool()
+		if !plan.UnifiedGroupWelcomeMessageEnabled.IsUnknown() {
+			sp.UnifiedGroupWelcomeMessageEnabled = plan.UnifiedGroupWelcomeMessageEnabled.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -674,6 +706,78 @@ func (r *unifiedGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		"MailboxRegion":     cfg.MailboxRegion,
 		"Notes":             cfg.Notes,
 	}, getString)
+	if !cfg.AlwaysSubscribeMembersToCalendarEvents.IsUnknown() && !cfg.AlwaysSubscribeMembersToCalendarEvents.IsNull() && !cfg.AlwaysSubscribeMembersToCalendarEvents.Equal(state.AlwaysSubscribeMembersToCalendarEvents) {
+		prev, want := reflected, cfg.AlwaysSubscribeMembersToCalendarEvents.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AlwaysSubscribeMembersToCalendarEvents"] == nil || getBool(obj, "AlwaysSubscribeMembersToCalendarEvents") == want)
+		}
+	}
+	if !cfg.AutoSubscribeNewMembers.IsUnknown() && !cfg.AutoSubscribeNewMembers.IsNull() && !cfg.AutoSubscribeNewMembers.Equal(state.AutoSubscribeNewMembers) {
+		prev, want := reflected, cfg.AutoSubscribeNewMembers.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoSubscribeNewMembers"] == nil || getBool(obj, "AutoSubscribeNewMembers") == want)
+		}
+	}
+	if !cfg.CalendarMemberReadOnly.IsUnknown() && !cfg.CalendarMemberReadOnly.IsNull() && !cfg.CalendarMemberReadOnly.Equal(state.CalendarMemberReadOnly) {
+		prev, want := reflected, cfg.CalendarMemberReadOnly.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CalendarMemberReadOnly"] == nil || getBool(obj, "CalendarMemberReadOnly") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabled.IsUnknown() && !cfg.ConnectorsEnabled.IsNull() && !cfg.ConnectorsEnabled.Equal(state.ConnectorsEnabled) {
+		prev, want := reflected, cfg.ConnectorsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabled"] == nil || getBool(obj, "ConnectorsEnabled") == want)
+		}
+	}
+	if !cfg.ForceUpgrade.IsUnknown() && !cfg.ForceUpgrade.IsNull() && !cfg.ForceUpgrade.Equal(state.ForceUpgrade) {
+		prev, want := reflected, cfg.ForceUpgrade.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ForceUpgrade"] == nil || getBool(obj, "ForceUpgrade") == want)
+		}
+	}
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
+	if !cfg.HiddenFromExchangeClientsEnabled.IsUnknown() && !cfg.HiddenFromExchangeClientsEnabled.IsNull() && !cfg.HiddenFromExchangeClientsEnabled.Equal(state.HiddenFromExchangeClientsEnabled) {
+		prev, want := reflected, cfg.HiddenFromExchangeClientsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromExchangeClientsEnabled"] == nil || getBool(obj, "HiddenFromExchangeClientsEnabled") == want)
+		}
+	}
+	if !cfg.IsMemberAllowedToEditContent.IsUnknown() && !cfg.IsMemberAllowedToEditContent.IsNull() && !cfg.IsMemberAllowedToEditContent.Equal(state.IsMemberAllowedToEditContent) {
+		prev, want := reflected, cfg.IsMemberAllowedToEditContent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsMemberAllowedToEditContent"] == nil || getBool(obj, "IsMemberAllowedToEditContent") == want)
+		}
+	}
+	if !cfg.ModerationEnabled.IsUnknown() && !cfg.ModerationEnabled.IsNull() && !cfg.ModerationEnabled.Equal(state.ModerationEnabled) {
+		prev, want := reflected, cfg.ModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerationEnabled"] == nil || getBool(obj, "ModerationEnabled") == want)
+		}
+	}
+	if !cfg.RequireSenderAuthenticationEnabled.IsUnknown() && !cfg.RequireSenderAuthenticationEnabled.IsNull() && !cfg.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		prev, want := reflected, cfg.RequireSenderAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSenderAuthenticationEnabled"] == nil || getBool(obj, "RequireSenderAuthenticationEnabled") == want)
+		}
+	}
+	if !cfg.SubscriptionEnabled.IsUnknown() && !cfg.SubscriptionEnabled.IsNull() && !cfg.SubscriptionEnabled.Equal(state.SubscriptionEnabled) {
+		prev, want := reflected, cfg.SubscriptionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SubscriptionEnabled"] == nil || getBool(obj, "SubscriptionEnabled") == want)
+		}
+	}
+	if !cfg.UnifiedGroupWelcomeMessageEnabled.IsUnknown() && !cfg.UnifiedGroupWelcomeMessageEnabled.IsNull() && !cfg.UnifiedGroupWelcomeMessageEnabled.Equal(state.UnifiedGroupWelcomeMessageEnabled) {
+		prev, want := reflected, cfg.UnifiedGroupWelcomeMessageEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UnifiedGroupWelcomeMessageEnabled"] == nil || getBool(obj, "UnifiedGroupWelcomeMessageEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

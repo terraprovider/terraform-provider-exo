@@ -82,7 +82,9 @@ func (r *focusedInboxResource) Create(ctx context.Context, req resource.CreateRe
 		}
 	}
 	if !config.UseCustomRouting.IsNull() {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -129,7 +131,9 @@ func (r *focusedInboxResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,6 +144,18 @@ func (r *focusedInboxResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.FocusedInboxOn.IsUnknown() && !cfg.FocusedInboxOn.IsNull() && !cfg.FocusedInboxOn.Equal(state.FocusedInboxOn) {
+		prev, want := reflected, cfg.FocusedInboxOn.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FocusedInboxOn"] == nil || getBool(obj, "FocusedInboxOn") == want)
+		}
+	}
+	if !cfg.UseCustomRouting.IsUnknown() && !cfg.UseCustomRouting.IsNull() && !cfg.UseCustomRouting.Equal(state.UseCustomRouting) {
+		prev, want := reflected, cfg.UseCustomRouting.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseCustomRouting"] == nil || getBool(obj, "UseCustomRouting") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

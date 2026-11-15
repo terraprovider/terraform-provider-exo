@@ -447,6 +447,120 @@ func (r *transportConfigResource) Update(ctx context.Context, req resource.Updat
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AddressBookPolicyRoutingEnabled.IsUnknown() && !cfg.AddressBookPolicyRoutingEnabled.IsNull() && !cfg.AddressBookPolicyRoutingEnabled.Equal(state.AddressBookPolicyRoutingEnabled) {
+		prev, want := reflected, cfg.AddressBookPolicyRoutingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddressBookPolicyRoutingEnabled"] == nil || getBool(obj, "AddressBookPolicyRoutingEnabled") == want)
+		}
+	}
+	if !cfg.AllowLegacyTLSClients.IsUnknown() && !cfg.AllowLegacyTLSClients.IsNull() && !cfg.AllowLegacyTLSClients.Equal(state.AllowLegacyTLSClients) {
+		prev, want := reflected, cfg.AllowLegacyTLSClients.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowLegacyTLSClients"] == nil || getBool(obj, "AllowLegacyTLSClients") == want)
+		}
+	}
+	if !cfg.ClearCategories.IsUnknown() && !cfg.ClearCategories.IsNull() && !cfg.ClearCategories.Equal(state.ClearCategories) {
+		prev, want := reflected, cfg.ClearCategories.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ClearCategories"] == nil || getBool(obj, "ClearCategories") == want)
+		}
+	}
+	if !cfg.ConvertDisclaimerWrapperToEml.IsUnknown() && !cfg.ConvertDisclaimerWrapperToEml.IsNull() && !cfg.ConvertDisclaimerWrapperToEml.Equal(state.ConvertDisclaimerWrapperToEml) {
+		prev, want := reflected, cfg.ConvertDisclaimerWrapperToEml.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConvertDisclaimerWrapperToEml"] == nil || getBool(obj, "ConvertDisclaimerWrapperToEml") == want)
+		}
+	}
+	if !cfg.ExternalDelayDsnEnabled.IsUnknown() && !cfg.ExternalDelayDsnEnabled.IsNull() && !cfg.ExternalDelayDsnEnabled.Equal(state.ExternalDelayDsnEnabled) {
+		prev, want := reflected, cfg.ExternalDelayDsnEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExternalDelayDsnEnabled"] == nil || getBool(obj, "ExternalDelayDsnEnabled") == want)
+		}
+	}
+	if !cfg.ExternalDsnLanguageDetectionEnabled.IsUnknown() && !cfg.ExternalDsnLanguageDetectionEnabled.IsNull() && !cfg.ExternalDsnLanguageDetectionEnabled.Equal(state.ExternalDsnLanguageDetectionEnabled) {
+		prev, want := reflected, cfg.ExternalDsnLanguageDetectionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExternalDsnLanguageDetectionEnabled"] == nil || getBool(obj, "ExternalDsnLanguageDetectionEnabled") == want)
+		}
+	}
+	if !cfg.ExternalDsnSendHtml.IsUnknown() && !cfg.ExternalDsnSendHtml.IsNull() && !cfg.ExternalDsnSendHtml.Equal(state.ExternalDsnSendHtml) {
+		prev, want := reflected, cfg.ExternalDsnSendHtml.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExternalDsnSendHtml"] == nil || getBool(obj, "ExternalDsnSendHtml") == want)
+		}
+	}
+	if !cfg.InternalDelayDsnEnabled.IsUnknown() && !cfg.InternalDelayDsnEnabled.IsNull() && !cfg.InternalDelayDsnEnabled.Equal(state.InternalDelayDsnEnabled) {
+		prev, want := reflected, cfg.InternalDelayDsnEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InternalDelayDsnEnabled"] == nil || getBool(obj, "InternalDelayDsnEnabled") == want)
+		}
+	}
+	if !cfg.InternalDsnLanguageDetectionEnabled.IsUnknown() && !cfg.InternalDsnLanguageDetectionEnabled.IsNull() && !cfg.InternalDsnLanguageDetectionEnabled.Equal(state.InternalDsnLanguageDetectionEnabled) {
+		prev, want := reflected, cfg.InternalDsnLanguageDetectionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InternalDsnLanguageDetectionEnabled"] == nil || getBool(obj, "InternalDsnLanguageDetectionEnabled") == want)
+		}
+	}
+	if !cfg.InternalDsnSendHtml.IsUnknown() && !cfg.InternalDsnSendHtml.IsNull() && !cfg.InternalDsnSendHtml.Equal(state.InternalDsnSendHtml) {
+		prev, want := reflected, cfg.InternalDsnSendHtml.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InternalDsnSendHtml"] == nil || getBool(obj, "InternalDsnSendHtml") == want)
+		}
+	}
+	if !cfg.JournalMessageExpirationDays.IsUnknown() && !cfg.JournalMessageExpirationDays.IsNull() && !cfg.JournalMessageExpirationDays.Equal(state.JournalMessageExpirationDays) {
+		prev, want := reflected, cfg.JournalMessageExpirationDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["JournalMessageExpirationDays"] == nil || getInt(obj, "JournalMessageExpirationDays") == want)
+		}
+	}
+	if !cfg.PreventDuplicateJournalingEnabled.IsUnknown() && !cfg.PreventDuplicateJournalingEnabled.IsNull() && !cfg.PreventDuplicateJournalingEnabled.Equal(state.PreventDuplicateJournalingEnabled) {
+		prev, want := reflected, cfg.PreventDuplicateJournalingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreventDuplicateJournalingEnabled"] == nil || getBool(obj, "PreventDuplicateJournalingEnabled") == want)
+		}
+	}
+	if !cfg.ReplyAllStormBlockDurationHours.IsUnknown() && !cfg.ReplyAllStormBlockDurationHours.IsNull() && !cfg.ReplyAllStormBlockDurationHours.Equal(state.ReplyAllStormBlockDurationHours) {
+		prev, want := reflected, cfg.ReplyAllStormBlockDurationHours.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReplyAllStormBlockDurationHours"] == nil || getInt(obj, "ReplyAllStormBlockDurationHours") == want)
+		}
+	}
+	if !cfg.ReplyAllStormDetectionMinimumRecipients.IsUnknown() && !cfg.ReplyAllStormDetectionMinimumRecipients.IsNull() && !cfg.ReplyAllStormDetectionMinimumRecipients.Equal(state.ReplyAllStormDetectionMinimumRecipients) {
+		prev, want := reflected, cfg.ReplyAllStormDetectionMinimumRecipients.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReplyAllStormDetectionMinimumRecipients"] == nil || getInt(obj, "ReplyAllStormDetectionMinimumRecipients") == want)
+		}
+	}
+	if !cfg.ReplyAllStormDetectionMinimumReplies.IsUnknown() && !cfg.ReplyAllStormDetectionMinimumReplies.IsNull() && !cfg.ReplyAllStormDetectionMinimumReplies.Equal(state.ReplyAllStormDetectionMinimumReplies) {
+		prev, want := reflected, cfg.ReplyAllStormDetectionMinimumReplies.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReplyAllStormDetectionMinimumReplies"] == nil || getInt(obj, "ReplyAllStormDetectionMinimumReplies") == want)
+		}
+	}
+	if !cfg.ReplyAllStormProtectionEnabled.IsUnknown() && !cfg.ReplyAllStormProtectionEnabled.IsNull() && !cfg.ReplyAllStormProtectionEnabled.Equal(state.ReplyAllStormProtectionEnabled) {
+		prev, want := reflected, cfg.ReplyAllStormProtectionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReplyAllStormProtectionEnabled"] == nil || getBool(obj, "ReplyAllStormProtectionEnabled") == want)
+		}
+	}
+	if !cfg.Rfc2231EncodingEnabled.IsUnknown() && !cfg.Rfc2231EncodingEnabled.IsNull() && !cfg.Rfc2231EncodingEnabled.Equal(state.Rfc2231EncodingEnabled) {
+		prev, want := reflected, cfg.Rfc2231EncodingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Rfc2231EncodingEnabled"] == nil || getBool(obj, "Rfc2231EncodingEnabled") == want)
+		}
+	}
+	if !cfg.SmtpClientAuthenticationDisabled.IsUnknown() && !cfg.SmtpClientAuthenticationDisabled.IsNull() && !cfg.SmtpClientAuthenticationDisabled.Equal(state.SmtpClientAuthenticationDisabled) {
+		prev, want := reflected, cfg.SmtpClientAuthenticationDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SmtpClientAuthenticationDisabled"] == nil || getBool(obj, "SmtpClientAuthenticationDisabled") == want)
+		}
+	}
+	if !cfg.VoicemailJournalingEnabled.IsUnknown() && !cfg.VoicemailJournalingEnabled.IsNull() && !cfg.VoicemailJournalingEnabled.Equal(state.VoicemailJournalingEnabled) {
+		prev, want := reflected, cfg.VoicemailJournalingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["VoicemailJournalingEnabled"] == nil || getBool(obj, "VoicemailJournalingEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

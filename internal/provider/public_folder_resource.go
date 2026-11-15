@@ -217,6 +217,18 @@ func (r *publicFolderResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.MailEnabled.IsUnknown() && !cfg.MailEnabled.IsNull() && !cfg.MailEnabled.Equal(state.MailEnabled) {
+		prev, want := reflected, cfg.MailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailEnabled"] == nil || getBool(obj, "MailEnabled") == want)
+		}
+	}
+	if !cfg.PerUserReadStateEnabled.IsUnknown() && !cfg.PerUserReadStateEnabled.IsNull() && !cfg.PerUserReadStateEnabled.Equal(state.PerUserReadStateEnabled) {
+		prev, want := reflected, cfg.PerUserReadStateEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PerUserReadStateEnabled"] == nil || getBool(obj, "PerUserReadStateEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

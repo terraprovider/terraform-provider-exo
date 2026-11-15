@@ -121,7 +121,9 @@ func (r *eventsFromEmailConfigurationResource) Create(ctx context.Context, req r
 		sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
 	}
 	if !config.ResetSettings.IsNull() {
-		sp.ResetSettings = plan.ResetSettings.ValueBool()
+		if !plan.ResetSettings.IsUnknown() {
+			sp.ResetSettings = plan.ResetSettings.ValueBoolPointer()
+		}
 	}
 	if !config.ServiceReservationProcessingLevel.IsNull() {
 		sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
@@ -192,7 +194,9 @@ func (r *eventsFromEmailConfigurationResource) Update(ctx context.Context, req r
 		sp.RentalCarReservationProcessingLevel = plan.RentalCarReservationProcessingLevel.ValueString()
 	}
 	if !plan.ResetSettings.Equal(state.ResetSettings) {
-		sp.ResetSettings = plan.ResetSettings.ValueBool()
+		if !plan.ResetSettings.IsUnknown() {
+			sp.ResetSettings = plan.ResetSettings.ValueBoolPointer()
+		}
 	}
 	if !plan.ServiceReservationProcessingLevel.Equal(state.ServiceReservationProcessingLevel) {
 		sp.ServiceReservationProcessingLevel = plan.ServiceReservationProcessingLevel.ValueString()
@@ -215,6 +219,18 @@ func (r *eventsFromEmailConfigurationResource) Update(ctx context.Context, req r
 		"RentalCarReservationProcessingLevel":         cfg.RentalCarReservationProcessingLevel,
 		"ServiceReservationProcessingLevel":           cfg.ServiceReservationProcessingLevel,
 	}, getString)
+	if !cfg.CreateEventsFromEmailAsPrivate.IsUnknown() && !cfg.CreateEventsFromEmailAsPrivate.IsNull() && !cfg.CreateEventsFromEmailAsPrivate.Equal(state.CreateEventsFromEmailAsPrivate) {
+		prev, want := reflected, cfg.CreateEventsFromEmailAsPrivate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CreateEventsFromEmailAsPrivate"] == nil || getBool(obj, "CreateEventsFromEmailAsPrivate") == want)
+		}
+	}
+	if !cfg.ResetSettings.IsUnknown() && !cfg.ResetSettings.IsNull() && !cfg.ResetSettings.Equal(state.ResetSettings) {
+		prev, want := reflected, cfg.ResetSettings.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ResetSettings"] == nil || getBool(obj, "ResetSettings") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

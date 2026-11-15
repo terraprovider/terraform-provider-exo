@@ -186,6 +186,12 @@ func (r *mailboxSearchResource) Update(ctx context.Context, req resource.UpdateR
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Description": cfg.Description,
 	}, getString)
+	if !cfg.InPlaceHoldEnabled.IsUnknown() && !cfg.InPlaceHoldEnabled.IsNull() && !cfg.InPlaceHoldEnabled.Equal(state.InPlaceHoldEnabled) {
+		prev, want := reflected, cfg.InPlaceHoldEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InPlaceHoldEnabled"] == nil || getBool(obj, "InPlaceHoldEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

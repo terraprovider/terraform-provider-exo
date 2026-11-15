@@ -696,6 +696,180 @@ func (r *mailboxCalendarConfigurationResource) Update(ctx context.Context, req r
 		"CalendarFeedsPreferredRegion":   cfg.CalendarFeedsPreferredRegion,
 		"CalendarFeedsRootPageId":        cfg.CalendarFeedsRootPageId,
 	}, getString)
+	if !cfg.AgendaMailEnabled.IsUnknown() && !cfg.AgendaMailEnabled.IsNull() && !cfg.AgendaMailEnabled.Equal(state.AgendaMailEnabled) {
+		prev, want := reflected, cfg.AgendaMailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AgendaMailEnabled"] == nil || getBool(obj, "AgendaMailEnabled") == want)
+		}
+	}
+	if !cfg.AgendaMailIntroductionEnabled.IsUnknown() && !cfg.AgendaMailIntroductionEnabled.IsNull() && !cfg.AgendaMailIntroductionEnabled.Equal(state.AgendaMailIntroductionEnabled) {
+		prev, want := reflected, cfg.AgendaMailIntroductionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AgendaMailIntroductionEnabled"] == nil || getBool(obj, "AgendaMailIntroductionEnabled") == want)
+		}
+	}
+	if !cfg.AgendaPaneEnabled.IsUnknown() && !cfg.AgendaPaneEnabled.IsNull() && !cfg.AgendaPaneEnabled.Equal(state.AgendaPaneEnabled) {
+		prev, want := reflected, cfg.AgendaPaneEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AgendaPaneEnabled"] == nil || getBool(obj, "AgendaPaneEnabled") == want)
+		}
+	}
+	if !cfg.AutoDeclineWhenBusy.IsUnknown() && !cfg.AutoDeclineWhenBusy.IsNull() && !cfg.AutoDeclineWhenBusy.Equal(state.AutoDeclineWhenBusy) {
+		prev, want := reflected, cfg.AutoDeclineWhenBusy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoDeclineWhenBusy"] == nil || getBool(obj, "AutoDeclineWhenBusy") == want)
+		}
+	}
+	if !cfg.ConversationalSchedulingEnabled.IsUnknown() && !cfg.ConversationalSchedulingEnabled.IsNull() && !cfg.ConversationalSchedulingEnabled.Equal(state.ConversationalSchedulingEnabled) {
+		prev, want := reflected, cfg.ConversationalSchedulingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConversationalSchedulingEnabled"] == nil || getBool(obj, "ConversationalSchedulingEnabled") == want)
+		}
+	}
+	if !cfg.CreateEventsFromEmailAsPrivate.IsUnknown() && !cfg.CreateEventsFromEmailAsPrivate.IsNull() && !cfg.CreateEventsFromEmailAsPrivate.Equal(state.CreateEventsFromEmailAsPrivate) {
+		prev, want := reflected, cfg.CreateEventsFromEmailAsPrivate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CreateEventsFromEmailAsPrivate"] == nil || getBool(obj, "CreateEventsFromEmailAsPrivate") == want)
+		}
+	}
+	if !cfg.DefaultMeetingDuration.IsUnknown() && !cfg.DefaultMeetingDuration.IsNull() && !cfg.DefaultMeetingDuration.Equal(state.DefaultMeetingDuration) {
+		prev, want := reflected, cfg.DefaultMeetingDuration.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultMeetingDuration"] == nil || getInt(obj, "DefaultMeetingDuration") == want)
+		}
+	}
+	if !cfg.DefaultMinutesToReduceLongEventsBy.IsUnknown() && !cfg.DefaultMinutesToReduceLongEventsBy.IsNull() && !cfg.DefaultMinutesToReduceLongEventsBy.Equal(state.DefaultMinutesToReduceLongEventsBy) {
+		prev, want := reflected, cfg.DefaultMinutesToReduceLongEventsBy.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultMinutesToReduceLongEventsBy"] == nil || getInt(obj, "DefaultMinutesToReduceLongEventsBy") == want)
+		}
+	}
+	if !cfg.DefaultMinutesToReduceShortEventsBy.IsUnknown() && !cfg.DefaultMinutesToReduceShortEventsBy.IsNull() && !cfg.DefaultMinutesToReduceShortEventsBy.Equal(state.DefaultMinutesToReduceShortEventsBy) {
+		prev, want := reflected, cfg.DefaultMinutesToReduceShortEventsBy.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultMinutesToReduceShortEventsBy"] == nil || getInt(obj, "DefaultMinutesToReduceShortEventsBy") == want)
+		}
+	}
+	if !cfg.DeleteMeetingRequestOnRespond.IsUnknown() && !cfg.DeleteMeetingRequestOnRespond.IsNull() && !cfg.DeleteMeetingRequestOnRespond.Equal(state.DeleteMeetingRequestOnRespond) {
+		prev, want := reflected, cfg.DeleteMeetingRequestOnRespond.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteMeetingRequestOnRespond"] == nil || getBool(obj, "DeleteMeetingRequestOnRespond") == want)
+		}
+	}
+	if !cfg.DiningEventsFromEmailEnabled.IsUnknown() && !cfg.DiningEventsFromEmailEnabled.IsNull() && !cfg.DiningEventsFromEmailEnabled.Equal(state.DiningEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.DiningEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DiningEventsFromEmailEnabled"] == nil || getBool(obj, "DiningEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.EntertainmentEventsFromEmailEnabled.IsUnknown() && !cfg.EntertainmentEventsFromEmailEnabled.IsNull() && !cfg.EntertainmentEventsFromEmailEnabled.Equal(state.EntertainmentEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.EntertainmentEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EntertainmentEventsFromEmailEnabled"] == nil || getBool(obj, "EntertainmentEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.EventsFromEmailEnabled.IsUnknown() && !cfg.EventsFromEmailEnabled.IsNull() && !cfg.EventsFromEmailEnabled.Equal(state.EventsFromEmailEnabled) {
+		prev, want := reflected, cfg.EventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EventsFromEmailEnabled"] == nil || getBool(obj, "EventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.FlightEventsFromEmailEnabled.IsUnknown() && !cfg.FlightEventsFromEmailEnabled.IsNull() && !cfg.FlightEventsFromEmailEnabled.Equal(state.FlightEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.FlightEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FlightEventsFromEmailEnabled"] == nil || getBool(obj, "FlightEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.HotelEventsFromEmailEnabled.IsUnknown() && !cfg.HotelEventsFromEmailEnabled.IsNull() && !cfg.HotelEventsFromEmailEnabled.Equal(state.HotelEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.HotelEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HotelEventsFromEmailEnabled"] == nil || getBool(obj, "HotelEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.InvoiceEventsFromEmailEnabled.IsUnknown() && !cfg.InvoiceEventsFromEmailEnabled.IsNull() && !cfg.InvoiceEventsFromEmailEnabled.Equal(state.InvoiceEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.InvoiceEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InvoiceEventsFromEmailEnabled"] == nil || getBool(obj, "InvoiceEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.OnlineMeetingsByDefaultEnabled.IsUnknown() && !cfg.OnlineMeetingsByDefaultEnabled.IsNull() && !cfg.OnlineMeetingsByDefaultEnabled.Equal(state.OnlineMeetingsByDefaultEnabled) {
+		prev, want := reflected, cfg.OnlineMeetingsByDefaultEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OnlineMeetingsByDefaultEnabled"] == nil || getBool(obj, "OnlineMeetingsByDefaultEnabled") == want)
+		}
+	}
+	if !cfg.PackageDeliveryEventsFromEmailEnabled.IsUnknown() && !cfg.PackageDeliveryEventsFromEmailEnabled.IsNull() && !cfg.PackageDeliveryEventsFromEmailEnabled.Equal(state.PackageDeliveryEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.PackageDeliveryEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PackageDeliveryEventsFromEmailEnabled"] == nil || getBool(obj, "PackageDeliveryEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.PreserveDeclinedMeetings.IsUnknown() && !cfg.PreserveDeclinedMeetings.IsNull() && !cfg.PreserveDeclinedMeetings.Equal(state.PreserveDeclinedMeetings) {
+		prev, want := reflected, cfg.PreserveDeclinedMeetings.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreserveDeclinedMeetings"] == nil || getBool(obj, "PreserveDeclinedMeetings") == want)
+		}
+	}
+	if !cfg.ReminderSoundEnabled.IsUnknown() && !cfg.ReminderSoundEnabled.IsNull() && !cfg.ReminderSoundEnabled.Equal(state.ReminderSoundEnabled) {
+		prev, want := reflected, cfg.ReminderSoundEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReminderSoundEnabled"] == nil || getBool(obj, "ReminderSoundEnabled") == want)
+		}
+	}
+	if !cfg.RemindersEnabled.IsUnknown() && !cfg.RemindersEnabled.IsNull() && !cfg.RemindersEnabled.Equal(state.RemindersEnabled) {
+		prev, want := reflected, cfg.RemindersEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemindersEnabled"] == nil || getBool(obj, "RemindersEnabled") == want)
+		}
+	}
+	if !cfg.RentalCarEventsFromEmailEnabled.IsUnknown() && !cfg.RentalCarEventsFromEmailEnabled.IsNull() && !cfg.RentalCarEventsFromEmailEnabled.Equal(state.RentalCarEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.RentalCarEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RentalCarEventsFromEmailEnabled"] == nil || getBool(obj, "RentalCarEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.ServiceAppointmentEventsFromEmailEnabled.IsUnknown() && !cfg.ServiceAppointmentEventsFromEmailEnabled.IsNull() && !cfg.ServiceAppointmentEventsFromEmailEnabled.Equal(state.ServiceAppointmentEventsFromEmailEnabled) {
+		prev, want := reflected, cfg.ServiceAppointmentEventsFromEmailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ServiceAppointmentEventsFromEmailEnabled"] == nil || getBool(obj, "ServiceAppointmentEventsFromEmailEnabled") == want)
+		}
+	}
+	if !cfg.ShowWeekNumbers.IsUnknown() && !cfg.ShowWeekNumbers.IsNull() && !cfg.ShowWeekNumbers.Equal(state.ShowWeekNumbers) {
+		prev, want := reflected, cfg.ShowWeekNumbers.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowWeekNumbers"] == nil || getBool(obj, "ShowWeekNumbers") == want)
+		}
+	}
+	if !cfg.SkipAgendaMailOnFreeDays.IsUnknown() && !cfg.SkipAgendaMailOnFreeDays.IsNull() && !cfg.SkipAgendaMailOnFreeDays.Equal(state.SkipAgendaMailOnFreeDays) {
+		prev, want := reflected, cfg.SkipAgendaMailOnFreeDays.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SkipAgendaMailOnFreeDays"] == nil || getBool(obj, "SkipAgendaMailOnFreeDays") == want)
+		}
+	}
+	if !cfg.UseBrightCalendarColorThemeInOwa.IsUnknown() && !cfg.UseBrightCalendarColorThemeInOwa.IsNull() && !cfg.UseBrightCalendarColorThemeInOwa.Equal(state.UseBrightCalendarColorThemeInOwa) {
+		prev, want := reflected, cfg.UseBrightCalendarColorThemeInOwa.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseBrightCalendarColorThemeInOwa"] == nil || getBool(obj, "UseBrightCalendarColorThemeInOwa") == want)
+		}
+	}
+	if !cfg.WeatherEnabled.IsUnknown() && !cfg.WeatherEnabled.IsNull() && !cfg.WeatherEnabled.Equal(state.WeatherEnabled) {
+		prev, want := reflected, cfg.WeatherEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WeatherEnabled"] == nil || getBool(obj, "WeatherEnabled") == want)
+		}
+	}
+	if !cfg.WeatherLocationBookmark.IsUnknown() && !cfg.WeatherLocationBookmark.IsNull() && !cfg.WeatherLocationBookmark.Equal(state.WeatherLocationBookmark) {
+		prev, want := reflected, cfg.WeatherLocationBookmark.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WeatherLocationBookmark"] == nil || getInt(obj, "WeatherLocationBookmark") == want)
+		}
+	}
+	if !cfg.WorkspaceUserEnabled.IsUnknown() && !cfg.WorkspaceUserEnabled.IsNull() && !cfg.WorkspaceUserEnabled.Equal(state.WorkspaceUserEnabled) {
+		prev, want := reflected, cfg.WorkspaceUserEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WorkspaceUserEnabled"] == nil || getBool(obj, "WorkspaceUserEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

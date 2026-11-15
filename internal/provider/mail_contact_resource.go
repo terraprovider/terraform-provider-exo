@@ -475,7 +475,9 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 		}
 	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
-		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+		if !plan.ForceUpgrade.IsUnknown() {
+			sp.ForceUpgrade = plan.ForceUpgrade.ValueBoolPointer()
+		}
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
@@ -666,6 +668,36 @@ func (r *mailContactResource) Update(ctx context.Context, req resource.UpdateReq
 		"MailTip":           cfg.MailTip,
 		"SimpleDisplayName": cfg.SimpleDisplayName,
 	}, getString)
+	if !cfg.ForceUpgrade.IsUnknown() && !cfg.ForceUpgrade.IsNull() && !cfg.ForceUpgrade.Equal(state.ForceUpgrade) {
+		prev, want := reflected, cfg.ForceUpgrade.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ForceUpgrade"] == nil || getBool(obj, "ForceUpgrade") == want)
+		}
+	}
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
+	if !cfg.ModerationEnabled.IsUnknown() && !cfg.ModerationEnabled.IsNull() && !cfg.ModerationEnabled.Equal(state.ModerationEnabled) {
+		prev, want := reflected, cfg.ModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerationEnabled"] == nil || getBool(obj, "ModerationEnabled") == want)
+		}
+	}
+	if !cfg.RequireSenderAuthenticationEnabled.IsUnknown() && !cfg.RequireSenderAuthenticationEnabled.IsNull() && !cfg.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		prev, want := reflected, cfg.RequireSenderAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSenderAuthenticationEnabled"] == nil || getBool(obj, "RequireSenderAuthenticationEnabled") == want)
+		}
+	}
+	if !cfg.UsePreferMessageFormat.IsUnknown() && !cfg.UsePreferMessageFormat.IsNull() && !cfg.UsePreferMessageFormat.Equal(state.UsePreferMessageFormat) {
+		prev, want := reflected, cfg.UsePreferMessageFormat.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UsePreferMessageFormat"] == nil || getBool(obj, "UsePreferMessageFormat") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

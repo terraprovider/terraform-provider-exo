@@ -206,7 +206,9 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		sp.City = plan.City.ValueString()
 	}
 	if !config.ClearDataEncryptionPolicy.IsNull() {
-		sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
+		if !plan.ClearDataEncryptionPolicy.IsUnknown() {
+			sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBoolPointer()
+		}
 	}
 	if !config.Company.IsNull() {
 		sp.Company = plan.Company.ValueString()
@@ -318,7 +320,9 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		sp.Pager = plan.Pager.ValueString()
 	}
 	if !config.PermanentlyClearPreviousMailboxInfo.IsNull() {
-		sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
+		if !plan.PermanentlyClearPreviousMailboxInfo.IsUnknown() {
+			sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBoolPointer()
+		}
 	}
 	if !config.Phone.IsNull() {
 		sp.Phone = plan.Phone.ValueString()
@@ -343,7 +347,9 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		sp.PostalCode = plan.PostalCode.ValueString()
 	}
 	if !config.PublicFolder.IsNull() {
-		sp.PublicFolder = plan.PublicFolder.ValueBool()
+		if !plan.PublicFolder.IsUnknown() {
+			sp.PublicFolder = plan.PublicFolder.ValueBoolPointer()
+		}
 	}
 	if !config.RemotePowerShellEnabled.IsNull() {
 		if !plan.RemotePowerShellEnabled.IsUnknown() {
@@ -351,7 +357,9 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		}
 	}
 	if !config.RemoveMailboxProvisioningConstraint.IsNull() {
-		sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
+		if !plan.RemoveMailboxProvisioningConstraint.IsUnknown() {
+			sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBoolPointer()
+		}
 	}
 	if !config.ResetPasswordOnNextLogon.IsNull() {
 		if !plan.ResetPasswordOnNextLogon.IsUnknown() {
@@ -464,7 +472,9 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		sp.City = plan.City.ValueString()
 	}
 	if !plan.ClearDataEncryptionPolicy.Equal(state.ClearDataEncryptionPolicy) {
-		sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBool()
+		if !plan.ClearDataEncryptionPolicy.IsUnknown() {
+			sp.ClearDataEncryptionPolicy = plan.ClearDataEncryptionPolicy.ValueBoolPointer()
+		}
 	}
 	if !plan.Company.Equal(state.Company) {
 		sp.Company = plan.Company.ValueString()
@@ -588,7 +598,9 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		sp.Pager = plan.Pager.ValueString()
 	}
 	if !plan.PermanentlyClearPreviousMailboxInfo.Equal(state.PermanentlyClearPreviousMailboxInfo) {
-		sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBool()
+		if !plan.PermanentlyClearPreviousMailboxInfo.IsUnknown() {
+			sp.PermanentlyClearPreviousMailboxInfo = plan.PermanentlyClearPreviousMailboxInfo.ValueBoolPointer()
+		}
 	}
 	if !plan.Phone.Equal(state.Phone) {
 		sp.Phone = plan.Phone.ValueString()
@@ -613,7 +625,9 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		sp.PostalCode = plan.PostalCode.ValueString()
 	}
 	if !plan.PublicFolder.Equal(state.PublicFolder) {
-		sp.PublicFolder = plan.PublicFolder.ValueBool()
+		if !plan.PublicFolder.IsUnknown() {
+			sp.PublicFolder = plan.PublicFolder.ValueBoolPointer()
+		}
 	}
 	if !plan.RemotePowerShellEnabled.Equal(state.RemotePowerShellEnabled) {
 		if !plan.RemotePowerShellEnabled.IsUnknown() {
@@ -621,7 +635,9 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		}
 	}
 	if !plan.RemoveMailboxProvisioningConstraint.Equal(state.RemoveMailboxProvisioningConstraint) {
-		sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
+		if !plan.RemoveMailboxProvisioningConstraint.IsUnknown() {
+			sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBoolPointer()
+		}
 	}
 	if !plan.ResetPasswordOnNextLogon.Equal(state.ResetPasswordOnNextLogon) {
 		if !plan.ResetPasswordOnNextLogon.IsUnknown() {
@@ -697,6 +713,78 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		"Title":               cfg.Title,
 		"WebPage":             cfg.WebPage,
 	}, getString)
+	if !cfg.BlockCloudCache.IsUnknown() && !cfg.BlockCloudCache.IsNull() && !cfg.BlockCloudCache.Equal(state.BlockCloudCache) {
+		prev, want := reflected, cfg.BlockCloudCache.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BlockCloudCache"] == nil || getBool(obj, "BlockCloudCache") == want)
+		}
+	}
+	if !cfg.CanHaveCloudCache.IsUnknown() && !cfg.CanHaveCloudCache.IsNull() && !cfg.CanHaveCloudCache.Equal(state.CanHaveCloudCache) {
+		prev, want := reflected, cfg.CanHaveCloudCache.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CanHaveCloudCache"] == nil || getBool(obj, "CanHaveCloudCache") == want)
+		}
+	}
+	if !cfg.ClearDataEncryptionPolicy.IsUnknown() && !cfg.ClearDataEncryptionPolicy.IsNull() && !cfg.ClearDataEncryptionPolicy.Equal(state.ClearDataEncryptionPolicy) {
+		prev, want := reflected, cfg.ClearDataEncryptionPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ClearDataEncryptionPolicy"] == nil || getBool(obj, "ClearDataEncryptionPolicy") == want)
+		}
+	}
+	if !cfg.EXOModuleEnabled.IsUnknown() && !cfg.EXOModuleEnabled.IsNull() && !cfg.EXOModuleEnabled.Equal(state.EXOModuleEnabled) {
+		prev, want := reflected, cfg.EXOModuleEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EXOModuleEnabled"] == nil || getBool(obj, "EXOModuleEnabled") == want)
+		}
+	}
+	if !cfg.IsShadowMailbox.IsUnknown() && !cfg.IsShadowMailbox.IsNull() && !cfg.IsShadowMailbox.Equal(state.IsShadowMailbox) {
+		prev, want := reflected, cfg.IsShadowMailbox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsShadowMailbox"] == nil || getBool(obj, "IsShadowMailbox") == want)
+		}
+	}
+	if !cfg.PermanentlyClearPreviousMailboxInfo.IsUnknown() && !cfg.PermanentlyClearPreviousMailboxInfo.IsNull() && !cfg.PermanentlyClearPreviousMailboxInfo.Equal(state.PermanentlyClearPreviousMailboxInfo) {
+		prev, want := reflected, cfg.PermanentlyClearPreviousMailboxInfo.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PermanentlyClearPreviousMailboxInfo"] == nil || getBool(obj, "PermanentlyClearPreviousMailboxInfo") == want)
+		}
+	}
+	if !cfg.PublicFolder.IsUnknown() && !cfg.PublicFolder.IsNull() && !cfg.PublicFolder.Equal(state.PublicFolder) {
+		prev, want := reflected, cfg.PublicFolder.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublicFolder"] == nil || getBool(obj, "PublicFolder") == want)
+		}
+	}
+	if !cfg.RemotePowerShellEnabled.IsUnknown() && !cfg.RemotePowerShellEnabled.IsNull() && !cfg.RemotePowerShellEnabled.Equal(state.RemotePowerShellEnabled) {
+		prev, want := reflected, cfg.RemotePowerShellEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemotePowerShellEnabled"] == nil || getBool(obj, "RemotePowerShellEnabled") == want)
+		}
+	}
+	if !cfg.RemoveMailboxProvisioningConstraint.IsUnknown() && !cfg.RemoveMailboxProvisioningConstraint.IsNull() && !cfg.RemoveMailboxProvisioningConstraint.Equal(state.RemoveMailboxProvisioningConstraint) {
+		prev, want := reflected, cfg.RemoveMailboxProvisioningConstraint.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveMailboxProvisioningConstraint"] == nil || getBool(obj, "RemoveMailboxProvisioningConstraint") == want)
+		}
+	}
+	if !cfg.ResetPasswordOnNextLogon.IsUnknown() && !cfg.ResetPasswordOnNextLogon.IsNull() && !cfg.ResetPasswordOnNextLogon.Equal(state.ResetPasswordOnNextLogon) {
+		prev, want := reflected, cfg.ResetPasswordOnNextLogon.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ResetPasswordOnNextLogon"] == nil || getBool(obj, "ResetPasswordOnNextLogon") == want)
+		}
+	}
+	if !cfg.SeniorityIndex.IsUnknown() && !cfg.SeniorityIndex.IsNull() && !cfg.SeniorityIndex.Equal(state.SeniorityIndex) {
+		prev, want := reflected, cfg.SeniorityIndex.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SeniorityIndex"] == nil || getInt(obj, "SeniorityIndex") == want)
+		}
+	}
+	if !cfg.VIP.IsUnknown() && !cfg.VIP.IsNull() && !cfg.VIP.Equal(state.VIP) {
+		prev, want := reflected, cfg.VIP.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["VIP"] == nil || getBool(obj, "VIP") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

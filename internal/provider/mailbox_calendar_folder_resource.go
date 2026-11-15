@@ -105,7 +105,9 @@ func (r *mailboxCalendarFolderResource) Create(ctx context.Context, req resource
 		}
 	}
 	if !config.ResetUrl.IsNull() {
-		sp.ResetUrl = plan.ResetUrl.ValueBool()
+		if !plan.ResetUrl.IsUnknown() {
+			sp.ResetUrl = plan.ResetUrl.ValueBoolPointer()
+		}
 	}
 	if !config.SearchableUrlEnabled.IsNull() {
 		if !plan.SearchableUrlEnabled.IsUnknown() {
@@ -113,13 +115,17 @@ func (r *mailboxCalendarFolderResource) Create(ctx context.Context, req resource
 		}
 	}
 	if !config.SetAsSharingSource.IsNull() {
-		sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
+		if !plan.SetAsSharingSource.IsUnknown() {
+			sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBoolPointer()
+		}
 	}
 	if v := config.SharedCalendarSyncStartDate.ValueString(); v != "" {
 		sp.SharedCalendarSyncStartDate = objectParam(v)
 	}
 	if !config.UseHttps.IsNull() {
-		sp.UseHttps = plan.UseHttps.ValueBool()
+		if !plan.UseHttps.IsUnknown() {
+			sp.UseHttps = plan.UseHttps.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -181,7 +187,9 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 		}
 	}
 	if !plan.ResetUrl.Equal(state.ResetUrl) {
-		sp.ResetUrl = plan.ResetUrl.ValueBool()
+		if !plan.ResetUrl.IsUnknown() {
+			sp.ResetUrl = plan.ResetUrl.ValueBoolPointer()
+		}
 	}
 	if !plan.SearchableUrlEnabled.Equal(state.SearchableUrlEnabled) {
 		if !plan.SearchableUrlEnabled.IsUnknown() {
@@ -189,7 +197,9 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 		}
 	}
 	if !plan.SetAsSharingSource.Equal(state.SetAsSharingSource) {
-		sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBool()
+		if !plan.SetAsSharingSource.IsUnknown() {
+			sp.SetAsSharingSource = plan.SetAsSharingSource.ValueBoolPointer()
+		}
 	}
 	if !plan.SharedCalendarSyncStartDate.Equal(state.SharedCalendarSyncStartDate) {
 		if v := plan.SharedCalendarSyncStartDate.ValueString(); v != "" {
@@ -197,7 +207,9 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 		}
 	}
 	if !plan.UseHttps.Equal(state.UseHttps) {
-		sp.UseHttps = plan.UseHttps.ValueBool()
+		if !plan.UseHttps.IsUnknown() {
+			sp.UseHttps = plan.UseHttps.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -208,6 +220,36 @@ func (r *mailboxCalendarFolderResource) Update(ctx context.Context, req resource
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.PublishEnabled.IsUnknown() && !cfg.PublishEnabled.IsNull() && !cfg.PublishEnabled.Equal(state.PublishEnabled) {
+		prev, want := reflected, cfg.PublishEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublishEnabled"] == nil || getBool(obj, "PublishEnabled") == want)
+		}
+	}
+	if !cfg.ResetUrl.IsUnknown() && !cfg.ResetUrl.IsNull() && !cfg.ResetUrl.Equal(state.ResetUrl) {
+		prev, want := reflected, cfg.ResetUrl.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ResetUrl"] == nil || getBool(obj, "ResetUrl") == want)
+		}
+	}
+	if !cfg.SearchableUrlEnabled.IsUnknown() && !cfg.SearchableUrlEnabled.IsNull() && !cfg.SearchableUrlEnabled.Equal(state.SearchableUrlEnabled) {
+		prev, want := reflected, cfg.SearchableUrlEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SearchableUrlEnabled"] == nil || getBool(obj, "SearchableUrlEnabled") == want)
+		}
+	}
+	if !cfg.SetAsSharingSource.IsUnknown() && !cfg.SetAsSharingSource.IsNull() && !cfg.SetAsSharingSource.Equal(state.SetAsSharingSource) {
+		prev, want := reflected, cfg.SetAsSharingSource.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SetAsSharingSource"] == nil || getBool(obj, "SetAsSharingSource") == want)
+		}
+	}
+	if !cfg.UseHttps.IsUnknown() && !cfg.UseHttps.IsNull() && !cfg.UseHttps.Equal(state.UseHttps) {
+		prev, want := reflected, cfg.UseHttps.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseHttps"] == nil || getBool(obj, "UseHttps") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

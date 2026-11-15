@@ -154,7 +154,9 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
 	}
 	if !config.Universal.IsNull() {
-		sp.Universal = plan.Universal.ValueBool()
+		if !plan.Universal.IsUnknown() {
+			sp.Universal = plan.Universal.ValueBoolPointer()
+		}
 	}
 	if v := config.WindowsEmailAddress.ValueString(); v != "" {
 		sp.WindowsEmailAddress = objectParam(v)
@@ -256,7 +258,9 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
 	}
 	if !plan.Universal.Equal(state.Universal) {
-		sp.Universal = plan.Universal.ValueBool()
+		if !plan.Universal.IsUnknown() {
+			sp.Universal = plan.Universal.ValueBoolPointer()
+		}
 	}
 	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
 		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
@@ -278,6 +282,24 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		"PhoneticDisplayName": cfg.PhoneticDisplayName,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
 	}, getString)
+	if !cfg.IsHierarchicalGroup.IsUnknown() && !cfg.IsHierarchicalGroup.IsNull() && !cfg.IsHierarchicalGroup.Equal(state.IsHierarchicalGroup) {
+		prev, want := reflected, cfg.IsHierarchicalGroup.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsHierarchicalGroup"] == nil || getBool(obj, "IsHierarchicalGroup") == want)
+		}
+	}
+	if !cfg.SeniorityIndex.IsUnknown() && !cfg.SeniorityIndex.IsNull() && !cfg.SeniorityIndex.Equal(state.SeniorityIndex) {
+		prev, want := reflected, cfg.SeniorityIndex.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SeniorityIndex"] == nil || getInt(obj, "SeniorityIndex") == want)
+		}
+	}
+	if !cfg.Universal.IsUnknown() && !cfg.Universal.IsNull() && !cfg.Universal.Equal(state.Universal) {
+		prev, want := reflected, cfg.Universal.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Universal"] == nil || getBool(obj, "Universal") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

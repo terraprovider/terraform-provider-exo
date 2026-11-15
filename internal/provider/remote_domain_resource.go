@@ -288,6 +288,90 @@ func (r *remoteDomainResource) Update(ctx context.Context, req resource.UpdateRe
 		"CharacterSet":        cfg.CharacterSet,
 		"NonMimeCharacterSet": cfg.NonMimeCharacterSet,
 	}, getString)
+	if !cfg.AutoForwardEnabled.IsUnknown() && !cfg.AutoForwardEnabled.IsNull() && !cfg.AutoForwardEnabled.Equal(state.AutoForwardEnabled) {
+		prev, want := reflected, cfg.AutoForwardEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoForwardEnabled"] == nil || getBool(obj, "AutoForwardEnabled") == want)
+		}
+	}
+	if !cfg.AutoReplyEnabled.IsUnknown() && !cfg.AutoReplyEnabled.IsNull() && !cfg.AutoReplyEnabled.Equal(state.AutoReplyEnabled) {
+		prev, want := reflected, cfg.AutoReplyEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoReplyEnabled"] == nil || getBool(obj, "AutoReplyEnabled") == want)
+		}
+	}
+	if !cfg.DeliveryReportEnabled.IsUnknown() && !cfg.DeliveryReportEnabled.IsNull() && !cfg.DeliveryReportEnabled.Equal(state.DeliveryReportEnabled) {
+		prev, want := reflected, cfg.DeliveryReportEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeliveryReportEnabled"] == nil || getBool(obj, "DeliveryReportEnabled") == want)
+		}
+	}
+	if !cfg.DisplaySenderName.IsUnknown() && !cfg.DisplaySenderName.IsNull() && !cfg.DisplaySenderName.Equal(state.DisplaySenderName) {
+		prev, want := reflected, cfg.DisplaySenderName.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DisplaySenderName"] == nil || getBool(obj, "DisplaySenderName") == want)
+		}
+	}
+	if !cfg.IsInternal.IsUnknown() && !cfg.IsInternal.IsNull() && !cfg.IsInternal.Equal(state.IsInternal) {
+		prev, want := reflected, cfg.IsInternal.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsInternal"] == nil || getBool(obj, "IsInternal") == want)
+		}
+	}
+	if !cfg.MeetingForwardNotificationEnabled.IsUnknown() && !cfg.MeetingForwardNotificationEnabled.IsNull() && !cfg.MeetingForwardNotificationEnabled.Equal(state.MeetingForwardNotificationEnabled) {
+		prev, want := reflected, cfg.MeetingForwardNotificationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MeetingForwardNotificationEnabled"] == nil || getBool(obj, "MeetingForwardNotificationEnabled") == want)
+		}
+	}
+	if !cfg.NDRDiagnosticInfoEnabled.IsUnknown() && !cfg.NDRDiagnosticInfoEnabled.IsNull() && !cfg.NDRDiagnosticInfoEnabled.Equal(state.NDRDiagnosticInfoEnabled) {
+		prev, want := reflected, cfg.NDRDiagnosticInfoEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NDRDiagnosticInfoEnabled"] == nil || getBool(obj, "NDRDiagnosticInfoEnabled") == want)
+		}
+	}
+	if !cfg.NDREnabled.IsUnknown() && !cfg.NDREnabled.IsNull() && !cfg.NDREnabled.Equal(state.NDREnabled) {
+		prev, want := reflected, cfg.NDREnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NDREnabled"] == nil || getBool(obj, "NDREnabled") == want)
+		}
+	}
+	if !cfg.RequiredCharsetCoverage.IsUnknown() && !cfg.RequiredCharsetCoverage.IsNull() && !cfg.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {
+		prev, want := reflected, cfg.RequiredCharsetCoverage.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequiredCharsetCoverage"] == nil || getInt(obj, "RequiredCharsetCoverage") == want)
+		}
+	}
+	if !cfg.TNEFEnabled.IsUnknown() && !cfg.TNEFEnabled.IsNull() && !cfg.TNEFEnabled.Equal(state.TNEFEnabled) {
+		prev, want := reflected, cfg.TNEFEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TNEFEnabled"] == nil || getBool(obj, "TNEFEnabled") == want)
+		}
+	}
+	if !cfg.TargetDeliveryDomain.IsUnknown() && !cfg.TargetDeliveryDomain.IsNull() && !cfg.TargetDeliveryDomain.Equal(state.TargetDeliveryDomain) {
+		prev, want := reflected, cfg.TargetDeliveryDomain.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TargetDeliveryDomain"] == nil || getBool(obj, "TargetDeliveryDomain") == want)
+		}
+	}
+	if !cfg.TrustedMailInboundEnabled.IsUnknown() && !cfg.TrustedMailInboundEnabled.IsNull() && !cfg.TrustedMailInboundEnabled.Equal(state.TrustedMailInboundEnabled) {
+		prev, want := reflected, cfg.TrustedMailInboundEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TrustedMailInboundEnabled"] == nil || getBool(obj, "TrustedMailInboundEnabled") == want)
+		}
+	}
+	if !cfg.TrustedMailOutboundEnabled.IsUnknown() && !cfg.TrustedMailOutboundEnabled.IsNull() && !cfg.TrustedMailOutboundEnabled.Equal(state.TrustedMailOutboundEnabled) {
+		prev, want := reflected, cfg.TrustedMailOutboundEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TrustedMailOutboundEnabled"] == nil || getBool(obj, "TrustedMailOutboundEnabled") == want)
+		}
+	}
+	if !cfg.UseSimpleDisplayName.IsUnknown() && !cfg.UseSimpleDisplayName.IsNull() && !cfg.UseSimpleDisplayName.Equal(state.UseSimpleDisplayName) {
+		prev, want := reflected, cfg.UseSimpleDisplayName.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseSimpleDisplayName"] == nil || getBool(obj, "UseSimpleDisplayName") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

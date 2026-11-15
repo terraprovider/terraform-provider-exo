@@ -413,7 +413,9 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 		}
 	}
 	if !config.AutoExpandingArchive.IsNull() {
-		sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
+		if !plan.AutoExpandingArchive.IsUnknown() {
+			sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBoolPointer()
+		}
 	}
 	if !config.AutodiscoverPartialDirSync.IsNull() {
 		if !plan.AutodiscoverPartialDirSync.IsUnknown() {
@@ -685,7 +687,9 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 		}
 	}
 	if !config.EnforceShortenEventSetting.IsNull() {
-		sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
+		if !plan.EnforceShortenEventSetting.IsUnknown() {
+			sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBoolPointer()
+		}
 	}
 	if !config.EwsAllowEntourage.IsNull() {
 		if !plan.EwsAllowEntourage.IsUnknown() {
@@ -740,10 +744,14 @@ func (r *organizationConfigResource) Create(ctx context.Context, req resource.Cr
 		}
 	}
 	if !config.ExchangeAttributesCloudManagedByDefault.IsNull() {
-		sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
+		if !plan.ExchangeAttributesCloudManagedByDefault.IsUnknown() {
+			sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBoolPointer()
+		}
 	}
 	if !config.ExchangeAttributesServerManagedByDefault.IsNull() {
-		sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
+		if !plan.ExchangeAttributesServerManagedByDefault.IsUnknown() {
+			sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBoolPointer()
+		}
 	}
 	if !config.ExchangeNotificationEnabled.IsNull() {
 		if !plan.ExchangeNotificationEnabled.IsUnknown() {
@@ -1170,7 +1178,9 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		}
 	}
 	if !plan.AutoExpandingArchive.Equal(state.AutoExpandingArchive) {
-		sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBool()
+		if !plan.AutoExpandingArchive.IsUnknown() {
+			sp.AutoExpandingArchive = plan.AutoExpandingArchive.ValueBoolPointer()
+		}
 	}
 	if !plan.AutodiscoverPartialDirSync.Equal(state.AutodiscoverPartialDirSync) {
 		if !plan.AutodiscoverPartialDirSync.IsUnknown() {
@@ -1462,7 +1472,9 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		}
 	}
 	if !plan.EnforceShortenEventSetting.Equal(state.EnforceShortenEventSetting) {
-		sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBool()
+		if !plan.EnforceShortenEventSetting.IsUnknown() {
+			sp.EnforceShortenEventSetting = plan.EnforceShortenEventSetting.ValueBoolPointer()
+		}
 	}
 	if !plan.EwsAllowEntourage.Equal(state.EwsAllowEntourage) {
 		if !plan.EwsAllowEntourage.IsUnknown() {
@@ -1519,10 +1531,14 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		}
 	}
 	if !plan.ExchangeAttributesCloudManagedByDefault.Equal(state.ExchangeAttributesCloudManagedByDefault) {
-		sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBool()
+		if !plan.ExchangeAttributesCloudManagedByDefault.IsUnknown() {
+			sp.ExchangeAttributesCloudManagedByDefault = plan.ExchangeAttributesCloudManagedByDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.ExchangeAttributesServerManagedByDefault.Equal(state.ExchangeAttributesServerManagedByDefault) {
-		sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBool()
+		if !plan.ExchangeAttributesServerManagedByDefault.IsUnknown() {
+			sp.ExchangeAttributesServerManagedByDefault = plan.ExchangeAttributesServerManagedByDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.ExchangeNotificationEnabled.Equal(state.ExchangeNotificationEnabled) {
 		if !plan.ExchangeNotificationEnabled.IsUnknown() {
@@ -1875,6 +1891,690 @@ func (r *organizationConfigResource) Update(ctx context.Context, req resource.Up
 		"EwsAllowedAppIDs":               cfg.EwsAllowedAppIDs,
 		"VisibleMeetingUpdateProperties": cfg.VisibleMeetingUpdateProperties,
 	}, getString)
+	if !cfg.ActionableMessagesExtenalAccessTokenEnabled.IsUnknown() && !cfg.ActionableMessagesExtenalAccessTokenEnabled.IsNull() && !cfg.ActionableMessagesExtenalAccessTokenEnabled.Equal(state.ActionableMessagesExtenalAccessTokenEnabled) {
+		prev, want := reflected, cfg.ActionableMessagesExtenalAccessTokenEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActionableMessagesExtenalAccessTokenEnabled"] == nil || getBool(obj, "ActionableMessagesExtenalAccessTokenEnabled") == want)
+		}
+	}
+	if !cfg.ActivityBasedAuthenticationTimeoutEnabled.IsUnknown() && !cfg.ActivityBasedAuthenticationTimeoutEnabled.IsNull() && !cfg.ActivityBasedAuthenticationTimeoutEnabled.Equal(state.ActivityBasedAuthenticationTimeoutEnabled) {
+		prev, want := reflected, cfg.ActivityBasedAuthenticationTimeoutEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActivityBasedAuthenticationTimeoutEnabled"] == nil || getBool(obj, "ActivityBasedAuthenticationTimeoutEnabled") == want)
+		}
+	}
+	if !cfg.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsUnknown() && !cfg.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.IsNull() && !cfg.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.Equal(state.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled) {
+		prev, want := reflected, cfg.ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled"] == nil || getBool(obj, "ActivityBasedAuthenticationTimeoutWithSingleSignOnEnabled") == want)
+		}
+	}
+	if !cfg.AppsForOfficeEnabled.IsUnknown() && !cfg.AppsForOfficeEnabled.IsNull() && !cfg.AppsForOfficeEnabled.Equal(state.AppsForOfficeEnabled) {
+		prev, want := reflected, cfg.AppsForOfficeEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AppsForOfficeEnabled"] == nil || getBool(obj, "AppsForOfficeEnabled") == want)
+		}
+	}
+	if !cfg.AsyncSendEnabled.IsUnknown() && !cfg.AsyncSendEnabled.IsNull() && !cfg.AsyncSendEnabled.Equal(state.AsyncSendEnabled) {
+		prev, want := reflected, cfg.AsyncSendEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AsyncSendEnabled"] == nil || getBool(obj, "AsyncSendEnabled") == want)
+		}
+	}
+	if !cfg.AuditDisabled.IsUnknown() && !cfg.AuditDisabled.IsNull() && !cfg.AuditDisabled.Equal(state.AuditDisabled) {
+		prev, want := reflected, cfg.AuditDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AuditDisabled"] == nil || getBool(obj, "AuditDisabled") == want)
+		}
+	}
+	if !cfg.AutoArchivingThresholdPercentage.IsUnknown() && !cfg.AutoArchivingThresholdPercentage.IsNull() && !cfg.AutoArchivingThresholdPercentage.Equal(state.AutoArchivingThresholdPercentage) {
+		prev, want := reflected, cfg.AutoArchivingThresholdPercentage.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoArchivingThresholdPercentage"] == nil || getInt(obj, "AutoArchivingThresholdPercentage") == want)
+		}
+	}
+	if !cfg.AutoEnableArchiveMailbox.IsUnknown() && !cfg.AutoEnableArchiveMailbox.IsNull() && !cfg.AutoEnableArchiveMailbox.Equal(state.AutoEnableArchiveMailbox) {
+		prev, want := reflected, cfg.AutoEnableArchiveMailbox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoEnableArchiveMailbox"] == nil || getBool(obj, "AutoEnableArchiveMailbox") == want)
+		}
+	}
+	if !cfg.AutoExpandingArchive.IsUnknown() && !cfg.AutoExpandingArchive.IsNull() && !cfg.AutoExpandingArchive.Equal(state.AutoExpandingArchive) {
+		prev, want := reflected, cfg.AutoExpandingArchive.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoExpandingArchive"] == nil || getBool(obj, "AutoExpandingArchive") == want)
+		}
+	}
+	if !cfg.AutodiscoverPartialDirSync.IsUnknown() && !cfg.AutodiscoverPartialDirSync.IsNull() && !cfg.AutodiscoverPartialDirSync.Equal(state.AutodiscoverPartialDirSync) {
+		prev, want := reflected, cfg.AutodiscoverPartialDirSync.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutodiscoverPartialDirSync"] == nil || getBool(obj, "AutodiscoverPartialDirSync") == want)
+		}
+	}
+	if !cfg.AutomaticForcedReadReceiptEnabled.IsUnknown() && !cfg.AutomaticForcedReadReceiptEnabled.IsNull() && !cfg.AutomaticForcedReadReceiptEnabled.Equal(state.AutomaticForcedReadReceiptEnabled) {
+		prev, want := reflected, cfg.AutomaticForcedReadReceiptEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutomaticForcedReadReceiptEnabled"] == nil || getBool(obj, "AutomaticForcedReadReceiptEnabled") == want)
+		}
+	}
+	if !cfg.BlockMoveMessagesForGroupFolders.IsUnknown() && !cfg.BlockMoveMessagesForGroupFolders.IsNull() && !cfg.BlockMoveMessagesForGroupFolders.Equal(state.BlockMoveMessagesForGroupFolders) {
+		prev, want := reflected, cfg.BlockMoveMessagesForGroupFolders.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BlockMoveMessagesForGroupFolders"] == nil || getBool(obj, "BlockMoveMessagesForGroupFolders") == want)
+		}
+	}
+	if !cfg.BookingsAddressEntryRestricted.IsUnknown() && !cfg.BookingsAddressEntryRestricted.IsNull() && !cfg.BookingsAddressEntryRestricted.Equal(state.BookingsAddressEntryRestricted) {
+		prev, want := reflected, cfg.BookingsAddressEntryRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsAddressEntryRestricted"] == nil || getBool(obj, "BookingsAddressEntryRestricted") == want)
+		}
+	}
+	if !cfg.BookingsAuthEnabled.IsUnknown() && !cfg.BookingsAuthEnabled.IsNull() && !cfg.BookingsAuthEnabled.Equal(state.BookingsAuthEnabled) {
+		prev, want := reflected, cfg.BookingsAuthEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsAuthEnabled"] == nil || getBool(obj, "BookingsAuthEnabled") == want)
+		}
+	}
+	if !cfg.BookingsBlockedWordsEnabled.IsUnknown() && !cfg.BookingsBlockedWordsEnabled.IsNull() && !cfg.BookingsBlockedWordsEnabled.Equal(state.BookingsBlockedWordsEnabled) {
+		prev, want := reflected, cfg.BookingsBlockedWordsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsBlockedWordsEnabled"] == nil || getBool(obj, "BookingsBlockedWordsEnabled") == want)
+		}
+	}
+	if !cfg.BookingsCreationOfCustomQuestionsRestricted.IsUnknown() && !cfg.BookingsCreationOfCustomQuestionsRestricted.IsNull() && !cfg.BookingsCreationOfCustomQuestionsRestricted.Equal(state.BookingsCreationOfCustomQuestionsRestricted) {
+		prev, want := reflected, cfg.BookingsCreationOfCustomQuestionsRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsCreationOfCustomQuestionsRestricted"] == nil || getBool(obj, "BookingsCreationOfCustomQuestionsRestricted") == want)
+		}
+	}
+	if !cfg.BookingsEnabled.IsUnknown() && !cfg.BookingsEnabled.IsNull() && !cfg.BookingsEnabled.Equal(state.BookingsEnabled) {
+		prev, want := reflected, cfg.BookingsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsEnabled"] == nil || getBool(obj, "BookingsEnabled") == want)
+		}
+	}
+	if !cfg.BookingsExposureOfStaffDetailsRestricted.IsUnknown() && !cfg.BookingsExposureOfStaffDetailsRestricted.IsNull() && !cfg.BookingsExposureOfStaffDetailsRestricted.Equal(state.BookingsExposureOfStaffDetailsRestricted) {
+		prev, want := reflected, cfg.BookingsExposureOfStaffDetailsRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsExposureOfStaffDetailsRestricted"] == nil || getBool(obj, "BookingsExposureOfStaffDetailsRestricted") == want)
+		}
+	}
+	if !cfg.BookingsMembershipApprovalRequired.IsUnknown() && !cfg.BookingsMembershipApprovalRequired.IsNull() && !cfg.BookingsMembershipApprovalRequired.Equal(state.BookingsMembershipApprovalRequired) {
+		prev, want := reflected, cfg.BookingsMembershipApprovalRequired.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsMembershipApprovalRequired"] == nil || getBool(obj, "BookingsMembershipApprovalRequired") == want)
+		}
+	}
+	if !cfg.BookingsNamingPolicyEnabled.IsUnknown() && !cfg.BookingsNamingPolicyEnabled.IsNull() && !cfg.BookingsNamingPolicyEnabled.Equal(state.BookingsNamingPolicyEnabled) {
+		prev, want := reflected, cfg.BookingsNamingPolicyEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsNamingPolicyEnabled"] == nil || getBool(obj, "BookingsNamingPolicyEnabled") == want)
+		}
+	}
+	if !cfg.BookingsNamingPolicyPrefixEnabled.IsUnknown() && !cfg.BookingsNamingPolicyPrefixEnabled.IsNull() && !cfg.BookingsNamingPolicyPrefixEnabled.Equal(state.BookingsNamingPolicyPrefixEnabled) {
+		prev, want := reflected, cfg.BookingsNamingPolicyPrefixEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsNamingPolicyPrefixEnabled"] == nil || getBool(obj, "BookingsNamingPolicyPrefixEnabled") == want)
+		}
+	}
+	if !cfg.BookingsNamingPolicySuffixEnabled.IsUnknown() && !cfg.BookingsNamingPolicySuffixEnabled.IsNull() && !cfg.BookingsNamingPolicySuffixEnabled.Equal(state.BookingsNamingPolicySuffixEnabled) {
+		prev, want := reflected, cfg.BookingsNamingPolicySuffixEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsNamingPolicySuffixEnabled"] == nil || getBool(obj, "BookingsNamingPolicySuffixEnabled") == want)
+		}
+	}
+	if !cfg.BookingsNotesEntryRestricted.IsUnknown() && !cfg.BookingsNotesEntryRestricted.IsNull() && !cfg.BookingsNotesEntryRestricted.Equal(state.BookingsNotesEntryRestricted) {
+		prev, want := reflected, cfg.BookingsNotesEntryRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsNotesEntryRestricted"] == nil || getBool(obj, "BookingsNotesEntryRestricted") == want)
+		}
+	}
+	if !cfg.BookingsPaymentsEnabled.IsUnknown() && !cfg.BookingsPaymentsEnabled.IsNull() && !cfg.BookingsPaymentsEnabled.Equal(state.BookingsPaymentsEnabled) {
+		prev, want := reflected, cfg.BookingsPaymentsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsPaymentsEnabled"] == nil || getBool(obj, "BookingsPaymentsEnabled") == want)
+		}
+	}
+	if !cfg.BookingsPhoneNumberEntryRestricted.IsUnknown() && !cfg.BookingsPhoneNumberEntryRestricted.IsNull() && !cfg.BookingsPhoneNumberEntryRestricted.Equal(state.BookingsPhoneNumberEntryRestricted) {
+		prev, want := reflected, cfg.BookingsPhoneNumberEntryRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsPhoneNumberEntryRestricted"] == nil || getBool(obj, "BookingsPhoneNumberEntryRestricted") == want)
+		}
+	}
+	if !cfg.BookingsSearchEngineIndexDisabled.IsUnknown() && !cfg.BookingsSearchEngineIndexDisabled.IsNull() && !cfg.BookingsSearchEngineIndexDisabled.Equal(state.BookingsSearchEngineIndexDisabled) {
+		prev, want := reflected, cfg.BookingsSearchEngineIndexDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsSearchEngineIndexDisabled"] == nil || getBool(obj, "BookingsSearchEngineIndexDisabled") == want)
+		}
+	}
+	if !cfg.BookingsSmsMicrosoftEnabled.IsUnknown() && !cfg.BookingsSmsMicrosoftEnabled.IsNull() && !cfg.BookingsSmsMicrosoftEnabled.Equal(state.BookingsSmsMicrosoftEnabled) {
+		prev, want := reflected, cfg.BookingsSmsMicrosoftEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsSmsMicrosoftEnabled"] == nil || getBool(obj, "BookingsSmsMicrosoftEnabled") == want)
+		}
+	}
+	if !cfg.BookingsSocialSharingRestricted.IsUnknown() && !cfg.BookingsSocialSharingRestricted.IsNull() && !cfg.BookingsSocialSharingRestricted.Equal(state.BookingsSocialSharingRestricted) {
+		prev, want := reflected, cfg.BookingsSocialSharingRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingsSocialSharingRestricted"] == nil || getBool(obj, "BookingsSocialSharingRestricted") == want)
+		}
+	}
+	if !cfg.ByteEncoderTypeFor7BitCharsets.IsUnknown() && !cfg.ByteEncoderTypeFor7BitCharsets.IsNull() && !cfg.ByteEncoderTypeFor7BitCharsets.Equal(state.ByteEncoderTypeFor7BitCharsets) {
+		prev, want := reflected, cfg.ByteEncoderTypeFor7BitCharsets.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ByteEncoderTypeFor7BitCharsets"] == nil || getInt(obj, "ByteEncoderTypeFor7BitCharsets") == want)
+		}
+	}
+	if !cfg.CalendarVersionStoreEnabled.IsUnknown() && !cfg.CalendarVersionStoreEnabled.IsNull() && !cfg.CalendarVersionStoreEnabled.Equal(state.CalendarVersionStoreEnabled) {
+		prev, want := reflected, cfg.CalendarVersionStoreEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CalendarVersionStoreEnabled"] == nil || getBool(obj, "CalendarVersionStoreEnabled") == want)
+		}
+	}
+	if !cfg.ComplianceMLBgdCrawlEnabled.IsUnknown() && !cfg.ComplianceMLBgdCrawlEnabled.IsNull() && !cfg.ComplianceMLBgdCrawlEnabled.Equal(state.ComplianceMLBgdCrawlEnabled) {
+		prev, want := reflected, cfg.ComplianceMLBgdCrawlEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ComplianceMLBgdCrawlEnabled"] == nil || getBool(obj, "ComplianceMLBgdCrawlEnabled") == want)
+		}
+	}
+	if !cfg.ConnectorsActionableMessagesEnabled.IsUnknown() && !cfg.ConnectorsActionableMessagesEnabled.IsNull() && !cfg.ConnectorsActionableMessagesEnabled.Equal(state.ConnectorsActionableMessagesEnabled) {
+		prev, want := reflected, cfg.ConnectorsActionableMessagesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsActionableMessagesEnabled"] == nil || getBool(obj, "ConnectorsActionableMessagesEnabled") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabled.IsUnknown() && !cfg.ConnectorsEnabled.IsNull() && !cfg.ConnectorsEnabled.Equal(state.ConnectorsEnabled) {
+		prev, want := reflected, cfg.ConnectorsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabled"] == nil || getBool(obj, "ConnectorsEnabled") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabledForOutlook.IsUnknown() && !cfg.ConnectorsEnabledForOutlook.IsNull() && !cfg.ConnectorsEnabledForOutlook.Equal(state.ConnectorsEnabledForOutlook) {
+		prev, want := reflected, cfg.ConnectorsEnabledForOutlook.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabledForOutlook"] == nil || getBool(obj, "ConnectorsEnabledForOutlook") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabledForSharepoint.IsUnknown() && !cfg.ConnectorsEnabledForSharepoint.IsNull() && !cfg.ConnectorsEnabledForSharepoint.Equal(state.ConnectorsEnabledForSharepoint) {
+		prev, want := reflected, cfg.ConnectorsEnabledForSharepoint.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabledForSharepoint"] == nil || getBool(obj, "ConnectorsEnabledForSharepoint") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabledForTeams.IsUnknown() && !cfg.ConnectorsEnabledForTeams.IsNull() && !cfg.ConnectorsEnabledForTeams.Equal(state.ConnectorsEnabledForTeams) {
+		prev, want := reflected, cfg.ConnectorsEnabledForTeams.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabledForTeams"] == nil || getBool(obj, "ConnectorsEnabledForTeams") == want)
+		}
+	}
+	if !cfg.ConnectorsEnabledForYammer.IsUnknown() && !cfg.ConnectorsEnabledForYammer.IsNull() && !cfg.ConnectorsEnabledForYammer.Equal(state.ConnectorsEnabledForYammer) {
+		prev, want := reflected, cfg.ConnectorsEnabledForYammer.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConnectorsEnabledForYammer"] == nil || getBool(obj, "ConnectorsEnabledForYammer") == want)
+		}
+	}
+	if !cfg.CustomerLockboxEnabled.IsUnknown() && !cfg.CustomerLockboxEnabled.IsNull() && !cfg.CustomerLockboxEnabled.Equal(state.CustomerLockboxEnabled) {
+		prev, want := reflected, cfg.CustomerLockboxEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CustomerLockboxEnabled"] == nil || getBool(obj, "CustomerLockboxEnabled") == want)
+		}
+	}
+	if !cfg.DLPViaDcsEnabled.IsUnknown() && !cfg.DLPViaDcsEnabled.IsNull() && !cfg.DLPViaDcsEnabled.Equal(state.DLPViaDcsEnabled) {
+		prev, want := reflected, cfg.DLPViaDcsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DLPViaDcsEnabled"] == nil || getBool(obj, "DLPViaDcsEnabled") == want)
+		}
+	}
+	if !cfg.DLPWaitOnSendEnabled.IsUnknown() && !cfg.DLPWaitOnSendEnabled.IsNull() && !cfg.DLPWaitOnSendEnabled.Equal(state.DLPWaitOnSendEnabled) {
+		prev, want := reflected, cfg.DLPWaitOnSendEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DLPWaitOnSendEnabled"] == nil || getBool(obj, "DLPWaitOnSendEnabled") == want)
+		}
+	}
+	if !cfg.DLPWaitOnSendTimeout.IsUnknown() && !cfg.DLPWaitOnSendTimeout.IsNull() && !cfg.DLPWaitOnSendTimeout.Equal(state.DLPWaitOnSendTimeout) {
+		prev, want := reflected, cfg.DLPWaitOnSendTimeout.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DLPWaitOnSendTimeout"] == nil || getInt(obj, "DLPWaitOnSendTimeout") == want)
+		}
+	}
+	if !cfg.DefaultFolderPermissionRestricted.IsUnknown() && !cfg.DefaultFolderPermissionRestricted.IsNull() && !cfg.DefaultFolderPermissionRestricted.Equal(state.DefaultFolderPermissionRestricted) {
+		prev, want := reflected, cfg.DefaultFolderPermissionRestricted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultFolderPermissionRestricted"] == nil || getBool(obj, "DefaultFolderPermissionRestricted") == want)
+		}
+	}
+	if !cfg.DefaultMinutesToReduceLongEventsBy.IsUnknown() && !cfg.DefaultMinutesToReduceLongEventsBy.IsNull() && !cfg.DefaultMinutesToReduceLongEventsBy.Equal(state.DefaultMinutesToReduceLongEventsBy) {
+		prev, want := reflected, cfg.DefaultMinutesToReduceLongEventsBy.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultMinutesToReduceLongEventsBy"] == nil || getInt(obj, "DefaultMinutesToReduceLongEventsBy") == want)
+		}
+	}
+	if !cfg.DefaultMinutesToReduceShortEventsBy.IsUnknown() && !cfg.DefaultMinutesToReduceShortEventsBy.IsNull() && !cfg.DefaultMinutesToReduceShortEventsBy.Equal(state.DefaultMinutesToReduceShortEventsBy) {
+		prev, want := reflected, cfg.DefaultMinutesToReduceShortEventsBy.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultMinutesToReduceShortEventsBy"] == nil || getInt(obj, "DefaultMinutesToReduceShortEventsBy") == want)
+		}
+	}
+	if !cfg.DelayedDelicensingEnabled.IsUnknown() && !cfg.DelayedDelicensingEnabled.IsNull() && !cfg.DelayedDelicensingEnabled.Equal(state.DelayedDelicensingEnabled) {
+		prev, want := reflected, cfg.DelayedDelicensingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DelayedDelicensingEnabled"] == nil || getBool(obj, "DelayedDelicensingEnabled") == want)
+		}
+	}
+	if !cfg.DirectReportsGroupAutoCreationEnabled.IsUnknown() && !cfg.DirectReportsGroupAutoCreationEnabled.IsNull() && !cfg.DirectReportsGroupAutoCreationEnabled.Equal(state.DirectReportsGroupAutoCreationEnabled) {
+		prev, want := reflected, cfg.DirectReportsGroupAutoCreationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DirectReportsGroupAutoCreationEnabled"] == nil || getBool(obj, "DirectReportsGroupAutoCreationEnabled") == want)
+		}
+	}
+	if !cfg.DisablePlusAddressInRecipients.IsUnknown() && !cfg.DisablePlusAddressInRecipients.IsNull() && !cfg.DisablePlusAddressInRecipients.Equal(state.DisablePlusAddressInRecipients) {
+		prev, want := reflected, cfg.DisablePlusAddressInRecipients.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DisablePlusAddressInRecipients"] == nil || getBool(obj, "DisablePlusAddressInRecipients") == want)
+		}
+	}
+	if !cfg.ElcProcessingDisabled.IsUnknown() && !cfg.ElcProcessingDisabled.IsNull() && !cfg.ElcProcessingDisabled.Equal(state.ElcProcessingDisabled) {
+		prev, want := reflected, cfg.ElcProcessingDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ElcProcessingDisabled"] == nil || getBool(obj, "ElcProcessingDisabled") == want)
+		}
+	}
+	if !cfg.EnableForwardingAddressSyncForMailboxes.IsUnknown() && !cfg.EnableForwardingAddressSyncForMailboxes.IsNull() && !cfg.EnableForwardingAddressSyncForMailboxes.Equal(state.EnableForwardingAddressSyncForMailboxes) {
+		prev, want := reflected, cfg.EnableForwardingAddressSyncForMailboxes.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableForwardingAddressSyncForMailboxes"] == nil || getBool(obj, "EnableForwardingAddressSyncForMailboxes") == want)
+		}
+	}
+	if !cfg.EnableOutlookEvents.IsUnknown() && !cfg.EnableOutlookEvents.IsNull() && !cfg.EnableOutlookEvents.Equal(state.EnableOutlookEvents) {
+		prev, want := reflected, cfg.EnableOutlookEvents.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableOutlookEvents"] == nil || getBool(obj, "EnableOutlookEvents") == want)
+		}
+	}
+	if !cfg.EndUserDLUpgradeFlowsDisabled.IsUnknown() && !cfg.EndUserDLUpgradeFlowsDisabled.IsNull() && !cfg.EndUserDLUpgradeFlowsDisabled.Equal(state.EndUserDLUpgradeFlowsDisabled) {
+		prev, want := reflected, cfg.EndUserDLUpgradeFlowsDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserDLUpgradeFlowsDisabled"] == nil || getBool(obj, "EndUserDLUpgradeFlowsDisabled") == want)
+		}
+	}
+	if !cfg.EndUserMailNotificationForDelayedDelicensingEnabled.IsUnknown() && !cfg.EndUserMailNotificationForDelayedDelicensingEnabled.IsNull() && !cfg.EndUserMailNotificationForDelayedDelicensingEnabled.Equal(state.EndUserMailNotificationForDelayedDelicensingEnabled) {
+		prev, want := reflected, cfg.EndUserMailNotificationForDelayedDelicensingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserMailNotificationForDelayedDelicensingEnabled"] == nil || getBool(obj, "EndUserMailNotificationForDelayedDelicensingEnabled") == want)
+		}
+	}
+	if !cfg.EnforceExoAppRbacPermissions.IsUnknown() && !cfg.EnforceExoAppRbacPermissions.IsNull() && !cfg.EnforceExoAppRbacPermissions.Equal(state.EnforceExoAppRbacPermissions) {
+		prev, want := reflected, cfg.EnforceExoAppRbacPermissions.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnforceExoAppRbacPermissions"] == nil || getBool(obj, "EnforceExoAppRbacPermissions") == want)
+		}
+	}
+	if !cfg.EnforceShortenEventSetting.IsUnknown() && !cfg.EnforceShortenEventSetting.IsNull() && !cfg.EnforceShortenEventSetting.Equal(state.EnforceShortenEventSetting) {
+		prev, want := reflected, cfg.EnforceShortenEventSetting.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnforceShortenEventSetting"] == nil || getBool(obj, "EnforceShortenEventSetting") == want)
+		}
+	}
+	if !cfg.EwsAllowEntourage.IsUnknown() && !cfg.EwsAllowEntourage.IsNull() && !cfg.EwsAllowEntourage.Equal(state.EwsAllowEntourage) {
+		prev, want := reflected, cfg.EwsAllowEntourage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowEntourage"] == nil || getBool(obj, "EwsAllowEntourage") == want)
+		}
+	}
+	if !cfg.EwsAllowMacOutlook.IsUnknown() && !cfg.EwsAllowMacOutlook.IsNull() && !cfg.EwsAllowMacOutlook.Equal(state.EwsAllowMacOutlook) {
+		prev, want := reflected, cfg.EwsAllowMacOutlook.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowMacOutlook"] == nil || getBool(obj, "EwsAllowMacOutlook") == want)
+		}
+	}
+	if !cfg.EwsAllowOutlook.IsUnknown() && !cfg.EwsAllowOutlook.IsNull() && !cfg.EwsAllowOutlook.Equal(state.EwsAllowOutlook) {
+		prev, want := reflected, cfg.EwsAllowOutlook.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowOutlook"] == nil || getBool(obj, "EwsAllowOutlook") == want)
+		}
+	}
+	if !cfg.EwsEnabled.IsUnknown() && !cfg.EwsEnabled.IsNull() && !cfg.EwsEnabled.Equal(state.EwsEnabled) {
+		prev, want := reflected, cfg.EwsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsEnabled"] == nil || getBool(obj, "EwsEnabled") == want)
+		}
+	}
+	if !cfg.ExchangeAttributesCloudManagedByDefault.IsUnknown() && !cfg.ExchangeAttributesCloudManagedByDefault.IsNull() && !cfg.ExchangeAttributesCloudManagedByDefault.Equal(state.ExchangeAttributesCloudManagedByDefault) {
+		prev, want := reflected, cfg.ExchangeAttributesCloudManagedByDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExchangeAttributesCloudManagedByDefault"] == nil || getBool(obj, "ExchangeAttributesCloudManagedByDefault") == want)
+		}
+	}
+	if !cfg.ExchangeAttributesServerManagedByDefault.IsUnknown() && !cfg.ExchangeAttributesServerManagedByDefault.IsNull() && !cfg.ExchangeAttributesServerManagedByDefault.Equal(state.ExchangeAttributesServerManagedByDefault) {
+		prev, want := reflected, cfg.ExchangeAttributesServerManagedByDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExchangeAttributesServerManagedByDefault"] == nil || getBool(obj, "ExchangeAttributesServerManagedByDefault") == want)
+		}
+	}
+	if !cfg.ExchangeNotificationEnabled.IsUnknown() && !cfg.ExchangeNotificationEnabled.IsNull() && !cfg.ExchangeNotificationEnabled.Equal(state.ExchangeNotificationEnabled) {
+		prev, want := reflected, cfg.ExchangeNotificationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExchangeNotificationEnabled"] == nil || getBool(obj, "ExchangeNotificationEnabled") == want)
+		}
+	}
+	if !cfg.FindTimeAttendeeAuthenticationEnabled.IsUnknown() && !cfg.FindTimeAttendeeAuthenticationEnabled.IsNull() && !cfg.FindTimeAttendeeAuthenticationEnabled.Equal(state.FindTimeAttendeeAuthenticationEnabled) {
+		prev, want := reflected, cfg.FindTimeAttendeeAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FindTimeAttendeeAuthenticationEnabled"] == nil || getBool(obj, "FindTimeAttendeeAuthenticationEnabled") == want)
+		}
+	}
+	if !cfg.FindTimeAutoScheduleDisabled.IsUnknown() && !cfg.FindTimeAutoScheduleDisabled.IsNull() && !cfg.FindTimeAutoScheduleDisabled.Equal(state.FindTimeAutoScheduleDisabled) {
+		prev, want := reflected, cfg.FindTimeAutoScheduleDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FindTimeAutoScheduleDisabled"] == nil || getBool(obj, "FindTimeAutoScheduleDisabled") == want)
+		}
+	}
+	if !cfg.FindTimeLockPollForAttendeesEnabled.IsUnknown() && !cfg.FindTimeLockPollForAttendeesEnabled.IsNull() && !cfg.FindTimeLockPollForAttendeesEnabled.Equal(state.FindTimeLockPollForAttendeesEnabled) {
+		prev, want := reflected, cfg.FindTimeLockPollForAttendeesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FindTimeLockPollForAttendeesEnabled"] == nil || getBool(obj, "FindTimeLockPollForAttendeesEnabled") == want)
+		}
+	}
+	if !cfg.FindTimeOnlineMeetingOptionDisabled.IsUnknown() && !cfg.FindTimeOnlineMeetingOptionDisabled.IsNull() && !cfg.FindTimeOnlineMeetingOptionDisabled.Equal(state.FindTimeOnlineMeetingOptionDisabled) {
+		prev, want := reflected, cfg.FindTimeOnlineMeetingOptionDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FindTimeOnlineMeetingOptionDisabled"] == nil || getBool(obj, "FindTimeOnlineMeetingOptionDisabled") == want)
+		}
+	}
+	if !cfg.FocusedInboxOn.IsUnknown() && !cfg.FocusedInboxOn.IsNull() && !cfg.FocusedInboxOn.Equal(state.FocusedInboxOn) {
+		prev, want := reflected, cfg.FocusedInboxOn.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FocusedInboxOn"] == nil || getBool(obj, "FocusedInboxOn") == want)
+		}
+	}
+	if !cfg.HybridRSVPEnabled.IsUnknown() && !cfg.HybridRSVPEnabled.IsNull() && !cfg.HybridRSVPEnabled.Equal(state.HybridRSVPEnabled) {
+		prev, want := reflected, cfg.HybridRSVPEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HybridRSVPEnabled"] == nil || getBool(obj, "HybridRSVPEnabled") == want)
+		}
+	}
+	if !cfg.InRegionRoutingEnabled.IsUnknown() && !cfg.InRegionRoutingEnabled.IsNull() && !cfg.InRegionRoutingEnabled.Equal(state.InRegionRoutingEnabled) {
+		prev, want := reflected, cfg.InRegionRoutingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InRegionRoutingEnabled"] == nil || getBool(obj, "InRegionRoutingEnabled") == want)
+		}
+	}
+	if !cfg.IsAgendaMailEnabled.IsUnknown() && !cfg.IsAgendaMailEnabled.IsNull() && !cfg.IsAgendaMailEnabled.Equal(state.IsAgendaMailEnabled) {
+		prev, want := reflected, cfg.IsAgendaMailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsAgendaMailEnabled"] == nil || getBool(obj, "IsAgendaMailEnabled") == want)
+		}
+	}
+	if !cfg.IsGroupFoldersAndRulesEnabled.IsUnknown() && !cfg.IsGroupFoldersAndRulesEnabled.IsNull() && !cfg.IsGroupFoldersAndRulesEnabled.Equal(state.IsGroupFoldersAndRulesEnabled) {
+		prev, want := reflected, cfg.IsGroupFoldersAndRulesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsGroupFoldersAndRulesEnabled"] == nil || getBool(obj, "IsGroupFoldersAndRulesEnabled") == want)
+		}
+	}
+	if !cfg.IsGroupMemberAllowedToEditContent.IsUnknown() && !cfg.IsGroupMemberAllowedToEditContent.IsNull() && !cfg.IsGroupMemberAllowedToEditContent.Equal(state.IsGroupMemberAllowedToEditContent) {
+		prev, want := reflected, cfg.IsGroupMemberAllowedToEditContent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsGroupMemberAllowedToEditContent"] == nil || getBool(obj, "IsGroupMemberAllowedToEditContent") == want)
+		}
+	}
+	if !cfg.LeanPopoutEnabled.IsUnknown() && !cfg.LeanPopoutEnabled.IsNull() && !cfg.LeanPopoutEnabled.Equal(state.LeanPopoutEnabled) {
+		prev, want := reflected, cfg.LeanPopoutEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["LeanPopoutEnabled"] == nil || getBool(obj, "LeanPopoutEnabled") == want)
+		}
+	}
+	if !cfg.LinkPreviewEnabled.IsUnknown() && !cfg.LinkPreviewEnabled.IsNull() && !cfg.LinkPreviewEnabled.Equal(state.LinkPreviewEnabled) {
+		prev, want := reflected, cfg.LinkPreviewEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["LinkPreviewEnabled"] == nil || getBool(obj, "LinkPreviewEnabled") == want)
+		}
+	}
+	if !cfg.MailTipsAllTipsEnabled.IsUnknown() && !cfg.MailTipsAllTipsEnabled.IsNull() && !cfg.MailTipsAllTipsEnabled.Equal(state.MailTipsAllTipsEnabled) {
+		prev, want := reflected, cfg.MailTipsAllTipsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsAllTipsEnabled"] == nil || getBool(obj, "MailTipsAllTipsEnabled") == want)
+		}
+	}
+	if !cfg.MailTipsExternalRecipientsTipsEnabled.IsUnknown() && !cfg.MailTipsExternalRecipientsTipsEnabled.IsNull() && !cfg.MailTipsExternalRecipientsTipsEnabled.Equal(state.MailTipsExternalRecipientsTipsEnabled) {
+		prev, want := reflected, cfg.MailTipsExternalRecipientsTipsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsExternalRecipientsTipsEnabled"] == nil || getBool(obj, "MailTipsExternalRecipientsTipsEnabled") == want)
+		}
+	}
+	if !cfg.MailTipsGroupMetricsEnabled.IsUnknown() && !cfg.MailTipsGroupMetricsEnabled.IsNull() && !cfg.MailTipsGroupMetricsEnabled.Equal(state.MailTipsGroupMetricsEnabled) {
+		prev, want := reflected, cfg.MailTipsGroupMetricsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsGroupMetricsEnabled"] == nil || getBool(obj, "MailTipsGroupMetricsEnabled") == want)
+		}
+	}
+	if !cfg.MailTipsLargeAudienceThreshold.IsUnknown() && !cfg.MailTipsLargeAudienceThreshold.IsNull() && !cfg.MailTipsLargeAudienceThreshold.Equal(state.MailTipsLargeAudienceThreshold) {
+		prev, want := reflected, cfg.MailTipsLargeAudienceThreshold.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsLargeAudienceThreshold"] == nil || getInt(obj, "MailTipsLargeAudienceThreshold") == want)
+		}
+	}
+	if !cfg.MailTipsMailboxSourcedTipsEnabled.IsUnknown() && !cfg.MailTipsMailboxSourcedTipsEnabled.IsNull() && !cfg.MailTipsMailboxSourcedTipsEnabled.Equal(state.MailTipsMailboxSourcedTipsEnabled) {
+		prev, want := reflected, cfg.MailTipsMailboxSourcedTipsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailTipsMailboxSourcedTipsEnabled"] == nil || getBool(obj, "MailTipsMailboxSourcedTipsEnabled") == want)
+		}
+	}
+	if !cfg.MaskClientIpInReceivedHeadersEnabled.IsUnknown() && !cfg.MaskClientIpInReceivedHeadersEnabled.IsNull() && !cfg.MaskClientIpInReceivedHeadersEnabled.Equal(state.MaskClientIpInReceivedHeadersEnabled) {
+		prev, want := reflected, cfg.MaskClientIpInReceivedHeadersEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MaskClientIpInReceivedHeadersEnabled"] == nil || getBool(obj, "MaskClientIpInReceivedHeadersEnabled") == want)
+		}
+	}
+	if !cfg.MatchSenderOrganizerProperties.IsUnknown() && !cfg.MatchSenderOrganizerProperties.IsNull() && !cfg.MatchSenderOrganizerProperties.Equal(state.MatchSenderOrganizerProperties) {
+		prev, want := reflected, cfg.MatchSenderOrganizerProperties.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MatchSenderOrganizerProperties"] == nil || getBool(obj, "MatchSenderOrganizerProperties") == want)
+		}
+	}
+	if !cfg.MessageHighlightsEnabled.IsUnknown() && !cfg.MessageHighlightsEnabled.IsNull() && !cfg.MessageHighlightsEnabled.Equal(state.MessageHighlightsEnabled) {
+		prev, want := reflected, cfg.MessageHighlightsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageHighlightsEnabled"] == nil || getBool(obj, "MessageHighlightsEnabled") == want)
+		}
+	}
+	if !cfg.MessageRecallAlertRecipientsEnabled.IsUnknown() && !cfg.MessageRecallAlertRecipientsEnabled.IsNull() && !cfg.MessageRecallAlertRecipientsEnabled.Equal(state.MessageRecallAlertRecipientsEnabled) {
+		prev, want := reflected, cfg.MessageRecallAlertRecipientsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageRecallAlertRecipientsEnabled"] == nil || getBool(obj, "MessageRecallAlertRecipientsEnabled") == want)
+		}
+	}
+	if !cfg.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsUnknown() && !cfg.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.IsNull() && !cfg.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.Equal(state.MessageRecallAlertRecipientsReadMessagesOnlyEnabled) {
+		prev, want := reflected, cfg.MessageRecallAlertRecipientsReadMessagesOnlyEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageRecallAlertRecipientsReadMessagesOnlyEnabled"] == nil || getBool(obj, "MessageRecallAlertRecipientsReadMessagesOnlyEnabled") == want)
+		}
+	}
+	if !cfg.MessageRecallEnabled.IsUnknown() && !cfg.MessageRecallEnabled.IsNull() && !cfg.MessageRecallEnabled.Equal(state.MessageRecallEnabled) {
+		prev, want := reflected, cfg.MessageRecallEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageRecallEnabled"] == nil || getBool(obj, "MessageRecallEnabled") == want)
+		}
+	}
+	if !cfg.MessageRemindersEnabled.IsUnknown() && !cfg.MessageRemindersEnabled.IsNull() && !cfg.MessageRemindersEnabled.Equal(state.MessageRemindersEnabled) {
+		prev, want := reflected, cfg.MessageRemindersEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageRemindersEnabled"] == nil || getBool(obj, "MessageRemindersEnabled") == want)
+		}
+	}
+	if !cfg.MobileAppEducationEnabled.IsUnknown() && !cfg.MobileAppEducationEnabled.IsNull() && !cfg.MobileAppEducationEnabled.Equal(state.MobileAppEducationEnabled) {
+		prev, want := reflected, cfg.MobileAppEducationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MobileAppEducationEnabled"] == nil || getBool(obj, "MobileAppEducationEnabled") == want)
+		}
+	}
+	if !cfg.OAuth2ClientProfileEnabled.IsUnknown() && !cfg.OAuth2ClientProfileEnabled.IsNull() && !cfg.OAuth2ClientProfileEnabled.Equal(state.OAuth2ClientProfileEnabled) {
+		prev, want := reflected, cfg.OAuth2ClientProfileEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OAuth2ClientProfileEnabled"] == nil || getBool(obj, "OAuth2ClientProfileEnabled") == want)
+		}
+	}
+	if !cfg.OnlineMeetingsByDefaultEnabled.IsUnknown() && !cfg.OnlineMeetingsByDefaultEnabled.IsNull() && !cfg.OnlineMeetingsByDefaultEnabled.Equal(state.OnlineMeetingsByDefaultEnabled) {
+		prev, want := reflected, cfg.OnlineMeetingsByDefaultEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OnlineMeetingsByDefaultEnabled"] == nil || getBool(obj, "OnlineMeetingsByDefaultEnabled") == want)
+		}
+	}
+	if !cfg.OutlookGifPickerDisabled.IsUnknown() && !cfg.OutlookGifPickerDisabled.IsNull() && !cfg.OutlookGifPickerDisabled.Equal(state.OutlookGifPickerDisabled) {
+		prev, want := reflected, cfg.OutlookGifPickerDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookGifPickerDisabled"] == nil || getBool(obj, "OutlookGifPickerDisabled") == want)
+		}
+	}
+	if !cfg.OutlookMobileGCCRestrictionsEnabled.IsUnknown() && !cfg.OutlookMobileGCCRestrictionsEnabled.IsNull() && !cfg.OutlookMobileGCCRestrictionsEnabled.Equal(state.OutlookMobileGCCRestrictionsEnabled) {
+		prev, want := reflected, cfg.OutlookMobileGCCRestrictionsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookMobileGCCRestrictionsEnabled"] == nil || getBool(obj, "OutlookMobileGCCRestrictionsEnabled") == want)
+		}
+	}
+	if !cfg.OutlookMobileHelpShiftEnabled.IsUnknown() && !cfg.OutlookMobileHelpShiftEnabled.IsNull() && !cfg.OutlookMobileHelpShiftEnabled.Equal(state.OutlookMobileHelpShiftEnabled) {
+		prev, want := reflected, cfg.OutlookMobileHelpShiftEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookMobileHelpShiftEnabled"] == nil || getBool(obj, "OutlookMobileHelpShiftEnabled") == want)
+		}
+	}
+	if !cfg.OutlookMobileSingleAccountEnabled.IsUnknown() && !cfg.OutlookMobileSingleAccountEnabled.IsNull() && !cfg.OutlookMobileSingleAccountEnabled.Equal(state.OutlookMobileSingleAccountEnabled) {
+		prev, want := reflected, cfg.OutlookMobileSingleAccountEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookMobileSingleAccountEnabled"] == nil || getBool(obj, "OutlookMobileSingleAccountEnabled") == want)
+		}
+	}
+	if !cfg.OutlookPayEnabled.IsUnknown() && !cfg.OutlookPayEnabled.IsNull() && !cfg.OutlookPayEnabled.Equal(state.OutlookPayEnabled) {
+		prev, want := reflected, cfg.OutlookPayEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookPayEnabled"] == nil || getBool(obj, "OutlookPayEnabled") == want)
+		}
+	}
+	if !cfg.OutlookTextPredictionDisabled.IsUnknown() && !cfg.OutlookTextPredictionDisabled.IsNull() && !cfg.OutlookTextPredictionDisabled.Equal(state.OutlookTextPredictionDisabled) {
+		prev, want := reflected, cfg.OutlookTextPredictionDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookTextPredictionDisabled"] == nil || getBool(obj, "OutlookTextPredictionDisabled") == want)
+		}
+	}
+	if !cfg.PerTenantSwitchToESTSEnabled.IsUnknown() && !cfg.PerTenantSwitchToESTSEnabled.IsNull() && !cfg.PerTenantSwitchToESTSEnabled.Equal(state.PerTenantSwitchToESTSEnabled) {
+		prev, want := reflected, cfg.PerTenantSwitchToESTSEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PerTenantSwitchToESTSEnabled"] == nil || getBool(obj, "PerTenantSwitchToESTSEnabled") == want)
+		}
+	}
+	if !cfg.PostponeRoamingSignaturesUntilLater.IsUnknown() && !cfg.PostponeRoamingSignaturesUntilLater.IsNull() && !cfg.PostponeRoamingSignaturesUntilLater.Equal(state.PostponeRoamingSignaturesUntilLater) {
+		prev, want := reflected, cfg.PostponeRoamingSignaturesUntilLater.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PostponeRoamingSignaturesUntilLater"] == nil || getBool(obj, "PostponeRoamingSignaturesUntilLater") == want)
+		}
+	}
+	if !cfg.PreferredInternetCodePageForShiftJis.IsUnknown() && !cfg.PreferredInternetCodePageForShiftJis.IsNull() && !cfg.PreferredInternetCodePageForShiftJis.Equal(state.PreferredInternetCodePageForShiftJis) {
+		prev, want := reflected, cfg.PreferredInternetCodePageForShiftJis.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreferredInternetCodePageForShiftJis"] == nil || getInt(obj, "PreferredInternetCodePageForShiftJis") == want)
+		}
+	}
+	if !cfg.PublicComputersDetectionEnabled.IsUnknown() && !cfg.PublicComputersDetectionEnabled.IsNull() && !cfg.PublicComputersDetectionEnabled.Equal(state.PublicComputersDetectionEnabled) {
+		prev, want := reflected, cfg.PublicComputersDetectionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublicComputersDetectionEnabled"] == nil || getBool(obj, "PublicComputersDetectionEnabled") == want)
+		}
+	}
+	if !cfg.PublicFolderShowClientControl.IsUnknown() && !cfg.PublicFolderShowClientControl.IsNull() && !cfg.PublicFolderShowClientControl.Equal(state.PublicFolderShowClientControl) {
+		prev, want := reflected, cfg.PublicFolderShowClientControl.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublicFolderShowClientControl"] == nil || getBool(obj, "PublicFolderShowClientControl") == want)
+		}
+	}
+	if !cfg.ReadTrackingEnabled.IsUnknown() && !cfg.ReadTrackingEnabled.IsNull() && !cfg.ReadTrackingEnabled.Equal(state.ReadTrackingEnabled) {
+		prev, want := reflected, cfg.ReadTrackingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReadTrackingEnabled"] == nil || getBool(obj, "ReadTrackingEnabled") == want)
+		}
+	}
+	if !cfg.RecallReadMessagesEnabled.IsUnknown() && !cfg.RecallReadMessagesEnabled.IsNull() && !cfg.RecallReadMessagesEnabled.Equal(state.RecallReadMessagesEnabled) {
+		prev, want := reflected, cfg.RecallReadMessagesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecallReadMessagesEnabled"] == nil || getBool(obj, "RecallReadMessagesEnabled") == want)
+		}
+	}
+	if !cfg.RecipientDelimiters.IsUnknown() && !cfg.RecipientDelimiters.IsNull() && !cfg.RecipientDelimiters.Equal(state.RecipientDelimiters) {
+		prev, want := reflected, cfg.RecipientDelimiters.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecipientDelimiters"] == nil || getBool(obj, "RecipientDelimiters") == want)
+		}
+	}
+	if !cfg.RefreshSessionEnabled.IsUnknown() && !cfg.RefreshSessionEnabled.IsNull() && !cfg.RefreshSessionEnabled.Equal(state.RefreshSessionEnabled) {
+		prev, want := reflected, cfg.RefreshSessionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RefreshSessionEnabled"] == nil || getBool(obj, "RefreshSessionEnabled") == want)
+		}
+	}
+	if !cfg.RejectDirectSend.IsUnknown() && !cfg.RejectDirectSend.IsNull() && !cfg.RejectDirectSend.Equal(state.RejectDirectSend) {
+		prev, want := reflected, cfg.RejectDirectSend.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RejectDirectSend"] == nil || getBool(obj, "RejectDirectSend") == want)
+		}
+	}
+	if !cfg.RequiredCharsetCoverage.IsUnknown() && !cfg.RequiredCharsetCoverage.IsNull() && !cfg.RequiredCharsetCoverage.Equal(state.RequiredCharsetCoverage) {
+		prev, want := reflected, cfg.RequiredCharsetCoverage.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequiredCharsetCoverage"] == nil || getInt(obj, "RequiredCharsetCoverage") == want)
+		}
+	}
+	if !cfg.SendFromAliasEnabled.IsUnknown() && !cfg.SendFromAliasEnabled.IsNull() && !cfg.SendFromAliasEnabled.Equal(state.SendFromAliasEnabled) {
+		prev, want := reflected, cfg.SendFromAliasEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SendFromAliasEnabled"] == nil || getBool(obj, "SendFromAliasEnabled") == want)
+		}
+	}
+	if !cfg.SharedDomainEmailAddressFlowEnabled.IsUnknown() && !cfg.SharedDomainEmailAddressFlowEnabled.IsNull() && !cfg.SharedDomainEmailAddressFlowEnabled.Equal(state.SharedDomainEmailAddressFlowEnabled) {
+		prev, want := reflected, cfg.SharedDomainEmailAddressFlowEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SharedDomainEmailAddressFlowEnabled"] == nil || getBool(obj, "SharedDomainEmailAddressFlowEnabled") == want)
+		}
+	}
+	if !cfg.SmtpActionableMessagesEnabled.IsUnknown() && !cfg.SmtpActionableMessagesEnabled.IsNull() && !cfg.SmtpActionableMessagesEnabled.Equal(state.SmtpActionableMessagesEnabled) {
+		prev, want := reflected, cfg.SmtpActionableMessagesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SmtpActionableMessagesEnabled"] == nil || getBool(obj, "SmtpActionableMessagesEnabled") == want)
+		}
+	}
+	if !cfg.TenantAdminNotificationForDelayedDelicensingEnabled.IsUnknown() && !cfg.TenantAdminNotificationForDelayedDelicensingEnabled.IsNull() && !cfg.TenantAdminNotificationForDelayedDelicensingEnabled.Equal(state.TenantAdminNotificationForDelayedDelicensingEnabled) {
+		prev, want := reflected, cfg.TenantAdminNotificationForDelayedDelicensingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TenantAdminNotificationForDelayedDelicensingEnabled"] == nil || getBool(obj, "TenantAdminNotificationForDelayedDelicensingEnabled") == want)
+		}
+	}
+	if !cfg.TwoClickMailPreviewEnabled.IsUnknown() && !cfg.TwoClickMailPreviewEnabled.IsNull() && !cfg.TwoClickMailPreviewEnabled.Equal(state.TwoClickMailPreviewEnabled) {
+		prev, want := reflected, cfg.TwoClickMailPreviewEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TwoClickMailPreviewEnabled"] == nil || getBool(obj, "TwoClickMailPreviewEnabled") == want)
+		}
+	}
+	if !cfg.UnblockUnsafeSenderPromptEnabled.IsUnknown() && !cfg.UnblockUnsafeSenderPromptEnabled.IsNull() && !cfg.UnblockUnsafeSenderPromptEnabled.Equal(state.UnblockUnsafeSenderPromptEnabled) {
+		prev, want := reflected, cfg.UnblockUnsafeSenderPromptEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UnblockUnsafeSenderPromptEnabled"] == nil || getBool(obj, "UnblockUnsafeSenderPromptEnabled") == want)
+		}
+	}
+	if !cfg.WebPushNotificationsDisabled.IsUnknown() && !cfg.WebPushNotificationsDisabled.IsNull() && !cfg.WebPushNotificationsDisabled.Equal(state.WebPushNotificationsDisabled) {
+		prev, want := reflected, cfg.WebPushNotificationsDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WebPushNotificationsDisabled"] == nil || getBool(obj, "WebPushNotificationsDisabled") == want)
+		}
+	}
+	if !cfg.WebSuggestedRepliesDisabled.IsUnknown() && !cfg.WebSuggestedRepliesDisabled.IsNull() && !cfg.WebSuggestedRepliesDisabled.Equal(state.WebSuggestedRepliesDisabled) {
+		prev, want := reflected, cfg.WebSuggestedRepliesDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WebSuggestedRepliesDisabled"] == nil || getBool(obj, "WebSuggestedRepliesDisabled") == want)
+		}
+	}
+	if !cfg.WorkspaceTenantEnabled.IsUnknown() && !cfg.WorkspaceTenantEnabled.IsNull() && !cfg.WorkspaceTenantEnabled.Equal(state.WorkspaceTenantEnabled) {
+		prev, want := reflected, cfg.WorkspaceTenantEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WorkspaceTenantEnabled"] == nil || getBool(obj, "WorkspaceTenantEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

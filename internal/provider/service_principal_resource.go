@@ -163,6 +163,12 @@ func (r *servicePrincipalResource) Update(ctx context.Context, req resource.Upda
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"DisplayName": cfg.DisplayName,
 	}, getString)
+	if !cfg.OverrideEnforceExoAppRbacPermissions.IsUnknown() && !cfg.OverrideEnforceExoAppRbacPermissions.IsNull() && !cfg.OverrideEnforceExoAppRbacPermissions.Equal(state.OverrideEnforceExoAppRbacPermissions) {
+		prev, want := reflected, cfg.OverrideEnforceExoAppRbacPermissions.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OverrideEnforceExoAppRbacPermissions"] == nil || getBool(obj, "OverrideEnforceExoAppRbacPermissions") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

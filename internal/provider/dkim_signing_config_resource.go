@@ -178,7 +178,9 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 	if !plan.PublishTxtRecords.Equal(state.PublishTxtRecords) {
-		sp.PublishTxtRecords = plan.PublishTxtRecords.ValueBool()
+		if !plan.PublishTxtRecords.IsUnknown() {
+			sp.PublishTxtRecords = plan.PublishTxtRecords.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -191,6 +193,18 @@ func (r *dkimSigningConfigResource) Update(ctx context.Context, req resource.Upd
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdminDisplayName": cfg.AdminDisplayName,
 	}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.PublishTxtRecords.IsUnknown() && !cfg.PublishTxtRecords.IsNull() && !cfg.PublishTxtRecords.Equal(state.PublishTxtRecords) {
+		prev, want := reflected, cfg.PublishTxtRecords.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublishTxtRecords"] == nil || getBool(obj, "PublishTxtRecords") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

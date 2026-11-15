@@ -260,6 +260,30 @@ func (r *mailboxAutoReplyConfigurationResource) Update(ctx context.Context, req 
 		"InternalMessage":       cfg.InternalMessage,
 		"OOFEventSubject":       cfg.OOFEventSubject,
 	}, getString)
+	if !cfg.AutoDeclineFutureRequestsWhenOOF.IsUnknown() && !cfg.AutoDeclineFutureRequestsWhenOOF.IsNull() && !cfg.AutoDeclineFutureRequestsWhenOOF.Equal(state.AutoDeclineFutureRequestsWhenOOF) {
+		prev, want := reflected, cfg.AutoDeclineFutureRequestsWhenOOF.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoDeclineFutureRequestsWhenOOF"] == nil || getBool(obj, "AutoDeclineFutureRequestsWhenOOF") == want)
+		}
+	}
+	if !cfg.CreateOOFEvent.IsUnknown() && !cfg.CreateOOFEvent.IsNull() && !cfg.CreateOOFEvent.Equal(state.CreateOOFEvent) {
+		prev, want := reflected, cfg.CreateOOFEvent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CreateOOFEvent"] == nil || getBool(obj, "CreateOOFEvent") == want)
+		}
+	}
+	if !cfg.DeclineAllEventsForScheduledOOF.IsUnknown() && !cfg.DeclineAllEventsForScheduledOOF.IsNull() && !cfg.DeclineAllEventsForScheduledOOF.Equal(state.DeclineAllEventsForScheduledOOF) {
+		prev, want := reflected, cfg.DeclineAllEventsForScheduledOOF.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeclineAllEventsForScheduledOOF"] == nil || getBool(obj, "DeclineAllEventsForScheduledOOF") == want)
+		}
+	}
+	if !cfg.DeclineEventsForScheduledOOF.IsUnknown() && !cfg.DeclineEventsForScheduledOOF.IsNull() && !cfg.DeclineEventsForScheduledOOF.Equal(state.DeclineEventsForScheduledOOF) {
+		prev, want := reflected, cfg.DeclineEventsForScheduledOOF.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeclineEventsForScheduledOOF"] == nil || getBool(obj, "DeclineEventsForScheduledOOF") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

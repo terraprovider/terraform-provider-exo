@@ -168,6 +168,24 @@ func (r *mailboxSpellingConfigurationResource) Update(ctx context.Context, req r
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.CheckBeforeSend.IsUnknown() && !cfg.CheckBeforeSend.IsNull() && !cfg.CheckBeforeSend.Equal(state.CheckBeforeSend) {
+		prev, want := reflected, cfg.CheckBeforeSend.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CheckBeforeSend"] == nil || getBool(obj, "CheckBeforeSend") == want)
+		}
+	}
+	if !cfg.IgnoreMixedDigits.IsUnknown() && !cfg.IgnoreMixedDigits.IsNull() && !cfg.IgnoreMixedDigits.Equal(state.IgnoreMixedDigits) {
+		prev, want := reflected, cfg.IgnoreMixedDigits.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreMixedDigits"] == nil || getBool(obj, "IgnoreMixedDigits") == want)
+		}
+	}
+	if !cfg.IgnoreUppercase.IsUnknown() && !cfg.IgnoreUppercase.IsNull() && !cfg.IgnoreUppercase.Equal(state.IgnoreUppercase) {
+		prev, want := reflected, cfg.IgnoreUppercase.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreUppercase"] == nil || getBool(obj, "IgnoreUppercase") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

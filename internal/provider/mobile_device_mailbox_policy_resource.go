@@ -784,6 +784,240 @@ func (r *mobileDeviceMailboxPolicyResource) Update(ctx context.Context, req reso
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AllowApplePushNotifications.IsUnknown() && !cfg.AllowApplePushNotifications.IsNull() && !cfg.AllowApplePushNotifications.Equal(state.AllowApplePushNotifications) {
+		prev, want := reflected, cfg.AllowApplePushNotifications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowApplePushNotifications"] == nil || getBool(obj, "AllowApplePushNotifications") == want)
+		}
+	}
+	if !cfg.AllowBrowser.IsUnknown() && !cfg.AllowBrowser.IsNull() && !cfg.AllowBrowser.Equal(state.AllowBrowser) {
+		prev, want := reflected, cfg.AllowBrowser.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowBrowser"] == nil || getBool(obj, "AllowBrowser") == want)
+		}
+	}
+	if !cfg.AllowCamera.IsUnknown() && !cfg.AllowCamera.IsNull() && !cfg.AllowCamera.Equal(state.AllowCamera) {
+		prev, want := reflected, cfg.AllowCamera.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowCamera"] == nil || getBool(obj, "AllowCamera") == want)
+		}
+	}
+	if !cfg.AllowConsumerEmail.IsUnknown() && !cfg.AllowConsumerEmail.IsNull() && !cfg.AllowConsumerEmail.Equal(state.AllowConsumerEmail) {
+		prev, want := reflected, cfg.AllowConsumerEmail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowConsumerEmail"] == nil || getBool(obj, "AllowConsumerEmail") == want)
+		}
+	}
+	if !cfg.AllowDesktopSync.IsUnknown() && !cfg.AllowDesktopSync.IsNull() && !cfg.AllowDesktopSync.Equal(state.AllowDesktopSync) {
+		prev, want := reflected, cfg.AllowDesktopSync.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowDesktopSync"] == nil || getBool(obj, "AllowDesktopSync") == want)
+		}
+	}
+	if !cfg.AllowExternalDeviceManagement.IsUnknown() && !cfg.AllowExternalDeviceManagement.IsNull() && !cfg.AllowExternalDeviceManagement.Equal(state.AllowExternalDeviceManagement) {
+		prev, want := reflected, cfg.AllowExternalDeviceManagement.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowExternalDeviceManagement"] == nil || getBool(obj, "AllowExternalDeviceManagement") == want)
+		}
+	}
+	if !cfg.AllowGooglePushNotifications.IsUnknown() && !cfg.AllowGooglePushNotifications.IsNull() && !cfg.AllowGooglePushNotifications.Equal(state.AllowGooglePushNotifications) {
+		prev, want := reflected, cfg.AllowGooglePushNotifications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowGooglePushNotifications"] == nil || getBool(obj, "AllowGooglePushNotifications") == want)
+		}
+	}
+	if !cfg.AllowHTMLEmail.IsUnknown() && !cfg.AllowHTMLEmail.IsNull() && !cfg.AllowHTMLEmail.Equal(state.AllowHTMLEmail) {
+		prev, want := reflected, cfg.AllowHTMLEmail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowHTMLEmail"] == nil || getBool(obj, "AllowHTMLEmail") == want)
+		}
+	}
+	if !cfg.AllowInternetSharing.IsUnknown() && !cfg.AllowInternetSharing.IsNull() && !cfg.AllowInternetSharing.Equal(state.AllowInternetSharing) {
+		prev, want := reflected, cfg.AllowInternetSharing.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowInternetSharing"] == nil || getBool(obj, "AllowInternetSharing") == want)
+		}
+	}
+	if !cfg.AllowIrDA.IsUnknown() && !cfg.AllowIrDA.IsNull() && !cfg.AllowIrDA.Equal(state.AllowIrDA) {
+		prev, want := reflected, cfg.AllowIrDA.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowIrDA"] == nil || getBool(obj, "AllowIrDA") == want)
+		}
+	}
+	if !cfg.AllowMicrosoftPushNotifications.IsUnknown() && !cfg.AllowMicrosoftPushNotifications.IsNull() && !cfg.AllowMicrosoftPushNotifications.Equal(state.AllowMicrosoftPushNotifications) {
+		prev, want := reflected, cfg.AllowMicrosoftPushNotifications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowMicrosoftPushNotifications"] == nil || getBool(obj, "AllowMicrosoftPushNotifications") == want)
+		}
+	}
+	if !cfg.AllowMobileOTAUpdate.IsUnknown() && !cfg.AllowMobileOTAUpdate.IsNull() && !cfg.AllowMobileOTAUpdate.Equal(state.AllowMobileOTAUpdate) {
+		prev, want := reflected, cfg.AllowMobileOTAUpdate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowMobileOTAUpdate"] == nil || getBool(obj, "AllowMobileOTAUpdate") == want)
+		}
+	}
+	if !cfg.AllowNonProvisionableDevices.IsUnknown() && !cfg.AllowNonProvisionableDevices.IsNull() && !cfg.AllowNonProvisionableDevices.Equal(state.AllowNonProvisionableDevices) {
+		prev, want := reflected, cfg.AllowNonProvisionableDevices.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowNonProvisionableDevices"] == nil || getBool(obj, "AllowNonProvisionableDevices") == want)
+		}
+	}
+	if !cfg.AllowPOPIMAPEmail.IsUnknown() && !cfg.AllowPOPIMAPEmail.IsNull() && !cfg.AllowPOPIMAPEmail.Equal(state.AllowPOPIMAPEmail) {
+		prev, want := reflected, cfg.AllowPOPIMAPEmail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowPOPIMAPEmail"] == nil || getBool(obj, "AllowPOPIMAPEmail") == want)
+		}
+	}
+	if !cfg.AllowRemoteDesktop.IsUnknown() && !cfg.AllowRemoteDesktop.IsNull() && !cfg.AllowRemoteDesktop.Equal(state.AllowRemoteDesktop) {
+		prev, want := reflected, cfg.AllowRemoteDesktop.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowRemoteDesktop"] == nil || getBool(obj, "AllowRemoteDesktop") == want)
+		}
+	}
+	if !cfg.AllowSMIMESoftCerts.IsUnknown() && !cfg.AllowSMIMESoftCerts.IsNull() && !cfg.AllowSMIMESoftCerts.Equal(state.AllowSMIMESoftCerts) {
+		prev, want := reflected, cfg.AllowSMIMESoftCerts.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowSMIMESoftCerts"] == nil || getBool(obj, "AllowSMIMESoftCerts") == want)
+		}
+	}
+	if !cfg.AllowSimplePassword.IsUnknown() && !cfg.AllowSimplePassword.IsNull() && !cfg.AllowSimplePassword.Equal(state.AllowSimplePassword) {
+		prev, want := reflected, cfg.AllowSimplePassword.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowSimplePassword"] == nil || getBool(obj, "AllowSimplePassword") == want)
+		}
+	}
+	if !cfg.AllowStorageCard.IsUnknown() && !cfg.AllowStorageCard.IsNull() && !cfg.AllowStorageCard.Equal(state.AllowStorageCard) {
+		prev, want := reflected, cfg.AllowStorageCard.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowStorageCard"] == nil || getBool(obj, "AllowStorageCard") == want)
+		}
+	}
+	if !cfg.AllowTextMessaging.IsUnknown() && !cfg.AllowTextMessaging.IsNull() && !cfg.AllowTextMessaging.Equal(state.AllowTextMessaging) {
+		prev, want := reflected, cfg.AllowTextMessaging.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowTextMessaging"] == nil || getBool(obj, "AllowTextMessaging") == want)
+		}
+	}
+	if !cfg.AllowUnsignedApplications.IsUnknown() && !cfg.AllowUnsignedApplications.IsNull() && !cfg.AllowUnsignedApplications.Equal(state.AllowUnsignedApplications) {
+		prev, want := reflected, cfg.AllowUnsignedApplications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowUnsignedApplications"] == nil || getBool(obj, "AllowUnsignedApplications") == want)
+		}
+	}
+	if !cfg.AllowUnsignedInstallationPackages.IsUnknown() && !cfg.AllowUnsignedInstallationPackages.IsNull() && !cfg.AllowUnsignedInstallationPackages.Equal(state.AllowUnsignedInstallationPackages) {
+		prev, want := reflected, cfg.AllowUnsignedInstallationPackages.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowUnsignedInstallationPackages"] == nil || getBool(obj, "AllowUnsignedInstallationPackages") == want)
+		}
+	}
+	if !cfg.AllowWiFi.IsUnknown() && !cfg.AllowWiFi.IsNull() && !cfg.AllowWiFi.Equal(state.AllowWiFi) {
+		prev, want := reflected, cfg.AllowWiFi.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowWiFi"] == nil || getBool(obj, "AllowWiFi") == want)
+		}
+	}
+	if !cfg.AlphanumericPasswordRequired.IsUnknown() && !cfg.AlphanumericPasswordRequired.IsNull() && !cfg.AlphanumericPasswordRequired.Equal(state.AlphanumericPasswordRequired) {
+		prev, want := reflected, cfg.AlphanumericPasswordRequired.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AlphanumericPasswordRequired"] == nil || getBool(obj, "AlphanumericPasswordRequired") == want)
+		}
+	}
+	if !cfg.AttachmentsEnabled.IsUnknown() && !cfg.AttachmentsEnabled.IsNull() && !cfg.AttachmentsEnabled.Equal(state.AttachmentsEnabled) {
+		prev, want := reflected, cfg.AttachmentsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AttachmentsEnabled"] == nil || getBool(obj, "AttachmentsEnabled") == want)
+		}
+	}
+	if !cfg.DeviceEncryptionEnabled.IsUnknown() && !cfg.DeviceEncryptionEnabled.IsNull() && !cfg.DeviceEncryptionEnabled.Equal(state.DeviceEncryptionEnabled) {
+		prev, want := reflected, cfg.DeviceEncryptionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeviceEncryptionEnabled"] == nil || getBool(obj, "DeviceEncryptionEnabled") == want)
+		}
+	}
+	if !cfg.IrmEnabled.IsUnknown() && !cfg.IrmEnabled.IsNull() && !cfg.IrmEnabled.Equal(state.IrmEnabled) {
+		prev, want := reflected, cfg.IrmEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IrmEnabled"] == nil || getBool(obj, "IrmEnabled") == want)
+		}
+	}
+	if !cfg.IsDefault.IsUnknown() && !cfg.IsDefault.IsNull() && !cfg.IsDefault.Equal(state.IsDefault) {
+		prev, want := reflected, cfg.IsDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDefault"] == nil || getBool(obj, "IsDefault") == want)
+		}
+	}
+	if !cfg.MinPasswordComplexCharacters.IsUnknown() && !cfg.MinPasswordComplexCharacters.IsNull() && !cfg.MinPasswordComplexCharacters.Equal(state.MinPasswordComplexCharacters) {
+		prev, want := reflected, cfg.MinPasswordComplexCharacters.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MinPasswordComplexCharacters"] == nil || getInt(obj, "MinPasswordComplexCharacters") == want)
+		}
+	}
+	if !cfg.MinPasswordLength.IsUnknown() && !cfg.MinPasswordLength.IsNull() && !cfg.MinPasswordLength.Equal(state.MinPasswordLength) {
+		prev, want := reflected, cfg.MinPasswordLength.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MinPasswordLength"] == nil || getInt(obj, "MinPasswordLength") == want)
+		}
+	}
+	if !cfg.PasswordEnabled.IsUnknown() && !cfg.PasswordEnabled.IsNull() && !cfg.PasswordEnabled.Equal(state.PasswordEnabled) {
+		prev, want := reflected, cfg.PasswordEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PasswordEnabled"] == nil || getBool(obj, "PasswordEnabled") == want)
+		}
+	}
+	if !cfg.PasswordHistory.IsUnknown() && !cfg.PasswordHistory.IsNull() && !cfg.PasswordHistory.Equal(state.PasswordHistory) {
+		prev, want := reflected, cfg.PasswordHistory.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PasswordHistory"] == nil || getInt(obj, "PasswordHistory") == want)
+		}
+	}
+	if !cfg.PasswordRecoveryEnabled.IsUnknown() && !cfg.PasswordRecoveryEnabled.IsNull() && !cfg.PasswordRecoveryEnabled.Equal(state.PasswordRecoveryEnabled) {
+		prev, want := reflected, cfg.PasswordRecoveryEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PasswordRecoveryEnabled"] == nil || getBool(obj, "PasswordRecoveryEnabled") == want)
+		}
+	}
+	if !cfg.RequireDeviceEncryption.IsUnknown() && !cfg.RequireDeviceEncryption.IsNull() && !cfg.RequireDeviceEncryption.Equal(state.RequireDeviceEncryption) {
+		prev, want := reflected, cfg.RequireDeviceEncryption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireDeviceEncryption"] == nil || getBool(obj, "RequireDeviceEncryption") == want)
+		}
+	}
+	if !cfg.RequireEncryptedSMIMEMessages.IsUnknown() && !cfg.RequireEncryptedSMIMEMessages.IsNull() && !cfg.RequireEncryptedSMIMEMessages.Equal(state.RequireEncryptedSMIMEMessages) {
+		prev, want := reflected, cfg.RequireEncryptedSMIMEMessages.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireEncryptedSMIMEMessages"] == nil || getBool(obj, "RequireEncryptedSMIMEMessages") == want)
+		}
+	}
+	if !cfg.RequireManualSyncWhenRoaming.IsUnknown() && !cfg.RequireManualSyncWhenRoaming.IsNull() && !cfg.RequireManualSyncWhenRoaming.Equal(state.RequireManualSyncWhenRoaming) {
+		prev, want := reflected, cfg.RequireManualSyncWhenRoaming.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireManualSyncWhenRoaming"] == nil || getBool(obj, "RequireManualSyncWhenRoaming") == want)
+		}
+	}
+	if !cfg.RequireSignedSMIMEMessages.IsUnknown() && !cfg.RequireSignedSMIMEMessages.IsNull() && !cfg.RequireSignedSMIMEMessages.Equal(state.RequireSignedSMIMEMessages) {
+		prev, want := reflected, cfg.RequireSignedSMIMEMessages.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSignedSMIMEMessages"] == nil || getBool(obj, "RequireSignedSMIMEMessages") == want)
+		}
+	}
+	if !cfg.RequireStorageCardEncryption.IsUnknown() && !cfg.RequireStorageCardEncryption.IsNull() && !cfg.RequireStorageCardEncryption.Equal(state.RequireStorageCardEncryption) {
+		prev, want := reflected, cfg.RequireStorageCardEncryption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireStorageCardEncryption"] == nil || getBool(obj, "RequireStorageCardEncryption") == want)
+		}
+	}
+	if !cfg.UNCAccessEnabled.IsUnknown() && !cfg.UNCAccessEnabled.IsNull() && !cfg.UNCAccessEnabled.Equal(state.UNCAccessEnabled) {
+		prev, want := reflected, cfg.UNCAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UNCAccessEnabled"] == nil || getBool(obj, "UNCAccessEnabled") == want)
+		}
+	}
+	if !cfg.WSSAccessEnabled.IsUnknown() && !cfg.WSSAccessEnabled.IsNull() && !cfg.WSSAccessEnabled.Equal(state.WSSAccessEnabled) {
+		prev, want := reflected, cfg.WSSAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WSSAccessEnabled"] == nil || getBool(obj, "WSSAccessEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
