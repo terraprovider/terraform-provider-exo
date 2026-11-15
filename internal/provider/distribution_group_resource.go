@@ -211,7 +211,9 @@ func (r *distributionGroupResource) Create(ctx context.Context, req resource.Cre
 		}
 	}
 	if !config.CopyOwnerToMember.IsNull() {
-		p.CopyOwnerToMember = plan.CopyOwnerToMember.ValueBool()
+		if !plan.CopyOwnerToMember.IsUnknown() {
+			p.CopyOwnerToMember = plan.CopyOwnerToMember.ValueBoolPointer()
+		}
 	}
 	if !config.Description.IsNull() {
 		if v := toStringSlice(ctx, plan.Description, &resp.Diagnostics); len(v) > 0 {
@@ -222,10 +224,14 @@ func (r *distributionGroupResource) Create(ctx context.Context, req resource.Cre
 		p.DisplayName = plan.DisplayName.ValueString()
 	}
 	if !config.HiddenGroupMembershipEnabled.IsNull() {
-		p.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBool()
+		if !plan.HiddenGroupMembershipEnabled.IsUnknown() {
+			p.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBoolPointer()
+		}
 	}
 	if !config.IgnoreNamingPolicy.IsNull() {
-		p.IgnoreNamingPolicy = plan.IgnoreNamingPolicy.ValueBool()
+		if !plan.IgnoreNamingPolicy.IsUnknown() {
+			p.IgnoreNamingPolicy = plan.IgnoreNamingPolicy.ValueBoolPointer()
+		}
 	}
 	if !config.ManagedBy.IsNull() {
 		if v := toStringSlice(ctx, plan.ManagedBy, &resp.Diagnostics); len(v) > 0 {
@@ -266,7 +272,9 @@ func (r *distributionGroupResource) Create(ctx context.Context, req resource.Cre
 		}
 	}
 	if !config.RoomList.IsNull() {
-		p.RoomList = plan.RoomList.ValueBool()
+		if !plan.RoomList.IsUnknown() {
+			p.RoomList = plan.RoomList.ValueBoolPointer()
+		}
 	}
 	if v := config.SendModerationNotifications.ValueString(); v != "" {
 		p.SendModerationNotifications = objectParam(v)
@@ -545,7 +553,9 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 	if !plan.ForceUpgrade.Equal(state.ForceUpgrade) {
-		sp.ForceUpgrade = plan.ForceUpgrade.ValueBool()
+		if !plan.ForceUpgrade.IsUnknown() {
+			sp.ForceUpgrade = plan.ForceUpgrade.ValueBoolPointer()
+		}
 	}
 	if !plan.GrantSendOnBehalfTo.Equal(state.GrantSendOnBehalfTo) {
 		if !plan.GrantSendOnBehalfTo.IsNull() && !plan.GrantSendOnBehalfTo.IsUnknown() {
@@ -566,10 +576,14 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 	if !plan.HiddenGroupMembershipEnabled.Equal(state.HiddenGroupMembershipEnabled) {
-		sp.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBool()
+		if !plan.HiddenGroupMembershipEnabled.IsUnknown() {
+			sp.HiddenGroupMembershipEnabled = plan.HiddenGroupMembershipEnabled.ValueBoolPointer()
+		}
 	}
 	if !plan.IgnoreNamingPolicy.Equal(state.IgnoreNamingPolicy) {
-		sp.IgnoreNamingPolicy = plan.IgnoreNamingPolicy.ValueBool()
+		if !plan.IgnoreNamingPolicy.IsUnknown() {
+			sp.IgnoreNamingPolicy = plan.IgnoreNamingPolicy.ValueBoolPointer()
+		}
 	}
 	if !plan.MailTip.Equal(state.MailTip) {
 		sp.MailTip = plan.MailTip.ValueString()
@@ -688,10 +702,14 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 	if !plan.ResetMigrationToUnifiedGroup.Equal(state.ResetMigrationToUnifiedGroup) {
-		sp.ResetMigrationToUnifiedGroup = plan.ResetMigrationToUnifiedGroup.ValueBool()
+		if !plan.ResetMigrationToUnifiedGroup.IsUnknown() {
+			sp.ResetMigrationToUnifiedGroup = plan.ResetMigrationToUnifiedGroup.ValueBoolPointer()
+		}
 	}
 	if !plan.RoomList.Equal(state.RoomList) {
-		sp.RoomList = plan.RoomList.ValueBool()
+		if !plan.RoomList.IsUnknown() {
+			sp.RoomList = plan.RoomList.ValueBoolPointer()
+		}
 	}
 	if !plan.SendModerationNotifications.Equal(state.SendModerationNotifications) {
 		if v := plan.SendModerationNotifications.ValueString(); v != "" {
@@ -707,7 +725,9 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 		sp.SimpleDisplayName = plan.SimpleDisplayName.ValueString()
 	}
 	if !plan.UpdateMemberCount.Equal(state.UpdateMemberCount) {
-		sp.UpdateMemberCount = plan.UpdateMemberCount.ValueBool()
+		if !plan.UpdateMemberCount.IsUnknown() {
+			sp.UpdateMemberCount = plan.UpdateMemberCount.ValueBoolPointer()
+		}
 	}
 	if !plan.WindowsEmailAddress.Equal(state.WindowsEmailAddress) {
 		if v := plan.WindowsEmailAddress.ValueString(); v != "" {
@@ -743,6 +763,90 @@ func (r *distributionGroupResource) Update(ctx context.Context, req resource.Upd
 		"MailTip":           cfg.MailTip,
 		"SimpleDisplayName": cfg.SimpleDisplayName,
 	}, getString)
+	if !cfg.BccBlocked.IsUnknown() && !cfg.BccBlocked.IsNull() && !cfg.BccBlocked.Equal(state.BccBlocked) {
+		prev, want := reflected, cfg.BccBlocked.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BccBlocked"] == nil || getBool(obj, "BccBlocked") == want)
+		}
+	}
+	if !cfg.BypassNestedModerationEnabled.IsUnknown() && !cfg.BypassNestedModerationEnabled.IsNull() && !cfg.BypassNestedModerationEnabled.Equal(state.BypassNestedModerationEnabled) {
+		prev, want := reflected, cfg.BypassNestedModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BypassNestedModerationEnabled"] == nil || getBool(obj, "BypassNestedModerationEnabled") == want)
+		}
+	}
+	if !cfg.ForceUpgrade.IsUnknown() && !cfg.ForceUpgrade.IsNull() && !cfg.ForceUpgrade.Equal(state.ForceUpgrade) {
+		prev, want := reflected, cfg.ForceUpgrade.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ForceUpgrade"] == nil || getBool(obj, "ForceUpgrade") == want)
+		}
+	}
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
+	if !cfg.HiddenGroupMembershipEnabled.IsUnknown() && !cfg.HiddenGroupMembershipEnabled.IsNull() && !cfg.HiddenGroupMembershipEnabled.Equal(state.HiddenGroupMembershipEnabled) {
+		prev, want := reflected, cfg.HiddenGroupMembershipEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenGroupMembershipEnabled"] == nil || getBool(obj, "HiddenGroupMembershipEnabled") == want)
+		}
+	}
+	if !cfg.IgnoreNamingPolicy.IsUnknown() && !cfg.IgnoreNamingPolicy.IsNull() && !cfg.IgnoreNamingPolicy.Equal(state.IgnoreNamingPolicy) {
+		prev, want := reflected, cfg.IgnoreNamingPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreNamingPolicy"] == nil || getBool(obj, "IgnoreNamingPolicy") == want)
+		}
+	}
+	if !cfg.ModerationEnabled.IsUnknown() && !cfg.ModerationEnabled.IsNull() && !cfg.ModerationEnabled.Equal(state.ModerationEnabled) {
+		prev, want := reflected, cfg.ModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerationEnabled"] == nil || getBool(obj, "ModerationEnabled") == want)
+		}
+	}
+	if !cfg.ReportToManagerEnabled.IsUnknown() && !cfg.ReportToManagerEnabled.IsNull() && !cfg.ReportToManagerEnabled.Equal(state.ReportToManagerEnabled) {
+		prev, want := reflected, cfg.ReportToManagerEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportToManagerEnabled"] == nil || getBool(obj, "ReportToManagerEnabled") == want)
+		}
+	}
+	if !cfg.ReportToOriginatorEnabled.IsUnknown() && !cfg.ReportToOriginatorEnabled.IsNull() && !cfg.ReportToOriginatorEnabled.Equal(state.ReportToOriginatorEnabled) {
+		prev, want := reflected, cfg.ReportToOriginatorEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportToOriginatorEnabled"] == nil || getBool(obj, "ReportToOriginatorEnabled") == want)
+		}
+	}
+	if !cfg.RequireSenderAuthenticationEnabled.IsUnknown() && !cfg.RequireSenderAuthenticationEnabled.IsNull() && !cfg.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		prev, want := reflected, cfg.RequireSenderAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSenderAuthenticationEnabled"] == nil || getBool(obj, "RequireSenderAuthenticationEnabled") == want)
+		}
+	}
+	if !cfg.ResetMigrationToUnifiedGroup.IsUnknown() && !cfg.ResetMigrationToUnifiedGroup.IsNull() && !cfg.ResetMigrationToUnifiedGroup.Equal(state.ResetMigrationToUnifiedGroup) {
+		prev, want := reflected, cfg.ResetMigrationToUnifiedGroup.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ResetMigrationToUnifiedGroup"] == nil || getBool(obj, "ResetMigrationToUnifiedGroup") == want)
+		}
+	}
+	if !cfg.RoomList.IsUnknown() && !cfg.RoomList.IsNull() && !cfg.RoomList.Equal(state.RoomList) {
+		prev, want := reflected, cfg.RoomList.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RoomList"] == nil || getBool(obj, "RoomList") == want)
+		}
+	}
+	if !cfg.SendOofMessageToOriginatorEnabled.IsUnknown() && !cfg.SendOofMessageToOriginatorEnabled.IsNull() && !cfg.SendOofMessageToOriginatorEnabled.Equal(state.SendOofMessageToOriginatorEnabled) {
+		prev, want := reflected, cfg.SendOofMessageToOriginatorEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SendOofMessageToOriginatorEnabled"] == nil || getBool(obj, "SendOofMessageToOriginatorEnabled") == want)
+		}
+	}
+	if !cfg.UpdateMemberCount.IsUnknown() && !cfg.UpdateMemberCount.IsNull() && !cfg.UpdateMemberCount.Equal(state.UpdateMemberCount) {
+		prev, want := reflected, cfg.UpdateMemberCount.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UpdateMemberCount"] == nil || getBool(obj, "UpdateMemberCount") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

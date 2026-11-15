@@ -212,6 +212,18 @@ func (r *messageClassificationResource) Update(ctx context.Context, req resource
 		"RecipientDescription": cfg.RecipientDescription,
 		"SenderDescription":    cfg.SenderDescription,
 	}, getString)
+	if !cfg.PermissionMenuVisible.IsUnknown() && !cfg.PermissionMenuVisible.IsNull() && !cfg.PermissionMenuVisible.Equal(state.PermissionMenuVisible) {
+		prev, want := reflected, cfg.PermissionMenuVisible.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PermissionMenuVisible"] == nil || getBool(obj, "PermissionMenuVisible") == want)
+		}
+	}
+	if !cfg.RetainClassificationEnabled.IsUnknown() && !cfg.RetainClassificationEnabled.IsNull() && !cfg.RetainClassificationEnabled.Equal(state.RetainClassificationEnabled) {
+		prev, want := reflected, cfg.RetainClassificationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RetainClassificationEnabled"] == nil || getBool(obj, "RetainClassificationEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

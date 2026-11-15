@@ -233,6 +233,24 @@ func (r *sweepRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Provider": cfg.Provider,
 	}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.KeepForDays.IsUnknown() && !cfg.KeepForDays.IsNull() && !cfg.KeepForDays.Equal(state.KeepForDays) {
+		prev, want := reflected, cfg.KeepForDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["KeepForDays"] == nil || getInt(obj, "KeepForDays") == want)
+		}
+	}
+	if !cfg.KeepLatest.IsUnknown() && !cfg.KeepLatest.IsNull() && !cfg.KeepLatest.Equal(state.KeepLatest) {
+		prev, want := reflected, cfg.KeepLatest.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["KeepLatest"] == nil || getInt(obj, "KeepLatest") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

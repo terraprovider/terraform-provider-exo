@@ -120,7 +120,9 @@ func (r *reportScheduleResource) Create(ctx context.Context, req resource.Create
 		p.ExpiryDate = objectParam(v)
 	}
 	if !config.IncludeDLP.IsNull() {
-		p.IncludeDLP = plan.IncludeDLP.ValueBool()
+		if !plan.IncludeDLP.IsUnknown() {
+			p.IncludeDLP = plan.IncludeDLP.ValueBoolPointer()
+		}
 	}
 	if v := config.Locale.ValueString(); v != "" {
 		p.Locale = objectParam(v)
@@ -225,7 +227,9 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 		}
 	}
 	if !plan.IncludeDLP.Equal(state.IncludeDLP) {
-		sp.IncludeDLP = plan.IncludeDLP.ValueBool()
+		if !plan.IncludeDLP.IsUnknown() {
+			sp.IncludeDLP = plan.IncludeDLP.ValueBoolPointer()
+		}
 	}
 	if !plan.NotificationEmail.Equal(state.NotificationEmail) {
 		if v := plan.NotificationEmail.ValueString(); v != "" {
@@ -275,6 +279,12 @@ func (r *reportScheduleResource) Update(ctx context.Context, req resource.Update
 		"RecipientAddress": cfg.RecipientAddress,
 		"SenderAddress":    cfg.SenderAddress,
 	}, getString)
+	if !cfg.IncludeDLP.IsUnknown() && !cfg.IncludeDLP.IsNull() && !cfg.IncludeDLP.Equal(state.IncludeDLP) {
+		prev, want := reflected, cfg.IncludeDLP.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IncludeDLP"] == nil || getBool(obj, "IncludeDLP") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -623,6 +623,162 @@ func (r *cASMailboxResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.ActiveSyncDebugLogging.IsUnknown() && !cfg.ActiveSyncDebugLogging.IsNull() && !cfg.ActiveSyncDebugLogging.Equal(state.ActiveSyncDebugLogging) {
+		prev, want := reflected, cfg.ActiveSyncDebugLogging.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActiveSyncDebugLogging"] == nil || getBool(obj, "ActiveSyncDebugLogging") == want)
+		}
+	}
+	if !cfg.ActiveSyncEnabled.IsUnknown() && !cfg.ActiveSyncEnabled.IsNull() && !cfg.ActiveSyncEnabled.Equal(state.ActiveSyncEnabled) {
+		prev, want := reflected, cfg.ActiveSyncEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActiveSyncEnabled"] == nil || getBool(obj, "ActiveSyncEnabled") == want)
+		}
+	}
+	if !cfg.ActiveSyncSuppressReadReceipt.IsUnknown() && !cfg.ActiveSyncSuppressReadReceipt.IsNull() && !cfg.ActiveSyncSuppressReadReceipt.Equal(state.ActiveSyncSuppressReadReceipt) {
+		prev, want := reflected, cfg.ActiveSyncSuppressReadReceipt.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ActiveSyncSuppressReadReceipt"] == nil || getBool(obj, "ActiveSyncSuppressReadReceipt") == want)
+		}
+	}
+	if !cfg.EwsAllowEntourage.IsUnknown() && !cfg.EwsAllowEntourage.IsNull() && !cfg.EwsAllowEntourage.Equal(state.EwsAllowEntourage) {
+		prev, want := reflected, cfg.EwsAllowEntourage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowEntourage"] == nil || getBool(obj, "EwsAllowEntourage") == want)
+		}
+	}
+	if !cfg.EwsAllowMacOutlook.IsUnknown() && !cfg.EwsAllowMacOutlook.IsNull() && !cfg.EwsAllowMacOutlook.Equal(state.EwsAllowMacOutlook) {
+		prev, want := reflected, cfg.EwsAllowMacOutlook.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowMacOutlook"] == nil || getBool(obj, "EwsAllowMacOutlook") == want)
+		}
+	}
+	if !cfg.EwsAllowOutlook.IsUnknown() && !cfg.EwsAllowOutlook.IsNull() && !cfg.EwsAllowOutlook.Equal(state.EwsAllowOutlook) {
+		prev, want := reflected, cfg.EwsAllowOutlook.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsAllowOutlook"] == nil || getBool(obj, "EwsAllowOutlook") == want)
+		}
+	}
+	if !cfg.EwsEnabled.IsUnknown() && !cfg.EwsEnabled.IsNull() && !cfg.EwsEnabled.Equal(state.EwsEnabled) {
+		prev, want := reflected, cfg.EwsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EwsEnabled"] == nil || getBool(obj, "EwsEnabled") == want)
+		}
+	}
+	if !cfg.ImapEnabled.IsUnknown() && !cfg.ImapEnabled.IsNull() && !cfg.ImapEnabled.Equal(state.ImapEnabled) {
+		prev, want := reflected, cfg.ImapEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ImapEnabled"] == nil || getBool(obj, "ImapEnabled") == want)
+		}
+	}
+	if !cfg.ImapForceICalForCalendarRetrievalOption.IsUnknown() && !cfg.ImapForceICalForCalendarRetrievalOption.IsNull() && !cfg.ImapForceICalForCalendarRetrievalOption.Equal(state.ImapForceICalForCalendarRetrievalOption) {
+		prev, want := reflected, cfg.ImapForceICalForCalendarRetrievalOption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ImapForceICalForCalendarRetrievalOption"] == nil || getBool(obj, "ImapForceICalForCalendarRetrievalOption") == want)
+		}
+	}
+	if !cfg.ImapSuppressReadReceipt.IsUnknown() && !cfg.ImapSuppressReadReceipt.IsNull() && !cfg.ImapSuppressReadReceipt.Equal(state.ImapSuppressReadReceipt) {
+		prev, want := reflected, cfg.ImapSuppressReadReceipt.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ImapSuppressReadReceipt"] == nil || getBool(obj, "ImapSuppressReadReceipt") == want)
+		}
+	}
+	if !cfg.ImapUseProtocolDefaults.IsUnknown() && !cfg.ImapUseProtocolDefaults.IsNull() && !cfg.ImapUseProtocolDefaults.Equal(state.ImapUseProtocolDefaults) {
+		prev, want := reflected, cfg.ImapUseProtocolDefaults.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ImapUseProtocolDefaults"] == nil || getBool(obj, "ImapUseProtocolDefaults") == want)
+		}
+	}
+	if !cfg.IsOptimizedForAccessibility.IsUnknown() && !cfg.IsOptimizedForAccessibility.IsNull() && !cfg.IsOptimizedForAccessibility.Equal(state.IsOptimizedForAccessibility) {
+		prev, want := reflected, cfg.IsOptimizedForAccessibility.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsOptimizedForAccessibility"] == nil || getBool(obj, "IsOptimizedForAccessibility") == want)
+		}
+	}
+	if !cfg.MAPIEnabled.IsUnknown() && !cfg.MAPIEnabled.IsNull() && !cfg.MAPIEnabled.Equal(state.MAPIEnabled) {
+		prev, want := reflected, cfg.MAPIEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MAPIEnabled"] == nil || getBool(obj, "MAPIEnabled") == want)
+		}
+	}
+	if !cfg.MacOutlookEnabled.IsUnknown() && !cfg.MacOutlookEnabled.IsNull() && !cfg.MacOutlookEnabled.Equal(state.MacOutlookEnabled) {
+		prev, want := reflected, cfg.MacOutlookEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MacOutlookEnabled"] == nil || getBool(obj, "MacOutlookEnabled") == want)
+		}
+	}
+	if !cfg.OWAEnabled.IsUnknown() && !cfg.OWAEnabled.IsNull() && !cfg.OWAEnabled.Equal(state.OWAEnabled) {
+		prev, want := reflected, cfg.OWAEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAEnabled"] == nil || getBool(obj, "OWAEnabled") == want)
+		}
+	}
+	if !cfg.OWAforDevicesEnabled.IsUnknown() && !cfg.OWAforDevicesEnabled.IsNull() && !cfg.OWAforDevicesEnabled.Equal(state.OWAforDevicesEnabled) {
+		prev, want := reflected, cfg.OWAforDevicesEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAforDevicesEnabled"] == nil || getBool(obj, "OWAforDevicesEnabled") == want)
+		}
+	}
+	if !cfg.OneWinNativeOutlookEnabled.IsUnknown() && !cfg.OneWinNativeOutlookEnabled.IsNull() && !cfg.OneWinNativeOutlookEnabled.Equal(state.OneWinNativeOutlookEnabled) {
+		prev, want := reflected, cfg.OneWinNativeOutlookEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OneWinNativeOutlookEnabled"] == nil || getBool(obj, "OneWinNativeOutlookEnabled") == want)
+		}
+	}
+	if !cfg.OutlookMobileEnabled.IsUnknown() && !cfg.OutlookMobileEnabled.IsNull() && !cfg.OutlookMobileEnabled.Equal(state.OutlookMobileEnabled) {
+		prev, want := reflected, cfg.OutlookMobileEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutlookMobileEnabled"] == nil || getBool(obj, "OutlookMobileEnabled") == want)
+		}
+	}
+	if !cfg.PopEnabled.IsUnknown() && !cfg.PopEnabled.IsNull() && !cfg.PopEnabled.Equal(state.PopEnabled) {
+		prev, want := reflected, cfg.PopEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PopEnabled"] == nil || getBool(obj, "PopEnabled") == want)
+		}
+	}
+	if !cfg.PopForceICalForCalendarRetrievalOption.IsUnknown() && !cfg.PopForceICalForCalendarRetrievalOption.IsNull() && !cfg.PopForceICalForCalendarRetrievalOption.Equal(state.PopForceICalForCalendarRetrievalOption) {
+		prev, want := reflected, cfg.PopForceICalForCalendarRetrievalOption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PopForceICalForCalendarRetrievalOption"] == nil || getBool(obj, "PopForceICalForCalendarRetrievalOption") == want)
+		}
+	}
+	if !cfg.PopSuppressReadReceipt.IsUnknown() && !cfg.PopSuppressReadReceipt.IsNull() && !cfg.PopSuppressReadReceipt.Equal(state.PopSuppressReadReceipt) {
+		prev, want := reflected, cfg.PopSuppressReadReceipt.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PopSuppressReadReceipt"] == nil || getBool(obj, "PopSuppressReadReceipt") == want)
+		}
+	}
+	if !cfg.PopUseProtocolDefaults.IsUnknown() && !cfg.PopUseProtocolDefaults.IsNull() && !cfg.PopUseProtocolDefaults.Equal(state.PopUseProtocolDefaults) {
+		prev, want := reflected, cfg.PopUseProtocolDefaults.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PopUseProtocolDefaults"] == nil || getBool(obj, "PopUseProtocolDefaults") == want)
+		}
+	}
+	if !cfg.PublicFolderClientAccess.IsUnknown() && !cfg.PublicFolderClientAccess.IsNull() && !cfg.PublicFolderClientAccess.Equal(state.PublicFolderClientAccess) {
+		prev, want := reflected, cfg.PublicFolderClientAccess.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PublicFolderClientAccess"] == nil || getBool(obj, "PublicFolderClientAccess") == want)
+		}
+	}
+	if !cfg.ShowGalAsDefaultView.IsUnknown() && !cfg.ShowGalAsDefaultView.IsNull() && !cfg.ShowGalAsDefaultView.Equal(state.ShowGalAsDefaultView) {
+		prev, want := reflected, cfg.ShowGalAsDefaultView.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowGalAsDefaultView"] == nil || getBool(obj, "ShowGalAsDefaultView") == want)
+		}
+	}
+	if !cfg.SmtpClientAuthenticationDisabled.IsUnknown() && !cfg.SmtpClientAuthenticationDisabled.IsNull() && !cfg.SmtpClientAuthenticationDisabled.Equal(state.SmtpClientAuthenticationDisabled) {
+		prev, want := reflected, cfg.SmtpClientAuthenticationDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SmtpClientAuthenticationDisabled"] == nil || getBool(obj, "SmtpClientAuthenticationDisabled") == want)
+		}
+	}
+	if !cfg.UniversalOutlookEnabled.IsUnknown() && !cfg.UniversalOutlookEnabled.IsNull() && !cfg.UniversalOutlookEnabled.Equal(state.UniversalOutlookEnabled) {
+		prev, want := reflected, cfg.UniversalOutlookEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UniversalOutlookEnabled"] == nil || getBool(obj, "UniversalOutlookEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

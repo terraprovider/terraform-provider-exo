@@ -572,6 +572,192 @@ func (r *calendarProcessingResource) Update(ctx context.Context, req resource.Up
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdditionalResponse": cfg.AdditionalResponse,
 	}, getString)
+	if !cfg.AddAdditionalResponse.IsUnknown() && !cfg.AddAdditionalResponse.IsNull() && !cfg.AddAdditionalResponse.Equal(state.AddAdditionalResponse) {
+		prev, want := reflected, cfg.AddAdditionalResponse.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddAdditionalResponse"] == nil || getBool(obj, "AddAdditionalResponse") == want)
+		}
+	}
+	if !cfg.AddNewRequestsTentatively.IsUnknown() && !cfg.AddNewRequestsTentatively.IsNull() && !cfg.AddNewRequestsTentatively.Equal(state.AddNewRequestsTentatively) {
+		prev, want := reflected, cfg.AddNewRequestsTentatively.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddNewRequestsTentatively"] == nil || getBool(obj, "AddNewRequestsTentatively") == want)
+		}
+	}
+	if !cfg.AddOrganizerToSubject.IsUnknown() && !cfg.AddOrganizerToSubject.IsNull() && !cfg.AddOrganizerToSubject.Equal(state.AddOrganizerToSubject) {
+		prev, want := reflected, cfg.AddOrganizerToSubject.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddOrganizerToSubject"] == nil || getBool(obj, "AddOrganizerToSubject") == want)
+		}
+	}
+	if !cfg.AllBookInPolicy.IsUnknown() && !cfg.AllBookInPolicy.IsNull() && !cfg.AllBookInPolicy.Equal(state.AllBookInPolicy) {
+		prev, want := reflected, cfg.AllBookInPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllBookInPolicy"] == nil || getBool(obj, "AllBookInPolicy") == want)
+		}
+	}
+	if !cfg.AllRequestInPolicy.IsUnknown() && !cfg.AllRequestInPolicy.IsNull() && !cfg.AllRequestInPolicy.Equal(state.AllRequestInPolicy) {
+		prev, want := reflected, cfg.AllRequestInPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllRequestInPolicy"] == nil || getBool(obj, "AllRequestInPolicy") == want)
+		}
+	}
+	if !cfg.AllRequestOutOfPolicy.IsUnknown() && !cfg.AllRequestOutOfPolicy.IsNull() && !cfg.AllRequestOutOfPolicy.Equal(state.AllRequestOutOfPolicy) {
+		prev, want := reflected, cfg.AllRequestOutOfPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllRequestOutOfPolicy"] == nil || getBool(obj, "AllRequestOutOfPolicy") == want)
+		}
+	}
+	if !cfg.AllowConflicts.IsUnknown() && !cfg.AllowConflicts.IsNull() && !cfg.AllowConflicts.Equal(state.AllowConflicts) {
+		prev, want := reflected, cfg.AllowConflicts.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowConflicts"] == nil || getBool(obj, "AllowConflicts") == want)
+		}
+	}
+	if !cfg.AllowRecurringMeetings.IsUnknown() && !cfg.AllowRecurringMeetings.IsNull() && !cfg.AllowRecurringMeetings.Equal(state.AllowRecurringMeetings) {
+		prev, want := reflected, cfg.AllowRecurringMeetings.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowRecurringMeetings"] == nil || getBool(obj, "AllowRecurringMeetings") == want)
+		}
+	}
+	if !cfg.BookingWindowInDays.IsUnknown() && !cfg.BookingWindowInDays.IsNull() && !cfg.BookingWindowInDays.Equal(state.BookingWindowInDays) {
+		prev, want := reflected, cfg.BookingWindowInDays.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BookingWindowInDays"] == nil || getInt(obj, "BookingWindowInDays") == want)
+		}
+	}
+	if !cfg.ConflictPercentageAllowed.IsUnknown() && !cfg.ConflictPercentageAllowed.IsNull() && !cfg.ConflictPercentageAllowed.Equal(state.ConflictPercentageAllowed) {
+		prev, want := reflected, cfg.ConflictPercentageAllowed.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ConflictPercentageAllowed"] == nil || getInt(obj, "ConflictPercentageAllowed") == want)
+		}
+	}
+	if !cfg.DeleteAttachments.IsUnknown() && !cfg.DeleteAttachments.IsNull() && !cfg.DeleteAttachments.Equal(state.DeleteAttachments) {
+		prev, want := reflected, cfg.DeleteAttachments.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteAttachments"] == nil || getBool(obj, "DeleteAttachments") == want)
+		}
+	}
+	if !cfg.DeleteComments.IsUnknown() && !cfg.DeleteComments.IsNull() && !cfg.DeleteComments.Equal(state.DeleteComments) {
+		prev, want := reflected, cfg.DeleteComments.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteComments"] == nil || getBool(obj, "DeleteComments") == want)
+		}
+	}
+	if !cfg.DeleteNonCalendarItems.IsUnknown() && !cfg.DeleteNonCalendarItems.IsNull() && !cfg.DeleteNonCalendarItems.Equal(state.DeleteNonCalendarItems) {
+		prev, want := reflected, cfg.DeleteNonCalendarItems.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteNonCalendarItems"] == nil || getBool(obj, "DeleteNonCalendarItems") == want)
+		}
+	}
+	if !cfg.DeleteSubject.IsUnknown() && !cfg.DeleteSubject.IsNull() && !cfg.DeleteSubject.Equal(state.DeleteSubject) {
+		prev, want := reflected, cfg.DeleteSubject.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteSubject"] == nil || getBool(obj, "DeleteSubject") == want)
+		}
+	}
+	if !cfg.EnableAutoRelease.IsUnknown() && !cfg.EnableAutoRelease.IsNull() && !cfg.EnableAutoRelease.Equal(state.EnableAutoRelease) {
+		prev, want := reflected, cfg.EnableAutoRelease.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableAutoRelease"] == nil || getBool(obj, "EnableAutoRelease") == want)
+		}
+	}
+	if !cfg.EnableResponseDetails.IsUnknown() && !cfg.EnableResponseDetails.IsNull() && !cfg.EnableResponseDetails.Equal(state.EnableResponseDetails) {
+		prev, want := reflected, cfg.EnableResponseDetails.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableResponseDetails"] == nil || getBool(obj, "EnableResponseDetails") == want)
+		}
+	}
+	if !cfg.EnforceCapacity.IsUnknown() && !cfg.EnforceCapacity.IsNull() && !cfg.EnforceCapacity.Equal(state.EnforceCapacity) {
+		prev, want := reflected, cfg.EnforceCapacity.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnforceCapacity"] == nil || getBool(obj, "EnforceCapacity") == want)
+		}
+	}
+	if !cfg.EnforceSchedulingHorizon.IsUnknown() && !cfg.EnforceSchedulingHorizon.IsNull() && !cfg.EnforceSchedulingHorizon.Equal(state.EnforceSchedulingHorizon) {
+		prev, want := reflected, cfg.EnforceSchedulingHorizon.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnforceSchedulingHorizon"] == nil || getBool(obj, "EnforceSchedulingHorizon") == want)
+		}
+	}
+	if !cfg.ForwardRequestsToDelegates.IsUnknown() && !cfg.ForwardRequestsToDelegates.IsNull() && !cfg.ForwardRequestsToDelegates.Equal(state.ForwardRequestsToDelegates) {
+		prev, want := reflected, cfg.ForwardRequestsToDelegates.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ForwardRequestsToDelegates"] == nil || getBool(obj, "ForwardRequestsToDelegates") == want)
+		}
+	}
+	if !cfg.MaximumConflictInstances.IsUnknown() && !cfg.MaximumConflictInstances.IsNull() && !cfg.MaximumConflictInstances.Equal(state.MaximumConflictInstances) {
+		prev, want := reflected, cfg.MaximumConflictInstances.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MaximumConflictInstances"] == nil || getInt(obj, "MaximumConflictInstances") == want)
+		}
+	}
+	if !cfg.MaximumDurationInMinutes.IsUnknown() && !cfg.MaximumDurationInMinutes.IsNull() && !cfg.MaximumDurationInMinutes.Equal(state.MaximumDurationInMinutes) {
+		prev, want := reflected, cfg.MaximumDurationInMinutes.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MaximumDurationInMinutes"] == nil || getInt(obj, "MaximumDurationInMinutes") == want)
+		}
+	}
+	if !cfg.MinimumDurationInMinutes.IsUnknown() && !cfg.MinimumDurationInMinutes.IsNull() && !cfg.MinimumDurationInMinutes.Equal(state.MinimumDurationInMinutes) {
+		prev, want := reflected, cfg.MinimumDurationInMinutes.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MinimumDurationInMinutes"] == nil || getInt(obj, "MinimumDurationInMinutes") == want)
+		}
+	}
+	if !cfg.OrganizerInfo.IsUnknown() && !cfg.OrganizerInfo.IsNull() && !cfg.OrganizerInfo.Equal(state.OrganizerInfo) {
+		prev, want := reflected, cfg.OrganizerInfo.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OrganizerInfo"] == nil || getBool(obj, "OrganizerInfo") == want)
+		}
+	}
+	if !cfg.PostReservationMaxClaimTimeInMinutes.IsUnknown() && !cfg.PostReservationMaxClaimTimeInMinutes.IsNull() && !cfg.PostReservationMaxClaimTimeInMinutes.Equal(state.PostReservationMaxClaimTimeInMinutes) {
+		prev, want := reflected, cfg.PostReservationMaxClaimTimeInMinutes.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PostReservationMaxClaimTimeInMinutes"] == nil || getInt(obj, "PostReservationMaxClaimTimeInMinutes") == want)
+		}
+	}
+	if !cfg.ProcessExternalMeetingMessages.IsUnknown() && !cfg.ProcessExternalMeetingMessages.IsNull() && !cfg.ProcessExternalMeetingMessages.Equal(state.ProcessExternalMeetingMessages) {
+		prev, want := reflected, cfg.ProcessExternalMeetingMessages.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ProcessExternalMeetingMessages"] == nil || getBool(obj, "ProcessExternalMeetingMessages") == want)
+		}
+	}
+	if !cfg.RemoveCanceledMeetings.IsUnknown() && !cfg.RemoveCanceledMeetings.IsNull() && !cfg.RemoveCanceledMeetings.Equal(state.RemoveCanceledMeetings) {
+		prev, want := reflected, cfg.RemoveCanceledMeetings.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveCanceledMeetings"] == nil || getBool(obj, "RemoveCanceledMeetings") == want)
+		}
+	}
+	if !cfg.RemoveForwardedMeetingNotifications.IsUnknown() && !cfg.RemoveForwardedMeetingNotifications.IsNull() && !cfg.RemoveForwardedMeetingNotifications.Equal(state.RemoveForwardedMeetingNotifications) {
+		prev, want := reflected, cfg.RemoveForwardedMeetingNotifications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveForwardedMeetingNotifications"] == nil || getBool(obj, "RemoveForwardedMeetingNotifications") == want)
+		}
+	}
+	if !cfg.RemoveOldMeetingMessages.IsUnknown() && !cfg.RemoveOldMeetingMessages.IsNull() && !cfg.RemoveOldMeetingMessages.Equal(state.RemoveOldMeetingMessages) {
+		prev, want := reflected, cfg.RemoveOldMeetingMessages.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveOldMeetingMessages"] == nil || getBool(obj, "RemoveOldMeetingMessages") == want)
+		}
+	}
+	if !cfg.RemovePrivateProperty.IsUnknown() && !cfg.RemovePrivateProperty.IsNull() && !cfg.RemovePrivateProperty.Equal(state.RemovePrivateProperty) {
+		prev, want := reflected, cfg.RemovePrivateProperty.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemovePrivateProperty"] == nil || getBool(obj, "RemovePrivateProperty") == want)
+		}
+	}
+	if !cfg.ScheduleOnlyDuringWorkHours.IsUnknown() && !cfg.ScheduleOnlyDuringWorkHours.IsNull() && !cfg.ScheduleOnlyDuringWorkHours.Equal(state.ScheduleOnlyDuringWorkHours) {
+		prev, want := reflected, cfg.ScheduleOnlyDuringWorkHours.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ScheduleOnlyDuringWorkHours"] == nil || getBool(obj, "ScheduleOnlyDuringWorkHours") == want)
+		}
+	}
+	if !cfg.TentativePendingApproval.IsUnknown() && !cfg.TentativePendingApproval.IsNull() && !cfg.TentativePendingApproval.Equal(state.TentativePendingApproval) {
+		prev, want := reflected, cfg.TentativePendingApproval.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TentativePendingApproval"] == nil || getBool(obj, "TentativePendingApproval") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

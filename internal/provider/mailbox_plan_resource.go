@@ -93,7 +93,9 @@ func (r *mailboxPlanResource) Create(ctx context.Context, req resource.CreateReq
 	sp := exo.SetMailboxPlanParams{}
 	sp.Identity = plan.Identity.ValueString()
 	if !config.IsDefault.IsNull() {
-		sp.IsDefault = plan.IsDefault.ValueBool()
+		if !plan.IsDefault.IsUnknown() {
+			sp.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
 	}
 	if v := config.IssueWarningQuota.ValueString(); v != "" {
 		sp.IssueWarningQuota = objectParam(v)
@@ -162,7 +164,9 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 	sp := exo.SetMailboxPlanParams{}
 	sp.Identity = id
 	if !plan.IsDefault.Equal(state.IsDefault) {
-		sp.IsDefault = plan.IsDefault.ValueBool()
+		if !plan.IsDefault.IsUnknown() {
+			sp.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.IssueWarningQuota.Equal(state.IssueWarningQuota) {
 		if v := plan.IssueWarningQuota.ValueString(); v != "" {
@@ -218,6 +222,12 @@ func (r *mailboxPlanResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.IsDefault.IsUnknown() && !cfg.IsDefault.IsNull() && !cfg.IsDefault.Equal(state.IsDefault) {
+		prev, want := reflected, cfg.IsDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDefault"] == nil || getBool(obj, "IsDefault") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

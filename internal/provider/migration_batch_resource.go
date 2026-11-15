@@ -215,7 +215,9 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		p.AADIdentityType = objectParam(v)
 	}
 	if !config.AdoptPreexisting.IsNull() {
-		p.AdoptPreexisting = plan.AdoptPreexisting.ValueBool()
+		if !plan.AdoptPreexisting.IsUnknown() {
+			p.AdoptPreexisting = plan.AdoptPreexisting.ValueBoolPointer()
+		}
 	}
 	if !config.AllowUnknownColumnsInCSV.IsNull() {
 		if !plan.AllowUnknownColumnsInCSV.IsUnknown() {
@@ -223,25 +225,37 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		}
 	}
 	if !config.Analyze.IsNull() {
-		p.Analyze = plan.Analyze.ValueBool()
+		if !plan.Analyze.IsUnknown() {
+			p.Analyze = plan.Analyze.ValueBoolPointer()
+		}
 	}
 	if !config.ArchiveDomain.IsNull() {
 		p.ArchiveDomain = plan.ArchiveDomain.ValueString()
 	}
 	if !config.ArchiveOnly.IsNull() {
-		p.ArchiveOnly = plan.ArchiveOnly.ValueBool()
+		if !plan.ArchiveOnly.IsUnknown() {
+			p.ArchiveOnly = plan.ArchiveOnly.ValueBoolPointer()
+		}
 	}
 	if !config.AutoComplete.IsNull() {
-		p.AutoComplete = plan.AutoComplete.ValueBool()
+		if !plan.AutoComplete.IsUnknown() {
+			p.AutoComplete = plan.AutoComplete.ValueBoolPointer()
+		}
 	}
 	if !config.AutoProvisioning.IsNull() {
-		p.AutoProvisioning = plan.AutoProvisioning.ValueBool()
+		if !plan.AutoProvisioning.IsUnknown() {
+			p.AutoProvisioning = plan.AutoProvisioning.ValueBoolPointer()
+		}
 	}
 	if !config.AutoStart.IsNull() {
-		p.AutoStart = plan.AutoStart.ValueBool()
+		if !plan.AutoStart.IsUnknown() {
+			p.AutoStart = plan.AutoStart.ValueBoolPointer()
+		}
 	}
 	if !config.AvoidMergeOverlap.IsNull() {
-		p.AvoidMergeOverlap = plan.AvoidMergeOverlap.ValueBool()
+		if !plan.AvoidMergeOverlap.IsUnknown() {
+			p.AvoidMergeOverlap = plan.AvoidMergeOverlap.ValueBoolPointer()
+		}
 	}
 	if v := config.CSVData.ValueString(); v != "" {
 		p.CSVData = objectParam(v)
@@ -259,16 +273,24 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		p.ContentFilterLanguage = objectParam(v)
 	}
 	if !config.Daily.IsNull() {
-		p.Daily = plan.Daily.ValueBool()
+		if !plan.Daily.IsUnknown() {
+			p.Daily = plan.Daily.ValueBoolPointer()
+		}
 	}
 	if !config.DataFusion.IsNull() {
-		p.DataFusion = plan.DataFusion.ValueBool()
+		if !plan.DataFusion.IsUnknown() {
+			p.DataFusion = plan.DataFusion.ValueBoolPointer()
+		}
 	}
 	if !config.DisableOnCopy.IsNull() {
-		p.DisableOnCopy = plan.DisableOnCopy.ValueBool()
+		if !plan.DisableOnCopy.IsUnknown() {
+			p.DisableOnCopy = plan.DisableOnCopy.ValueBoolPointer()
+		}
 	}
 	if !config.ExcludeDumpsters.IsNull() {
-		p.ExcludeDumpsters = plan.ExcludeDumpsters.ValueBool()
+		if !plan.ExcludeDumpsters.IsUnknown() {
+			p.ExcludeDumpsters = plan.ExcludeDumpsters.ValueBoolPointer()
+		}
 	}
 	if !config.ExcludeFolders.IsNull() {
 		if v := toStringSlice(ctx, plan.ExcludeFolders, &resp.Diagnostics); len(v) > 0 {
@@ -282,7 +304,9 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		p.ForwardingDisposition = objectParam(v)
 	}
 	if !config.GoogleResource.IsNull() {
-		p.GoogleResource = plan.GoogleResource.ValueBool()
+		if !plan.GoogleResource.IsUnknown() {
+			p.GoogleResource = plan.GoogleResource.ValueBoolPointer()
+		}
 	}
 	if !config.IncludeFolders.IsNull() {
 		if v := toStringSlice(ctx, plan.IncludeFolders, &resp.Diagnostics); len(v) > 0 {
@@ -290,13 +314,19 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		}
 	}
 	if !config.IncludeOtherContacts.IsNull() {
-		p.IncludeOtherContacts = plan.IncludeOtherContacts.ValueBool()
+		if !plan.IncludeOtherContacts.IsUnknown() {
+			p.IncludeOtherContacts = plan.IncludeOtherContacts.ValueBoolPointer()
+		}
 	}
 	if !config.ManagedGmailTeams.IsNull() {
-		p.ManagedGmailTeams = plan.ManagedGmailTeams.ValueBool()
+		if !plan.ManagedGmailTeams.IsUnknown() {
+			p.ManagedGmailTeams = plan.ManagedGmailTeams.ValueBoolPointer()
+		}
 	}
 	if !config.MigrateTasks.IsNull() {
-		p.MigrateTasks = plan.MigrateTasks.ValueBool()
+		if !plan.MigrateTasks.IsUnknown() {
+			p.MigrateTasks = plan.MigrateTasks.ValueBoolPointer()
+		}
 	}
 	if !config.MoveOptions.IsNull() {
 		if v := toStringSlice(ctx, plan.MoveOptions, &resp.Diagnostics); len(v) > 0 {
@@ -315,40 +345,62 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		p.Partition = objectParam(v)
 	}
 	if !config.PrimaryOnly.IsNull() {
-		p.PrimaryOnly = plan.PrimaryOnly.ValueBool()
+		if !plan.PrimaryOnly.IsUnknown() {
+			p.PrimaryOnly = plan.PrimaryOnly.ValueBoolPointer()
+		}
 	}
 	if !config.PublicFolderToUnifiedGroup.IsNull() {
-		p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBool()
+		if !plan.PublicFolderToUnifiedGroup.IsUnknown() {
+			p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBoolPointer()
+		}
 	}
 	if !config.RemoveOnCopy.IsNull() {
-		p.RemoveOnCopy = plan.RemoveOnCopy.ValueBool()
+		if !plan.RemoveOnCopy.IsUnknown() {
+			p.RemoveOnCopy = plan.RemoveOnCopy.ValueBoolPointer()
+		}
 	}
 	if !config.RenamePrimaryCalendar.IsNull() {
-		p.RenamePrimaryCalendar = plan.RenamePrimaryCalendar.ValueBool()
+		if !plan.RenamePrimaryCalendar.IsUnknown() {
+			p.RenamePrimaryCalendar = plan.RenamePrimaryCalendar.ValueBoolPointer()
+		}
 	}
 	if v := config.ReportInterval.ValueString(); v != "" {
 		p.ReportInterval = objectParam(v)
 	}
 	if !config.Restore.IsNull() {
-		p.Restore = plan.Restore.ValueBool()
+		if !plan.Restore.IsUnknown() {
+			p.Restore = plan.Restore.ValueBoolPointer()
+		}
 	}
 	if !config.SimplifiedSwitchOver.IsNull() {
-		p.SimplifiedSwitchOver = plan.SimplifiedSwitchOver.ValueBool()
+		if !plan.SimplifiedSwitchOver.IsUnknown() {
+			p.SimplifiedSwitchOver = plan.SimplifiedSwitchOver.ValueBoolPointer()
+		}
 	}
 	if !config.SkipCalendar.IsNull() {
-		p.SkipCalendar = plan.SkipCalendar.ValueBool()
+		if !plan.SkipCalendar.IsUnknown() {
+			p.SkipCalendar = plan.SkipCalendar.ValueBoolPointer()
+		}
 	}
 	if !config.SkipContacts.IsNull() {
-		p.SkipContacts = plan.SkipContacts.ValueBool()
+		if !plan.SkipContacts.IsUnknown() {
+			p.SkipContacts = plan.SkipContacts.ValueBoolPointer()
+		}
 	}
 	if !config.SkipDelegates.IsNull() {
-		p.SkipDelegates = plan.SkipDelegates.ValueBool()
+		if !plan.SkipDelegates.IsUnknown() {
+			p.SkipDelegates = plan.SkipDelegates.ValueBoolPointer()
+		}
 	}
 	if !config.SkipDetails.IsNull() {
-		p.SkipDetails = plan.SkipDetails.ValueBool()
+		if !plan.SkipDetails.IsUnknown() {
+			p.SkipDetails = plan.SkipDetails.ValueBoolPointer()
+		}
 	}
 	if !config.SkipMail.IsNull() {
-		p.SkipMail = plan.SkipMail.ValueBool()
+		if !plan.SkipMail.IsUnknown() {
+			p.SkipMail = plan.SkipMail.ValueBoolPointer()
+		}
 	}
 	if !config.SkipMerging.IsNull() {
 		if v := toStringSlice(ctx, plan.SkipMerging, &resp.Diagnostics); len(v) > 0 {
@@ -361,16 +413,24 @@ func (r *migrationBatchResource) Create(ctx context.Context, req resource.Create
 		}
 	}
 	if !config.SkipProvisioning.IsNull() {
-		p.SkipProvisioning = plan.SkipProvisioning.ValueBool()
+		if !plan.SkipProvisioning.IsUnknown() {
+			p.SkipProvisioning = plan.SkipProvisioning.ValueBoolPointer()
+		}
 	}
 	if !config.SkipReports.IsNull() {
-		p.SkipReports = plan.SkipReports.ValueBool()
+		if !plan.SkipReports.IsUnknown() {
+			p.SkipReports = plan.SkipReports.ValueBoolPointer()
+		}
 	}
 	if !config.SkipRules.IsNull() {
-		p.SkipRules = plan.SkipRules.ValueBool()
+		if !plan.SkipRules.IsUnknown() {
+			p.SkipRules = plan.SkipRules.ValueBoolPointer()
+		}
 	}
 	if !config.SlackPublicDataConnector.IsNull() {
-		p.SlackPublicDataConnector = plan.SlackPublicDataConnector.ValueBool()
+		if !plan.SlackPublicDataConnector.IsUnknown() {
+			p.SlackPublicDataConnector = plan.SlackPublicDataConnector.ValueBoolPointer()
+		}
 	}
 	if !config.SlackWorkspaceId.IsNull() {
 		p.SlackWorkspaceId = plan.SlackWorkspaceId.ValueString()
@@ -493,7 +553,9 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 		return cur
 	}
 	if !plan.AddUsers.Equal(state.AddUsers) {
-		sp.AddUsers = plan.AddUsers.ValueBool()
+		if !plan.AddUsers.IsUnknown() {
+			sp.AddUsers = plan.AddUsers.ValueBoolPointer()
+		}
 	}
 	if !plan.AllowUnknownColumnsInCSV.Equal(state.AllowUnknownColumnsInCSV) {
 		if !plan.AllowUnknownColumnsInCSV.IsUnknown() {
@@ -501,7 +563,9 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 		}
 	}
 	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
-		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+		if !plan.ApproveSkippedItems.IsUnknown() {
+			sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBoolPointer()
+		}
 	}
 	if !plan.CSVData.Equal(state.CSVData) {
 		if v := plan.CSVData.ValueString(); v != "" {
@@ -581,10 +645,14 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 		}
 	}
 	if !plan.SyncNow.Equal(state.SyncNow) {
-		sp.SyncNow = plan.SyncNow.ValueBool()
+		if !plan.SyncNow.IsUnknown() {
+			sp.SyncNow = plan.SyncNow.ValueBoolPointer()
+		}
 	}
 	if !plan.Update.Equal(state.Update) {
-		sp.Update = plan.Update.ValueBool()
+		if !plan.Update.IsUnknown() {
+			sp.Update = plan.Update.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -595,6 +663,36 @@ func (r *migrationBatchResource) Update(ctx context.Context, req resource.Update
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AddUsers.IsUnknown() && !cfg.AddUsers.IsNull() && !cfg.AddUsers.Equal(state.AddUsers) {
+		prev, want := reflected, cfg.AddUsers.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddUsers"] == nil || getBool(obj, "AddUsers") == want)
+		}
+	}
+	if !cfg.AllowUnknownColumnsInCSV.IsUnknown() && !cfg.AllowUnknownColumnsInCSV.IsNull() && !cfg.AllowUnknownColumnsInCSV.Equal(state.AllowUnknownColumnsInCSV) {
+		prev, want := reflected, cfg.AllowUnknownColumnsInCSV.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowUnknownColumnsInCSV"] == nil || getBool(obj, "AllowUnknownColumnsInCSV") == want)
+		}
+	}
+	if !cfg.ApproveSkippedItems.IsUnknown() && !cfg.ApproveSkippedItems.IsNull() && !cfg.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
+		prev, want := reflected, cfg.ApproveSkippedItems.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ApproveSkippedItems"] == nil || getBool(obj, "ApproveSkippedItems") == want)
+		}
+	}
+	if !cfg.SyncNow.IsUnknown() && !cfg.SyncNow.IsNull() && !cfg.SyncNow.Equal(state.SyncNow) {
+		prev, want := reflected, cfg.SyncNow.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SyncNow"] == nil || getBool(obj, "SyncNow") == want)
+		}
+	}
+	if !cfg.Update.IsUnknown() && !cfg.Update.IsNull() && !cfg.Update.Equal(state.Update) {
+		prev, want := reflected, cfg.Update.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Update"] == nil || getBool(obj, "Update") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

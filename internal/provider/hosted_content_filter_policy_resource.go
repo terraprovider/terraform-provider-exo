@@ -647,7 +647,9 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 		}
 	}
 	if !plan.MakeDefault.Equal(state.MakeDefault) {
-		sp.MakeDefault = plan.MakeDefault.ValueBool()
+		if !plan.MakeDefault.IsUnknown() {
+			sp.MakeDefault = plan.MakeDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.MarkAsSpamBulkMail.Equal(state.MarkAsSpamBulkMail) {
 		if v := plan.MarkAsSpamBulkMail.ValueString(); v != "" {
@@ -807,6 +809,78 @@ func (r *hostedContentFilterPolicyResource) Update(ctx context.Context, req reso
 		"PhishQuarantineTag":                    cfg.PhishQuarantineTag,
 		"SpamQuarantineTag":                     cfg.SpamQuarantineTag,
 	}, getString)
+	if !cfg.BulkThreshold.IsUnknown() && !cfg.BulkThreshold.IsNull() && !cfg.BulkThreshold.Equal(state.BulkThreshold) {
+		prev, want := reflected, cfg.BulkThreshold.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BulkThreshold"] == nil || getInt(obj, "BulkThreshold") == want)
+		}
+	}
+	if !cfg.DownloadLink.IsUnknown() && !cfg.DownloadLink.IsNull() && !cfg.DownloadLink.Equal(state.DownloadLink) {
+		prev, want := reflected, cfg.DownloadLink.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DownloadLink"] == nil || getBool(obj, "DownloadLink") == want)
+		}
+	}
+	if !cfg.EnableEndUserSpamNotifications.IsUnknown() && !cfg.EnableEndUserSpamNotifications.IsNull() && !cfg.EnableEndUserSpamNotifications.Equal(state.EnableEndUserSpamNotifications) {
+		prev, want := reflected, cfg.EnableEndUserSpamNotifications.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableEndUserSpamNotifications"] == nil || getBool(obj, "EnableEndUserSpamNotifications") == want)
+		}
+	}
+	if !cfg.EnableLanguageBlockList.IsUnknown() && !cfg.EnableLanguageBlockList.IsNull() && !cfg.EnableLanguageBlockList.Equal(state.EnableLanguageBlockList) {
+		prev, want := reflected, cfg.EnableLanguageBlockList.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableLanguageBlockList"] == nil || getBool(obj, "EnableLanguageBlockList") == want)
+		}
+	}
+	if !cfg.EnableRegionBlockList.IsUnknown() && !cfg.EnableRegionBlockList.IsNull() && !cfg.EnableRegionBlockList.Equal(state.EnableRegionBlockList) {
+		prev, want := reflected, cfg.EnableRegionBlockList.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableRegionBlockList"] == nil || getBool(obj, "EnableRegionBlockList") == want)
+		}
+	}
+	if !cfg.EndUserSpamNotificationFrequency.IsUnknown() && !cfg.EndUserSpamNotificationFrequency.IsNull() && !cfg.EndUserSpamNotificationFrequency.Equal(state.EndUserSpamNotificationFrequency) {
+		prev, want := reflected, cfg.EndUserSpamNotificationFrequency.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserSpamNotificationFrequency"] == nil || getInt(obj, "EndUserSpamNotificationFrequency") == want)
+		}
+	}
+	if !cfg.EndUserSpamNotificationLimit.IsUnknown() && !cfg.EndUserSpamNotificationLimit.IsNull() && !cfg.EndUserSpamNotificationLimit.Equal(state.EndUserSpamNotificationLimit) {
+		prev, want := reflected, cfg.EndUserSpamNotificationLimit.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EndUserSpamNotificationLimit"] == nil || getInt(obj, "EndUserSpamNotificationLimit") == want)
+		}
+	}
+	if !cfg.InlineSafetyTipsEnabled.IsUnknown() && !cfg.InlineSafetyTipsEnabled.IsNull() && !cfg.InlineSafetyTipsEnabled.Equal(state.InlineSafetyTipsEnabled) {
+		prev, want := reflected, cfg.InlineSafetyTipsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InlineSafetyTipsEnabled"] == nil || getBool(obj, "InlineSafetyTipsEnabled") == want)
+		}
+	}
+	if !cfg.MakeDefault.IsUnknown() && !cfg.MakeDefault.IsNull() && !cfg.MakeDefault.Equal(state.MakeDefault) {
+		prev, want := reflected, cfg.MakeDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MakeDefault"] == nil || getBool(obj, "MakeDefault") == want)
+		}
+	}
+	if !cfg.PhishZapEnabled.IsUnknown() && !cfg.PhishZapEnabled.IsNull() && !cfg.PhishZapEnabled.Equal(state.PhishZapEnabled) {
+		prev, want := reflected, cfg.PhishZapEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PhishZapEnabled"] == nil || getBool(obj, "PhishZapEnabled") == want)
+		}
+	}
+	if !cfg.QuarantineRetentionPeriod.IsUnknown() && !cfg.QuarantineRetentionPeriod.IsNull() && !cfg.QuarantineRetentionPeriod.Equal(state.QuarantineRetentionPeriod) {
+		prev, want := reflected, cfg.QuarantineRetentionPeriod.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["QuarantineRetentionPeriod"] == nil || getInt(obj, "QuarantineRetentionPeriod") == want)
+		}
+	}
+	if !cfg.SpamZapEnabled.IsUnknown() && !cfg.SpamZapEnabled.IsNull() && !cfg.SpamZapEnabled.Equal(state.SpamZapEnabled) {
+		prev, want := reflected, cfg.SpamZapEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SpamZapEnabled"] == nil || getBool(obj, "SpamZapEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

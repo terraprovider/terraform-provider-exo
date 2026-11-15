@@ -311,6 +311,30 @@ func (r *placeResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		"Street":            cfg.Street,
 		"VideoDeviceName":   cfg.VideoDeviceName,
 	}, getString)
+	if !cfg.Capacity.IsUnknown() && !cfg.Capacity.IsNull() && !cfg.Capacity.Equal(state.Capacity) {
+		prev, want := reflected, cfg.Capacity.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Capacity"] == nil || getInt(obj, "Capacity") == want)
+		}
+	}
+	if !cfg.Floor.IsUnknown() && !cfg.Floor.IsNull() && !cfg.Floor.Equal(state.Floor) {
+		prev, want := reflected, cfg.Floor.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Floor"] == nil || getInt(obj, "Floor") == want)
+		}
+	}
+	if !cfg.IsWheelChairAccessible.IsUnknown() && !cfg.IsWheelChairAccessible.IsNull() && !cfg.IsWheelChairAccessible.Equal(state.IsWheelChairAccessible) {
+		prev, want := reflected, cfg.IsWheelChairAccessible.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsWheelChairAccessible"] == nil || getBool(obj, "IsWheelChairAccessible") == want)
+		}
+	}
+	if !cfg.MTREnabled.IsUnknown() && !cfg.MTREnabled.IsNull() && !cfg.MTREnabled.Equal(state.MTREnabled) {
+		prev, want := reflected, cfg.MTREnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MTREnabled"] == nil || getBool(obj, "MTREnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

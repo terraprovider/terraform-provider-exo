@@ -241,7 +241,9 @@ func (r *inboxRuleResource) Create(ctx context.Context, req resource.CreateReque
 
 	p := exo.NewInboxRuleParams{}
 	if !config.AlwaysDeleteOutlookRulesBlob.IsNull() {
-		p.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
+		if !plan.AlwaysDeleteOutlookRulesBlob.IsUnknown() {
+			p.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBoolPointer()
+		}
 	}
 	if !config.AnyCategory.IsNull() {
 		if !plan.AnyCategory.IsUnknown() {
@@ -583,7 +585,9 @@ func (r *inboxRuleResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 	if !config.ValidateOnly.IsNull() {
-		p.ValidateOnly = plan.ValidateOnly.ValueBool()
+		if !plan.ValidateOnly.IsUnknown() {
+			p.ValidateOnly = plan.ValidateOnly.ValueBoolPointer()
+		}
 	}
 	if v := config.WithImportance.ValueString(); v != "" {
 		p.WithImportance = objectParam(v)
@@ -662,7 +666,9 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		return cur
 	}
 	if !plan.AlwaysDeleteOutlookRulesBlob.Equal(state.AlwaysDeleteOutlookRulesBlob) {
-		sp.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBool()
+		if !plan.AlwaysDeleteOutlookRulesBlob.IsUnknown() {
+			sp.AlwaysDeleteOutlookRulesBlob = plan.AlwaysDeleteOutlookRulesBlob.ValueBoolPointer()
+		}
 	}
 	if !plan.AnyCategory.Equal(state.AnyCategory) {
 		if !plan.AnyCategory.IsUnknown() {
@@ -1182,6 +1188,180 @@ func (r *inboxRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		"FlaggedForAction":         cfg.FlaggedForAction,
 		"PlaySound":                cfg.PlaySound,
 	}, getString)
+	if !cfg.AlwaysDeleteOutlookRulesBlob.IsUnknown() && !cfg.AlwaysDeleteOutlookRulesBlob.IsNull() && !cfg.AlwaysDeleteOutlookRulesBlob.Equal(state.AlwaysDeleteOutlookRulesBlob) {
+		prev, want := reflected, cfg.AlwaysDeleteOutlookRulesBlob.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AlwaysDeleteOutlookRulesBlob"] == nil || getBool(obj, "AlwaysDeleteOutlookRulesBlob") == want)
+		}
+	}
+	if !cfg.AnyCategory.IsUnknown() && !cfg.AnyCategory.IsNull() && !cfg.AnyCategory.Equal(state.AnyCategory) {
+		prev, want := reflected, cfg.AnyCategory.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AnyCategory"] == nil || getBool(obj, "AnyCategory") == want)
+		}
+	}
+	if !cfg.ClearCategories.IsUnknown() && !cfg.ClearCategories.IsNull() && !cfg.ClearCategories.Equal(state.ClearCategories) {
+		prev, want := reflected, cfg.ClearCategories.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ClearCategories"] == nil || getBool(obj, "ClearCategories") == want)
+		}
+	}
+	if !cfg.ClearFlag.IsUnknown() && !cfg.ClearFlag.IsNull() && !cfg.ClearFlag.Equal(state.ClearFlag) {
+		prev, want := reflected, cfg.ClearFlag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ClearFlag"] == nil || getBool(obj, "ClearFlag") == want)
+		}
+	}
+	if !cfg.CompleteFlag.IsUnknown() && !cfg.CompleteFlag.IsNull() && !cfg.CompleteFlag.Equal(state.CompleteFlag) {
+		prev, want := reflected, cfg.CompleteFlag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CompleteFlag"] == nil || getBool(obj, "CompleteFlag") == want)
+		}
+	}
+	if !cfg.DeleteMessage.IsUnknown() && !cfg.DeleteMessage.IsNull() && !cfg.DeleteMessage.Equal(state.DeleteMessage) {
+		prev, want := reflected, cfg.DeleteMessage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteMessage"] == nil || getBool(obj, "DeleteMessage") == want)
+		}
+	}
+	if !cfg.ExceptIfAnyCategory.IsUnknown() && !cfg.ExceptIfAnyCategory.IsNull() && !cfg.ExceptIfAnyCategory.Equal(state.ExceptIfAnyCategory) {
+		prev, want := reflected, cfg.ExceptIfAnyCategory.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfAnyCategory"] == nil || getBool(obj, "ExceptIfAnyCategory") == want)
+		}
+	}
+	if !cfg.ExceptIfHasAttachment.IsUnknown() && !cfg.ExceptIfHasAttachment.IsNull() && !cfg.ExceptIfHasAttachment.Equal(state.ExceptIfHasAttachment) {
+		prev, want := reflected, cfg.ExceptIfHasAttachment.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfHasAttachment"] == nil || getBool(obj, "ExceptIfHasAttachment") == want)
+		}
+	}
+	if !cfg.ExceptIfIsExternal.IsUnknown() && !cfg.ExceptIfIsExternal.IsNull() && !cfg.ExceptIfIsExternal.Equal(state.ExceptIfIsExternal) {
+		prev, want := reflected, cfg.ExceptIfIsExternal.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfIsExternal"] == nil || getBool(obj, "ExceptIfIsExternal") == want)
+		}
+	}
+	if !cfg.ExceptIfIsMentioned.IsUnknown() && !cfg.ExceptIfIsMentioned.IsNull() && !cfg.ExceptIfIsMentioned.Equal(state.ExceptIfIsMentioned) {
+		prev, want := reflected, cfg.ExceptIfIsMentioned.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfIsMentioned"] == nil || getBool(obj, "ExceptIfIsMentioned") == want)
+		}
+	}
+	if !cfg.ExceptIfMyNameInCcBox.IsUnknown() && !cfg.ExceptIfMyNameInCcBox.IsNull() && !cfg.ExceptIfMyNameInCcBox.Equal(state.ExceptIfMyNameInCcBox) {
+		prev, want := reflected, cfg.ExceptIfMyNameInCcBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfMyNameInCcBox"] == nil || getBool(obj, "ExceptIfMyNameInCcBox") == want)
+		}
+	}
+	if !cfg.ExceptIfMyNameInToBox.IsUnknown() && !cfg.ExceptIfMyNameInToBox.IsNull() && !cfg.ExceptIfMyNameInToBox.Equal(state.ExceptIfMyNameInToBox) {
+		prev, want := reflected, cfg.ExceptIfMyNameInToBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfMyNameInToBox"] == nil || getBool(obj, "ExceptIfMyNameInToBox") == want)
+		}
+	}
+	if !cfg.ExceptIfMyNameInToOrCcBox.IsUnknown() && !cfg.ExceptIfMyNameInToOrCcBox.IsNull() && !cfg.ExceptIfMyNameInToOrCcBox.Equal(state.ExceptIfMyNameInToOrCcBox) {
+		prev, want := reflected, cfg.ExceptIfMyNameInToOrCcBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfMyNameInToOrCcBox"] == nil || getBool(obj, "ExceptIfMyNameInToOrCcBox") == want)
+		}
+	}
+	if !cfg.ExceptIfMyNameNotInToBox.IsUnknown() && !cfg.ExceptIfMyNameNotInToBox.IsNull() && !cfg.ExceptIfMyNameNotInToBox.Equal(state.ExceptIfMyNameNotInToBox) {
+		prev, want := reflected, cfg.ExceptIfMyNameNotInToBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfMyNameNotInToBox"] == nil || getBool(obj, "ExceptIfMyNameNotInToBox") == want)
+		}
+	}
+	if !cfg.ExceptIfSentOnlyToMe.IsUnknown() && !cfg.ExceptIfSentOnlyToMe.IsNull() && !cfg.ExceptIfSentOnlyToMe.Equal(state.ExceptIfSentOnlyToMe) {
+		prev, want := reflected, cfg.ExceptIfSentOnlyToMe.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfSentOnlyToMe"] == nil || getBool(obj, "ExceptIfSentOnlyToMe") == want)
+		}
+	}
+	if !cfg.HasAttachment.IsUnknown() && !cfg.HasAttachment.IsNull() && !cfg.HasAttachment.Equal(state.HasAttachment) {
+		prev, want := reflected, cfg.HasAttachment.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HasAttachment"] == nil || getBool(obj, "HasAttachment") == want)
+		}
+	}
+	if !cfg.IsExternal.IsUnknown() && !cfg.IsExternal.IsNull() && !cfg.IsExternal.Equal(state.IsExternal) {
+		prev, want := reflected, cfg.IsExternal.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsExternal"] == nil || getBool(obj, "IsExternal") == want)
+		}
+	}
+	if !cfg.IsMentioned.IsUnknown() && !cfg.IsMentioned.IsNull() && !cfg.IsMentioned.Equal(state.IsMentioned) {
+		prev, want := reflected, cfg.IsMentioned.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsMentioned"] == nil || getBool(obj, "IsMentioned") == want)
+		}
+	}
+	if !cfg.MarkAsRead.IsUnknown() && !cfg.MarkAsRead.IsNull() && !cfg.MarkAsRead.Equal(state.MarkAsRead) {
+		prev, want := reflected, cfg.MarkAsRead.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MarkAsRead"] == nil || getBool(obj, "MarkAsRead") == want)
+		}
+	}
+	if !cfg.MyNameInCcBox.IsUnknown() && !cfg.MyNameInCcBox.IsNull() && !cfg.MyNameInCcBox.Equal(state.MyNameInCcBox) {
+		prev, want := reflected, cfg.MyNameInCcBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MyNameInCcBox"] == nil || getBool(obj, "MyNameInCcBox") == want)
+		}
+	}
+	if !cfg.MyNameInToBox.IsUnknown() && !cfg.MyNameInToBox.IsNull() && !cfg.MyNameInToBox.Equal(state.MyNameInToBox) {
+		prev, want := reflected, cfg.MyNameInToBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MyNameInToBox"] == nil || getBool(obj, "MyNameInToBox") == want)
+		}
+	}
+	if !cfg.MyNameInToOrCcBox.IsUnknown() && !cfg.MyNameInToOrCcBox.IsNull() && !cfg.MyNameInToOrCcBox.Equal(state.MyNameInToOrCcBox) {
+		prev, want := reflected, cfg.MyNameInToOrCcBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MyNameInToOrCcBox"] == nil || getBool(obj, "MyNameInToOrCcBox") == want)
+		}
+	}
+	if !cfg.MyNameNotInToBox.IsUnknown() && !cfg.MyNameNotInToBox.IsNull() && !cfg.MyNameNotInToBox.Equal(state.MyNameNotInToBox) {
+		prev, want := reflected, cfg.MyNameNotInToBox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MyNameNotInToBox"] == nil || getBool(obj, "MyNameNotInToBox") == want)
+		}
+	}
+	if !cfg.PermanentDelete.IsUnknown() && !cfg.PermanentDelete.IsNull() && !cfg.PermanentDelete.Equal(state.PermanentDelete) {
+		prev, want := reflected, cfg.PermanentDelete.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PermanentDelete"] == nil || getBool(obj, "PermanentDelete") == want)
+		}
+	}
+	if !cfg.PinMessage.IsUnknown() && !cfg.PinMessage.IsNull() && !cfg.PinMessage.Equal(state.PinMessage) {
+		prev, want := reflected, cfg.PinMessage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PinMessage"] == nil || getBool(obj, "PinMessage") == want)
+		}
+	}
+	if !cfg.Priority.IsUnknown() && !cfg.Priority.IsNull() && !cfg.Priority.Equal(state.Priority) {
+		prev, want := reflected, cfg.Priority.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Priority"] == nil || getInt(obj, "Priority") == want)
+		}
+	}
+	if !cfg.SentOnlyToMe.IsUnknown() && !cfg.SentOnlyToMe.IsNull() && !cfg.SentOnlyToMe.Equal(state.SentOnlyToMe) {
+		prev, want := reflected, cfg.SentOnlyToMe.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SentOnlyToMe"] == nil || getBool(obj, "SentOnlyToMe") == want)
+		}
+	}
+	if !cfg.SoftDeleteMessage.IsUnknown() && !cfg.SoftDeleteMessage.IsNull() && !cfg.SoftDeleteMessage.Equal(state.SoftDeleteMessage) {
+		prev, want := reflected, cfg.SoftDeleteMessage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SoftDeleteMessage"] == nil || getBool(obj, "SoftDeleteMessage") == want)
+		}
+	}
+	if !cfg.StopProcessingRules.IsUnknown() && !cfg.StopProcessingRules.IsNull() && !cfg.StopProcessingRules.Equal(state.StopProcessingRules) {
+		prev, want := reflected, cfg.StopProcessingRules.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["StopProcessingRules"] == nil || getBool(obj, "StopProcessingRules") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

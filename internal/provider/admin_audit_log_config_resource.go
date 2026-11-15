@@ -130,6 +130,12 @@ func (r *adminAuditLogConfigResource) Update(ctx context.Context, req resource.U
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.UnifiedAuditLogIngestionEnabled.IsUnknown() && !cfg.UnifiedAuditLogIngestionEnabled.IsNull() && !cfg.UnifiedAuditLogIngestionEnabled.Equal(state.UnifiedAuditLogIngestionEnabled) {
+		prev, want := reflected, cfg.UnifiedAuditLogIngestionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UnifiedAuditLogIngestionEnabled"] == nil || getBool(obj, "UnifiedAuditLogIngestionEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -125,7 +125,9 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 		p.AddInOverrides = objectParam(v)
 	}
 	if !config.AllowReadWriteMailbox.IsNull() {
-		p.AllowReadWriteMailbox = plan.AllowReadWriteMailbox.ValueBool()
+		if !plan.AllowReadWriteMailbox.IsUnknown() {
+			p.AllowReadWriteMailbox = plan.AllowReadWriteMailbox.ValueBoolPointer()
+		}
 	}
 	if v := config.AllowSetting.ValueString(); v != "" {
 		p.AllowSetting = objectParam(v)
@@ -140,7 +142,9 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 		p.DefaultStateForUser = objectParam(v)
 	}
 	if !config.DownloadOnly.IsNull() {
-		p.DownloadOnly = plan.DownloadOnly.ValueBool()
+		if !plan.DownloadOnly.IsUnknown() {
+			p.DownloadOnly = plan.DownloadOnly.ValueBoolPointer()
+		}
 	}
 	if !config.Enabled.IsNull() {
 		if !plan.Enabled.IsUnknown() {
@@ -175,16 +179,22 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 		p.MarketplaceUserProfileType = plan.MarketplaceUserProfileType.ValueString()
 	}
 	if !config.OrganizationApp.IsNull() {
-		p.OrganizationApp = plan.OrganizationApp.ValueBool()
+		if !plan.OrganizationApp.IsUnknown() {
+			p.OrganizationApp = plan.OrganizationApp.ValueBoolPointer()
+		}
 	}
 	if !config.PrivateCatalog.IsNull() {
-		p.PrivateCatalog = plan.PrivateCatalog.ValueBool()
+		if !plan.PrivateCatalog.IsUnknown() {
+			p.PrivateCatalog = plan.PrivateCatalog.ValueBoolPointer()
+		}
 	}
 	if v := config.ProvidedTo.ValueString(); v != "" {
 		p.ProvidedTo = objectParam(v)
 	}
 	if !config.UpdateAppState.IsNull() {
-		p.UpdateAppState = plan.UpdateAppState.ValueBool()
+		if !plan.UpdateAppState.IsUnknown() {
+			p.UpdateAppState = plan.UpdateAppState.ValueBoolPointer()
+		}
 	}
 	if v := config.Url.ValueString(); v != "" {
 		p.Url = objectParam(v)
@@ -272,10 +282,14 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		}
 	}
 	if !plan.OrganizationApp.Equal(state.OrganizationApp) {
-		sp.OrganizationApp = plan.OrganizationApp.ValueBool()
+		if !plan.OrganizationApp.IsUnknown() {
+			sp.OrganizationApp = plan.OrganizationApp.ValueBoolPointer()
+		}
 	}
 	if !plan.PrivateCatalog.Equal(state.PrivateCatalog) {
-		sp.PrivateCatalog = plan.PrivateCatalog.ValueBool()
+		if !plan.PrivateCatalog.IsUnknown() {
+			sp.PrivateCatalog = plan.PrivateCatalog.ValueBoolPointer()
+		}
 	}
 	if !plan.ProvidedTo.Equal(state.ProvidedTo) {
 		if v := plan.ProvidedTo.ValueString(); v != "" {
@@ -304,6 +318,24 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.OrganizationApp.IsUnknown() && !cfg.OrganizationApp.IsNull() && !cfg.OrganizationApp.Equal(state.OrganizationApp) {
+		prev, want := reflected, cfg.OrganizationApp.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OrganizationApp"] == nil || getBool(obj, "OrganizationApp") == want)
+		}
+	}
+	if !cfg.PrivateCatalog.IsUnknown() && !cfg.PrivateCatalog.IsNull() && !cfg.PrivateCatalog.Equal(state.PrivateCatalog) {
+		prev, want := reflected, cfg.PrivateCatalog.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PrivateCatalog"] == nil || getBool(obj, "PrivateCatalog") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

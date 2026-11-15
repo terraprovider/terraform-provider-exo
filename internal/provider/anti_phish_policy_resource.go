@@ -261,7 +261,9 @@ func (r *antiPhishPolicyResource) Create(ctx context.Context, req resource.Creat
 		p.MailboxIntelligenceQuarantineTag = plan.MailboxIntelligenceQuarantineTag.ValueString()
 	}
 	if !config.MakeDefault.IsNull() {
-		p.MakeDefault = plan.MakeDefault.ValueBool()
+		if !plan.MakeDefault.IsUnknown() {
+			p.MakeDefault = plan.MakeDefault.ValueBoolPointer()
+		}
 	}
 	if !config.Name.IsNull() {
 		p.Name = plan.Name.ValueString()
@@ -523,7 +525,9 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 		sp.MailboxIntelligenceQuarantineTag = plan.MailboxIntelligenceQuarantineTag.ValueString()
 	}
 	if !plan.MakeDefault.Equal(state.MakeDefault) {
-		sp.MakeDefault = plan.MakeDefault.ValueBool()
+		if !plan.MakeDefault.IsUnknown() {
+			sp.MakeDefault = plan.MakeDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.PhishThresholdLevel.Equal(state.PhishThresholdLevel) {
 		if !plan.PhishThresholdLevel.IsUnknown() {
@@ -620,6 +624,102 @@ func (r *antiPhishPolicyResource) Update(ctx context.Context, req resource.Updat
 		"TargetedDomainQuarantineTag":      cfg.TargetedDomainQuarantineTag,
 		"TargetedUserQuarantineTag":        cfg.TargetedUserQuarantineTag,
 	}, getString)
+	if !cfg.EnableFirstContactSafetyTips.IsUnknown() && !cfg.EnableFirstContactSafetyTips.IsNull() && !cfg.EnableFirstContactSafetyTips.Equal(state.EnableFirstContactSafetyTips) {
+		prev, want := reflected, cfg.EnableFirstContactSafetyTips.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableFirstContactSafetyTips"] == nil || getBool(obj, "EnableFirstContactSafetyTips") == want)
+		}
+	}
+	if !cfg.EnableMailboxIntelligence.IsUnknown() && !cfg.EnableMailboxIntelligence.IsNull() && !cfg.EnableMailboxIntelligence.Equal(state.EnableMailboxIntelligence) {
+		prev, want := reflected, cfg.EnableMailboxIntelligence.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableMailboxIntelligence"] == nil || getBool(obj, "EnableMailboxIntelligence") == want)
+		}
+	}
+	if !cfg.EnableMailboxIntelligenceProtection.IsUnknown() && !cfg.EnableMailboxIntelligenceProtection.IsNull() && !cfg.EnableMailboxIntelligenceProtection.Equal(state.EnableMailboxIntelligenceProtection) {
+		prev, want := reflected, cfg.EnableMailboxIntelligenceProtection.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableMailboxIntelligenceProtection"] == nil || getBool(obj, "EnableMailboxIntelligenceProtection") == want)
+		}
+	}
+	if !cfg.EnableOrganizationDomainsProtection.IsUnknown() && !cfg.EnableOrganizationDomainsProtection.IsNull() && !cfg.EnableOrganizationDomainsProtection.Equal(state.EnableOrganizationDomainsProtection) {
+		prev, want := reflected, cfg.EnableOrganizationDomainsProtection.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableOrganizationDomainsProtection"] == nil || getBool(obj, "EnableOrganizationDomainsProtection") == want)
+		}
+	}
+	if !cfg.EnableSimilarDomainsSafetyTips.IsUnknown() && !cfg.EnableSimilarDomainsSafetyTips.IsNull() && !cfg.EnableSimilarDomainsSafetyTips.Equal(state.EnableSimilarDomainsSafetyTips) {
+		prev, want := reflected, cfg.EnableSimilarDomainsSafetyTips.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSimilarDomainsSafetyTips"] == nil || getBool(obj, "EnableSimilarDomainsSafetyTips") == want)
+		}
+	}
+	if !cfg.EnableSimilarUsersSafetyTips.IsUnknown() && !cfg.EnableSimilarUsersSafetyTips.IsNull() && !cfg.EnableSimilarUsersSafetyTips.Equal(state.EnableSimilarUsersSafetyTips) {
+		prev, want := reflected, cfg.EnableSimilarUsersSafetyTips.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSimilarUsersSafetyTips"] == nil || getBool(obj, "EnableSimilarUsersSafetyTips") == want)
+		}
+	}
+	if !cfg.EnableSpoofIntelligence.IsUnknown() && !cfg.EnableSpoofIntelligence.IsNull() && !cfg.EnableSpoofIntelligence.Equal(state.EnableSpoofIntelligence) {
+		prev, want := reflected, cfg.EnableSpoofIntelligence.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSpoofIntelligence"] == nil || getBool(obj, "EnableSpoofIntelligence") == want)
+		}
+	}
+	if !cfg.EnableTargetedDomainsProtection.IsUnknown() && !cfg.EnableTargetedDomainsProtection.IsNull() && !cfg.EnableTargetedDomainsProtection.Equal(state.EnableTargetedDomainsProtection) {
+		prev, want := reflected, cfg.EnableTargetedDomainsProtection.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableTargetedDomainsProtection"] == nil || getBool(obj, "EnableTargetedDomainsProtection") == want)
+		}
+	}
+	if !cfg.EnableTargetedUserProtection.IsUnknown() && !cfg.EnableTargetedUserProtection.IsNull() && !cfg.EnableTargetedUserProtection.Equal(state.EnableTargetedUserProtection) {
+		prev, want := reflected, cfg.EnableTargetedUserProtection.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableTargetedUserProtection"] == nil || getBool(obj, "EnableTargetedUserProtection") == want)
+		}
+	}
+	if !cfg.EnableUnauthenticatedSender.IsUnknown() && !cfg.EnableUnauthenticatedSender.IsNull() && !cfg.EnableUnauthenticatedSender.Equal(state.EnableUnauthenticatedSender) {
+		prev, want := reflected, cfg.EnableUnauthenticatedSender.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableUnauthenticatedSender"] == nil || getBool(obj, "EnableUnauthenticatedSender") == want)
+		}
+	}
+	if !cfg.EnableUnusualCharactersSafetyTips.IsUnknown() && !cfg.EnableUnusualCharactersSafetyTips.IsNull() && !cfg.EnableUnusualCharactersSafetyTips.Equal(state.EnableUnusualCharactersSafetyTips) {
+		prev, want := reflected, cfg.EnableUnusualCharactersSafetyTips.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableUnusualCharactersSafetyTips"] == nil || getBool(obj, "EnableUnusualCharactersSafetyTips") == want)
+		}
+	}
+	if !cfg.EnableViaTag.IsUnknown() && !cfg.EnableViaTag.IsNull() && !cfg.EnableViaTag.Equal(state.EnableViaTag) {
+		prev, want := reflected, cfg.EnableViaTag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableViaTag"] == nil || getBool(obj, "EnableViaTag") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.HonorDmarcPolicy.IsUnknown() && !cfg.HonorDmarcPolicy.IsNull() && !cfg.HonorDmarcPolicy.Equal(state.HonorDmarcPolicy) {
+		prev, want := reflected, cfg.HonorDmarcPolicy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HonorDmarcPolicy"] == nil || getBool(obj, "HonorDmarcPolicy") == want)
+		}
+	}
+	if !cfg.MakeDefault.IsUnknown() && !cfg.MakeDefault.IsNull() && !cfg.MakeDefault.Equal(state.MakeDefault) {
+		prev, want := reflected, cfg.MakeDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MakeDefault"] == nil || getBool(obj, "MakeDefault") == want)
+		}
+	}
+	if !cfg.PhishThresholdLevel.IsUnknown() && !cfg.PhishThresholdLevel.IsNull() && !cfg.PhishThresholdLevel.Equal(state.PhishThresholdLevel) {
+		prev, want := reflected, cfg.PhishThresholdLevel.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PhishThresholdLevel"] == nil || getInt(obj, "PhishThresholdLevel") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

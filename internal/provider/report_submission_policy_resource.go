@@ -949,6 +949,132 @@ func (r *reportSubmissionPolicyResource) Update(ctx context.Context, req resourc
 		"PreSubmitMessageTitleForPhishing":  cfg.PreSubmitMessageTitleForPhishing,
 		"UserSubmissionOptionsMessage":      cfg.UserSubmissionOptionsMessage,
 	}, getString)
+	if !cfg.DisableQuarantineReportingOption.IsUnknown() && !cfg.DisableQuarantineReportingOption.IsNull() && !cfg.DisableQuarantineReportingOption.Equal(state.DisableQuarantineReportingOption) {
+		prev, want := reflected, cfg.DisableQuarantineReportingOption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DisableQuarantineReportingOption"] == nil || getBool(obj, "DisableQuarantineReportingOption") == want)
+		}
+	}
+	if !cfg.DisableUserSubmissionOptions.IsUnknown() && !cfg.DisableUserSubmissionOptions.IsNull() && !cfg.DisableUserSubmissionOptions.Equal(state.DisableUserSubmissionOptions) {
+		prev, want := reflected, cfg.DisableUserSubmissionOptions.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DisableUserSubmissionOptions"] == nil || getBool(obj, "DisableUserSubmissionOptions") == want)
+		}
+	}
+	if !cfg.EnableCustomNotificationSender.IsUnknown() && !cfg.EnableCustomNotificationSender.IsNull() && !cfg.EnableCustomNotificationSender.Equal(state.EnableCustomNotificationSender) {
+		prev, want := reflected, cfg.EnableCustomNotificationSender.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableCustomNotificationSender"] == nil || getBool(obj, "EnableCustomNotificationSender") == want)
+		}
+	}
+	if !cfg.EnableCustomizedMsg.IsUnknown() && !cfg.EnableCustomizedMsg.IsNull() && !cfg.EnableCustomizedMsg.Equal(state.EnableCustomizedMsg) {
+		prev, want := reflected, cfg.EnableCustomizedMsg.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableCustomizedMsg"] == nil || getBool(obj, "EnableCustomizedMsg") == want)
+		}
+	}
+	if !cfg.EnableOrganizationBranding.IsUnknown() && !cfg.EnableOrganizationBranding.IsNull() && !cfg.EnableOrganizationBranding.Equal(state.EnableOrganizationBranding) {
+		prev, want := reflected, cfg.EnableOrganizationBranding.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableOrganizationBranding"] == nil || getBool(obj, "EnableOrganizationBranding") == want)
+		}
+	}
+	if !cfg.EnableReportToMicrosoft.IsUnknown() && !cfg.EnableReportToMicrosoft.IsNull() && !cfg.EnableReportToMicrosoft.Equal(state.EnableReportToMicrosoft) {
+		prev, want := reflected, cfg.EnableReportToMicrosoft.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableReportToMicrosoft"] == nil || getBool(obj, "EnableReportToMicrosoft") == want)
+		}
+	}
+	if !cfg.EnableThirdPartyAddress.IsUnknown() && !cfg.EnableThirdPartyAddress.IsNull() && !cfg.EnableThirdPartyAddress.Equal(state.EnableThirdPartyAddress) {
+		prev, want := reflected, cfg.EnableThirdPartyAddress.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableThirdPartyAddress"] == nil || getBool(obj, "EnableThirdPartyAddress") == want)
+		}
+	}
+	if !cfg.EnableUserEmailNotification.IsUnknown() && !cfg.EnableUserEmailNotification.IsNull() && !cfg.EnableUserEmailNotification.Equal(state.EnableUserEmailNotification) {
+		prev, want := reflected, cfg.EnableUserEmailNotification.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableUserEmailNotification"] == nil || getBool(obj, "EnableUserEmailNotification") == want)
+		}
+	}
+	if !cfg.NotificationsForCleanSubmissionAirInvestigationsEnabled.IsUnknown() && !cfg.NotificationsForCleanSubmissionAirInvestigationsEnabled.IsNull() && !cfg.NotificationsForCleanSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForCleanSubmissionAirInvestigationsEnabled) {
+		prev, want := reflected, cfg.NotificationsForCleanSubmissionAirInvestigationsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NotificationsForCleanSubmissionAirInvestigationsEnabled"] == nil || getBool(obj, "NotificationsForCleanSubmissionAirInvestigationsEnabled") == want)
+		}
+	}
+	if !cfg.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.IsUnknown() && !cfg.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.IsNull() && !cfg.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled) {
+		prev, want := reflected, cfg.NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled"] == nil || getBool(obj, "NotificationsForPhishMalwareSubmissionAirInvestigationsEnabled") == want)
+		}
+	}
+	if !cfg.NotificationsForSpamSubmissionAirInvestigationsEnabled.IsUnknown() && !cfg.NotificationsForSpamSubmissionAirInvestigationsEnabled.IsNull() && !cfg.NotificationsForSpamSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForSpamSubmissionAirInvestigationsEnabled) {
+		prev, want := reflected, cfg.NotificationsForSpamSubmissionAirInvestigationsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NotificationsForSpamSubmissionAirInvestigationsEnabled"] == nil || getBool(obj, "NotificationsForSpamSubmissionAirInvestigationsEnabled") == want)
+		}
+	}
+	if !cfg.NotificationsForSubmissionAirInvestigationsEnabled.IsUnknown() && !cfg.NotificationsForSubmissionAirInvestigationsEnabled.IsNull() && !cfg.NotificationsForSubmissionAirInvestigationsEnabled.Equal(state.NotificationsForSubmissionAirInvestigationsEnabled) {
+		prev, want := reflected, cfg.NotificationsForSubmissionAirInvestigationsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NotificationsForSubmissionAirInvestigationsEnabled"] == nil || getBool(obj, "NotificationsForSubmissionAirInvestigationsEnabled") == want)
+		}
+	}
+	if !cfg.OnlyShowPhishingDisclaimer.IsUnknown() && !cfg.OnlyShowPhishingDisclaimer.IsNull() && !cfg.OnlyShowPhishingDisclaimer.Equal(state.OnlyShowPhishingDisclaimer) {
+		prev, want := reflected, cfg.OnlyShowPhishingDisclaimer.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OnlyShowPhishingDisclaimer"] == nil || getBool(obj, "OnlyShowPhishingDisclaimer") == want)
+		}
+	}
+	if !cfg.PostSubmitMessageEnabled.IsUnknown() && !cfg.PostSubmitMessageEnabled.IsNull() && !cfg.PostSubmitMessageEnabled.Equal(state.PostSubmitMessageEnabled) {
+		prev, want := reflected, cfg.PostSubmitMessageEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PostSubmitMessageEnabled"] == nil || getBool(obj, "PostSubmitMessageEnabled") == want)
+		}
+	}
+	if !cfg.PreSubmitMessageEnabled.IsUnknown() && !cfg.PreSubmitMessageEnabled.IsNull() && !cfg.PreSubmitMessageEnabled.Equal(state.PreSubmitMessageEnabled) {
+		prev, want := reflected, cfg.PreSubmitMessageEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreSubmitMessageEnabled"] == nil || getBool(obj, "PreSubmitMessageEnabled") == want)
+		}
+	}
+	if !cfg.ReportChatMessageEnabled.IsUnknown() && !cfg.ReportChatMessageEnabled.IsNull() && !cfg.ReportChatMessageEnabled.Equal(state.ReportChatMessageEnabled) {
+		prev, want := reflected, cfg.ReportChatMessageEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportChatMessageEnabled"] == nil || getBool(obj, "ReportChatMessageEnabled") == want)
+		}
+	}
+	if !cfg.ReportChatMessageToCustomizedAddressEnabled.IsUnknown() && !cfg.ReportChatMessageToCustomizedAddressEnabled.IsNull() && !cfg.ReportChatMessageToCustomizedAddressEnabled.Equal(state.ReportChatMessageToCustomizedAddressEnabled) {
+		prev, want := reflected, cfg.ReportChatMessageToCustomizedAddressEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportChatMessageToCustomizedAddressEnabled"] == nil || getBool(obj, "ReportChatMessageToCustomizedAddressEnabled") == want)
+		}
+	}
+	if !cfg.ReportJunkToCustomizedAddress.IsUnknown() && !cfg.ReportJunkToCustomizedAddress.IsNull() && !cfg.ReportJunkToCustomizedAddress.Equal(state.ReportJunkToCustomizedAddress) {
+		prev, want := reflected, cfg.ReportJunkToCustomizedAddress.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportJunkToCustomizedAddress"] == nil || getBool(obj, "ReportJunkToCustomizedAddress") == want)
+		}
+	}
+	if !cfg.ReportNotJunkToCustomizedAddress.IsUnknown() && !cfg.ReportNotJunkToCustomizedAddress.IsNull() && !cfg.ReportNotJunkToCustomizedAddress.Equal(state.ReportNotJunkToCustomizedAddress) {
+		prev, want := reflected, cfg.ReportNotJunkToCustomizedAddress.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportNotJunkToCustomizedAddress"] == nil || getBool(obj, "ReportNotJunkToCustomizedAddress") == want)
+		}
+	}
+	if !cfg.ReportPhishToCustomizedAddress.IsUnknown() && !cfg.ReportPhishToCustomizedAddress.IsNull() && !cfg.ReportPhishToCustomizedAddress.Equal(state.ReportPhishToCustomizedAddress) {
+		prev, want := reflected, cfg.ReportPhishToCustomizedAddress.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportPhishToCustomizedAddress"] == nil || getBool(obj, "ReportPhishToCustomizedAddress") == want)
+		}
+	}
+	if !cfg.UserSubmissionOptions.IsUnknown() && !cfg.UserSubmissionOptions.IsNull() && !cfg.UserSubmissionOptions.Equal(state.UserSubmissionOptions) {
+		prev, want := reflected, cfg.UserSubmissionOptions.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UserSubmissionOptions"] == nil || getInt(obj, "UserSubmissionOptions") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

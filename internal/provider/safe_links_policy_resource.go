@@ -168,7 +168,9 @@ func (r *safeLinksPolicyResource) Create(ctx context.Context, req resource.Creat
 		}
 	}
 	if !config.MakeBuiltInProtection.IsNull() {
-		p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBool()
+		if !plan.MakeBuiltInProtection.IsUnknown() {
+			p.MakeBuiltInProtection = plan.MakeBuiltInProtection.ValueBoolPointer()
+		}
 	}
 	if !config.Name.IsNull() {
 		p.Name = plan.Name.ValueString()
@@ -361,6 +363,78 @@ func (r *safeLinksPolicyResource) Update(ctx context.Context, req resource.Updat
 		"AdminDisplayName":       cfg.AdminDisplayName,
 		"CustomNotificationText": cfg.CustomNotificationText,
 	}, getString)
+	if !cfg.AllowClickThrough.IsUnknown() && !cfg.AllowClickThrough.IsNull() && !cfg.AllowClickThrough.Equal(state.AllowClickThrough) {
+		prev, want := reflected, cfg.AllowClickThrough.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowClickThrough"] == nil || getBool(obj, "AllowClickThrough") == want)
+		}
+	}
+	if !cfg.DeliverMessageAfterScan.IsUnknown() && !cfg.DeliverMessageAfterScan.IsNull() && !cfg.DeliverMessageAfterScan.Equal(state.DeliverMessageAfterScan) {
+		prev, want := reflected, cfg.DeliverMessageAfterScan.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeliverMessageAfterScan"] == nil || getBool(obj, "DeliverMessageAfterScan") == want)
+		}
+	}
+	if !cfg.DisableUrlRewrite.IsUnknown() && !cfg.DisableUrlRewrite.IsNull() && !cfg.DisableUrlRewrite.Equal(state.DisableUrlRewrite) {
+		prev, want := reflected, cfg.DisableUrlRewrite.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DisableUrlRewrite"] == nil || getBool(obj, "DisableUrlRewrite") == want)
+		}
+	}
+	if !cfg.EnableForInternalSenders.IsUnknown() && !cfg.EnableForInternalSenders.IsNull() && !cfg.EnableForInternalSenders.Equal(state.EnableForInternalSenders) {
+		prev, want := reflected, cfg.EnableForInternalSenders.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableForInternalSenders"] == nil || getBool(obj, "EnableForInternalSenders") == want)
+		}
+	}
+	if !cfg.EnableOrganizationBranding.IsUnknown() && !cfg.EnableOrganizationBranding.IsNull() && !cfg.EnableOrganizationBranding.Equal(state.EnableOrganizationBranding) {
+		prev, want := reflected, cfg.EnableOrganizationBranding.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableOrganizationBranding"] == nil || getBool(obj, "EnableOrganizationBranding") == want)
+		}
+	}
+	if !cfg.EnableSafeLinksForEmail.IsUnknown() && !cfg.EnableSafeLinksForEmail.IsNull() && !cfg.EnableSafeLinksForEmail.Equal(state.EnableSafeLinksForEmail) {
+		prev, want := reflected, cfg.EnableSafeLinksForEmail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSafeLinksForEmail"] == nil || getBool(obj, "EnableSafeLinksForEmail") == want)
+		}
+	}
+	if !cfg.EnableSafeLinksForOffice.IsUnknown() && !cfg.EnableSafeLinksForOffice.IsNull() && !cfg.EnableSafeLinksForOffice.Equal(state.EnableSafeLinksForOffice) {
+		prev, want := reflected, cfg.EnableSafeLinksForOffice.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSafeLinksForOffice"] == nil || getBool(obj, "EnableSafeLinksForOffice") == want)
+		}
+	}
+	if !cfg.EnableSafeLinksForTeams.IsUnknown() && !cfg.EnableSafeLinksForTeams.IsNull() && !cfg.EnableSafeLinksForTeams.Equal(state.EnableSafeLinksForTeams) {
+		prev, want := reflected, cfg.EnableSafeLinksForTeams.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSafeLinksForTeams"] == nil || getBool(obj, "EnableSafeLinksForTeams") == want)
+		}
+	}
+	if !cfg.ScanUrls.IsUnknown() && !cfg.ScanUrls.IsNull() && !cfg.ScanUrls.Equal(state.ScanUrls) {
+		prev, want := reflected, cfg.ScanUrls.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ScanUrls"] == nil || getBool(obj, "ScanUrls") == want)
+		}
+	}
+	if !cfg.TrackClicks.IsUnknown() && !cfg.TrackClicks.IsNull() && !cfg.TrackClicks.Equal(state.TrackClicks) {
+		prev, want := reflected, cfg.TrackClicks.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TrackClicks"] == nil || getBool(obj, "TrackClicks") == want)
+		}
+	}
+	if !cfg.UseTranslatedNotificationText.IsUnknown() && !cfg.UseTranslatedNotificationText.IsNull() && !cfg.UseTranslatedNotificationText.Equal(state.UseTranslatedNotificationText) {
+		prev, want := reflected, cfg.UseTranslatedNotificationText.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseTranslatedNotificationText"] == nil || getBool(obj, "UseTranslatedNotificationText") == want)
+		}
+	}
+	if !cfg.UseTranslatedUrlText.IsUnknown() && !cfg.UseTranslatedUrlText.IsNull() && !cfg.UseTranslatedUrlText.Equal(state.UseTranslatedUrlText) {
+		prev, want := reflected, cfg.UseTranslatedUrlText.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseTranslatedUrlText"] == nil || getBool(obj, "UseTranslatedUrlText") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -254,6 +254,24 @@ func (r *activeSyncOrganizationSettingsResource) Update(ctx context.Context, req
 		"OtaNotificationMailInsert": cfg.OtaNotificationMailInsert,
 		"UserMailInsert":            cfg.UserMailInsert,
 	}, getString)
+	if !cfg.AllowAccessForUnSupportedPlatform.IsUnknown() && !cfg.AllowAccessForUnSupportedPlatform.IsNull() && !cfg.AllowAccessForUnSupportedPlatform.Equal(state.AllowAccessForUnSupportedPlatform) {
+		prev, want := reflected, cfg.AllowAccessForUnSupportedPlatform.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowAccessForUnSupportedPlatform"] == nil || getBool(obj, "AllowAccessForUnSupportedPlatform") == want)
+		}
+	}
+	if !cfg.AllowRMSSupportForUnenlightenedApps.IsUnknown() && !cfg.AllowRMSSupportForUnenlightenedApps.IsNull() && !cfg.AllowRMSSupportForUnenlightenedApps.Equal(state.AllowRMSSupportForUnenlightenedApps) {
+		prev, want := reflected, cfg.AllowRMSSupportForUnenlightenedApps.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowRMSSupportForUnenlightenedApps"] == nil || getBool(obj, "AllowRMSSupportForUnenlightenedApps") == want)
+		}
+	}
+	if !cfg.EnableMobileMailboxPolicyWhenCAInplace.IsUnknown() && !cfg.EnableMobileMailboxPolicyWhenCAInplace.IsNull() && !cfg.EnableMobileMailboxPolicyWhenCAInplace.Equal(state.EnableMobileMailboxPolicyWhenCAInplace) {
+		prev, want := reflected, cfg.EnableMobileMailboxPolicyWhenCAInplace.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableMobileMailboxPolicyWhenCAInplace"] == nil || getBool(obj, "EnableMobileMailboxPolicyWhenCAInplace") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

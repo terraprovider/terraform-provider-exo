@@ -140,7 +140,9 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 
 	p := exo.NewMigrationEndpointParams{}
 	if !config.AcceptUntrustedCertificates.IsNull() {
-		p.AcceptUntrustedCertificates = plan.AcceptUntrustedCertificates.ValueBool()
+		if !plan.AcceptUntrustedCertificates.IsUnknown() {
+			p.AcceptUntrustedCertificates = plan.AcceptUntrustedCertificates.ValueBoolPointer()
+		}
 	}
 	if !config.AppSecretKeyVaultUrl.IsNull() {
 		p.AppSecretKeyVaultUrl = plan.AppSecretKeyVaultUrl.ValueString()
@@ -152,10 +154,14 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		p.Authentication = objectParam(v)
 	}
 	if !config.Autodiscover.IsNull() {
-		p.Autodiscover = plan.Autodiscover.ValueBool()
+		if !plan.Autodiscover.IsUnknown() {
+			p.Autodiscover = plan.Autodiscover.ValueBoolPointer()
+		}
 	}
 	if !config.Compliance.IsNull() {
-		p.Compliance = plan.Compliance.ValueBool()
+		if !plan.Compliance.IsUnknown() {
+			p.Compliance = plan.Compliance.ValueBoolPointer()
+		}
 	}
 	if v := config.Credentials.ValueString(); v != "" {
 		p.Credentials = objectParam(v)
@@ -164,19 +170,27 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		p.EmailAddress = objectParam(v)
 	}
 	if !config.ExchangeOutlookAnywhere.IsNull() {
-		p.ExchangeOutlookAnywhere = plan.ExchangeOutlookAnywhere.ValueBool()
+		if !plan.ExchangeOutlookAnywhere.IsUnknown() {
+			p.ExchangeOutlookAnywhere = plan.ExchangeOutlookAnywhere.ValueBoolPointer()
+		}
 	}
 	if !config.ExchangeRemoteMove.IsNull() {
-		p.ExchangeRemoteMove = plan.ExchangeRemoteMove.ValueBool()
+		if !plan.ExchangeRemoteMove.IsUnknown() {
+			p.ExchangeRemoteMove = plan.ExchangeRemoteMove.ValueBoolPointer()
+		}
 	}
 	if !config.ExchangeServer.IsNull() {
 		p.ExchangeServer = plan.ExchangeServer.ValueString()
 	}
 	if !config.Gmail.IsNull() {
-		p.Gmail = plan.Gmail.ValueBool()
+		if !plan.Gmail.IsUnknown() {
+			p.Gmail = plan.Gmail.ValueBoolPointer()
+		}
 	}
 	if !config.IMAP.IsNull() {
-		p.IMAP = plan.IMAP.ValueBool()
+		if !plan.IMAP.IsUnknown() {
+			p.IMAP = plan.IMAP.ValueBoolPointer()
+		}
 	}
 	if v := config.MailboxPermission.ValueString(); v != "" {
 		p.MailboxPermission = objectParam(v)
@@ -205,13 +219,17 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		}
 	}
 	if !config.PublicFolder.IsNull() {
-		p.PublicFolder = plan.PublicFolder.ValueBool()
+		if !plan.PublicFolder.IsUnknown() {
+			p.PublicFolder = plan.PublicFolder.ValueBoolPointer()
+		}
 	}
 	if !config.PublicFolderDatabaseServerLegacyDN.IsNull() {
 		p.PublicFolderDatabaseServerLegacyDN = plan.PublicFolderDatabaseServerLegacyDN.ValueString()
 	}
 	if !config.PublicFolderToUnifiedGroup.IsNull() {
-		p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBool()
+		if !plan.PublicFolderToUnifiedGroup.IsUnknown() {
+			p.PublicFolderToUnifiedGroup = plan.PublicFolderToUnifiedGroup.ValueBoolPointer()
+		}
 	}
 	if v := config.RPCProxyServer.ValueString(); v != "" {
 		p.RPCProxyServer = objectParam(v)
@@ -232,7 +250,9 @@ func (r *migrationEndpointResource) Create(ctx context.Context, req resource.Cre
 		p.ServiceAccountKeyFileData = objectParam(v)
 	}
 	if !config.SkipVerification.IsNull() {
-		p.SkipVerification = plan.SkipVerification.ValueBool()
+		if !plan.SkipVerification.IsUnknown() {
+			p.SkipVerification = plan.SkipVerification.ValueBoolPointer()
+		}
 	}
 	if !config.SourceMailboxLegacyDN.IsNull() {
 		p.SourceMailboxLegacyDN = plan.SourceMailboxLegacyDN.ValueString()
@@ -361,7 +381,9 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 	if !plan.SkipVerification.Equal(state.SkipVerification) {
-		sp.SkipVerification = plan.SkipVerification.ValueBool()
+		if !plan.SkipVerification.IsUnknown() {
+			sp.SkipVerification = plan.SkipVerification.ValueBoolPointer()
+		}
 	}
 	if !plan.SourceMailboxLegacyDN.Equal(state.SourceMailboxLegacyDN) {
 		sp.SourceMailboxLegacyDN = plan.SourceMailboxLegacyDN.ValueString()
@@ -387,6 +409,18 @@ func (r *migrationEndpointResource) Update(ctx context.Context, req resource.Upd
 		"PublicFolderDatabaseServerLegacyDN": cfg.PublicFolderDatabaseServerLegacyDN,
 		"SourceMailboxLegacyDN":              cfg.SourceMailboxLegacyDN,
 	}, getString)
+	if !cfg.Port.IsUnknown() && !cfg.Port.IsNull() && !cfg.Port.Equal(state.Port) {
+		prev, want := reflected, cfg.Port.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Port"] == nil || getInt(obj, "Port") == want)
+		}
+	}
+	if !cfg.SkipVerification.IsUnknown() && !cfg.SkipVerification.IsNull() && !cfg.SkipVerification.Equal(state.SkipVerification) {
+		prev, want := reflected, cfg.SkipVerification.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SkipVerification"] == nil || getBool(obj, "SkipVerification") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

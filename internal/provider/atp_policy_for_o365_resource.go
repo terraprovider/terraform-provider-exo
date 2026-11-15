@@ -156,6 +156,24 @@ func (r *atpPolicyForO365Resource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AllowSafeDocsOpen.IsUnknown() && !cfg.AllowSafeDocsOpen.IsNull() && !cfg.AllowSafeDocsOpen.Equal(state.AllowSafeDocsOpen) {
+		prev, want := reflected, cfg.AllowSafeDocsOpen.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllowSafeDocsOpen"] == nil || getBool(obj, "AllowSafeDocsOpen") == want)
+		}
+	}
+	if !cfg.EnableATPForSPOTeamsODB.IsUnknown() && !cfg.EnableATPForSPOTeamsODB.IsNull() && !cfg.EnableATPForSPOTeamsODB.Equal(state.EnableATPForSPOTeamsODB) {
+		prev, want := reflected, cfg.EnableATPForSPOTeamsODB.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableATPForSPOTeamsODB"] == nil || getBool(obj, "EnableATPForSPOTeamsODB") == want)
+		}
+	}
+	if !cfg.EnableSafeDocs.IsUnknown() && !cfg.EnableSafeDocs.IsNull() && !cfg.EnableSafeDocs.Equal(state.EnableSafeDocs) {
+		prev, want := reflected, cfg.EnableSafeDocs.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableSafeDocs"] == nil || getBool(obj, "EnableSafeDocs") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

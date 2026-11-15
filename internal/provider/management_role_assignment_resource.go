@@ -114,7 +114,9 @@ func (r *managementRoleAssignmentResource) Create(ctx context.Context, req resou
 		p.CustomResourceScope = objectParam(v)
 	}
 	if !config.Delegating.IsNull() {
-		p.Delegating = plan.Delegating.ValueBool()
+		if !plan.Delegating.IsUnknown() {
+			p.Delegating = plan.Delegating.ValueBoolPointer()
+		}
 	}
 	if v := config.ExclusiveRecipientWriteScope.ValueString(); v != "" {
 		p.ExclusiveRecipientWriteScope = objectParam(v)
@@ -245,6 +247,12 @@ func (r *managementRoleAssignmentResource) Update(ctx context.Context, req resou
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

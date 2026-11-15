@@ -2112,6 +2112,144 @@ func (r *transportRuleResource) Update(ctx context.Context, req resource.UpdateR
 		prev, want := reflected, cfg.Enabled.ValueBool()
 		reflected = func(obj map[string]any) bool { return prev(obj) && getStateBool(obj, "State", "Enabled") == want }
 	}
+	if !cfg.ApplyOME.IsUnknown() && !cfg.ApplyOME.IsNull() && !cfg.ApplyOME.Equal(state.ApplyOME) {
+		prev, want := reflected, cfg.ApplyOME.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ApplyOME"] == nil || getBool(obj, "ApplyOME") == want)
+		}
+	}
+	if !cfg.AttachmentHasExecutableContent.IsUnknown() && !cfg.AttachmentHasExecutableContent.IsNull() && !cfg.AttachmentHasExecutableContent.Equal(state.AttachmentHasExecutableContent) {
+		prev, want := reflected, cfg.AttachmentHasExecutableContent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AttachmentHasExecutableContent"] == nil || getBool(obj, "AttachmentHasExecutableContent") == want)
+		}
+	}
+	if !cfg.AttachmentIsPasswordProtected.IsUnknown() && !cfg.AttachmentIsPasswordProtected.IsNull() && !cfg.AttachmentIsPasswordProtected.Equal(state.AttachmentIsPasswordProtected) {
+		prev, want := reflected, cfg.AttachmentIsPasswordProtected.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AttachmentIsPasswordProtected"] == nil || getBool(obj, "AttachmentIsPasswordProtected") == want)
+		}
+	}
+	if !cfg.AttachmentIsUnsupported.IsUnknown() && !cfg.AttachmentIsUnsupported.IsNull() && !cfg.AttachmentIsUnsupported.Equal(state.AttachmentIsUnsupported) {
+		prev, want := reflected, cfg.AttachmentIsUnsupported.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AttachmentIsUnsupported"] == nil || getBool(obj, "AttachmentIsUnsupported") == want)
+		}
+	}
+	if !cfg.AttachmentProcessingLimitExceeded.IsUnknown() && !cfg.AttachmentProcessingLimitExceeded.IsNull() && !cfg.AttachmentProcessingLimitExceeded.Equal(state.AttachmentProcessingLimitExceeded) {
+		prev, want := reflected, cfg.AttachmentProcessingLimitExceeded.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AttachmentProcessingLimitExceeded"] == nil || getBool(obj, "AttachmentProcessingLimitExceeded") == want)
+		}
+	}
+	if !cfg.DeleteMessage.IsUnknown() && !cfg.DeleteMessage.IsNull() && !cfg.DeleteMessage.Equal(state.DeleteMessage) {
+		prev, want := reflected, cfg.DeleteMessage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeleteMessage"] == nil || getBool(obj, "DeleteMessage") == want)
+		}
+	}
+	if !cfg.Disconnect.IsUnknown() && !cfg.Disconnect.IsNull() && !cfg.Disconnect.Equal(state.Disconnect) {
+		prev, want := reflected, cfg.Disconnect.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Disconnect"] == nil || getBool(obj, "Disconnect") == want)
+		}
+	}
+	if !cfg.ExceptIfAttachmentHasExecutableContent.IsUnknown() && !cfg.ExceptIfAttachmentHasExecutableContent.IsNull() && !cfg.ExceptIfAttachmentHasExecutableContent.Equal(state.ExceptIfAttachmentHasExecutableContent) {
+		prev, want := reflected, cfg.ExceptIfAttachmentHasExecutableContent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfAttachmentHasExecutableContent"] == nil || getBool(obj, "ExceptIfAttachmentHasExecutableContent") == want)
+		}
+	}
+	if !cfg.ExceptIfAttachmentIsPasswordProtected.IsUnknown() && !cfg.ExceptIfAttachmentIsPasswordProtected.IsNull() && !cfg.ExceptIfAttachmentIsPasswordProtected.Equal(state.ExceptIfAttachmentIsPasswordProtected) {
+		prev, want := reflected, cfg.ExceptIfAttachmentIsPasswordProtected.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfAttachmentIsPasswordProtected"] == nil || getBool(obj, "ExceptIfAttachmentIsPasswordProtected") == want)
+		}
+	}
+	if !cfg.ExceptIfAttachmentIsUnsupported.IsUnknown() && !cfg.ExceptIfAttachmentIsUnsupported.IsNull() && !cfg.ExceptIfAttachmentIsUnsupported.Equal(state.ExceptIfAttachmentIsUnsupported) {
+		prev, want := reflected, cfg.ExceptIfAttachmentIsUnsupported.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfAttachmentIsUnsupported"] == nil || getBool(obj, "ExceptIfAttachmentIsUnsupported") == want)
+		}
+	}
+	if !cfg.ExceptIfAttachmentProcessingLimitExceeded.IsUnknown() && !cfg.ExceptIfAttachmentProcessingLimitExceeded.IsNull() && !cfg.ExceptIfAttachmentProcessingLimitExceeded.Equal(state.ExceptIfAttachmentProcessingLimitExceeded) {
+		prev, want := reflected, cfg.ExceptIfAttachmentProcessingLimitExceeded.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfAttachmentProcessingLimitExceeded"] == nil || getBool(obj, "ExceptIfAttachmentProcessingLimitExceeded") == want)
+		}
+	}
+	if !cfg.ExceptIfHasNoClassification.IsUnknown() && !cfg.ExceptIfHasNoClassification.IsNull() && !cfg.ExceptIfHasNoClassification.Equal(state.ExceptIfHasNoClassification) {
+		prev, want := reflected, cfg.ExceptIfHasNoClassification.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfHasNoClassification"] == nil || getBool(obj, "ExceptIfHasNoClassification") == want)
+		}
+	}
+	if !cfg.ExceptIfHasSenderOverride.IsUnknown() && !cfg.ExceptIfHasSenderOverride.IsNull() && !cfg.ExceptIfHasSenderOverride.Equal(state.ExceptIfHasSenderOverride) {
+		prev, want := reflected, cfg.ExceptIfHasSenderOverride.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExceptIfHasSenderOverride"] == nil || getBool(obj, "ExceptIfHasSenderOverride") == want)
+		}
+	}
+	if !cfg.HasNoClassification.IsUnknown() && !cfg.HasNoClassification.IsNull() && !cfg.HasNoClassification.Equal(state.HasNoClassification) {
+		prev, want := reflected, cfg.HasNoClassification.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HasNoClassification"] == nil || getBool(obj, "HasNoClassification") == want)
+		}
+	}
+	if !cfg.HasSenderOverride.IsUnknown() && !cfg.HasSenderOverride.IsNull() && !cfg.HasSenderOverride.Equal(state.HasSenderOverride) {
+		prev, want := reflected, cfg.HasSenderOverride.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HasSenderOverride"] == nil || getBool(obj, "HasSenderOverride") == want)
+		}
+	}
+	if !cfg.ModerateMessageByManager.IsUnknown() && !cfg.ModerateMessageByManager.IsNull() && !cfg.ModerateMessageByManager.Equal(state.ModerateMessageByManager) {
+		prev, want := reflected, cfg.ModerateMessageByManager.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerateMessageByManager"] == nil || getBool(obj, "ModerateMessageByManager") == want)
+		}
+	}
+	if !cfg.Priority.IsUnknown() && !cfg.Priority.IsNull() && !cfg.Priority.Equal(state.Priority) {
+		prev, want := reflected, cfg.Priority.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Priority"] == nil || getInt(obj, "Priority") == want)
+		}
+	}
+	if !cfg.Quarantine.IsUnknown() && !cfg.Quarantine.IsNull() && !cfg.Quarantine.Equal(state.Quarantine) {
+		prev, want := reflected, cfg.Quarantine.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Quarantine"] == nil || getBool(obj, "Quarantine") == want)
+		}
+	}
+	if !cfg.RemoveOME.IsUnknown() && !cfg.RemoveOME.IsNull() && !cfg.RemoveOME.Equal(state.RemoveOME) {
+		prev, want := reflected, cfg.RemoveOME.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveOME"] == nil || getBool(obj, "RemoveOME") == want)
+		}
+	}
+	if !cfg.RemoveOMEv2.IsUnknown() && !cfg.RemoveOMEv2.IsNull() && !cfg.RemoveOMEv2.Equal(state.RemoveOMEv2) {
+		prev, want := reflected, cfg.RemoveOMEv2.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveOMEv2"] == nil || getBool(obj, "RemoveOMEv2") == want)
+		}
+	}
+	if !cfg.RemoveRMSAttachmentEncryption.IsUnknown() && !cfg.RemoveRMSAttachmentEncryption.IsNull() && !cfg.RemoveRMSAttachmentEncryption.Equal(state.RemoveRMSAttachmentEncryption) {
+		prev, want := reflected, cfg.RemoveRMSAttachmentEncryption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveRMSAttachmentEncryption"] == nil || getBool(obj, "RemoveRMSAttachmentEncryption") == want)
+		}
+	}
+	if !cfg.RouteMessageOutboundRequireTls.IsUnknown() && !cfg.RouteMessageOutboundRequireTls.IsNull() && !cfg.RouteMessageOutboundRequireTls.Equal(state.RouteMessageOutboundRequireTls) {
+		prev, want := reflected, cfg.RouteMessageOutboundRequireTls.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RouteMessageOutboundRequireTls"] == nil || getBool(obj, "RouteMessageOutboundRequireTls") == want)
+		}
+	}
+	if !cfg.StopRuleProcessing.IsUnknown() && !cfg.StopRuleProcessing.IsNull() && !cfg.StopRuleProcessing.Equal(state.StopRuleProcessing) {
+		prev, want := reflected, cfg.StopRuleProcessing.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["StopRuleProcessing"] == nil || getBool(obj, "StopRuleProcessing") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

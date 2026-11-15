@@ -80,7 +80,9 @@ func (r *managementRoleEntryResource) Create(ctx context.Context, req resource.C
 	sp := exo.SetManagementRoleEntryParams{}
 	sp.Identity = plan.Identity.ValueString()
 	if !config.AddParameter.IsNull() {
-		sp.AddParameter = plan.AddParameter.ValueBool()
+		if !plan.AddParameter.IsUnknown() {
+			sp.AddParameter = plan.AddParameter.ValueBoolPointer()
+		}
 	}
 	if !config.Parameters.IsNull() {
 		if !plan.Parameters.IsNull() && !plan.Parameters.IsUnknown() {
@@ -88,7 +90,9 @@ func (r *managementRoleEntryResource) Create(ctx context.Context, req resource.C
 		}
 	}
 	if !config.RemoveParameter.IsNull() {
-		sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+		if !plan.RemoveParameter.IsUnknown() {
+			sp.RemoveParameter = plan.RemoveParameter.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -130,7 +134,9 @@ func (r *managementRoleEntryResource) Update(ctx context.Context, req resource.U
 	sp := exo.SetManagementRoleEntryParams{}
 	sp.Identity = id
 	if !plan.AddParameter.Equal(state.AddParameter) {
-		sp.AddParameter = plan.AddParameter.ValueBool()
+		if !plan.AddParameter.IsUnknown() {
+			sp.AddParameter = plan.AddParameter.ValueBoolPointer()
+		}
 	}
 	if !plan.Parameters.Equal(state.Parameters) {
 		if !plan.Parameters.IsNull() && !plan.Parameters.IsUnknown() {
@@ -138,7 +144,9 @@ func (r *managementRoleEntryResource) Update(ctx context.Context, req resource.U
 		}
 	}
 	if !plan.RemoveParameter.Equal(state.RemoveParameter) {
-		sp.RemoveParameter = plan.RemoveParameter.ValueBool()
+		if !plan.RemoveParameter.IsUnknown() {
+			sp.RemoveParameter = plan.RemoveParameter.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -149,6 +157,18 @@ func (r *managementRoleEntryResource) Update(ctx context.Context, req resource.U
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AddParameter.IsUnknown() && !cfg.AddParameter.IsNull() && !cfg.AddParameter.Equal(state.AddParameter) {
+		prev, want := reflected, cfg.AddParameter.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AddParameter"] == nil || getBool(obj, "AddParameter") == want)
+		}
+	}
+	if !cfg.RemoveParameter.IsUnknown() && !cfg.RemoveParameter.IsNull() && !cfg.RemoveParameter.Equal(state.RemoveParameter) {
+		prev, want := reflected, cfg.RemoveParameter.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveParameter"] == nil || getBool(obj, "RemoveParameter") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -212,6 +212,42 @@ func (r *acceptedDomainResource) Update(ctx context.Context, req resource.Update
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"MailFlowRegion": cfg.MailFlowRegion,
 	}, getString)
+	if !cfg.CanHaveCloudCache.IsUnknown() && !cfg.CanHaveCloudCache.IsNull() && !cfg.CanHaveCloudCache.Equal(state.CanHaveCloudCache) {
+		prev, want := reflected, cfg.CanHaveCloudCache.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CanHaveCloudCache"] == nil || getBool(obj, "CanHaveCloudCache") == want)
+		}
+	}
+	if !cfg.EnableNego2Authentication.IsUnknown() && !cfg.EnableNego2Authentication.IsNull() && !cfg.EnableNego2Authentication.Equal(state.EnableNego2Authentication) {
+		prev, want := reflected, cfg.EnableNego2Authentication.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableNego2Authentication"] == nil || getBool(obj, "EnableNego2Authentication") == want)
+		}
+	}
+	if !cfg.MatchSubDomains.IsUnknown() && !cfg.MatchSubDomains.IsNull() && !cfg.MatchSubDomains.Equal(state.MatchSubDomains) {
+		prev, want := reflected, cfg.MatchSubDomains.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MatchSubDomains"] == nil || getBool(obj, "MatchSubDomains") == want)
+		}
+	}
+	if !cfg.OutboundOnly.IsUnknown() && !cfg.OutboundOnly.IsNull() && !cfg.OutboundOnly.Equal(state.OutboundOnly) {
+		prev, want := reflected, cfg.OutboundOnly.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OutboundOnly"] == nil || getBool(obj, "OutboundOnly") == want)
+		}
+	}
+	if !cfg.SendingFromDomainDisabled.IsUnknown() && !cfg.SendingFromDomainDisabled.IsNull() && !cfg.SendingFromDomainDisabled.Equal(state.SendingFromDomainDisabled) {
+		prev, want := reflected, cfg.SendingFromDomainDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SendingFromDomainDisabled"] == nil || getBool(obj, "SendingFromDomainDisabled") == want)
+		}
+	}
+	if !cfg.SendingToDomainDisabled.IsUnknown() && !cfg.SendingToDomainDisabled.IsNull() && !cfg.SendingToDomainDisabled.Equal(state.SendingToDomainDisabled) {
+		prev, want := reflected, cfg.SendingToDomainDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SendingToDomainDisabled"] == nil || getBool(obj, "SendingToDomainDisabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

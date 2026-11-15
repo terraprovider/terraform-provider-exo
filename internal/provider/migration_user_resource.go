@@ -83,7 +83,9 @@ func (r *migrationUserResource) Create(ctx context.Context, req resource.CreateR
 	sp := exo.SetMigrationUserParams{}
 	sp.Identity = plan.Identity.ValueString()
 	if !config.ApproveSkippedItems.IsNull() {
-		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+		if !plan.ApproveSkippedItems.IsUnknown() {
+			sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBoolPointer()
+		}
 	}
 	if v := config.CompleteAfter.ValueString(); v != "" {
 		sp.CompleteAfter = objectParam(v)
@@ -95,7 +97,9 @@ func (r *migrationUserResource) Create(ctx context.Context, req resource.CreateR
 		sp.StartAfter = objectParam(v)
 	}
 	if !config.SyncNow.IsNull() {
-		sp.SyncNow = plan.SyncNow.ValueBool()
+		if !plan.SyncNow.IsUnknown() {
+			sp.SyncNow = plan.SyncNow.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -137,7 +141,9 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 	sp := exo.SetMigrationUserParams{}
 	sp.Identity = id
 	if !plan.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
-		sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBool()
+		if !plan.ApproveSkippedItems.IsUnknown() {
+			sp.ApproveSkippedItems = plan.ApproveSkippedItems.ValueBoolPointer()
+		}
 	}
 	if !plan.CompleteAfter.Equal(state.CompleteAfter) {
 		if v := plan.CompleteAfter.ValueString(); v != "" {
@@ -155,7 +161,9 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 		}
 	}
 	if !plan.SyncNow.Equal(state.SyncNow) {
-		sp.SyncNow = plan.SyncNow.ValueBool()
+		if !plan.SyncNow.IsUnknown() {
+			sp.SyncNow = plan.SyncNow.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -166,6 +174,18 @@ func (r *migrationUserResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.ApproveSkippedItems.IsUnknown() && !cfg.ApproveSkippedItems.IsNull() && !cfg.ApproveSkippedItems.Equal(state.ApproveSkippedItems) {
+		prev, want := reflected, cfg.ApproveSkippedItems.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ApproveSkippedItems"] == nil || getBool(obj, "ApproveSkippedItems") == want)
+		}
+	}
+	if !cfg.SyncNow.IsUnknown() && !cfg.SyncNow.IsNull() && !cfg.SyncNow.Equal(state.SyncNow) {
+		prev, want := reflected, cfg.SyncNow.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SyncNow"] == nil || getBool(obj, "SyncNow") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -98,7 +98,9 @@ func (r *ldapDirectoryResource) Create(ctx context.Context, req resource.CreateR
 		sp.Id = plan.Id.ValueString()
 	}
 	if !config.NoSsl.IsNull() {
-		sp.NoSsl = plan.NoSsl.ValueBool()
+		if !plan.NoSsl.IsUnknown() {
+			sp.NoSsl = plan.NoSsl.ValueBoolPointer()
+		}
 	}
 	if v := config.Organization.ValueString(); v != "" {
 		sp.Organization = objectParam(v)
@@ -114,7 +116,9 @@ func (r *ldapDirectoryResource) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 	if !config.UseSsl.IsNull() {
-		sp.UseSsl = plan.UseSsl.ValueBool()
+		if !plan.UseSsl.IsUnknown() {
+			sp.UseSsl = plan.UseSsl.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -164,7 +168,9 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 		sp.Id = plan.Id.ValueString()
 	}
 	if !plan.NoSsl.Equal(state.NoSsl) {
-		sp.NoSsl = plan.NoSsl.ValueBool()
+		if !plan.NoSsl.IsUnknown() {
+			sp.NoSsl = plan.NoSsl.ValueBoolPointer()
+		}
 	}
 	if !plan.Organization.Equal(state.Organization) {
 		if v := plan.Organization.ValueString(); v != "" {
@@ -182,7 +188,9 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 		}
 	}
 	if !plan.UseSsl.Equal(state.UseSsl) {
-		sp.UseSsl = plan.UseSsl.ValueBool()
+		if !plan.UseSsl.IsUnknown() {
+			sp.UseSsl = plan.UseSsl.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -197,6 +205,30 @@ func (r *ldapDirectoryResource) Update(ctx context.Context, req resource.UpdateR
 		"Host":   cfg.Host,
 		"Id":     cfg.Id,
 	}, getString)
+	if !cfg.NoSsl.IsUnknown() && !cfg.NoSsl.IsNull() && !cfg.NoSsl.Equal(state.NoSsl) {
+		prev, want := reflected, cfg.NoSsl.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NoSsl"] == nil || getBool(obj, "NoSsl") == want)
+		}
+	}
+	if !cfg.Port.IsUnknown() && !cfg.Port.IsNull() && !cfg.Port.Equal(state.Port) {
+		prev, want := reflected, cfg.Port.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Port"] == nil || getInt(obj, "Port") == want)
+		}
+	}
+	if !cfg.TimeoutSec.IsUnknown() && !cfg.TimeoutSec.IsNull() && !cfg.TimeoutSec.Equal(state.TimeoutSec) {
+		prev, want := reflected, cfg.TimeoutSec.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TimeoutSec"] == nil || getInt(obj, "TimeoutSec") == want)
+		}
+	}
+	if !cfg.UseSsl.IsUnknown() && !cfg.UseSsl.IsNull() && !cfg.UseSsl.Equal(state.UseSsl) {
+		prev, want := reflected, cfg.UseSsl.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseSsl"] == nil || getBool(obj, "UseSsl") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

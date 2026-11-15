@@ -530,6 +530,12 @@ func (r *contactResource) Update(ctx context.Context, req resource.UpdateRequest
 		"Title":               cfg.Title,
 		"WebPage":             cfg.WebPage,
 	}, getString)
+	if !cfg.SeniorityIndex.IsUnknown() && !cfg.SeniorityIndex.IsNull() && !cfg.SeniorityIndex.Equal(state.SeniorityIndex) {
+		prev, want := reflected, cfg.SeniorityIndex.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SeniorityIndex"] == nil || getInt(obj, "SeniorityIndex") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

@@ -167,6 +167,12 @@ func (r *mailboxFolderPermissionResource) Update(ctx context.Context, req resour
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.SendNotificationToUser.IsUnknown() && !cfg.SendNotificationToUser.IsNull() && !cfg.SendNotificationToUser.Equal(state.SendNotificationToUser) {
+		prev, want := reflected, cfg.SendNotificationToUser.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SendNotificationToUser"] == nil || getBool(obj, "SendNotificationToUser") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

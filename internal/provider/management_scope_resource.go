@@ -81,7 +81,9 @@ func (r *managementScopeResource) Create(ctx context.Context, req resource.Creat
 
 	p := exo.NewManagementScopeParams{}
 	if !config.Exclusive.IsNull() {
-		p.Exclusive = plan.Exclusive.ValueBool()
+		if !plan.Exclusive.IsUnknown() {
+			p.Exclusive = plan.Exclusive.ValueBoolPointer()
+		}
 	}
 	if !config.Name.IsNull() {
 		p.Name = plan.Name.ValueString()

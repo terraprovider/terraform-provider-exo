@@ -423,6 +423,138 @@ func (r *smimeConfigResource) Update(ctx context.Context, req resource.UpdateReq
 		"OWASenderCertificateAttributesToDisplay": cfg.OWASenderCertificateAttributesToDisplay,
 		"OWASigningAlgorithms":                    cfg.OWASigningAlgorithms,
 	}, getString)
+	if !cfg.NoSignOnReply.IsUnknown() && !cfg.NoSignOnReply.IsNull() && !cfg.NoSignOnReply.Equal(state.NoSignOnReply) {
+		prev, want := reflected, cfg.NoSignOnReply.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NoSignOnReply"] == nil || getBool(obj, "NoSignOnReply") == want)
+		}
+	}
+	if !cfg.OWAAllowUserChoiceOfSigningCertificate.IsUnknown() && !cfg.OWAAllowUserChoiceOfSigningCertificate.IsNull() && !cfg.OWAAllowUserChoiceOfSigningCertificate.Equal(state.OWAAllowUserChoiceOfSigningCertificate) {
+		prev, want := reflected, cfg.OWAAllowUserChoiceOfSigningCertificate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAAllowUserChoiceOfSigningCertificate"] == nil || getBool(obj, "OWAAllowUserChoiceOfSigningCertificate") == want)
+		}
+	}
+	if !cfg.OWAAlwaysEncrypt.IsUnknown() && !cfg.OWAAlwaysEncrypt.IsNull() && !cfg.OWAAlwaysEncrypt.Equal(state.OWAAlwaysEncrypt) {
+		prev, want := reflected, cfg.OWAAlwaysEncrypt.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAAlwaysEncrypt"] == nil || getBool(obj, "OWAAlwaysEncrypt") == want)
+		}
+	}
+	if !cfg.OWAAlwaysSign.IsUnknown() && !cfg.OWAAlwaysSign.IsNull() && !cfg.OWAAlwaysSign.Equal(state.OWAAlwaysSign) {
+		prev, want := reflected, cfg.OWAAlwaysSign.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAAlwaysSign"] == nil || getBool(obj, "OWAAlwaysSign") == want)
+		}
+	}
+	if !cfg.OWABCCEncryptedEmailForking.IsUnknown() && !cfg.OWABCCEncryptedEmailForking.IsNull() && !cfg.OWABCCEncryptedEmailForking.Equal(state.OWABCCEncryptedEmailForking) {
+		prev, want := reflected, cfg.OWABCCEncryptedEmailForking.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWABCCEncryptedEmailForking"] == nil || getInt(obj, "OWABCCEncryptedEmailForking") == want)
+		}
+	}
+	if !cfg.OWACRLConnectionTimeout.IsUnknown() && !cfg.OWACRLConnectionTimeout.IsNull() && !cfg.OWACRLConnectionTimeout.Equal(state.OWACRLConnectionTimeout) {
+		prev, want := reflected, cfg.OWACRLConnectionTimeout.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWACRLConnectionTimeout"] == nil || getInt(obj, "OWACRLConnectionTimeout") == want)
+		}
+	}
+	if !cfg.OWACRLRetrievalTimeout.IsUnknown() && !cfg.OWACRLRetrievalTimeout.IsNull() && !cfg.OWACRLRetrievalTimeout.Equal(state.OWACRLRetrievalTimeout) {
+		prev, want := reflected, cfg.OWACRLRetrievalTimeout.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWACRLRetrievalTimeout"] == nil || getInt(obj, "OWACRLRetrievalTimeout") == want)
+		}
+	}
+	if !cfg.OWACheckCRLOnSend.IsUnknown() && !cfg.OWACheckCRLOnSend.IsNull() && !cfg.OWACheckCRLOnSend.Equal(state.OWACheckCRLOnSend) {
+		prev, want := reflected, cfg.OWACheckCRLOnSend.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWACheckCRLOnSend"] == nil || getBool(obj, "OWACheckCRLOnSend") == want)
+		}
+	}
+	if !cfg.OWAClearSign.IsUnknown() && !cfg.OWAClearSign.IsNull() && !cfg.OWAClearSign.Equal(state.OWAClearSign) {
+		prev, want := reflected, cfg.OWAClearSign.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAClearSign"] == nil || getBool(obj, "OWAClearSign") == want)
+		}
+	}
+	if !cfg.OWACopyRecipientHeaders.IsUnknown() && !cfg.OWACopyRecipientHeaders.IsNull() && !cfg.OWACopyRecipientHeaders.Equal(state.OWACopyRecipientHeaders) {
+		prev, want := reflected, cfg.OWACopyRecipientHeaders.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWACopyRecipientHeaders"] == nil || getBool(obj, "OWACopyRecipientHeaders") == want)
+		}
+	}
+	if !cfg.OWADLExpansionTimeout.IsUnknown() && !cfg.OWADLExpansionTimeout.IsNull() && !cfg.OWADLExpansionTimeout.Equal(state.OWADLExpansionTimeout) {
+		prev, want := reflected, cfg.OWADLExpansionTimeout.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWADLExpansionTimeout"] == nil || getInt(obj, "OWADLExpansionTimeout") == want)
+		}
+	}
+	if !cfg.OWADisableCRLCheck.IsUnknown() && !cfg.OWADisableCRLCheck.IsNull() && !cfg.OWADisableCRLCheck.Equal(state.OWADisableCRLCheck) {
+		prev, want := reflected, cfg.OWADisableCRLCheck.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWADisableCRLCheck"] == nil || getBool(obj, "OWADisableCRLCheck") == want)
+		}
+	}
+	if !cfg.OWAEncryptTemporaryBuffers.IsUnknown() && !cfg.OWAEncryptTemporaryBuffers.IsNull() && !cfg.OWAEncryptTemporaryBuffers.Equal(state.OWAEncryptTemporaryBuffers) {
+		prev, want := reflected, cfg.OWAEncryptTemporaryBuffers.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAEncryptTemporaryBuffers"] == nil || getBool(obj, "OWAEncryptTemporaryBuffers") == want)
+		}
+	}
+	if !cfg.OWAForceSMIMEClientUpgrade.IsUnknown() && !cfg.OWAForceSMIMEClientUpgrade.IsNull() && !cfg.OWAForceSMIMEClientUpgrade.Equal(state.OWAForceSMIMEClientUpgrade) {
+		prev, want := reflected, cfg.OWAForceSMIMEClientUpgrade.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAForceSMIMEClientUpgrade"] == nil || getBool(obj, "OWAForceSMIMEClientUpgrade") == want)
+		}
+	}
+	if !cfg.OWAIncludeCertificateChainAndRootCertificate.IsUnknown() && !cfg.OWAIncludeCertificateChainAndRootCertificate.IsNull() && !cfg.OWAIncludeCertificateChainAndRootCertificate.Equal(state.OWAIncludeCertificateChainAndRootCertificate) {
+		prev, want := reflected, cfg.OWAIncludeCertificateChainAndRootCertificate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAIncludeCertificateChainAndRootCertificate"] == nil || getBool(obj, "OWAIncludeCertificateChainAndRootCertificate") == want)
+		}
+	}
+	if !cfg.OWAIncludeCertificateChainWithoutRootCertificate.IsUnknown() && !cfg.OWAIncludeCertificateChainWithoutRootCertificate.IsNull() && !cfg.OWAIncludeCertificateChainWithoutRootCertificate.Equal(state.OWAIncludeCertificateChainWithoutRootCertificate) {
+		prev, want := reflected, cfg.OWAIncludeCertificateChainWithoutRootCertificate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAIncludeCertificateChainWithoutRootCertificate"] == nil || getBool(obj, "OWAIncludeCertificateChainWithoutRootCertificate") == want)
+		}
+	}
+	if !cfg.OWAIncludeSMIMECapabilitiesInMessage.IsUnknown() && !cfg.OWAIncludeSMIMECapabilitiesInMessage.IsNull() && !cfg.OWAIncludeSMIMECapabilitiesInMessage.Equal(state.OWAIncludeSMIMECapabilitiesInMessage) {
+		prev, want := reflected, cfg.OWAIncludeSMIMECapabilitiesInMessage.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAIncludeSMIMECapabilitiesInMessage"] == nil || getBool(obj, "OWAIncludeSMIMECapabilitiesInMessage") == want)
+		}
+	}
+	if !cfg.OWAOnlyUseSmartCard.IsUnknown() && !cfg.OWAOnlyUseSmartCard.IsNull() && !cfg.OWAOnlyUseSmartCard.Equal(state.OWAOnlyUseSmartCard) {
+		prev, want := reflected, cfg.OWAOnlyUseSmartCard.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAOnlyUseSmartCard"] == nil || getBool(obj, "OWAOnlyUseSmartCard") == want)
+		}
+	}
+	if !cfg.OWASignedEmailCertificateInclusion.IsUnknown() && !cfg.OWASignedEmailCertificateInclusion.IsNull() && !cfg.OWASignedEmailCertificateInclusion.Equal(state.OWASignedEmailCertificateInclusion) {
+		prev, want := reflected, cfg.OWASignedEmailCertificateInclusion.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWASignedEmailCertificateInclusion"] == nil || getBool(obj, "OWASignedEmailCertificateInclusion") == want)
+		}
+	}
+	if !cfg.OWATripleWrapSignedEncryptedMail.IsUnknown() && !cfg.OWATripleWrapSignedEncryptedMail.IsNull() && !cfg.OWATripleWrapSignedEncryptedMail.Equal(state.OWATripleWrapSignedEncryptedMail) {
+		prev, want := reflected, cfg.OWATripleWrapSignedEncryptedMail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWATripleWrapSignedEncryptedMail"] == nil || getBool(obj, "OWATripleWrapSignedEncryptedMail") == want)
+		}
+	}
+	if !cfg.OWAUseKeyIdentifier.IsUnknown() && !cfg.OWAUseKeyIdentifier.IsNull() && !cfg.OWAUseKeyIdentifier.Equal(state.OWAUseKeyIdentifier) {
+		prev, want := reflected, cfg.OWAUseKeyIdentifier.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAUseKeyIdentifier"] == nil || getBool(obj, "OWAUseKeyIdentifier") == want)
+		}
+	}
+	if !cfg.OWAUseSecondaryProxiesWhenFindingCertificates.IsUnknown() && !cfg.OWAUseSecondaryProxiesWhenFindingCertificates.IsNull() && !cfg.OWAUseSecondaryProxiesWhenFindingCertificates.Equal(state.OWAUseSecondaryProxiesWhenFindingCertificates) {
+		prev, want := reflected, cfg.OWAUseSecondaryProxiesWhenFindingCertificates.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OWAUseSecondaryProxiesWhenFindingCertificates"] == nil || getBool(obj, "OWAUseSecondaryProxiesWhenFindingCertificates") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

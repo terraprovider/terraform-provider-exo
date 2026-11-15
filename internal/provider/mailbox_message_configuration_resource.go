@@ -793,6 +793,222 @@ func (r *mailboxMessageConfigurationResource) Update(ctx context.Context, req re
 		"SigningCertificateId":      cfg.SigningCertificateId,
 		"SigningCertificateSubject": cfg.SigningCertificateSubject,
 	}, getString)
+	if !cfg.AlwaysShowBcc.IsUnknown() && !cfg.AlwaysShowBcc.IsNull() && !cfg.AlwaysShowBcc.Equal(state.AlwaysShowBcc) {
+		prev, want := reflected, cfg.AlwaysShowBcc.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AlwaysShowBcc"] == nil || getBool(obj, "AlwaysShowBcc") == want)
+		}
+	}
+	if !cfg.AlwaysShowFrom.IsUnknown() && !cfg.AlwaysShowFrom.IsNull() && !cfg.AlwaysShowFrom.Equal(state.AlwaysShowFrom) {
+		prev, want := reflected, cfg.AlwaysShowFrom.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AlwaysShowFrom"] == nil || getBool(obj, "AlwaysShowFrom") == want)
+		}
+	}
+	if !cfg.AutoAddSignature.IsUnknown() && !cfg.AutoAddSignature.IsNull() && !cfg.AutoAddSignature.Equal(state.AutoAddSignature) {
+		prev, want := reflected, cfg.AutoAddSignature.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoAddSignature"] == nil || getBool(obj, "AutoAddSignature") == want)
+		}
+	}
+	if !cfg.AutoAddSignatureOnMobile.IsUnknown() && !cfg.AutoAddSignatureOnMobile.IsNull() && !cfg.AutoAddSignatureOnMobile.Equal(state.AutoAddSignatureOnMobile) {
+		prev, want := reflected, cfg.AutoAddSignatureOnMobile.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoAddSignatureOnMobile"] == nil || getBool(obj, "AutoAddSignatureOnMobile") == want)
+		}
+	}
+	if !cfg.AutoAddSignatureOnReply.IsUnknown() && !cfg.AutoAddSignatureOnReply.IsNull() && !cfg.AutoAddSignatureOnReply.Equal(state.AutoAddSignatureOnReply) {
+		prev, want := reflected, cfg.AutoAddSignatureOnReply.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoAddSignatureOnReply"] == nil || getBool(obj, "AutoAddSignatureOnReply") == want)
+		}
+	}
+	if !cfg.CheckForForgottenAttachments.IsUnknown() && !cfg.CheckForForgottenAttachments.IsNull() && !cfg.CheckForForgottenAttachments.Equal(state.CheckForForgottenAttachments) {
+		prev, want := reflected, cfg.CheckForForgottenAttachments.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CheckForForgottenAttachments"] == nil || getBool(obj, "CheckForForgottenAttachments") == want)
+		}
+	}
+	if !cfg.CheckForReportJunkDialog.IsUnknown() && !cfg.CheckForReportJunkDialog.IsNull() && !cfg.CheckForReportJunkDialog.Equal(state.CheckForReportJunkDialog) {
+		prev, want := reflected, cfg.CheckForReportJunkDialog.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CheckForReportJunkDialog"] == nil || getBool(obj, "CheckForReportJunkDialog") == want)
+		}
+	}
+	if !cfg.DefaultFontSize.IsUnknown() && !cfg.DefaultFontSize.IsNull() && !cfg.DefaultFontSize.Equal(state.DefaultFontSize) {
+		prev, want := reflected, cfg.DefaultFontSize.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DefaultFontSize"] == nil || getInt(obj, "DefaultFontSize") == want)
+		}
+	}
+	if !cfg.EchoGroupMessageBackToSubscribedSender.IsUnknown() && !cfg.EchoGroupMessageBackToSubscribedSender.IsNull() && !cfg.EchoGroupMessageBackToSubscribedSender.Equal(state.EchoGroupMessageBackToSubscribedSender) {
+		prev, want := reflected, cfg.EchoGroupMessageBackToSubscribedSender.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EchoGroupMessageBackToSubscribedSender"] == nil || getBool(obj, "EchoGroupMessageBackToSubscribedSender") == want)
+		}
+	}
+	if !cfg.EmptyDeletedItemsOnLogoff.IsUnknown() && !cfg.EmptyDeletedItemsOnLogoff.IsNull() && !cfg.EmptyDeletedItemsOnLogoff.Equal(state.EmptyDeletedItemsOnLogoff) {
+		prev, want := reflected, cfg.EmptyDeletedItemsOnLogoff.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EmptyDeletedItemsOnLogoff"] == nil || getBool(obj, "EmptyDeletedItemsOnLogoff") == want)
+		}
+	}
+	if !cfg.FavoritesBitFlags.IsUnknown() && !cfg.FavoritesBitFlags.IsNull() && !cfg.FavoritesBitFlags.Equal(state.FavoritesBitFlags) {
+		prev, want := reflected, cfg.FavoritesBitFlags.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FavoritesBitFlags"] == nil || getInt(obj, "FavoritesBitFlags") == want)
+		}
+	}
+	if !cfg.HideDeletedItems.IsUnknown() && !cfg.HideDeletedItems.IsNull() && !cfg.HideDeletedItems.Equal(state.HideDeletedItems) {
+		prev, want := reflected, cfg.HideDeletedItems.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HideDeletedItems"] == nil || getBool(obj, "HideDeletedItems") == want)
+		}
+	}
+	if !cfg.IsDarkModeTheme.IsUnknown() && !cfg.IsDarkModeTheme.IsNull() && !cfg.IsDarkModeTheme.Equal(state.IsDarkModeTheme) {
+		prev, want := reflected, cfg.IsDarkModeTheme.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDarkModeTheme"] == nil || getBool(obj, "IsDarkModeTheme") == want)
+		}
+	}
+	if !cfg.IsFavoritesFolderTreeCollapsed.IsUnknown() && !cfg.IsFavoritesFolderTreeCollapsed.IsNull() && !cfg.IsFavoritesFolderTreeCollapsed.Equal(state.IsFavoritesFolderTreeCollapsed) {
+		prev, want := reflected, cfg.IsFavoritesFolderTreeCollapsed.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsFavoritesFolderTreeCollapsed"] == nil || getBool(obj, "IsFavoritesFolderTreeCollapsed") == want)
+		}
+	}
+	if !cfg.IsFocusedInboxEnabled.IsUnknown() && !cfg.IsFocusedInboxEnabled.IsNull() && !cfg.IsFocusedInboxEnabled.Equal(state.IsFocusedInboxEnabled) {
+		prev, want := reflected, cfg.IsFocusedInboxEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsFocusedInboxEnabled"] == nil || getBool(obj, "IsFocusedInboxEnabled") == want)
+		}
+	}
+	if !cfg.IsMailRootFolderTreeCollapsed.IsUnknown() && !cfg.IsMailRootFolderTreeCollapsed.IsNull() && !cfg.IsMailRootFolderTreeCollapsed.Equal(state.IsMailRootFolderTreeCollapsed) {
+		prev, want := reflected, cfg.IsMailRootFolderTreeCollapsed.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsMailRootFolderTreeCollapsed"] == nil || getBool(obj, "IsMailRootFolderTreeCollapsed") == want)
+		}
+	}
+	if !cfg.IsReplyAllTheDefaultResponse.IsUnknown() && !cfg.IsReplyAllTheDefaultResponse.IsNull() && !cfg.IsReplyAllTheDefaultResponse.Equal(state.IsReplyAllTheDefaultResponse) {
+		prev, want := reflected, cfg.IsReplyAllTheDefaultResponse.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsReplyAllTheDefaultResponse"] == nil || getBool(obj, "IsReplyAllTheDefaultResponse") == want)
+		}
+	}
+	if !cfg.LinkPreviewEnabled.IsUnknown() && !cfg.LinkPreviewEnabled.IsNull() && !cfg.LinkPreviewEnabled.Equal(state.LinkPreviewEnabled) {
+		prev, want := reflected, cfg.LinkPreviewEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["LinkPreviewEnabled"] == nil || getBool(obj, "LinkPreviewEnabled") == want)
+		}
+	}
+	if !cfg.MailFolderPaneExpanded.IsUnknown() && !cfg.MailFolderPaneExpanded.IsNull() && !cfg.MailFolderPaneExpanded.Equal(state.MailFolderPaneExpanded) {
+		prev, want := reflected, cfg.MailFolderPaneExpanded.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailFolderPaneExpanded"] == nil || getBool(obj, "MailFolderPaneExpanded") == want)
+		}
+	}
+	if !cfg.MailSendUndoInterval.IsUnknown() && !cfg.MailSendUndoInterval.IsNull() && !cfg.MailSendUndoInterval.Equal(state.MailSendUndoInterval) {
+		prev, want := reflected, cfg.MailSendUndoInterval.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MailSendUndoInterval"] == nil || getInt(obj, "MailSendUndoInterval") == want)
+		}
+	}
+	if !cfg.ManuallyPickCertificate.IsUnknown() && !cfg.ManuallyPickCertificate.IsNull() && !cfg.ManuallyPickCertificate.Equal(state.ManuallyPickCertificate) {
+		prev, want := reflected, cfg.ManuallyPickCertificate.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ManuallyPickCertificate"] == nil || getBool(obj, "ManuallyPickCertificate") == want)
+		}
+	}
+	if !cfg.NavigationBarWidth.IsUnknown() && !cfg.NavigationBarWidth.IsNull() && !cfg.NavigationBarWidth.Equal(state.NavigationBarWidth) {
+		prev, want := reflected, cfg.NavigationBarWidth.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NavigationBarWidth"] == nil || getInt(obj, "NavigationBarWidth") == want)
+		}
+	}
+	if !cfg.PreferAccessibleContent.IsUnknown() && !cfg.PreferAccessibleContent.IsNull() && !cfg.PreferAccessibleContent.Equal(state.PreferAccessibleContent) {
+		prev, want := reflected, cfg.PreferAccessibleContent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreferAccessibleContent"] == nil || getBool(obj, "PreferAccessibleContent") == want)
+		}
+	}
+	if !cfg.PreviewMarkAsReadDelaytime.IsUnknown() && !cfg.PreviewMarkAsReadDelaytime.IsNull() && !cfg.PreviewMarkAsReadDelaytime.Equal(state.PreviewMarkAsReadDelaytime) {
+		prev, want := reflected, cfg.PreviewMarkAsReadDelaytime.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["PreviewMarkAsReadDelaytime"] == nil || getInt(obj, "PreviewMarkAsReadDelaytime") == want)
+		}
+	}
+	if !cfg.ReportJunkSelected.IsUnknown() && !cfg.ReportJunkSelected.IsNull() && !cfg.ReportJunkSelected.Equal(state.ReportJunkSelected) {
+		prev, want := reflected, cfg.ReportJunkSelected.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ReportJunkSelected"] == nil || getBool(obj, "ReportJunkSelected") == want)
+		}
+	}
+	if !cfg.ShowConversationAsTree.IsUnknown() && !cfg.ShowConversationAsTree.IsNull() && !cfg.ShowConversationAsTree.Equal(state.ShowConversationAsTree) {
+		prev, want := reflected, cfg.ShowConversationAsTree.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowConversationAsTree"] == nil || getBool(obj, "ShowConversationAsTree") == want)
+		}
+	}
+	if !cfg.ShowInlinePreviews.IsUnknown() && !cfg.ShowInlinePreviews.IsNull() && !cfg.ShowInlinePreviews.Equal(state.ShowInlinePreviews) {
+		prev, want := reflected, cfg.ShowInlinePreviews.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowInlinePreviews"] == nil || getBool(obj, "ShowInlinePreviews") == want)
+		}
+	}
+	if !cfg.ShowNotificationBar.IsUnknown() && !cfg.ShowNotificationBar.IsNull() && !cfg.ShowNotificationBar.Equal(state.ShowNotificationBar) {
+		prev, want := reflected, cfg.ShowNotificationBar.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowNotificationBar"] == nil || getBool(obj, "ShowNotificationBar") == want)
+		}
+	}
+	if !cfg.ShowPreviewTextInListView.IsUnknown() && !cfg.ShowPreviewTextInListView.IsNull() && !cfg.ShowPreviewTextInListView.Equal(state.ShowPreviewTextInListView) {
+		prev, want := reflected, cfg.ShowPreviewTextInListView.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowPreviewTextInListView"] == nil || getBool(obj, "ShowPreviewTextInListView") == want)
+		}
+	}
+	if !cfg.ShowReadingPaneOnFirstLoad.IsUnknown() && !cfg.ShowReadingPaneOnFirstLoad.IsNull() && !cfg.ShowReadingPaneOnFirstLoad.Equal(state.ShowReadingPaneOnFirstLoad) {
+		prev, want := reflected, cfg.ShowReadingPaneOnFirstLoad.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowReadingPaneOnFirstLoad"] == nil || getBool(obj, "ShowReadingPaneOnFirstLoad") == want)
+		}
+	}
+	if !cfg.ShowSenderOnTopInListView.IsUnknown() && !cfg.ShowSenderOnTopInListView.IsNull() && !cfg.ShowSenderOnTopInListView.Equal(state.ShowSenderOnTopInListView) {
+		prev, want := reflected, cfg.ShowSenderOnTopInListView.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowSenderOnTopInListView"] == nil || getBool(obj, "ShowSenderOnTopInListView") == want)
+		}
+	}
+	if !cfg.ShowUpNext.IsUnknown() && !cfg.ShowUpNext.IsNull() && !cfg.ShowUpNext.Equal(state.ShowUpNext) {
+		prev, want := reflected, cfg.ShowUpNext.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ShowUpNext"] == nil || getBool(obj, "ShowUpNext") == want)
+		}
+	}
+	if !cfg.SmimeEncrypt.IsUnknown() && !cfg.SmimeEncrypt.IsNull() && !cfg.SmimeEncrypt.Equal(state.SmimeEncrypt) {
+		prev, want := reflected, cfg.SmimeEncrypt.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SmimeEncrypt"] == nil || getBool(obj, "SmimeEncrypt") == want)
+		}
+	}
+	if !cfg.SmimeSign.IsUnknown() && !cfg.SmimeSign.IsNull() && !cfg.SmimeSign.Equal(state.SmimeSign) {
+		prev, want := reflected, cfg.SmimeSign.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SmimeSign"] == nil || getBool(obj, "SmimeSign") == want)
+		}
+	}
+	if !cfg.UseDefaultSignatureOnMobile.IsUnknown() && !cfg.UseDefaultSignatureOnMobile.IsNull() && !cfg.UseDefaultSignatureOnMobile.Equal(state.UseDefaultSignatureOnMobile) {
+		prev, want := reflected, cfg.UseDefaultSignatureOnMobile.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseDefaultSignatureOnMobile"] == nil || getBool(obj, "UseDefaultSignatureOnMobile") == want)
+		}
+	}
+	if !cfg.WebSuggestedRepliesEnabledForUser.IsUnknown() && !cfg.WebSuggestedRepliesEnabledForUser.IsNull() && !cfg.WebSuggestedRepliesEnabledForUser.Equal(state.WebSuggestedRepliesEnabledForUser) {
+		prev, want := reflected, cfg.WebSuggestedRepliesEnabledForUser.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["WebSuggestedRepliesEnabledForUser"] == nil || getBool(obj, "WebSuggestedRepliesEnabledForUser") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

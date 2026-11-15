@@ -351,6 +351,84 @@ func (r *iRMConfigurationResource) Update(ctx context.Context, req resource.Upda
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AutomaticServiceUpdateEnabled.IsUnknown() && !cfg.AutomaticServiceUpdateEnabled.IsNull() && !cfg.AutomaticServiceUpdateEnabled.Equal(state.AutomaticServiceUpdateEnabled) {
+		prev, want := reflected, cfg.AutomaticServiceUpdateEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutomaticServiceUpdateEnabled"] == nil || getBool(obj, "AutomaticServiceUpdateEnabled") == want)
+		}
+	}
+	if !cfg.AzureRMSLicensingEnabled.IsUnknown() && !cfg.AzureRMSLicensingEnabled.IsNull() && !cfg.AzureRMSLicensingEnabled.Equal(state.AzureRMSLicensingEnabled) {
+		prev, want := reflected, cfg.AzureRMSLicensingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AzureRMSLicensingEnabled"] == nil || getBool(obj, "AzureRMSLicensingEnabled") == want)
+		}
+	}
+	if !cfg.DecryptAttachmentForEncryptOnly.IsUnknown() && !cfg.DecryptAttachmentForEncryptOnly.IsNull() && !cfg.DecryptAttachmentForEncryptOnly.Equal(state.DecryptAttachmentForEncryptOnly) {
+		prev, want := reflected, cfg.DecryptAttachmentForEncryptOnly.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DecryptAttachmentForEncryptOnly"] == nil || getBool(obj, "DecryptAttachmentForEncryptOnly") == want)
+		}
+	}
+	if !cfg.EDiscoverySuperUserEnabled.IsUnknown() && !cfg.EDiscoverySuperUserEnabled.IsNull() && !cfg.EDiscoverySuperUserEnabled.Equal(state.EDiscoverySuperUserEnabled) {
+		prev, want := reflected, cfg.EDiscoverySuperUserEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EDiscoverySuperUserEnabled"] == nil || getBool(obj, "EDiscoverySuperUserEnabled") == want)
+		}
+	}
+	if !cfg.EnablePdfEncryption.IsUnknown() && !cfg.EnablePdfEncryption.IsNull() && !cfg.EnablePdfEncryption.Equal(state.EnablePdfEncryption) {
+		prev, want := reflected, cfg.EnablePdfEncryption.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnablePdfEncryption"] == nil || getBool(obj, "EnablePdfEncryption") == want)
+		}
+	}
+	if !cfg.EnablePortalTrackingLogs.IsUnknown() && !cfg.EnablePortalTrackingLogs.IsNull() && !cfg.EnablePortalTrackingLogs.Equal(state.EnablePortalTrackingLogs) {
+		prev, want := reflected, cfg.EnablePortalTrackingLogs.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnablePortalTrackingLogs"] == nil || getBool(obj, "EnablePortalTrackingLogs") == want)
+		}
+	}
+	if !cfg.InternalLicensingEnabled.IsUnknown() && !cfg.InternalLicensingEnabled.IsNull() && !cfg.InternalLicensingEnabled.Equal(state.InternalLicensingEnabled) {
+		prev, want := reflected, cfg.InternalLicensingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["InternalLicensingEnabled"] == nil || getBool(obj, "InternalLicensingEnabled") == want)
+		}
+	}
+	if !cfg.JournalReportDecryptionEnabled.IsUnknown() && !cfg.JournalReportDecryptionEnabled.IsNull() && !cfg.JournalReportDecryptionEnabled.Equal(state.JournalReportDecryptionEnabled) {
+		prev, want := reflected, cfg.JournalReportDecryptionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["JournalReportDecryptionEnabled"] == nil || getBool(obj, "JournalReportDecryptionEnabled") == want)
+		}
+	}
+	if !cfg.RejectIfRecipientHasNoRights.IsUnknown() && !cfg.RejectIfRecipientHasNoRights.IsNull() && !cfg.RejectIfRecipientHasNoRights.Equal(state.RejectIfRecipientHasNoRights) {
+		prev, want := reflected, cfg.RejectIfRecipientHasNoRights.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RejectIfRecipientHasNoRights"] == nil || getBool(obj, "RejectIfRecipientHasNoRights") == want)
+		}
+	}
+	if !cfg.SearchEnabled.IsUnknown() && !cfg.SearchEnabled.IsNull() && !cfg.SearchEnabled.Equal(state.SearchEnabled) {
+		prev, want := reflected, cfg.SearchEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SearchEnabled"] == nil || getBool(obj, "SearchEnabled") == want)
+		}
+	}
+	if !cfg.SimplifiedClientAccessDoNotForwardDisabled.IsUnknown() && !cfg.SimplifiedClientAccessDoNotForwardDisabled.IsNull() && !cfg.SimplifiedClientAccessDoNotForwardDisabled.Equal(state.SimplifiedClientAccessDoNotForwardDisabled) {
+		prev, want := reflected, cfg.SimplifiedClientAccessDoNotForwardDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SimplifiedClientAccessDoNotForwardDisabled"] == nil || getBool(obj, "SimplifiedClientAccessDoNotForwardDisabled") == want)
+		}
+	}
+	if !cfg.SimplifiedClientAccessEnabled.IsUnknown() && !cfg.SimplifiedClientAccessEnabled.IsNull() && !cfg.SimplifiedClientAccessEnabled.Equal(state.SimplifiedClientAccessEnabled) {
+		prev, want := reflected, cfg.SimplifiedClientAccessEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SimplifiedClientAccessEnabled"] == nil || getBool(obj, "SimplifiedClientAccessEnabled") == want)
+		}
+	}
+	if !cfg.SimplifiedClientAccessEncryptOnlyDisabled.IsUnknown() && !cfg.SimplifiedClientAccessEncryptOnlyDisabled.IsNull() && !cfg.SimplifiedClientAccessEncryptOnlyDisabled.Equal(state.SimplifiedClientAccessEncryptOnlyDisabled) {
+		prev, want := reflected, cfg.SimplifiedClientAccessEncryptOnlyDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SimplifiedClientAccessEncryptOnlyDisabled"] == nil || getBool(obj, "SimplifiedClientAccessEncryptOnlyDisabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

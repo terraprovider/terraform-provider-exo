@@ -383,6 +383,60 @@ func (r *outboundConnectorResource) Update(ctx context.Context, req resource.Upd
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"Comment": cfg.Comment,
 	}, getString)
+	if !cfg.AllAcceptedDomains.IsUnknown() && !cfg.AllAcceptedDomains.IsNull() && !cfg.AllAcceptedDomains.Equal(state.AllAcceptedDomains) {
+		prev, want := reflected, cfg.AllAcceptedDomains.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AllAcceptedDomains"] == nil || getBool(obj, "AllAcceptedDomains") == want)
+		}
+	}
+	if !cfg.CloudServicesMailEnabled.IsUnknown() && !cfg.CloudServicesMailEnabled.IsNull() && !cfg.CloudServicesMailEnabled.Equal(state.CloudServicesMailEnabled) {
+		prev, want := reflected, cfg.CloudServicesMailEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CloudServicesMailEnabled"] == nil || getBool(obj, "CloudServicesMailEnabled") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.IsTransportRuleScoped.IsUnknown() && !cfg.IsTransportRuleScoped.IsNull() && !cfg.IsTransportRuleScoped.Equal(state.IsTransportRuleScoped) {
+		prev, want := reflected, cfg.IsTransportRuleScoped.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsTransportRuleScoped"] == nil || getBool(obj, "IsTransportRuleScoped") == want)
+		}
+	}
+	if !cfg.IsValidated.IsUnknown() && !cfg.IsValidated.IsNull() && !cfg.IsValidated.Equal(state.IsValidated) {
+		prev, want := reflected, cfg.IsValidated.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsValidated"] == nil || getBool(obj, "IsValidated") == want)
+		}
+	}
+	if !cfg.RouteAllMessagesViaOnPremises.IsUnknown() && !cfg.RouteAllMessagesViaOnPremises.IsNull() && !cfg.RouteAllMessagesViaOnPremises.Equal(state.RouteAllMessagesViaOnPremises) {
+		prev, want := reflected, cfg.RouteAllMessagesViaOnPremises.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RouteAllMessagesViaOnPremises"] == nil || getBool(obj, "RouteAllMessagesViaOnPremises") == want)
+		}
+	}
+	if !cfg.SenderRewritingEnabled.IsUnknown() && !cfg.SenderRewritingEnabled.IsNull() && !cfg.SenderRewritingEnabled.Equal(state.SenderRewritingEnabled) {
+		prev, want := reflected, cfg.SenderRewritingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SenderRewritingEnabled"] == nil || getBool(obj, "SenderRewritingEnabled") == want)
+		}
+	}
+	if !cfg.TestMode.IsUnknown() && !cfg.TestMode.IsNull() && !cfg.TestMode.Equal(state.TestMode) {
+		prev, want := reflected, cfg.TestMode.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TestMode"] == nil || getBool(obj, "TestMode") == want)
+		}
+	}
+	if !cfg.UseMXRecord.IsUnknown() && !cfg.UseMXRecord.IsNull() && !cfg.UseMXRecord.Equal(state.UseMXRecord) {
+		prev, want := reflected, cfg.UseMXRecord.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseMXRecord"] == nil || getBool(obj, "UseMXRecord") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

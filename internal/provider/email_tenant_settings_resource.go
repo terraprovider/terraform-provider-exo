@@ -82,7 +82,9 @@ func (r *emailTenantSettingsResource) Create(ctx context.Context, req resource.C
 		}
 	}
 	if !config.IgnoreDehydratedFlag.IsNull() {
-		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+		if !plan.IgnoreDehydratedFlag.IsUnknown() {
+			sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -129,7 +131,9 @@ func (r *emailTenantSettingsResource) Update(ctx context.Context, req resource.U
 		}
 	}
 	if !plan.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
-		sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBool()
+		if !plan.IgnoreDehydratedFlag.IsUnknown() {
+			sp.IgnoreDehydratedFlag = plan.IgnoreDehydratedFlag.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,6 +144,18 @@ func (r *emailTenantSettingsResource) Update(ctx context.Context, req resource.U
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.EnablePriorityAccountProtection.IsUnknown() && !cfg.EnablePriorityAccountProtection.IsNull() && !cfg.EnablePriorityAccountProtection.Equal(state.EnablePriorityAccountProtection) {
+		prev, want := reflected, cfg.EnablePriorityAccountProtection.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnablePriorityAccountProtection"] == nil || getBool(obj, "EnablePriorityAccountProtection") == want)
+		}
+	}
+	if !cfg.IgnoreDehydratedFlag.IsUnknown() && !cfg.IgnoreDehydratedFlag.IsNull() && !cfg.IgnoreDehydratedFlag.Equal(state.IgnoreDehydratedFlag) {
+		prev, want := reflected, cfg.IgnoreDehydratedFlag.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IgnoreDehydratedFlag"] == nil || getBool(obj, "IgnoreDehydratedFlag") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

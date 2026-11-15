@@ -488,10 +488,15 @@ func attrType(p spec.Param) genframework.AttrType {
 }
 
 // isPointer reports whether the binding field is a pointer (*bool / *int64),
-// so an explicit false / 0 is sendable and unset stays nil.
+// so an explicit false / 0 is sendable and unset stays nil. Switches are *bool
+// too: a configured false must go out as -Switch:$false, or a state switch such
+// as -AllowBasicAuthSmtp could never be turned off again.
 func isPointer(p spec.Param) bool {
-	k := p.Kind()
-	return k == spec.KindBool || k == spec.KindInt64
+	switch p.Kind() {
+	case spec.KindSwitch, spec.KindBool, spec.KindInt64:
+		return true
+	}
+	return false
 }
 
 func hasCreateAttr(attrs []genframework.Attribute) bool {

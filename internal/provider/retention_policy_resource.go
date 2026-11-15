@@ -84,10 +84,14 @@ func (r *retentionPolicyResource) Create(ctx context.Context, req resource.Creat
 
 	p := exo.NewRetentionPolicyParams{}
 	if !config.IsDefault.IsNull() {
-		p.IsDefault = plan.IsDefault.ValueBool()
+		if !plan.IsDefault.IsUnknown() {
+			p.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
 	}
 	if !config.IsDefaultArbitrationMailbox.IsNull() {
-		p.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBool()
+		if !plan.IsDefaultArbitrationMailbox.IsUnknown() {
+			p.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBoolPointer()
+		}
 	}
 	if !config.Name.IsNull() {
 		p.Name = plan.Name.ValueString()
@@ -151,10 +155,14 @@ func (r *retentionPolicyResource) Update(ctx context.Context, req resource.Updat
 	sp := exo.SetRetentionPolicyParams{}
 	sp.Identity = id
 	if !plan.IsDefault.Equal(state.IsDefault) {
-		sp.IsDefault = plan.IsDefault.ValueBool()
+		if !plan.IsDefault.IsUnknown() {
+			sp.IsDefault = plan.IsDefault.ValueBoolPointer()
+		}
 	}
 	if !plan.IsDefaultArbitrationMailbox.Equal(state.IsDefaultArbitrationMailbox) {
-		sp.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBool()
+		if !plan.IsDefaultArbitrationMailbox.IsUnknown() {
+			sp.IsDefaultArbitrationMailbox = plan.IsDefaultArbitrationMailbox.ValueBoolPointer()
+		}
 	}
 	if !plan.RetentionId.Equal(state.RetentionId) {
 		sp.RetentionId = plan.RetentionId.ValueString()
@@ -175,6 +183,18 @@ func (r *retentionPolicyResource) Update(ctx context.Context, req resource.Updat
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"RetentionId": cfg.RetentionId,
 	}, getString)
+	if !cfg.IsDefault.IsUnknown() && !cfg.IsDefault.IsNull() && !cfg.IsDefault.Equal(state.IsDefault) {
+		prev, want := reflected, cfg.IsDefault.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDefault"] == nil || getBool(obj, "IsDefault") == want)
+		}
+	}
+	if !cfg.IsDefaultArbitrationMailbox.IsUnknown() && !cfg.IsDefaultArbitrationMailbox.IsNull() && !cfg.IsDefaultArbitrationMailbox.Equal(state.IsDefaultArbitrationMailbox) {
+		prev, want := reflected, cfg.IsDefaultArbitrationMailbox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsDefaultArbitrationMailbox"] == nil || getBool(obj, "IsDefaultArbitrationMailbox") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

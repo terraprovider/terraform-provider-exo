@@ -134,6 +134,12 @@ func (r *mailboxAuditBypassAssociationResource) Update(ctx context.Context, req 
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.AuditBypassEnabled.IsUnknown() && !cfg.AuditBypassEnabled.IsNull() && !cfg.AuditBypassEnabled.Equal(state.AuditBypassEnabled) {
+		prev, want := reflected, cfg.AuditBypassEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AuditBypassEnabled"] == nil || getBool(obj, "AuditBypassEnabled") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

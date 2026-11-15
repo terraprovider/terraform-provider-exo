@@ -239,6 +239,18 @@ func (r *oMEConfigurationResource) Update(ctx context.Context, req resource.Upda
 		"PrivacyStatementUrl": cfg.PrivacyStatementUrl,
 		"ReadButtonText":      cfg.ReadButtonText,
 	}, getString)
+	if !cfg.OTPEnabled.IsUnknown() && !cfg.OTPEnabled.IsNull() && !cfg.OTPEnabled.Equal(state.OTPEnabled) {
+		prev, want := reflected, cfg.OTPEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["OTPEnabled"] == nil || getBool(obj, "OTPEnabled") == want)
+		}
+	}
+	if !cfg.SocialIdSignIn.IsUnknown() && !cfg.SocialIdSignIn.IsNull() && !cfg.SocialIdSignIn.Equal(state.SocialIdSignIn) {
+		prev, want := reflected, cfg.SocialIdSignIn.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SocialIdSignIn"] == nil || getBool(obj, "SocialIdSignIn") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

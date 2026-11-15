@@ -82,7 +82,9 @@ func (r *clutterResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 	if !config.UseCustomRouting.IsNull() {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -129,7 +131,9 @@ func (r *clutterResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.UseCustomRouting.Equal(state.UseCustomRouting) {
-		sp.UseCustomRouting = plan.UseCustomRouting.ValueBool()
+		if !plan.UseCustomRouting.IsUnknown() {
+			sp.UseCustomRouting = plan.UseCustomRouting.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -140,6 +144,18 @@ func (r *clutterResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.Enable.IsUnknown() && !cfg.Enable.IsNull() && !cfg.Enable.Equal(state.Enable) {
+		prev, want := reflected, cfg.Enable.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enable"] == nil || getBool(obj, "Enable") == want)
+		}
+	}
+	if !cfg.UseCustomRouting.IsUnknown() && !cfg.UseCustomRouting.IsNull() && !cfg.UseCustomRouting.Equal(state.UseCustomRouting) {
+		prev, want := reflected, cfg.UseCustomRouting.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseCustomRouting"] == nil || getBool(obj, "UseCustomRouting") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

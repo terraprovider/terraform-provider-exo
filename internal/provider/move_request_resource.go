@@ -130,13 +130,17 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 
 	p := exo.NewMoveRequestParams{}
 	if !config.AcceptLargeDataLoss.IsNull() {
-		p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			p.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !config.ArchiveDomain.IsNull() {
 		p.ArchiveDomain = plan.ArchiveDomain.ValueString()
 	}
 	if !config.ArchiveOnly.IsNull() {
-		p.ArchiveOnly = plan.ArchiveOnly.ValueBool()
+		if !plan.ArchiveOnly.IsUnknown() {
+			p.ArchiveOnly = plan.ArchiveOnly.ValueBoolPointer()
+		}
 	}
 	if !config.BatchName.IsNull() {
 		p.BatchName = plan.BatchName.ValueString()
@@ -148,7 +152,9 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 		p.CompletedRequestAgeLimit = objectParam(v)
 	}
 	if !config.ForceOffline.IsNull() {
-		p.ForceOffline = plan.ForceOffline.ValueBool()
+		if !plan.ForceOffline.IsUnknown() {
+			p.ForceOffline = plan.ForceOffline.ValueBoolPointer()
+		}
 	}
 	if v := config.IncrementalSyncInterval.ValueString(); v != "" {
 		p.IncrementalSyncInterval = objectParam(v)
@@ -159,19 +165,27 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 		}
 	}
 	if !config.Outbound.IsNull() {
-		p.Outbound = plan.Outbound.ValueBool()
+		if !plan.Outbound.IsUnknown() {
+			p.Outbound = plan.Outbound.ValueBoolPointer()
+		}
 	}
 	if !config.PreventCompletion.IsNull() {
-		p.PreventCompletion = plan.PreventCompletion.ValueBool()
+		if !plan.PreventCompletion.IsUnknown() {
+			p.PreventCompletion = plan.PreventCompletion.ValueBoolPointer()
+		}
 	}
 	if !config.PrimaryOnly.IsNull() {
-		p.PrimaryOnly = plan.PrimaryOnly.ValueBool()
+		if !plan.PrimaryOnly.IsUnknown() {
+			p.PrimaryOnly = plan.PrimaryOnly.ValueBoolPointer()
+		}
 	}
 	if v := config.ProxyToMailbox.ValueString(); v != "" {
 		p.ProxyToMailbox = objectParam(v)
 	}
 	if !config.Remote.IsNull() {
-		p.Remote = plan.Remote.ValueBool()
+		if !plan.Remote.IsUnknown() {
+			p.Remote = plan.Remote.ValueBoolPointer()
+		}
 	}
 	if !config.RemoteArchiveTargetDatabase.IsNull() {
 		p.RemoteArchiveTargetDatabase = plan.RemoteArchiveTargetDatabase.ValueString()
@@ -203,13 +217,17 @@ func (r *moveRequestResource) Create(ctx context.Context, req resource.CreateReq
 		p.StartAfter = objectParam(v)
 	}
 	if !config.Suspend.IsNull() {
-		p.Suspend = plan.Suspend.ValueBool()
+		if !plan.Suspend.IsUnknown() {
+			p.Suspend = plan.Suspend.ValueBoolPointer()
+		}
 	}
 	if !config.SuspendComment.IsNull() {
 		p.SuspendComment = plan.SuspendComment.ValueString()
 	}
 	if !config.SuspendWhenReadyToComplete.IsNull() {
-		p.SuspendWhenReadyToComplete = plan.SuspendWhenReadyToComplete.ValueBool()
+		if !plan.SuspendWhenReadyToComplete.IsUnknown() {
+			p.SuspendWhenReadyToComplete = plan.SuspendWhenReadyToComplete.ValueBoolPointer()
+		}
 	}
 	if v := config.TargetDeliveryDomain.ValueString(); v != "" {
 		p.TargetDeliveryDomain = objectParam(v)
@@ -279,7 +297,9 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 		return cur
 	}
 	if !plan.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
-		sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBool()
+		if !plan.AcceptLargeDataLoss.IsUnknown() {
+			sp.AcceptLargeDataLoss = plan.AcceptLargeDataLoss.ValueBoolPointer()
+		}
 	}
 	if !plan.BatchName.Equal(state.BatchName) {
 		sp.BatchName = plan.BatchName.ValueString()
@@ -368,6 +388,12 @@ func (r *moveRequestResource) Update(ctx context.Context, req resource.UpdateReq
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"BatchName": cfg.BatchName,
 	}, getString)
+	if !cfg.AcceptLargeDataLoss.IsUnknown() && !cfg.AcceptLargeDataLoss.IsNull() && !cfg.AcceptLargeDataLoss.Equal(state.AcceptLargeDataLoss) {
+		prev, want := reflected, cfg.AcceptLargeDataLoss.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AcceptLargeDataLoss"] == nil || getBool(obj, "AcceptLargeDataLoss") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

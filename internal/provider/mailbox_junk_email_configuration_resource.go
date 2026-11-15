@@ -295,6 +295,36 @@ func (r *mailboxJunkEmailConfigurationResource) Update(ctx context.Context, req 
 	}
 	cfg := plan
 	reflected := reconcile.ReflectsFields(map[string]types.String{}, getString)
+	if !cfg.ContactsTrusted.IsUnknown() && !cfg.ContactsTrusted.IsNull() && !cfg.ContactsTrusted.Equal(state.ContactsTrusted) {
+		prev, want := reflected, cfg.ContactsTrusted.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ContactsTrusted"] == nil || getBool(obj, "ContactsTrusted") == want)
+		}
+	}
+	if !cfg.Enabled.IsUnknown() && !cfg.Enabled.IsNull() && !cfg.Enabled.Equal(state.Enabled) {
+		prev, want := reflected, cfg.Enabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["Enabled"] == nil || getBool(obj, "Enabled") == want)
+		}
+	}
+	if !cfg.FailOnError.IsUnknown() && !cfg.FailOnError.IsNull() && !cfg.FailOnError.Equal(state.FailOnError) {
+		prev, want := reflected, cfg.FailOnError.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["FailOnError"] == nil || getBool(obj, "FailOnError") == want)
+		}
+	}
+	if !cfg.SenderScreeningEnabled.IsUnknown() && !cfg.SenderScreeningEnabled.IsNull() && !cfg.SenderScreeningEnabled.Equal(state.SenderScreeningEnabled) {
+		prev, want := reflected, cfg.SenderScreeningEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SenderScreeningEnabled"] == nil || getBool(obj, "SenderScreeningEnabled") == want)
+		}
+	}
+	if !cfg.TrustedListsOnly.IsUnknown() && !cfg.TrustedListsOnly.IsNull() && !cfg.TrustedListsOnly.Equal(state.TrustedListsOnly) {
+		prev, want := reflected, cfg.TrustedListsOnly.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["TrustedListsOnly"] == nil || getBool(obj, "TrustedListsOnly") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

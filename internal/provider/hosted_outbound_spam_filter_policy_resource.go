@@ -289,6 +289,36 @@ func (r *hostedOutboundSpamFilterPolicyResource) Update(ctx context.Context, req
 	reflected := reconcile.ReflectsFields(map[string]types.String{
 		"AdminDisplayName": cfg.AdminDisplayName,
 	}, getString)
+	if !cfg.BccSuspiciousOutboundMail.IsUnknown() && !cfg.BccSuspiciousOutboundMail.IsNull() && !cfg.BccSuspiciousOutboundMail.Equal(state.BccSuspiciousOutboundMail) {
+		prev, want := reflected, cfg.BccSuspiciousOutboundMail.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["BccSuspiciousOutboundMail"] == nil || getBool(obj, "BccSuspiciousOutboundMail") == want)
+		}
+	}
+	if !cfg.NotifyOutboundSpam.IsUnknown() && !cfg.NotifyOutboundSpam.IsNull() && !cfg.NotifyOutboundSpam.Equal(state.NotifyOutboundSpam) {
+		prev, want := reflected, cfg.NotifyOutboundSpam.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["NotifyOutboundSpam"] == nil || getBool(obj, "NotifyOutboundSpam") == want)
+		}
+	}
+	if !cfg.RecipientLimitExternalPerHour.IsUnknown() && !cfg.RecipientLimitExternalPerHour.IsNull() && !cfg.RecipientLimitExternalPerHour.Equal(state.RecipientLimitExternalPerHour) {
+		prev, want := reflected, cfg.RecipientLimitExternalPerHour.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecipientLimitExternalPerHour"] == nil || getInt(obj, "RecipientLimitExternalPerHour") == want)
+		}
+	}
+	if !cfg.RecipientLimitInternalPerHour.IsUnknown() && !cfg.RecipientLimitInternalPerHour.IsNull() && !cfg.RecipientLimitInternalPerHour.Equal(state.RecipientLimitInternalPerHour) {
+		prev, want := reflected, cfg.RecipientLimitInternalPerHour.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecipientLimitInternalPerHour"] == nil || getInt(obj, "RecipientLimitInternalPerHour") == want)
+		}
+	}
+	if !cfg.RecipientLimitPerDay.IsUnknown() && !cfg.RecipientLimitPerDay.IsNull() && !cfg.RecipientLimitPerDay.Equal(state.RecipientLimitPerDay) {
+		prev, want := reflected, cfg.RecipientLimitPerDay.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecipientLimitPerDay"] == nil || getInt(obj, "RecipientLimitPerDay") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID

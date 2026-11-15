@@ -379,10 +379,14 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.Alias = plan.Alias.ValueString()
 	}
 	if !config.Archive.IsNull() {
-		p.Archive = plan.Archive.ValueBool()
+		if !plan.Archive.IsUnknown() {
+			p.Archive = plan.Archive.ValueBoolPointer()
+		}
 	}
 	if !config.Discovery.IsNull() {
-		p.Discovery = plan.Discovery.ValueBool()
+		if !plan.Discovery.IsUnknown() {
+			p.Discovery = plan.Discovery.ValueBoolPointer()
+		}
 	}
 	if !config.DisplayName.IsNull() {
 		p.DisplayName = plan.DisplayName.ValueString()
@@ -393,7 +397,9 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 	if !config.Equipment.IsNull() {
-		p.Equipment = plan.Equipment.ValueBool()
+		if !plan.Equipment.IsUnknown() {
+			p.Equipment = plan.Equipment.ValueBoolPointer()
+		}
 	}
 	if !config.FederatedIdentity.IsNull() {
 		p.FederatedIdentity = plan.FederatedIdentity.ValueString()
@@ -402,7 +408,9 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.FirstName = plan.FirstName.ValueString()
 	}
 	if !config.HoldForMigration.IsNull() {
-		p.HoldForMigration = plan.HoldForMigration.ValueBool()
+		if !plan.HoldForMigration.IsUnknown() {
+			p.HoldForMigration = plan.HoldForMigration.ValueBoolPointer()
+		}
 	}
 	if !config.ImmutableId.IsNull() {
 		p.ImmutableId = plan.ImmutableId.ValueString()
@@ -431,7 +439,9 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.MicrosoftOnlineServicesID = objectParam(v)
 	}
 	if !config.Migration.IsNull() {
-		p.Migration = plan.Migration.ValueBool()
+		if !plan.Migration.IsUnknown() {
+			p.Migration = plan.Migration.ValueBoolPointer()
+		}
 	}
 	if !config.ModeratedBy.IsNull() {
 		if v := toStringSlice(ctx, plan.ModeratedBy, &resp.Diagnostics); len(v) > 0 {
@@ -465,7 +475,9 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.ProxyEmailAddress = objectParam(v)
 	}
 	if !config.PublicFolder.IsNull() {
-		p.PublicFolder = plan.PublicFolder.ValueBool()
+		if !plan.PublicFolder.IsUnknown() {
+			p.PublicFolder = plan.PublicFolder.ValueBoolPointer()
+		}
 	}
 	if !config.RemotePowerShellEnabled.IsNull() {
 		if !plan.RemotePowerShellEnabled.IsUnknown() {
@@ -489,7 +501,9 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.RoleAssignmentPolicy = objectParam(v)
 	}
 	if !config.Room.IsNull() {
-		p.Room = plan.Room.ValueBool()
+		if !plan.Room.IsUnknown() {
+			p.Room = plan.Room.ValueBoolPointer()
+		}
 	}
 	if v := config.RoomMailboxPassword.ValueString(); v != "" {
 		p.RoomMailboxPassword = objectParam(v)
@@ -498,10 +512,14 @@ func (r *mailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		p.SendModerationNotifications = objectParam(v)
 	}
 	if !config.Shared.IsNull() {
-		p.Shared = plan.Shared.ValueBool()
+		if !plan.Shared.IsUnknown() {
+			p.Shared = plan.Shared.ValueBoolPointer()
+		}
 	}
 	if !config.TargetAllMDBs.IsNull() {
-		p.TargetAllMDBs = plan.TargetAllMDBs.ValueBool()
+		if !plan.TargetAllMDBs.IsUnknown() {
+			p.TargetAllMDBs = plan.TargetAllMDBs.ValueBoolPointer()
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -620,7 +638,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		sp.Alias = plan.Alias.ValueString()
 	}
 	if !plan.ApplyMandatoryProperties.Equal(state.ApplyMandatoryProperties) {
-		sp.ApplyMandatoryProperties = plan.ApplyMandatoryProperties.ValueBool()
+		if !plan.ApplyMandatoryProperties.IsUnknown() {
+			sp.ApplyMandatoryProperties = plan.ApplyMandatoryProperties.ValueBoolPointer()
+		}
 	}
 	if !plan.ArchiveName.Equal(state.ArchiveName) {
 		if !plan.ArchiveName.IsNull() && !plan.ArchiveName.IsUnknown() {
@@ -713,7 +733,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.ClearThrottlingPolicyAssignment.Equal(state.ClearThrottlingPolicyAssignment) {
-		sp.ClearThrottlingPolicyAssignment = plan.ClearThrottlingPolicyAssignment.ValueBool()
+		if !plan.ClearThrottlingPolicyAssignment.IsUnknown() {
+			sp.ClearThrottlingPolicyAssignment = plan.ClearThrottlingPolicyAssignment.ValueBoolPointer()
+		}
 	}
 	if !plan.CustomAttribute1.Equal(state.CustomAttribute1) {
 		sp.CustomAttribute1 = plan.CustomAttribute1.ValueString()
@@ -828,10 +850,14 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		sp.EnforcedTimestamps = plan.EnforcedTimestamps.ValueString()
 	}
 	if !plan.ExcludeFromAllHolds.Equal(state.ExcludeFromAllHolds) {
-		sp.ExcludeFromAllHolds = plan.ExcludeFromAllHolds.ValueBool()
+		if !plan.ExcludeFromAllHolds.IsUnknown() {
+			sp.ExcludeFromAllHolds = plan.ExcludeFromAllHolds.ValueBoolPointer()
+		}
 	}
 	if !plan.ExcludeFromAllOrgHolds.Equal(state.ExcludeFromAllOrgHolds) {
-		sp.ExcludeFromAllOrgHolds = plan.ExcludeFromAllOrgHolds.ValueBool()
+		if !plan.ExcludeFromAllOrgHolds.IsUnknown() {
+			sp.ExcludeFromAllOrgHolds = plan.ExcludeFromAllOrgHolds.ValueBoolPointer()
+		}
 	}
 	if !plan.ExcludeFromOrgHolds.Equal(state.ExcludeFromOrgHolds) {
 		if !plan.ExcludeFromOrgHolds.IsNull() && !plan.ExcludeFromOrgHolds.IsUnknown() {
@@ -932,7 +958,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.GroupMailbox.Equal(state.GroupMailbox) {
-		sp.GroupMailbox = plan.GroupMailbox.ValueBool()
+		if !plan.GroupMailbox.IsUnknown() {
+			sp.GroupMailbox = plan.GroupMailbox.ValueBoolPointer()
+		}
 	}
 	if !plan.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
 		if !plan.HiddenFromAddressListsEnabled.IsUnknown() {
@@ -1092,13 +1120,19 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.ProvideConsent.Equal(state.ProvideConsent) {
-		sp.ProvideConsent = plan.ProvideConsent.ValueBool()
+		if !plan.ProvideConsent.IsUnknown() {
+			sp.ProvideConsent = plan.ProvideConsent.ValueBoolPointer()
+		}
 	}
 	if !plan.ProvisionedForOfficeGraph.Equal(state.ProvisionedForOfficeGraph) {
-		sp.ProvisionedForOfficeGraph = plan.ProvisionedForOfficeGraph.ValueBool()
+		if !plan.ProvisionedForOfficeGraph.IsUnknown() {
+			sp.ProvisionedForOfficeGraph = plan.ProvisionedForOfficeGraph.ValueBoolPointer()
+		}
 	}
 	if !plan.RecalculateInactiveMailbox.Equal(state.RecalculateInactiveMailbox) {
-		sp.RecalculateInactiveMailbox = plan.RecalculateInactiveMailbox.ValueBool()
+		if !plan.RecalculateInactiveMailbox.IsUnknown() {
+			sp.RecalculateInactiveMailbox = plan.RecalculateInactiveMailbox.ValueBoolPointer()
+		}
 	}
 	if !plan.RecipientLimits.Equal(state.RecipientLimits) {
 		if v := plan.RecipientLimits.ValueString(); v != "" {
@@ -1145,19 +1179,29 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.RemoveComplianceTagHoldApplied.Equal(state.RemoveComplianceTagHoldApplied) {
-		sp.RemoveComplianceTagHoldApplied = plan.RemoveComplianceTagHoldApplied.ValueBool()
+		if !plan.RemoveComplianceTagHoldApplied.IsUnknown() {
+			sp.RemoveComplianceTagHoldApplied = plan.RemoveComplianceTagHoldApplied.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoveDelayHoldApplied.Equal(state.RemoveDelayHoldApplied) {
-		sp.RemoveDelayHoldApplied = plan.RemoveDelayHoldApplied.ValueBool()
+		if !plan.RemoveDelayHoldApplied.IsUnknown() {
+			sp.RemoveDelayHoldApplied = plan.RemoveDelayHoldApplied.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoveDelayReleaseHoldApplied.Equal(state.RemoveDelayReleaseHoldApplied) {
-		sp.RemoveDelayReleaseHoldApplied = plan.RemoveDelayReleaseHoldApplied.ValueBool()
+		if !plan.RemoveDelayReleaseHoldApplied.IsUnknown() {
+			sp.RemoveDelayReleaseHoldApplied = plan.RemoveDelayReleaseHoldApplied.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoveDisabledArchive.Equal(state.RemoveDisabledArchive) {
-		sp.RemoveDisabledArchive = plan.RemoveDisabledArchive.ValueBool()
+		if !plan.RemoveDisabledArchive.IsUnknown() {
+			sp.RemoveDisabledArchive = plan.RemoveDisabledArchive.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoveMailboxProvisioningConstraint.Equal(state.RemoveMailboxProvisioningConstraint) {
-		sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBool()
+		if !plan.RemoveMailboxProvisioningConstraint.IsUnknown() {
+			sp.RemoveMailboxProvisioningConstraint = plan.RemoveMailboxProvisioningConstraint.ValueBoolPointer()
+		}
 	}
 	if !plan.RemoveOrphanedHolds.Equal(state.RemoveOrphanedHolds) {
 		if !plan.RemoveOrphanedHolds.IsNull() && !plan.RemoveOrphanedHolds.IsUnknown() {
@@ -1272,7 +1316,9 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 	if !plan.UpdateEnforcedTimestamp.Equal(state.UpdateEnforcedTimestamp) {
-		sp.UpdateEnforcedTimestamp = plan.UpdateEnforcedTimestamp.ValueBool()
+		if !plan.UpdateEnforcedTimestamp.IsUnknown() {
+			sp.UpdateEnforcedTimestamp = plan.UpdateEnforcedTimestamp.ValueBoolPointer()
+		}
 	}
 	if !plan.UseDatabaseQuotaDefaults.Equal(state.UseDatabaseQuotaDefaults) {
 		if !plan.UseDatabaseQuotaDefaults.IsUnknown() {
@@ -1351,6 +1397,240 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		"RetentionUrl":        cfg.RetentionUrl,
 		"SimpleDisplayName":   cfg.SimpleDisplayName,
 	}, getString)
+	if !cfg.AccountDisabled.IsUnknown() && !cfg.AccountDisabled.IsNull() && !cfg.AccountDisabled.Equal(state.AccountDisabled) {
+		prev, want := reflected, cfg.AccountDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AccountDisabled"] == nil || getBool(obj, "AccountDisabled") == want)
+		}
+	}
+	if !cfg.ApplyMandatoryProperties.IsUnknown() && !cfg.ApplyMandatoryProperties.IsNull() && !cfg.ApplyMandatoryProperties.Equal(state.ApplyMandatoryProperties) {
+		prev, want := reflected, cfg.ApplyMandatoryProperties.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ApplyMandatoryProperties"] == nil || getBool(obj, "ApplyMandatoryProperties") == want)
+		}
+	}
+	if !cfg.AuditEnabled.IsUnknown() && !cfg.AuditEnabled.IsNull() && !cfg.AuditEnabled.Equal(state.AuditEnabled) {
+		prev, want := reflected, cfg.AuditEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AuditEnabled"] == nil || getBool(obj, "AuditEnabled") == want)
+		}
+	}
+	if !cfg.AutoArchivingEnabled.IsUnknown() && !cfg.AutoArchivingEnabled.IsNull() && !cfg.AutoArchivingEnabled.Equal(state.AutoArchivingEnabled) {
+		prev, want := reflected, cfg.AutoArchivingEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["AutoArchivingEnabled"] == nil || getBool(obj, "AutoArchivingEnabled") == want)
+		}
+	}
+	if !cfg.CalendarRepairDisabled.IsUnknown() && !cfg.CalendarRepairDisabled.IsNull() && !cfg.CalendarRepairDisabled.Equal(state.CalendarRepairDisabled) {
+		prev, want := reflected, cfg.CalendarRepairDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CalendarRepairDisabled"] == nil || getBool(obj, "CalendarRepairDisabled") == want)
+		}
+	}
+	if !cfg.CalendarVersionStoreDisabled.IsUnknown() && !cfg.CalendarVersionStoreDisabled.IsNull() && !cfg.CalendarVersionStoreDisabled.Equal(state.CalendarVersionStoreDisabled) {
+		prev, want := reflected, cfg.CalendarVersionStoreDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["CalendarVersionStoreDisabled"] == nil || getBool(obj, "CalendarVersionStoreDisabled") == want)
+		}
+	}
+	if !cfg.ClearThrottlingPolicyAssignment.IsUnknown() && !cfg.ClearThrottlingPolicyAssignment.IsNull() && !cfg.ClearThrottlingPolicyAssignment.Equal(state.ClearThrottlingPolicyAssignment) {
+		prev, want := reflected, cfg.ClearThrottlingPolicyAssignment.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ClearThrottlingPolicyAssignment"] == nil || getBool(obj, "ClearThrottlingPolicyAssignment") == want)
+		}
+	}
+	if !cfg.DeliverToMailboxAndForward.IsUnknown() && !cfg.DeliverToMailboxAndForward.IsNull() && !cfg.DeliverToMailboxAndForward.Equal(state.DeliverToMailboxAndForward) {
+		prev, want := reflected, cfg.DeliverToMailboxAndForward.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["DeliverToMailboxAndForward"] == nil || getBool(obj, "DeliverToMailboxAndForward") == want)
+		}
+	}
+	if !cfg.ElcProcessingDisabled.IsUnknown() && !cfg.ElcProcessingDisabled.IsNull() && !cfg.ElcProcessingDisabled.Equal(state.ElcProcessingDisabled) {
+		prev, want := reflected, cfg.ElcProcessingDisabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ElcProcessingDisabled"] == nil || getBool(obj, "ElcProcessingDisabled") == want)
+		}
+	}
+	if !cfg.EnableRoomMailboxAccount.IsUnknown() && !cfg.EnableRoomMailboxAccount.IsNull() && !cfg.EnableRoomMailboxAccount.Equal(state.EnableRoomMailboxAccount) {
+		prev, want := reflected, cfg.EnableRoomMailboxAccount.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["EnableRoomMailboxAccount"] == nil || getBool(obj, "EnableRoomMailboxAccount") == want)
+		}
+	}
+	if !cfg.ExcludeFromAllHolds.IsUnknown() && !cfg.ExcludeFromAllHolds.IsNull() && !cfg.ExcludeFromAllHolds.Equal(state.ExcludeFromAllHolds) {
+		prev, want := reflected, cfg.ExcludeFromAllHolds.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExcludeFromAllHolds"] == nil || getBool(obj, "ExcludeFromAllHolds") == want)
+		}
+	}
+	if !cfg.ExcludeFromAllOrgHolds.IsUnknown() && !cfg.ExcludeFromAllOrgHolds.IsNull() && !cfg.ExcludeFromAllOrgHolds.Equal(state.ExcludeFromAllOrgHolds) {
+		prev, want := reflected, cfg.ExcludeFromAllOrgHolds.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ExcludeFromAllOrgHolds"] == nil || getBool(obj, "ExcludeFromAllOrgHolds") == want)
+		}
+	}
+	if !cfg.GroupMailbox.IsUnknown() && !cfg.GroupMailbox.IsNull() && !cfg.GroupMailbox.Equal(state.GroupMailbox) {
+		prev, want := reflected, cfg.GroupMailbox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["GroupMailbox"] == nil || getBool(obj, "GroupMailbox") == want)
+		}
+	}
+	if !cfg.HiddenFromAddressListsEnabled.IsUnknown() && !cfg.HiddenFromAddressListsEnabled.IsNull() && !cfg.HiddenFromAddressListsEnabled.Equal(state.HiddenFromAddressListsEnabled) {
+		prev, want := reflected, cfg.HiddenFromAddressListsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["HiddenFromAddressListsEnabled"] == nil || getBool(obj, "HiddenFromAddressListsEnabled") == want)
+		}
+	}
+	if !cfg.IsExchangeCloudManaged.IsUnknown() && !cfg.IsExchangeCloudManaged.IsNull() && !cfg.IsExchangeCloudManaged.Equal(state.IsExchangeCloudManaged) {
+		prev, want := reflected, cfg.IsExchangeCloudManaged.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsExchangeCloudManaged"] == nil || getBool(obj, "IsExchangeCloudManaged") == want)
+		}
+	}
+	if !cfg.IsExcludedFromServingHierarchy.IsUnknown() && !cfg.IsExcludedFromServingHierarchy.IsNull() && !cfg.IsExcludedFromServingHierarchy.Equal(state.IsExcludedFromServingHierarchy) {
+		prev, want := reflected, cfg.IsExcludedFromServingHierarchy.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["IsExcludedFromServingHierarchy"] == nil || getBool(obj, "IsExcludedFromServingHierarchy") == want)
+		}
+	}
+	if !cfg.LitigationHoldEnabled.IsUnknown() && !cfg.LitigationHoldEnabled.IsNull() && !cfg.LitigationHoldEnabled.Equal(state.LitigationHoldEnabled) {
+		prev, want := reflected, cfg.LitigationHoldEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["LitigationHoldEnabled"] == nil || getBool(obj, "LitigationHoldEnabled") == want)
+		}
+	}
+	if !cfg.MessageCopyForSMTPClientSubmissionEnabled.IsUnknown() && !cfg.MessageCopyForSMTPClientSubmissionEnabled.IsNull() && !cfg.MessageCopyForSMTPClientSubmissionEnabled.Equal(state.MessageCopyForSMTPClientSubmissionEnabled) {
+		prev, want := reflected, cfg.MessageCopyForSMTPClientSubmissionEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageCopyForSMTPClientSubmissionEnabled"] == nil || getBool(obj, "MessageCopyForSMTPClientSubmissionEnabled") == want)
+		}
+	}
+	if !cfg.MessageCopyForSendOnBehalfEnabled.IsUnknown() && !cfg.MessageCopyForSendOnBehalfEnabled.IsNull() && !cfg.MessageCopyForSendOnBehalfEnabled.Equal(state.MessageCopyForSendOnBehalfEnabled) {
+		prev, want := reflected, cfg.MessageCopyForSendOnBehalfEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageCopyForSendOnBehalfEnabled"] == nil || getBool(obj, "MessageCopyForSendOnBehalfEnabled") == want)
+		}
+	}
+	if !cfg.MessageCopyForSentAsEnabled.IsUnknown() && !cfg.MessageCopyForSentAsEnabled.IsNull() && !cfg.MessageCopyForSentAsEnabled.Equal(state.MessageCopyForSentAsEnabled) {
+		prev, want := reflected, cfg.MessageCopyForSentAsEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageCopyForSentAsEnabled"] == nil || getBool(obj, "MessageCopyForSentAsEnabled") == want)
+		}
+	}
+	if !cfg.MessageTrackingReadStatusEnabled.IsUnknown() && !cfg.MessageTrackingReadStatusEnabled.IsNull() && !cfg.MessageTrackingReadStatusEnabled.Equal(state.MessageTrackingReadStatusEnabled) {
+		prev, want := reflected, cfg.MessageTrackingReadStatusEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["MessageTrackingReadStatusEnabled"] == nil || getBool(obj, "MessageTrackingReadStatusEnabled") == want)
+		}
+	}
+	if !cfg.ModerationEnabled.IsUnknown() && !cfg.ModerationEnabled.IsNull() && !cfg.ModerationEnabled.Equal(state.ModerationEnabled) {
+		prev, want := reflected, cfg.ModerationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ModerationEnabled"] == nil || getBool(obj, "ModerationEnabled") == want)
+		}
+	}
+	if !cfg.ProvideConsent.IsUnknown() && !cfg.ProvideConsent.IsNull() && !cfg.ProvideConsent.Equal(state.ProvideConsent) {
+		prev, want := reflected, cfg.ProvideConsent.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ProvideConsent"] == nil || getBool(obj, "ProvideConsent") == want)
+		}
+	}
+	if !cfg.ProvisionedForOfficeGraph.IsUnknown() && !cfg.ProvisionedForOfficeGraph.IsNull() && !cfg.ProvisionedForOfficeGraph.Equal(state.ProvisionedForOfficeGraph) {
+		prev, want := reflected, cfg.ProvisionedForOfficeGraph.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ProvisionedForOfficeGraph"] == nil || getBool(obj, "ProvisionedForOfficeGraph") == want)
+		}
+	}
+	if !cfg.RecalculateInactiveMailbox.IsUnknown() && !cfg.RecalculateInactiveMailbox.IsNull() && !cfg.RecalculateInactiveMailbox.Equal(state.RecalculateInactiveMailbox) {
+		prev, want := reflected, cfg.RecalculateInactiveMailbox.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RecalculateInactiveMailbox"] == nil || getBool(obj, "RecalculateInactiveMailbox") == want)
+		}
+	}
+	if !cfg.RemoveComplianceTagHoldApplied.IsUnknown() && !cfg.RemoveComplianceTagHoldApplied.IsNull() && !cfg.RemoveComplianceTagHoldApplied.Equal(state.RemoveComplianceTagHoldApplied) {
+		prev, want := reflected, cfg.RemoveComplianceTagHoldApplied.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveComplianceTagHoldApplied"] == nil || getBool(obj, "RemoveComplianceTagHoldApplied") == want)
+		}
+	}
+	if !cfg.RemoveDelayHoldApplied.IsUnknown() && !cfg.RemoveDelayHoldApplied.IsNull() && !cfg.RemoveDelayHoldApplied.Equal(state.RemoveDelayHoldApplied) {
+		prev, want := reflected, cfg.RemoveDelayHoldApplied.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveDelayHoldApplied"] == nil || getBool(obj, "RemoveDelayHoldApplied") == want)
+		}
+	}
+	if !cfg.RemoveDelayReleaseHoldApplied.IsUnknown() && !cfg.RemoveDelayReleaseHoldApplied.IsNull() && !cfg.RemoveDelayReleaseHoldApplied.Equal(state.RemoveDelayReleaseHoldApplied) {
+		prev, want := reflected, cfg.RemoveDelayReleaseHoldApplied.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveDelayReleaseHoldApplied"] == nil || getBool(obj, "RemoveDelayReleaseHoldApplied") == want)
+		}
+	}
+	if !cfg.RemoveDisabledArchive.IsUnknown() && !cfg.RemoveDisabledArchive.IsNull() && !cfg.RemoveDisabledArchive.Equal(state.RemoveDisabledArchive) {
+		prev, want := reflected, cfg.RemoveDisabledArchive.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveDisabledArchive"] == nil || getBool(obj, "RemoveDisabledArchive") == want)
+		}
+	}
+	if !cfg.RemoveMailboxProvisioningConstraint.IsUnknown() && !cfg.RemoveMailboxProvisioningConstraint.IsNull() && !cfg.RemoveMailboxProvisioningConstraint.Equal(state.RemoveMailboxProvisioningConstraint) {
+		prev, want := reflected, cfg.RemoveMailboxProvisioningConstraint.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RemoveMailboxProvisioningConstraint"] == nil || getBool(obj, "RemoveMailboxProvisioningConstraint") == want)
+		}
+	}
+	if !cfg.RequireSenderAuthenticationEnabled.IsUnknown() && !cfg.RequireSenderAuthenticationEnabled.IsNull() && !cfg.RequireSenderAuthenticationEnabled.Equal(state.RequireSenderAuthenticationEnabled) {
+		prev, want := reflected, cfg.RequireSenderAuthenticationEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RequireSenderAuthenticationEnabled"] == nil || getBool(obj, "RequireSenderAuthenticationEnabled") == want)
+		}
+	}
+	if !cfg.ResourceCapacity.IsUnknown() && !cfg.ResourceCapacity.IsNull() && !cfg.ResourceCapacity.Equal(state.ResourceCapacity) {
+		prev, want := reflected, cfg.ResourceCapacity.ValueInt64()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["ResourceCapacity"] == nil || getInt(obj, "ResourceCapacity") == want)
+		}
+	}
+	if !cfg.RetentionHoldEnabled.IsUnknown() && !cfg.RetentionHoldEnabled.IsNull() && !cfg.RetentionHoldEnabled.Equal(state.RetentionHoldEnabled) {
+		prev, want := reflected, cfg.RetentionHoldEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["RetentionHoldEnabled"] == nil || getBool(obj, "RetentionHoldEnabled") == want)
+		}
+	}
+	if !cfg.SchedulerAssistant.IsUnknown() && !cfg.SchedulerAssistant.IsNull() && !cfg.SchedulerAssistant.Equal(state.SchedulerAssistant) {
+		prev, want := reflected, cfg.SchedulerAssistant.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SchedulerAssistant"] == nil || getBool(obj, "SchedulerAssistant") == want)
+		}
+	}
+	if !cfg.SingleItemRecoveryEnabled.IsUnknown() && !cfg.SingleItemRecoveryEnabled.IsNull() && !cfg.SingleItemRecoveryEnabled.Equal(state.SingleItemRecoveryEnabled) {
+		prev, want := reflected, cfg.SingleItemRecoveryEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["SingleItemRecoveryEnabled"] == nil || getBool(obj, "SingleItemRecoveryEnabled") == want)
+		}
+	}
+	if !cfg.UniqueUnrestrictedGroupsLimitEnabled.IsUnknown() && !cfg.UniqueUnrestrictedGroupsLimitEnabled.IsNull() && !cfg.UniqueUnrestrictedGroupsLimitEnabled.Equal(state.UniqueUnrestrictedGroupsLimitEnabled) {
+		prev, want := reflected, cfg.UniqueUnrestrictedGroupsLimitEnabled.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UniqueUnrestrictedGroupsLimitEnabled"] == nil || getBool(obj, "UniqueUnrestrictedGroupsLimitEnabled") == want)
+		}
+	}
+	if !cfg.UpdateEnforcedTimestamp.IsUnknown() && !cfg.UpdateEnforcedTimestamp.IsNull() && !cfg.UpdateEnforcedTimestamp.Equal(state.UpdateEnforcedTimestamp) {
+		prev, want := reflected, cfg.UpdateEnforcedTimestamp.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UpdateEnforcedTimestamp"] == nil || getBool(obj, "UpdateEnforcedTimestamp") == want)
+		}
+	}
+	if !cfg.UseDatabaseQuotaDefaults.IsUnknown() && !cfg.UseDatabaseQuotaDefaults.IsNull() && !cfg.UseDatabaseQuotaDefaults.Equal(state.UseDatabaseQuotaDefaults) {
+		prev, want := reflected, cfg.UseDatabaseQuotaDefaults.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseDatabaseQuotaDefaults"] == nil || getBool(obj, "UseDatabaseQuotaDefaults") == want)
+		}
+	}
+	if !cfg.UseDatabaseRetentionDefaults.IsUnknown() && !cfg.UseDatabaseRetentionDefaults.IsNull() && !cfg.UseDatabaseRetentionDefaults.Equal(state.UseDatabaseRetentionDefaults) {
+		prev, want := reflected, cfg.UseDatabaseRetentionDefaults.ValueBool()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && (obj["UseDatabaseRetentionDefaults"] == nil || getBool(obj, "UseDatabaseRetentionDefaults") == want)
+		}
+	}
 	r.refresh(ctx, id, &plan, &resp.Diagnostics, reflected)
 	if !cfg.ID.IsUnknown() && !cfg.ID.IsNull() {
 		plan.ID = cfg.ID
