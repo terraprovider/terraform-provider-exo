@@ -99,7 +99,7 @@ func (p *exoProvider) Resources(_ context.Context) []func() resource.Resource {
 	// generatedResources() is code-generated; hand-written resources (for non-CRUD
 	// cmdlets — Enable-OrganizationCustomization and the per-domain Enable/Disable
 	// feature toggles) are appended here.
-	return append(generatedResources(),
+	return append(withEmptyArcConfig(generatedResources()),
 		NewOrganizationCustomizationResource,
 		NewDnssecVerifiedDomainResource,
 		NewSmtpDaneInboundResource,
@@ -108,7 +108,7 @@ func (p *exoProvider) Resources(_ context.Context) []func() resource.Resource {
 }
 
 func (p *exoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return generatedDataSources()
+	return withEmptyArcConfigDataSource(generatedDataSources())
 }
 
 func jwtClaim(jwt, name string) string {
