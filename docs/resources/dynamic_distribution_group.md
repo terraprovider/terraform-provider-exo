@@ -17,9 +17,7 @@ Manages the DynamicDistributionGroup object via New-DynamicDistributionGroup / G
 
 ### Required
 
-- `included_recipients` (String) Maps to the -IncludedRecipients parameter.
 - `name` (String) Maps to the -Name parameter.
-- `recipient_filter` (String) Maps to the -RecipientFilter parameter.
 
 ### Optional
 
@@ -73,6 +71,7 @@ Manages the DynamicDistributionGroup object via New-DynamicDistributionGroup / G
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
 - `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
+- `included_recipients` (String) Maps to the -IncludedRecipients parameter.
 - `mail_tip` (String) Maps to the -MailTip parameter.
 - `mail_tip_translations` (Set of String) Maps to the -MailTipTranslations parameter.
 - `managed_by` (String) Maps to the -ManagedBy parameter.
@@ -83,6 +82,7 @@ Manages the DynamicDistributionGroup object via New-DynamicDistributionGroup / G
 - `phonetic_display_name` (String) Maps to the -PhoneticDisplayName parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
 - `recipient_container` (String) Maps to the -RecipientContainer parameter.
+- `recipient_filter` (String) Maps to the -RecipientFilter parameter.
 - `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
 - `reject_messages_from_dl_members` (Set of String) Maps to the -RejectMessagesFromDLMembers parameter.
 - `reject_messages_from_senders_or_members` (Set of String) Maps to the -RejectMessagesFromSendersOrMembers parameter.

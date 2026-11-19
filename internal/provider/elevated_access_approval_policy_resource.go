@@ -55,9 +55,9 @@ func (r *elevatedAccessApprovalPolicyResource) Schema(_ context.Context, _ resou
 			"identity":       schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"approval_type":  schema.StringAttribute{Required: true, Description: "Maps to the -ApprovalType parameter."},
 			"approver_group": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ApproverGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"role":           schema.StringAttribute{Required: true, Description: "Maps to the -Role parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"role_group":     schema.StringAttribute{Required: true, Description: "Maps to the -RoleGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"task":           schema.StringAttribute{Required: true, Description: "Maps to the -Task parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"role":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Role parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"role_group":     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RoleGroup parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"task":           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Task parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

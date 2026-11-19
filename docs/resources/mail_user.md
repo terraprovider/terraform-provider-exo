@@ -17,11 +17,7 @@ Manages the MailUser object via New-MailUser / Get-MailUser / Set-MailUser / Rem
 
 ### Required
 
-- `external_email_address` (String) Maps to the -ExternalEmailAddress parameter.
-- `federated_identity` (String) Maps to the -FederatedIdentity parameter.
-- `microsoft_online_services_id` (String) Maps to the -MicrosoftOnlineServicesID parameter.
 - `name` (String) Maps to the -Name parameter.
-- `password` (String, Sensitive) Maps to the -Password parameter.
 
 ### Optional
 
@@ -59,6 +55,8 @@ Manages the MailUser object via New-MailUser / Get-MailUser / Set-MailUser / Rem
 - `extension_custom_attribute3` (Set of String) Maps to the -ExtensionCustomAttribute3 parameter.
 - `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
 - `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
+- `external_email_address` (String) Maps to the -ExternalEmailAddress parameter.
+- `federated_identity` (String) Maps to the -FederatedIdentity parameter.
 - `first_name` (String) Maps to the -FirstName parameter.
 - `force_upgrade` (Boolean) Maps to the -ForceUpgrade parameter.
 - `grant_send_on_behalf_to` (Set of String) Maps to the -GrantSendOnBehalfTo parameter.
@@ -76,9 +74,11 @@ Manages the MailUser object via New-MailUser / Get-MailUser / Set-MailUser / Rem
 - `max_send_size` (String) Maps to the -MaxSendSize parameter.
 - `message_body_format` (String) Maps to the -MessageBodyFormat parameter.
 - `message_format` (String) Maps to the -MessageFormat parameter.
+- `microsoft_online_services_id` (String) Maps to the -MicrosoftOnlineServicesID parameter.
 - `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `organizational_unit` (String) Maps to the -OrganizationalUnit parameter.
+- `password` (String, Sensitive) Maps to the -Password parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
 - `recalculate_inactive_mail_user` (Boolean) Maps to the -RecalculateInactiveMailUser parameter.
 - `recipient_limits` (String) Maps to the -RecipientLimits parameter.

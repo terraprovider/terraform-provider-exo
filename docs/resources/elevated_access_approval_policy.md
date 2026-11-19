@@ -18,13 +18,13 @@ Manages the ElevatedAccessApprovalPolicy object via New-ElevatedAccessApprovalPo
 ### Required
 
 - `approval_type` (String) Maps to the -ApprovalType parameter.
-- `role` (String) Maps to the -Role parameter.
-- `role_group` (String) Maps to the -RoleGroup parameter.
-- `task` (String) Maps to the -Task parameter.
 
 ### Optional
 
 - `approver_group` (String) Maps to the -ApproverGroup parameter.
+- `role` (String) Maps to the -Role parameter.
+- `role_group` (String) Maps to the -RoleGroup parameter.
+- `task` (String) Maps to the -Task parameter.
 
 ### Read-Only
 

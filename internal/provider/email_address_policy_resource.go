@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -54,10 +55,10 @@ func (r *emailAddressPolicyResource) Schema(_ context.Context, _ resource.Schema
 		Attributes: map[string]schema.Attribute{
 			"id":                                    schema.StringAttribute{Computed: true, Description: "Object identifier (GUID).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"identity":                              schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"enabled_email_address_templates":       schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter."},
-			"enabled_primary_smtp_address_template": schema.StringAttribute{Required: true, Description: "Maps to the -EnabledPrimarySMTPAddressTemplate parameter."},
+			"enabled_email_address_templates":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EnabledEmailAddressTemplates parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
+			"enabled_primary_smtp_address_template": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EnabledPrimarySMTPAddressTemplate parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"force_upgrade":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ForceUpgrade parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"include_unified_group_recipients":      schema.BoolAttribute{Required: true, Description: "Maps to the -IncludeUnifiedGroupRecipients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"include_unified_group_recipients":      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IncludeUnifiedGroupRecipients parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"managed_by_filter":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ManagedByFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"name":                                  schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},

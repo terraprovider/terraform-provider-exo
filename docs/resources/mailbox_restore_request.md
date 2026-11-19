@@ -17,15 +17,6 @@ Manages the MailboxRestoreRequest object via New-MailboxRestoreRequest / Get-Mai
 
 ### Required
 
-- `cross_tenant_restore` (Boolean) Maps to the -CrossTenantRestore parameter.
-- `remote_database_guid` (String) Maps to the -RemoteDatabaseGuid parameter.
-- `remote_host_name` (String) Maps to the -RemoteHostName parameter.
-- `remote_restore_type` (String) Maps to the -RemoteRestoreType parameter.
-- `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
-- `source_exchange_guid` (String) Maps to the -SourceExchangeGuid parameter.
-- `source_mailbox` (String) Maps to the -SourceMailbox parameter.
-- `source_store_mailbox` (String) Maps to the -SourceStoreMailbox parameter.
-- `source_tenant` (String) Maps to the -SourceTenant parameter.
 - `target_mailbox` (String) Maps to the -TargetMailbox parameter.
 
 ### Optional
@@ -38,6 +29,7 @@ Manages the MailboxRestoreRequest object via New-MailboxRestoreRequest / Get-Mai
 - `conflict_resolution_option` (String) Maps to the -ConflictResolutionOption parameter.
 - `content_filter` (String) Maps to the -ContentFilter parameter.
 - `content_filter_language` (String) Maps to the -ContentFilterLanguage parameter.
+- `cross_tenant_restore` (Boolean) Maps to the -CrossTenantRestore parameter.
 - `exclude_dumpster` (Boolean) Maps to the -ExcludeDumpster parameter.
 - `exclude_folders` (Set of String) Maps to the -ExcludeFolders parameter.
 - `include_folders` (Set of String) Maps to the -IncludeFolders parameter.
@@ -46,12 +38,20 @@ Manages the MailboxRestoreRequest object via New-MailboxRestoreRequest / Get-Mai
 - `priority` (String) Maps to the -Priority parameter.
 - `rehome_request` (Boolean) Maps to the -RehomeRequest parameter.
 - `remote_credential` (String, Sensitive) Maps to the -RemoteCredential parameter.
+- `remote_database_guid` (String) Maps to the -RemoteDatabaseGuid parameter.
+- `remote_host_name` (String) Maps to the -RemoteHostName parameter.
+- `remote_restore_type` (String) Maps to the -RemoteRestoreType parameter.
 - `request_expiry_interval` (String) Maps to the -RequestExpiryInterval parameter.
 - `skip_initial_connection_validation` (Boolean) Maps to the -SkipInitialConnectionValidation parameter.
 - `skip_merging` (Set of String) Maps to the -SkipMerging parameter.
 - `skipped_item_approval_time` (String) Maps to the -SkippedItemApprovalTime parameter.
+- `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
+- `source_exchange_guid` (String) Maps to the -SourceExchangeGuid parameter.
 - `source_is_archive` (Boolean) Maps to the -SourceIsArchive parameter.
+- `source_mailbox` (String) Maps to the -SourceMailbox parameter.
 - `source_root_folder` (String) Maps to the -SourceRootFolder parameter.
+- `source_store_mailbox` (String) Maps to the -SourceStoreMailbox parameter.
+- `source_tenant` (String) Maps to the -SourceTenant parameter.
 - `source_wlm_level` (String) Maps to the -SourceWlmLevel parameter.
 - `suspend` (Boolean) Maps to the -Suspend parameter.
 - `suspend_comment` (String) Maps to the -SuspendComment parameter.

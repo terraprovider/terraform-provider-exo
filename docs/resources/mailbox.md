@@ -17,19 +17,7 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 
 ### Required
 
-- `discovery` (Boolean) Maps to the -Discovery parameter.
-- `enable_room_mailbox_account` (Boolean) Maps to the -EnableRoomMailboxAccount parameter.
-- `equipment` (Boolean) Maps to the -Equipment parameter.
-- `federated_identity` (String) Maps to the -FederatedIdentity parameter.
-- `inactive_mailbox` (String) Maps to the -InactiveMailbox parameter.
-- `microsoft_online_services_id` (String) Maps to the -MicrosoftOnlineServicesID parameter.
-- `migration` (Boolean) Maps to the -Migration parameter.
 - `name` (String) Maps to the -Name parameter.
-- `password` (String, Sensitive) Maps to the -Password parameter.
-- `public_folder` (Boolean) Maps to the -PublicFolder parameter.
-- `removed_mailbox` (String) Maps to the -RemovedMailbox parameter.
-- `room` (Boolean) Maps to the -Room parameter.
-- `shared` (Boolean) Maps to the -Shared parameter.
 
 ### Optional
 
@@ -72,12 +60,15 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `default_audit_set` (Set of String) Maps to the -DefaultAuditSet parameter.
 - `default_public_folder_mailbox` (String) Maps to the -DefaultPublicFolderMailbox parameter.
 - `deliver_to_mailbox_and_forward` (Boolean) Maps to the -DeliverToMailboxAndForward parameter.
+- `discovery` (Boolean) Maps to the -Discovery parameter.
 - `display_name` (String) Maps to the -DisplayName parameter.
 - `elc_processing_disabled` (Boolean) Maps to the -ElcProcessingDisabled parameter.
 - `email_address_display_names` (Set of String) Maps to the -EmailAddressDisplayNames parameter.
 - `email_addresses` (Set of String) Maps to the -EmailAddresses parameter.
+- `enable_room_mailbox_account` (Boolean) Maps to the -EnableRoomMailboxAccount parameter.
 - `end_date_for_retention_hold` (String) Maps to the -EndDateForRetentionHold parameter.
 - `enforced_timestamps` (String) Maps to the -EnforcedTimestamps parameter.
+- `equipment` (Boolean) Maps to the -Equipment parameter.
 - `exclude_from_all_holds` (Boolean) Maps to the -ExcludeFromAllHolds parameter.
 - `exclude_from_all_org_holds` (Boolean) Maps to the -ExcludeFromAllOrgHolds parameter.
 - `exclude_from_org_holds` (Set of String) Maps to the -ExcludeFromOrgHolds parameter.
@@ -87,6 +78,7 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `extension_custom_attribute4` (Set of String) Maps to the -ExtensionCustomAttribute4 parameter.
 - `extension_custom_attribute5` (Set of String) Maps to the -ExtensionCustomAttribute5 parameter.
 - `external_oof_options` (String) Maps to the -ExternalOofOptions parameter.
+- `federated_identity` (String) Maps to the -FederatedIdentity parameter.
 - `first_name` (String) Maps to the -FirstName parameter.
 - `forwarding_address` (String) Maps to the -ForwardingAddress parameter.
 - `forwarding_smtp_address` (String) Maps to the -ForwardingSmtpAddress parameter.
@@ -95,6 +87,7 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `hidden_from_address_lists_enabled` (Boolean) Maps to the -HiddenFromAddressListsEnabled parameter.
 - `hold_for_migration` (Boolean) Maps to the -HoldForMigration parameter.
 - `immutable_id` (String) Maps to the -ImmutableId parameter.
+- `inactive_mailbox` (String) Maps to the -InactiveMailbox parameter.
 - `initials` (String) Maps to the -Initials parameter.
 - `is_exchange_cloud_managed` (Boolean) Maps to the -IsExchangeCloudManaged parameter.
 - `is_excluded_from_serving_hierarchy` (Boolean) Maps to the -IsExcludedFromServingHierarchy parameter.
@@ -116,11 +109,14 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `message_copy_for_sent_as_enabled` (Boolean) Maps to the -MessageCopyForSentAsEnabled parameter.
 - `message_copy_for_smtp_client_submission_enabled` (Boolean) Maps to the -MessageCopyForSMTPClientSubmissionEnabled parameter.
 - `message_tracking_read_status_enabled` (Boolean) Maps to the -MessageTrackingReadStatusEnabled parameter.
+- `microsoft_online_services_id` (String) Maps to the -MicrosoftOnlineServicesID parameter.
+- `migration` (Boolean) Maps to the -Migration parameter.
 - `moderated_by` (Set of String) Maps to the -ModeratedBy parameter.
 - `moderation_enabled` (Boolean) Maps to the -ModerationEnabled parameter.
 - `non_compliant_devices` (Set of String) Maps to the -NonCompliantDevices parameter.
 - `office` (String) Maps to the -Office parameter.
 - `organizational_unit` (String) Maps to the -OrganizationalUnit parameter.
+- `password` (String, Sensitive) Maps to the -Password parameter.
 - `phone` (String) Maps to the -Phone parameter.
 - `primary_smtp_address` (String) Maps to the -PrimarySmtpAddress parameter.
 - `prohibit_send_quota` (String) Maps to the -ProhibitSendQuota parameter.
@@ -128,6 +124,7 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `provide_consent` (Boolean) Maps to the -ProvideConsent parameter.
 - `provisioned_for_office_graph` (Boolean) Maps to the -ProvisionedForOfficeGraph parameter.
 - `proxy_email_address` (String) Maps to the -ProxyEmailAddress parameter.
+- `public_folder` (Boolean) Maps to the -PublicFolder parameter.
 - `recalculate_inactive_mailbox` (Boolean) Maps to the -RecalculateInactiveMailbox parameter.
 - `recipient_limits` (String) Maps to the -RecipientLimits parameter.
 - `reject_messages_from` (Set of String) Maps to the -RejectMessagesFrom parameter.
@@ -140,6 +137,7 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `remove_disabled_archive` (Boolean) Maps to the -RemoveDisabledArchive parameter.
 - `remove_mailbox_provisioning_constraint` (Boolean) Maps to the -RemoveMailboxProvisioningConstraint parameter.
 - `remove_orphaned_holds` (Set of String) Maps to the -RemoveOrphanedHolds parameter.
+- `removed_mailbox` (String) Maps to the -RemovedMailbox parameter.
 - `require_sender_authentication_enabled` (Boolean) Maps to the -RequireSenderAuthenticationEnabled parameter.
 - `reset_password_on_next_logon` (Boolean, Sensitive) Maps to the -ResetPasswordOnNextLogon parameter.
 - `resource_capacity` (Number) Maps to the -ResourceCapacity parameter.
@@ -150,10 +148,12 @@ Manages the Mailbox object via New-Mailbox / Get-Mailbox / Set-Mailbox / Remove-
 - `retention_policy` (String) Maps to the -RetentionPolicy parameter.
 - `retention_url` (String) Maps to the -RetentionUrl parameter.
 - `role_assignment_policy` (String) Maps to the -RoleAssignmentPolicy parameter.
+- `room` (Boolean) Maps to the -Room parameter.
 - `room_mailbox_password` (String, Sensitive) Maps to the -RoomMailboxPassword parameter.
 - `rules_quota` (String) Maps to the -RulesQuota parameter.
 - `scheduler_assistant` (Boolean) Maps to the -SchedulerAssistant parameter.
 - `send_moderation_notifications` (String) Maps to the -SendModerationNotifications parameter.
+- `shared` (Boolean) Maps to the -Shared parameter.
 - `sharing_policy` (String) Maps to the -SharingPolicy parameter.
 - `simple_display_name` (String) Maps to the -SimpleDisplayName parameter.
 - `single_item_recovery_enabled` (Boolean) Maps to the -SingleItemRecoveryEnabled parameter.

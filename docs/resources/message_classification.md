@@ -18,7 +18,6 @@ Manages the MessageClassification object via New-MessageClassification / Get-Mes
 ### Required
 
 - `display_name` (String) Maps to the -DisplayName parameter.
-- `locale` (String) Maps to the -Locale parameter.
 - `name` (String) Maps to the -Name parameter.
 - `sender_description` (String) Maps to the -SenderDescription parameter.
 
@@ -26,6 +25,7 @@ Manages the MessageClassification object via New-MessageClassification / Get-Mes
 
 - `classification_id` (String) Maps to the -ClassificationID parameter.
 - `display_precedence` (String) Maps to the -DisplayPrecedence parameter.
+- `locale` (String) Maps to the -Locale parameter.
 - `permission_menu_visible` (Boolean) Maps to the -PermissionMenuVisible parameter.
 - `recipient_description` (String) Maps to the -RecipientDescription parameter.
 - `retain_classification_enabled` (Boolean) Maps to the -RetainClassificationEnabled parameter.

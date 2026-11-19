@@ -18,11 +18,11 @@ Manages the ManagementScope object via New-ManagementScope / Get-ManagementScope
 ### Required
 
 - `name` (String) Maps to the -Name parameter.
-- `recipient_restriction_filter` (String) Maps to the -RecipientRestrictionFilter parameter.
 
 ### Optional
 
 - `exclusive` (Boolean) Maps to the -Exclusive parameter.
+- `recipient_restriction_filter` (String) Maps to the -RecipientRestrictionFilter parameter.
 - `recipient_root` (String) Maps to the -RecipientRoot parameter.
 
 ### Read-Only
