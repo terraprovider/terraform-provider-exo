@@ -18,13 +18,13 @@ Manages the ServicePrincipal object via New-ServicePrincipal / Get-ServicePrinci
 ### Required
 
 - `app_id` (String) Maps to the -AppId parameter.
-- `object_id` (String) Maps to the -ObjectId parameter.
-- `service_id` (String) Maps to the -ServiceId parameter.
 
 ### Optional
 
 - `display_name` (String) Maps to the -DisplayName parameter.
+- `object_id` (String) Maps to the -ObjectId parameter.
 - `override_enforce_exo_app_rbac_permissions` (Boolean) Maps to the -OverrideEnforceExoAppRbacPermissions parameter.
+- `service_id` (String) Maps to the -ServiceId parameter.
 
 ### Read-Only
 

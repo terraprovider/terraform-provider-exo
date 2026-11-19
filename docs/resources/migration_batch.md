@@ -17,18 +17,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 
 ### Required
 
-- `analyze` (Boolean) Maps to the -Analyze parameter.
-- `connection_logical_id` (String) Maps to the -ConnectionLogicalId parameter.
-- `csv_data` (String) Maps to the -CSVData parameter.
-- `google_resource` (Boolean) Maps to the -GoogleResource parameter.
-- `managed_gmail_teams` (Boolean) Maps to the -ManagedGmailTeams parameter.
 - `name` (String) Maps to the -Name parameter.
-- `public_folder_to_unified_group` (Boolean) Maps to the -PublicFolderToUnifiedGroup parameter.
-- `slack_public_data_connector` (Boolean) Maps to the -SlackPublicDataConnector parameter.
-- `slack_workspace_id` (String) Maps to the -SlackWorkspaceId parameter.
-- `staged_roll_out_group_id` (String) Maps to the -StagedRollOutGroupId parameter.
-- `user_ids` (Set of String) Maps to the -UserIds parameter.
-- `users` (Set of String) Maps to the -Users parameter.
 
 ### Optional
 
@@ -36,6 +25,7 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `add_users` (Boolean) Maps to the -AddUsers parameter.
 - `adopt_preexisting` (Boolean) Maps to the -AdoptPreexisting parameter.
 - `allow_unknown_columns_in_csv` (Boolean) Maps to the -AllowUnknownColumnsInCSV parameter.
+- `analyze` (Boolean) Maps to the -Analyze parameter.
 - `approve_skipped_items` (Boolean) Maps to the -ApproveSkippedItems parameter.
 - `archive_domain` (String) Maps to the -ArchiveDomain parameter.
 - `archive_only` (Boolean) Maps to the -ArchiveOnly parameter.
@@ -44,8 +34,10 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `auto_start` (Boolean) Maps to the -AutoStart parameter.
 - `avoid_merge_overlap` (Boolean) Maps to the -AvoidMergeOverlap parameter.
 - `complete_after` (String) Maps to the -CompleteAfter parameter.
+- `connection_logical_id` (String) Maps to the -ConnectionLogicalId parameter.
 - `content_filter` (String) Maps to the -ContentFilter parameter.
 - `content_filter_language` (String) Maps to the -ContentFilterLanguage parameter.
+- `csv_data` (String) Maps to the -CSVData parameter.
 - `daily` (Boolean) Maps to the -Daily parameter.
 - `data_fusion` (Boolean) Maps to the -DataFusion parameter.
 - `disable_on_copy` (Boolean) Maps to the -DisableOnCopy parameter.
@@ -53,13 +45,16 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `exclude_folders` (Set of String) Maps to the -ExcludeFolders parameter.
 - `format` (String) Maps to the -Format parameter.
 - `forwarding_disposition` (String) Maps to the -ForwardingDisposition parameter.
+- `google_resource` (Boolean) Maps to the -GoogleResource parameter.
 - `include_folders` (Set of String) Maps to the -IncludeFolders parameter.
 - `include_other_contacts` (Boolean) Maps to the -IncludeOtherContacts parameter.
+- `managed_gmail_teams` (Boolean) Maps to the -ManagedGmailTeams parameter.
 - `migrate_tasks` (Boolean) Maps to the -MigrateTasks parameter.
 - `move_options` (Set of String) Maps to the -MoveOptions parameter.
 - `notification_emails` (Set of String) Maps to the -NotificationEmails parameter.
 - `partition` (String) Maps to the -Partition parameter.
 - `primary_only` (Boolean) Maps to the -PrimaryOnly parameter.
+- `public_folder_to_unified_group` (Boolean) Maps to the -PublicFolderToUnifiedGroup parameter.
 - `remove_on_copy` (Boolean) Maps to the -RemoveOnCopy parameter.
 - `rename_primary_calendar` (Boolean) Maps to the -RenamePrimaryCalendar parameter.
 - `report_interval` (String) Maps to the -ReportInterval parameter.
@@ -75,9 +70,12 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `skip_provisioning` (Boolean) Maps to the -SkipProvisioning parameter.
 - `skip_reports` (Boolean) Maps to the -SkipReports parameter.
 - `skip_rules` (Boolean) Maps to the -SkipRules parameter.
+- `slack_public_data_connector` (Boolean) Maps to the -SlackPublicDataConnector parameter.
+- `slack_workspace_id` (String) Maps to the -SlackWorkspaceId parameter.
 - `source_endpoint` (String) Maps to the -SourceEndpoint parameter.
 - `source_mappings` (String) Maps to the -SourceMappings parameter.
 - `source_pf_primary_mailbox_guid` (String) Maps to the -SourcePFPrimaryMailboxGuid parameter.
+- `staged_roll_out_group_id` (String) Maps to the -StagedRollOutGroupId parameter.
 - `start_after` (String) Maps to the -StartAfter parameter.
 - `sync_now` (Boolean) Maps to the -SyncNow parameter.
 - `target_archive_databases` (Set of String) Maps to the -TargetArchiveDatabases parameter.
@@ -86,6 +84,8 @@ Manages the MigrationBatch object via New-MigrationBatch / Get-MigrationBatch / 
 - `target_endpoint` (String) Maps to the -TargetEndpoint parameter.
 - `time_zone` (String) Maps to the -TimeZone parameter.
 - `update` (Boolean) Maps to the -Update parameter.
+- `user_ids` (Set of String) Maps to the -UserIds parameter.
+- `users` (Set of String) Maps to the -Users parameter.
 - `workflow_control_flags` (String) Maps to the -WorkflowControlFlags parameter.
 - `workflow_template` (String) Maps to the -WorkflowTemplate parameter.
 - `xml_data` (String) Maps to the -XMLData parameter.

@@ -66,7 +66,7 @@ func (r *exoPhishSimOverrideRuleResource) Schema(_ context.Context, _ resource.S
 			"policy":                  schema.StringAttribute{Required: true, Description: "Maps to the -Policy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"remove_domains":          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveDomains parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"remove_sender_ip_ranges": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveSenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"sender_ip_ranges":        schema.SetAttribute{ElementType: types.StringType, Required: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}},
+			"sender_ip_ranges":        schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -SenderIpRanges parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace(), setplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

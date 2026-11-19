@@ -4,10 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/terraprovider/go-exoscc/adminapi"
@@ -103,10 +107,48 @@ func getBool(m map[string]any, key string) bool {
 func getStateBool(m map[string]any, stateKey, boolKey string) bool {
 	if v, ok := m[stateKey]; ok && v != nil {
 		if s, ok := v.(string); ok {
+			if stateKey == "RecipientTypeDetails" {
+				return strings.EqualFold(s, recipientTypeDetails[boolKey])
+			}
 			return strings.EqualFold(s, "Enabled")
 		}
 	}
 	return getBool(m, boolKey)
+}
+
+// recipientTypeDetails maps a New-Mailbox type switch to the RecipientTypeDetails it creates.
+var recipientTypeDetails = map[string]string{
+	"Discovery":    "DiscoveryMailbox",
+	"Equipment":    "EquipmentMailbox",
+	"PublicFolder": "PublicFolderMailbox",
+	"Room":         "RoomMailbox",
+	"Shared":       "SharedMailbox",
+}
+
+// conflictingSwitches rejects a configuration that sets both switches of a pair to true.
+type conflictingSwitches [][2]string
+
+func (v conflictingSwitches) Description(context.Context) string {
+	return "switches that select different parameter sets cannot both be true"
+}
+
+func (v conflictingSwitches) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v conflictingSwitches) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	for _, pair := range v {
+		if switchOn(ctx, req.Config, pair[0], &resp.Diagnostics) && switchOn(ctx, req.Config, pair[1], &resp.Diagnostics) {
+			resp.Diagnostics.AddAttributeError(path.Root(pair[1]), "Conflicting switches",
+				fmt.Sprintf("%s and %s select different parameter sets; set at most one of them to true.", pair[0], pair[1]))
+		}
+	}
+}
+
+func switchOn(ctx context.Context, cfg tfsdk.Config, name string, diags *diag.Diagnostics) bool {
+	var b types.Bool
+	diags.Append(cfg.GetAttribute(ctx, path.Root(name), &b)...)
+	return !b.IsNull() && !b.IsUnknown() && b.ValueBool()
 }
 
 // getStringSlice returns a multi-value property as a slice. Empty entries are

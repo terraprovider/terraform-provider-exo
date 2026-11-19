@@ -53,7 +53,7 @@ func (r *managementScopeResource) Schema(_ context.Context, _ resource.SchemaReq
 			"identity":                     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"exclusive":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Exclusive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"name":                         schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"recipient_restriction_filter": schema.StringAttribute{Required: true, Description: "Maps to the -RecipientRestrictionFilter parameter."},
+			"recipient_restriction_filter": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientRestrictionFilter parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recipient_root":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientRoot parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}

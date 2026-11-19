@@ -18,7 +18,6 @@ Manages the ExoPhishSimOverrideRule object via New-ExoPhishSimOverrideRule / Get
 ### Required
 
 - `policy` (String) Maps to the -Policy parameter.
-- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.
 
 ### Optional
 
@@ -29,6 +28,7 @@ Manages the ExoPhishSimOverrideRule object via New-ExoPhishSimOverrideRule / Get
 - `name` (String) Maps to the -Name parameter.
 - `remove_domains` (Set of String) Maps to the -RemoveDomains parameter.
 - `remove_sender_ip_ranges` (Set of String) Maps to the -RemoveSenderIpRanges parameter.
+- `sender_ip_ranges` (Set of String) Maps to the -SenderIpRanges parameter.
 
 ### Read-Only
 

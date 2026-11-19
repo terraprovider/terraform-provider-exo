@@ -17,24 +17,24 @@ Manages the ManagementRoleAssignment object via New-ManagementRoleAssignment / G
 
 ### Required
 
-- `app` (String) Maps to the -App parameter.
-- `policy` (String) Maps to the -Policy parameter.
 - `role` (String) Maps to the -Role parameter.
-- `security_group` (String) Maps to the -SecurityGroup parameter.
-- `user` (String) Maps to the -User parameter.
 
 ### Optional
 
+- `app` (String) Maps to the -App parameter.
 - `custom_recipient_write_scope` (String) Maps to the -CustomRecipientWriteScope parameter.
 - `custom_resource_scope` (String) Maps to the -CustomResourceScope parameter.
 - `delegating` (Boolean) Maps to the -Delegating parameter.
 - `enabled` (Boolean) Maps to the -Enabled parameter.
 - `exclusive_recipient_write_scope` (String) Maps to the -ExclusiveRecipientWriteScope parameter.
 - `name` (String) Maps to the -Name parameter.
+- `policy` (String) Maps to the -Policy parameter.
 - `recipient_administrative_unit_scope` (String) Maps to the -RecipientAdministrativeUnitScope parameter.
 - `recipient_group_scope` (String) Maps to the -RecipientGroupScope parameter.
 - `recipient_organizational_unit_scope` (String) Maps to the -RecipientOrganizationalUnitScope parameter.
 - `recipient_relative_write_scope` (String) Maps to the -RecipientRelativeWriteScope parameter.
+- `security_group` (String) Maps to the -SecurityGroup parameter.
+- `user` (String) Maps to the -User parameter.
 
 ### Read-Only
 

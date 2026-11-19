@@ -237,15 +237,15 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"default_audit_set":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DefaultAuditSet parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_mailbox":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"deliver_to_mailbox_and_forward":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverToMailboxAndForward parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"discovery":                                       schema.BoolAttribute{Required: true, Description: "Maps to the -Discovery parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"discovery":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Discovery parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"display_name":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"elc_processing_disabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ElcProcessingDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"email_address_display_names":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddressDisplayNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"email_addresses":                                 schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddresses parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"enable_room_mailbox_account":                     schema.BoolAttribute{Required: true, Description: "Maps to the -EnableRoomMailboxAccount parameter."},
+			"enable_room_mailbox_account":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableRoomMailboxAccount parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"end_date_for_retention_hold":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndDateForRetentionHold parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enforced_timestamps":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforcedTimestamps parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"equipment":                                       schema.BoolAttribute{Required: true, Description: "Maps to the -Equipment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"equipment":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Equipment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_holds":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_org_holds":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllOrgHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_org_holds":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludeFromOrgHolds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -255,7 +255,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"extension_custom_attribute4":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute4 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"extension_custom_attribute5":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExtensionCustomAttribute5 parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"external_oof_options":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ExternalOofOptions parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"federated_identity":                              schema.StringAttribute{Required: true, Description: "Maps to the -FederatedIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"federated_identity":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FederatedIdentity parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"first_name":                                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -FirstName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_address":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"forwarding_smtp_address":                         schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ForwardingSmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -264,7 +264,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"hidden_from_address_lists_enabled":               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HiddenFromAddressListsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"hold_for_migration":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -HoldForMigration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"immutable_id":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ImmutableId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"inactive_mailbox":                                schema.StringAttribute{Required: true, Description: "Maps to the -InactiveMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"inactive_mailbox":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -InactiveMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"initials":                                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Initials parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"is_exchange_cloud_managed":                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsExchangeCloudManaged parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"is_excluded_from_serving_hierarchy":              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -IsExcludedFromServingHierarchy parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -286,15 +286,15 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"message_copy_for_send_on_behalf_enabled":         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageCopyForSendOnBehalfEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_copy_for_sent_as_enabled":                schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageCopyForSentAsEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"message_tracking_read_status_enabled":            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -MessageTrackingReadStatusEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"microsoft_online_services_id":                    schema.StringAttribute{Required: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter."},
-			"migration":                                       schema.BoolAttribute{Required: true, Description: "Maps to the -Migration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"microsoft_online_services_id":                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MicrosoftOnlineServicesID parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"migration":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Migration parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"moderated_by":                                    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ModeratedBy parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"moderation_enabled":                              schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                            schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"non_compliant_devices":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NonCompliantDevices parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"office":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"organizational_unit":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"password":                                        schema.StringAttribute{Required: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"password":                                        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"phone":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Phone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"prohibit_send_quota":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProhibitSendQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -302,7 +302,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"provide_consent":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvideConsent parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"provisioned_for_office_graph":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvisionedForOfficeGraph parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"proxy_email_address":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProxyEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"public_folder":                                   schema.BoolAttribute{Required: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"public_folder":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"recalculate_inactive_mailbox":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"reject_messages_from":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -315,7 +315,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"remove_disabled_archive":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveDisabledArchive parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remove_mailbox_provisioning_constraint":          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoveMailboxProvisioningConstraint parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"remove_orphaned_holds":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RemoveOrphanedHolds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
-			"removed_mailbox":                                 schema.StringAttribute{Required: true, Description: "Maps to the -RemovedMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"removed_mailbox":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemovedMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"require_sender_authentication_enabled":           schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RequireSenderAuthenticationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"reset_password_on_next_logon":                    schema.BoolAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -ResetPasswordOnNextLogon parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"resource_capacity":                               schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -ResourceCapacity parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
@@ -326,12 +326,12 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"retention_policy":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"retention_url":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionUrl parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"role_assignment_policy":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RoleAssignmentPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"room":                                            schema.BoolAttribute{Required: true, Description: "Maps to the -Room parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"room":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Room parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"room_mailbox_password":                           schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -RoomMailboxPassword parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"rules_quota":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RulesQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"scheduler_assistant":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SchedulerAssistant parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_moderation_notifications":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendModerationNotifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"shared":                                          schema.BoolAttribute{Required: true, Description: "Maps to the -Shared parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+			"shared":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Shared parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
 			"sharing_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SharingPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"simple_display_name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"single_item_recovery_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SingleItemRecoveryEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -1733,7 +1733,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.DefaultAuditSet = stringSetValue(ctx, getStringSlice(obj, "DefaultAuditSet"))
 	m.DefaultPublicFolderMailbox = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderMailbox"))
 	m.DeliverToMailboxAndForward = types.BoolValue(getBool(obj, "DeliverToMailboxAndForward"))
-	m.Discovery = types.BoolValue(getBool(obj, "Discovery"))
+	m.Discovery = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Discovery"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.ElcProcessingDisabled = types.BoolValue(getBool(obj, "ElcProcessingDisabled"))
 	m.EmailAddressDisplayNames = stringSetValue(ctx, getStringSlice(obj, "EmailAddressDisplayNames"))
@@ -1741,7 +1741,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.EnableRoomMailboxAccount = types.BoolValue(getBool(obj, "EnableRoomMailboxAccount"))
 	m.EndDateForRetentionHold = types.StringValue(getObjectJSON(obj, "EndDateForRetentionHold"))
 	m.EnforcedTimestamps = types.StringValue(getString(obj, "EnforcedTimestamps"))
-	m.Equipment = types.BoolValue(getBool(obj, "Equipment"))
+	m.Equipment = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Equipment"))
 	m.ExcludeFromAllHolds = types.BoolValue(getBool(obj, "ExcludeFromAllHolds"))
 	m.ExcludeFromAllOrgHolds = types.BoolValue(getBool(obj, "ExcludeFromAllOrgHolds"))
 	m.ExcludeFromOrgHolds = stringSetValue(ctx, getStringSlice(obj, "ExcludeFromOrgHolds"))
@@ -1798,7 +1798,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.ProvideConsent = types.BoolValue(getBool(obj, "ProvideConsent"))
 	m.ProvisionedForOfficeGraph = types.BoolValue(getBool(obj, "ProvisionedForOfficeGraph"))
 	m.ProxyEmailAddress = types.StringValue(getObjectJSON(obj, "ProxyEmailAddress"))
-	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
+	m.PublicFolder = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "PublicFolder"))
 	m.RecalculateInactiveMailbox = types.BoolValue(getBool(obj, "RecalculateInactiveMailbox"))
 	m.RecipientLimits = types.StringValue(getObjectJSON(obj, "RecipientLimits"))
 	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
@@ -1822,12 +1822,12 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.RetentionPolicy = types.StringValue(getObjectJSON(obj, "RetentionPolicy"))
 	m.RetentionUrl = types.StringValue(getString(obj, "RetentionUrl"))
 	m.RoleAssignmentPolicy = types.StringValue(getObjectJSON(obj, "RoleAssignmentPolicy"))
-	m.Room = types.BoolValue(getBool(obj, "Room"))
+	m.Room = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Room"))
 	m.RoomMailboxPassword = types.StringValue(getObjectJSON(obj, "RoomMailboxPassword"))
 	m.RulesQuota = types.StringValue(getObjectJSON(obj, "RulesQuota"))
 	m.SchedulerAssistant = types.BoolValue(getBool(obj, "SchedulerAssistant"))
 	m.SendModerationNotifications = types.StringValue(getObjectJSON(obj, "SendModerationNotifications"))
-	m.Shared = types.BoolValue(getBool(obj, "Shared"))
+	m.Shared = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Shared"))
 	m.SharingPolicy = types.StringValue(getObjectJSON(obj, "SharingPolicy"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
 	m.SingleItemRecoveryEnabled = types.BoolValue(getBool(obj, "SingleItemRecoveryEnabled"))
