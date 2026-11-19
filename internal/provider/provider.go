@@ -99,7 +99,7 @@ func (p *exoProvider) Resources(_ context.Context) []func() resource.Resource {
 	// generatedResources() is code-generated; hand-written resources (for non-CRUD
 	// cmdlets — Enable-OrganizationCustomization and the per-domain Enable/Disable
 	// feature toggles) are appended here.
-	return append(generatedResources(),
+	return append(overrideResources(generatedResources()),
 		NewOrganizationCustomizationResource,
 		NewDnssecVerifiedDomainResource,
 		NewSmtpDaneInboundResource,
