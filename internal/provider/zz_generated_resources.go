@@ -509,8 +509,10 @@ func failOnChangeBool(msg string) boolplanmodifier.RequiresReplaceIfFunc {
 }
 
 // unknownIfChangedBool plans an unconfigured bool as unknown when one of the
-// named attributes changes, because that change also changes its read-back
-// value (see genframework Attribute.ChangesWith).
+// named attributes may change, because that change also changes its read-back
+// value (see genframework Attribute.ChangesWith). An unconfigured linked
+// attribute keeps its state value; a configured one that is still unknown
+// (e.g. another resource's output) may change, so it counts as changed.
 func unknownIfChangedBool(attrs ...string) planmodifier.Bool {
 	return unknownIfChangedBoolModifier(attrs)
 }
@@ -530,13 +532,17 @@ func (m unknownIfChangedBoolModifier) PlanModifyBool(ctx context.Context, req pl
 		return
 	}
 	for _, name := range m {
-		var planned, prior attr.Value
+		var configured, planned, prior attr.Value
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(name), &configured)...)
 		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root(name), &planned)...)
 		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(name), &prior)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		if planned != nil && !planned.IsUnknown() && !planned.Equal(prior) {
+		if configured == nil || configured.IsNull() {
+			continue
+		}
+		if configured.IsUnknown() || planned == nil || !planned.Equal(prior) {
 			resp.PlanValue = types.BoolUnknown()
 			return
 		}

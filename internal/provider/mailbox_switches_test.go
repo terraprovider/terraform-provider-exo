@@ -174,11 +174,35 @@ func TestMailboxTypeChangeReplansSwitches(t *testing.T) {
 	}{
 		{"type changed", "Room", true},
 		{"type unchanged", "Shared", false},
+		{"type unconfigured", "", false},
+		{"type configured but unknown", "?", true},
 	}
 	for _, c := range cases {
-		plan := newState(c.plannedType, true)
+		plan := newState("Shared", true)
+		cfgState := tfsdk.State{Schema: sr.Schema, Raw: tftypes.NewValue(sr.Schema.Type().TerraformType(ctx), nil)}
+		var typ types.String
+		switch c.plannedType {
+		case "":
+			typ = types.StringNull()
+		case "?":
+			typ = types.StringUnknown()
+		default:
+			typ = types.StringValue(c.plannedType)
+		}
+		if c.plannedType != "" {
+			plan = newState("Shared", true)
+			if d := plan.SetAttribute(ctx, path.Root("type"), typ); d.HasError() {
+				t.Fatal(d)
+			}
+		} else if d := plan.SetAttribute(ctx, path.Root("type"), types.StringUnknown()); d.HasError() {
+			t.Fatal(d) // unconfigured Optional+Computed: the framework plans it unknown
+		}
+		if d := cfgState.SetAttribute(ctx, path.Root("type"), typ); d.HasError() {
+			t.Fatal(d)
+		}
+		cfg := tfsdk.Config{Schema: sr.Schema, Raw: cfgState.Raw}
 		req := planmodifier.BoolRequest{
-			Path: path.Root("shared"), ConfigValue: types.BoolNull(),
+			Path: path.Root("shared"), ConfigValue: types.BoolNull(), Config: cfg,
 			State: state, Plan: tfsdk.Plan{Schema: sr.Schema, Raw: plan.Raw},
 			StateValue: types.BoolValue(true), PlanValue: types.BoolValue(true),
 		}
