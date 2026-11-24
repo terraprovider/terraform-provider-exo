@@ -99,7 +99,7 @@ func (r *migrationEndpointResource) Schema(_ context.Context, _ resource.SchemaR
 			"max_concurrent_migrations":        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -MaxConcurrentMigrations parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"name":                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"nspi_server":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -NspiServer parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"o_auth_code":                      schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OAuthCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"o_auth_code":                      schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -OAuthCode parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(replaceIfWriteOnlyRecorded, "Changing it forces replacement, unless state records no value (e.g. after import).", "Changing it forces replacement, unless state records no value (e.g. after import)."), stringplanmodifier.UseStateForUnknown()}},
 			"partition":                        schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Partition parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"port":                             schema.Int64Attribute{Optional: true, Computed: true, Description: "Maps to the -Port parameter.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"public_folder":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
@@ -490,7 +490,6 @@ func readMigrationEndpoint(ctx context.Context, obj map[string]any, m *migration
 	m.Authentication = types.StringValue(getObjectJSON(obj, "Authentication"))
 	m.Autodiscover = types.BoolValue(getBool(obj, "Autodiscover"))
 	m.Compliance = types.BoolValue(getBool(obj, "Compliance"))
-	m.Credentials = types.StringValue(getObjectJSON(obj, "Credentials"))
 	m.EmailAddress = types.StringValue(getObjectJSON(obj, "EmailAddress"))
 	m.ExchangeOutlookAnywhere = types.BoolValue(getBool(obj, "ExchangeOutlookAnywhere"))
 	m.ExchangeRemoteMove = types.BoolValue(getBool(obj, "ExchangeRemoteMove"))
@@ -502,7 +501,6 @@ func readMigrationEndpoint(ctx context.Context, obj map[string]any, m *migration
 	m.MaxConcurrentMigrations = types.StringValue(getObjectJSON(obj, "MaxConcurrentMigrations"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.NspiServer = types.StringValue(getString(obj, "NspiServer"))
-	m.OAuthCode = types.StringValue(getObjectJSON(obj, "OAuthCode"))
 	m.Partition = types.StringValue(getObjectJSON(obj, "Partition"))
 	m.Port = types.Int64Value(getInt(obj, "Port"))
 	m.PublicFolder = types.BoolValue(getBool(obj, "PublicFolder"))
@@ -528,6 +526,9 @@ func (r *migrationEndpointResource) reconcileState(cfg, read *migrationEndpointM
 	read.Autodiscover = reconcile.KeepBool(cfg.Autodiscover, read.Autodiscover)
 	read.Compliance = reconcile.KeepBool(cfg.Compliance, read.Compliance)
 	read.Credentials = reconcile.KeepStr(cfg.Credentials, read.Credentials)
+	if read.Credentials.IsUnknown() {
+		read.Credentials = types.StringNull()
+	}
 	read.EmailAddress = reconcile.KeepStr(cfg.EmailAddress, read.EmailAddress)
 	read.ExchangeOutlookAnywhere = reconcile.KeepBool(cfg.ExchangeOutlookAnywhere, read.ExchangeOutlookAnywhere)
 	read.ExchangeRemoteMove = reconcile.KeepBool(cfg.ExchangeRemoteMove, read.ExchangeRemoteMove)
@@ -540,6 +541,9 @@ func (r *migrationEndpointResource) reconcileState(cfg, read *migrationEndpointM
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.NspiServer = reconcile.KeepStr(cfg.NspiServer, read.NspiServer)
 	read.OAuthCode = reconcile.KeepStr(cfg.OAuthCode, read.OAuthCode)
+	if read.OAuthCode.IsUnknown() {
+		read.OAuthCode = types.StringNull()
+	}
 	read.Partition = reconcile.KeepStr(cfg.Partition, read.Partition)
 	read.Port = reconcile.KeepInt64(cfg.Port, read.Port)
 	read.PublicFolder = reconcile.KeepBool(cfg.PublicFolder, read.PublicFolder)

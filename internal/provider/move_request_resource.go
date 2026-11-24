@@ -472,7 +472,6 @@ func readMoveRequest(ctx context.Context, obj map[string]any, m *moveRequestMode
 	m.ProxyToMailbox = types.StringValue(getObjectJSON(obj, "ProxyToMailbox"))
 	m.Remote = types.BoolValue(getBool(obj, "Remote"))
 	m.RemoteArchiveTargetDatabase = types.StringValue(getString(obj, "RemoteArchiveTargetDatabase"))
-	m.RemoteCredential = types.StringValue(getObjectJSON(obj, "RemoteCredential"))
 	m.RemoteGlobalCatalog = types.StringValue(getObjectJSON(obj, "RemoteGlobalCatalog"))
 	m.RemoteHostName = types.StringValue(getObjectJSON(obj, "RemoteHostName"))
 	m.RemoteTargetDatabase = types.StringValue(getString(obj, "RemoteTargetDatabase"))
@@ -505,6 +504,9 @@ func (r *moveRequestResource) reconcileState(cfg, read *moveRequestModel) {
 	read.Remote = reconcile.KeepBool(cfg.Remote, read.Remote)
 	read.RemoteArchiveTargetDatabase = reconcile.KeepStr(cfg.RemoteArchiveTargetDatabase, read.RemoteArchiveTargetDatabase)
 	read.RemoteCredential = reconcile.KeepStr(cfg.RemoteCredential, read.RemoteCredential)
+	if read.RemoteCredential.IsUnknown() {
+		read.RemoteCredential = types.StringNull()
+	}
 	read.RemoteGlobalCatalog = reconcile.KeepStr(cfg.RemoteGlobalCatalog, read.RemoteGlobalCatalog)
 	read.RemoteHostName = reconcile.KeepStr(cfg.RemoteHostName, read.RemoteHostName)
 	read.RemoteTargetDatabase = reconcile.KeepStr(cfg.RemoteTargetDatabase, read.RemoteTargetDatabase)

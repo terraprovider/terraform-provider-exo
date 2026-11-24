@@ -38,7 +38,7 @@ Manages the MigrationEndpoint object via New-MigrationEndpoint / Get-MigrationEn
 - `max_concurrent_incremental_syncs` (String) Maps to the -MaxConcurrentIncrementalSyncs parameter.
 - `max_concurrent_migrations` (String) Maps to the -MaxConcurrentMigrations parameter.
 - `nspi_server` (String) Maps to the -NspiServer parameter.
-- `o_auth_code` (String) Maps to the -OAuthCode parameter.
+- `o_auth_code` (String, Sensitive) Maps to the -OAuthCode parameter.
 - `partition` (String) Maps to the -Partition parameter.
 - `port` (Number) Maps to the -Port parameter.
 - `public_folder` (Boolean) Maps to the -PublicFolder parameter.
