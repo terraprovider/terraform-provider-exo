@@ -104,6 +104,8 @@ func (p *exoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewDnssecVerifiedDomainResource,
 		NewSmtpDaneInboundResource,
 		NewIPv6AcceptedDomainResource,
+		NewMailboxPermissionResource,
+		NewRecipientPermissionResource,
 	)
 }
 
