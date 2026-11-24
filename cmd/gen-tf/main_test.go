@@ -90,3 +90,23 @@ func TestRecipientTypeField(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteOnly(t *testing.T) {
+	cases := []struct {
+		p    spec.Param
+		want bool
+	}{
+		{spec.Param{Name: "Password", Type: "securestring"}, true},
+		{spec.Param{Name: "RemoteCredential", Type: "pscredential"}, true},
+		{spec.Param{Name: "Credentials", Type: "System.Object", DeclaredType: "System.Management.Automation.PSCredential"}, true},
+		{spec.Param{Name: "OAuthCode", Type: "System.Security.SecureString"}, true},
+		{spec.Param{Name: "MinPasswordLength", Type: "System.Object"}, false},
+		{spec.Param{Name: "AllowSimplePassword", Type: "bool"}, false},
+		{spec.Param{Name: "AppSecretKeyVaultUrl", Type: "string"}, false},
+	}
+	for _, c := range cases {
+		if got := writeOnly(c.p); got != c.want {
+			t.Errorf("writeOnly(%s %s/%s) = %v, want %v", c.p.Name, c.p.Type, c.p.DeclaredType, got, c.want)
+		}
+	}
+}

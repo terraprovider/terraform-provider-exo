@@ -193,7 +193,8 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			Type:         at,
 			Required:     required,
 			Computed:     !required,
-			Sensitive:    sensitive(name),
+			Sensitive:    sensitive(name) || writeOnly(p),
+			WriteOnly:    writeOnly(p),
 			Replace:      replace,
 			Description:  describe(name, p),
 			InCreate:     inC,
@@ -529,6 +530,18 @@ var skipParams = map[string]bool{
 }
 
 func skipParam(name string) bool { return skipParams[name] }
+
+// writeOnly reports whether p is a secret that Get-* never returns
+// (SecureString or PSCredential), so a refresh must keep the configured value.
+func writeOnly(p spec.Param) bool {
+	for _, t := range []string{p.Type, p.DeclaredType} {
+		switch strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(t, "System."), "Security.")) {
+		case "securestring", "pscredential", "management.automation.pscredential":
+			return true
+		}
+	}
+	return false
+}
 
 func sensitive(name string) bool {
 	l := strings.ToLower(name)

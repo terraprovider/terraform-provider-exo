@@ -188,7 +188,7 @@ func (r *mailUserResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"moderation_enabled":                               schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ModerationEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"name":                                             schema.StringAttribute{Required: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"organizational_unit":                              schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"password":                                         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"password":                                         schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(replaceIfWriteOnlyRecorded, "Changing it forces replacement, unless state records no value (e.g. after import).", "Changing it forces replacement, unless state records no value (e.g. after import)."), stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"recalculate_inactive_mail_user":                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailUser parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                 schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -1100,7 +1100,6 @@ func readMailUser(ctx context.Context, obj map[string]any, m *mailUserModel) {
 	m.ModerationEnabled = types.BoolValue(getBool(obj, "ModerationEnabled"))
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.OrganizationalUnit = types.StringValue(getObjectJSON(obj, "OrganizationalUnit"))
-	m.Password = types.StringValue(getObjectJSON(obj, "Password"))
 	m.PrimarySmtpAddress = types.StringValue(getObjectJSON(obj, "PrimarySmtpAddress"))
 	m.RecalculateInactiveMailUser = types.BoolValue(getBool(obj, "RecalculateInactiveMailUser"))
 	m.RecipientLimits = types.StringValue(getObjectJSON(obj, "RecipientLimits"))
@@ -1187,6 +1186,9 @@ func (r *mailUserResource) reconcileState(cfg, read *mailUserModel) {
 	read.Name = reconcile.KeepStr(cfg.Name, read.Name)
 	read.OrganizationalUnit = reconcile.KeepStr(cfg.OrganizationalUnit, read.OrganizationalUnit)
 	read.Password = reconcile.KeepStr(cfg.Password, read.Password)
+	if read.Password.IsUnknown() {
+		read.Password = types.StringNull()
+	}
 	read.PrimarySmtpAddress = reconcile.KeepStr(cfg.PrimarySmtpAddress, read.PrimarySmtpAddress)
 	read.RecalculateInactiveMailUser = reconcile.KeepBool(cfg.RecalculateInactiveMailUser, read.RecalculateInactiveMailUser)
 	read.RecipientLimits = reconcile.KeepStr(cfg.RecipientLimits, read.RecipientLimits)

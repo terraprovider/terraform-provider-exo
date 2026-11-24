@@ -103,7 +103,7 @@ func (r *mailboxRestoreRequestResource) Schema(_ context.Context, _ resource.Sch
 			"name":                               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Name parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"priority":                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Priority parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"rehome_request":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RehomeRequest parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"remote_credential":                  schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -RemoteCredential parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"remote_credential":                  schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -RemoteCredential parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(replaceIfWriteOnlyRecorded, "Changing it forces replacement, unless state records no value (e.g. after import).", "Changing it forces replacement, unless state records no value (e.g. after import)."), stringplanmodifier.UseStateForUnknown()}},
 			"remote_database_guid":               schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteDatabaseGuid parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"remote_host_name":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteHostName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"remote_restore_type":                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RemoteRestoreType parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
@@ -485,7 +485,6 @@ func readMailboxRestoreRequest(ctx context.Context, obj map[string]any, m *mailb
 	m.Name = types.StringValue(getString(obj, "Name"))
 	m.Priority = types.StringValue(getObjectJSON(obj, "Priority"))
 	m.RehomeRequest = types.BoolValue(getBool(obj, "RehomeRequest"))
-	m.RemoteCredential = types.StringValue(getObjectJSON(obj, "RemoteCredential"))
 	m.RemoteDatabaseGuid = types.StringValue(getString(obj, "RemoteDatabaseGuid"))
 	m.RemoteHostName = types.StringValue(getObjectJSON(obj, "RemoteHostName"))
 	m.RemoteRestoreType = types.StringValue(getObjectJSON(obj, "RemoteRestoreType"))
@@ -529,6 +528,9 @@ func (r *mailboxRestoreRequestResource) reconcileState(cfg, read *mailboxRestore
 	read.Priority = reconcile.KeepStr(cfg.Priority, read.Priority)
 	read.RehomeRequest = reconcile.KeepBool(cfg.RehomeRequest, read.RehomeRequest)
 	read.RemoteCredential = reconcile.KeepStr(cfg.RemoteCredential, read.RemoteCredential)
+	if read.RemoteCredential.IsUnknown() {
+		read.RemoteCredential = types.StringNull()
+	}
 	read.RemoteDatabaseGuid = reconcile.KeepStr(cfg.RemoteDatabaseGuid, read.RemoteDatabaseGuid)
 	read.RemoteHostName = reconcile.KeepStr(cfg.RemoteHostName, read.RemoteHostName)
 	read.RemoteRestoreType = reconcile.KeepStr(cfg.RemoteRestoreType, read.RemoteRestoreType)

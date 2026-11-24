@@ -294,7 +294,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"non_compliant_devices":                           schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -NonCompliantDevices parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"office":                                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Office parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"organizational_unit":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -OrganizationalUnit parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"password":                                        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
+			"password":                                        schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -Password parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(replaceIfWriteOnlyRecorded, "Changing it forces replacement, unless state records no value (e.g. after import).", "Changing it forces replacement, unless state records no value (e.g. after import)."), stringplanmodifier.UseStateForUnknown()}},
 			"phone":                                           schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -Phone parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"primary_smtp_address":                            schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -PrimarySmtpAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"prohibit_send_quota":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProhibitSendQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
@@ -1790,7 +1790,6 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.NonCompliantDevices = stringSetValue(ctx, getStringSlice(obj, "NonCompliantDevices"))
 	m.Office = types.StringValue(getString(obj, "Office"))
 	m.OrganizationalUnit = types.StringValue(getObjectJSON(obj, "OrganizationalUnit"))
-	m.Password = types.StringValue(getObjectJSON(obj, "Password"))
 	m.Phone = types.StringValue(getString(obj, "Phone"))
 	m.PrimarySmtpAddress = types.StringValue(getObjectJSON(obj, "PrimarySmtpAddress"))
 	m.ProhibitSendQuota = types.StringValue(getObjectJSON(obj, "ProhibitSendQuota"))
@@ -1823,7 +1822,6 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.RetentionUrl = types.StringValue(getString(obj, "RetentionUrl"))
 	m.RoleAssignmentPolicy = types.StringValue(getObjectJSON(obj, "RoleAssignmentPolicy"))
 	m.Room = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Room"))
-	m.RoomMailboxPassword = types.StringValue(getObjectJSON(obj, "RoomMailboxPassword"))
 	m.RulesQuota = types.StringValue(getObjectJSON(obj, "RulesQuota"))
 	m.SchedulerAssistant = types.BoolValue(getBool(obj, "SchedulerAssistant"))
 	m.SendModerationNotifications = types.StringValue(getObjectJSON(obj, "SendModerationNotifications"))
@@ -1944,6 +1942,9 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.Office = reconcile.KeepStr(cfg.Office, read.Office)
 	read.OrganizationalUnit = reconcile.KeepStr(cfg.OrganizationalUnit, read.OrganizationalUnit)
 	read.Password = reconcile.KeepStr(cfg.Password, read.Password)
+	if read.Password.IsUnknown() {
+		read.Password = types.StringNull()
+	}
 	read.Phone = reconcile.KeepStr(cfg.Phone, read.Phone)
 	read.PrimarySmtpAddress = reconcile.KeepStr(cfg.PrimarySmtpAddress, read.PrimarySmtpAddress)
 	read.ProhibitSendQuota = reconcile.KeepStr(cfg.ProhibitSendQuota, read.ProhibitSendQuota)
@@ -1977,6 +1978,9 @@ func (r *mailboxResource) reconcileState(cfg, read *mailboxModel) {
 	read.RoleAssignmentPolicy = reconcile.KeepStr(cfg.RoleAssignmentPolicy, read.RoleAssignmentPolicy)
 	read.Room = reconcile.KeepBool(cfg.Room, read.Room)
 	read.RoomMailboxPassword = reconcile.KeepStr(cfg.RoomMailboxPassword, read.RoomMailboxPassword)
+	if read.RoomMailboxPassword.IsUnknown() {
+		read.RoomMailboxPassword = types.StringNull()
+	}
 	read.RulesQuota = reconcile.KeepStr(cfg.RulesQuota, read.RulesQuota)
 	read.SchedulerAssistant = reconcile.KeepBool(cfg.SchedulerAssistant, read.SchedulerAssistant)
 	read.SendModerationNotifications = reconcile.KeepStr(cfg.SendModerationNotifications, read.SendModerationNotifications)

@@ -52,7 +52,7 @@ func (d *migrationEndpointDataSource) Schema(_ context.Context, _ datasource.Sch
 			"max_concurrent_migrations":        schema.StringAttribute{Computed: true, Description: "Maps to the -MaxConcurrentMigrations parameter."},
 			"name":                             schema.StringAttribute{Computed: true, Optional: true, Description: "Maps to the -Name parameter."},
 			"nspi_server":                      schema.StringAttribute{Computed: true, Description: "Maps to the -NspiServer parameter."},
-			"o_auth_code":                      schema.StringAttribute{Computed: true, Description: "Maps to the -OAuthCode parameter."},
+			"o_auth_code":                      schema.StringAttribute{Computed: true, Sensitive: true, Description: "Maps to the -OAuthCode parameter."},
 			"partition":                        schema.StringAttribute{Computed: true, Description: "Maps to the -Partition parameter."},
 			"port":                             schema.Int64Attribute{Computed: true, Description: "Maps to the -Port parameter."},
 			"public_folder":                    schema.BoolAttribute{Computed: true, Description: "Maps to the -PublicFolder parameter."},

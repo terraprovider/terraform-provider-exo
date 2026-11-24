@@ -3,8 +3,12 @@
 package provider
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
 // generatedResources lists every generated resource constructor.
@@ -477,4 +481,12 @@ func generatedDataSources() []func() datasource.DataSource {
 		NewUserDataSource,
 		NewUserListDataSource,
 	}
+}
+
+// replaceIfWriteOnlyRecorded forces replacement for a changed write-only
+// create-time value only when state records one. Nothing reads the value
+// back, so an empty state value (e.g. after import) says nothing about what
+// the object was created with; setting it then only records it.
+func replaceIfWriteOnlyRecorded(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+	resp.RequiresReplace = req.StateValue.ValueString() != ""
 }
