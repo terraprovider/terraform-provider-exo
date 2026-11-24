@@ -77,16 +77,39 @@ func TestGenValidators(t *testing.T) {
 	}
 }
 
-func TestRecipientTypeField(t *testing.T) {
-	if got := recipientTypeField("Mailbox", "Shared", true); got != "RecipientTypeDetails" {
-		t.Errorf("Mailbox Shared = %q", got)
+func TestMailboxType(t *testing.T) {
+	shared := genframework.Attribute{TFName: "shared"}
+	mailboxType("Mailbox", "Shared", true, &shared)
+	if shared.StateField != "RecipientTypeDetails" || shared.StateValue != "SharedMailbox" {
+		t.Errorf("shared reads %s == %s", shared.StateField, shared.StateValue)
 	}
+	if len(shared.ChangesWith) != 1 || shared.ChangesWith[0] != "type" {
+		t.Errorf("shared changes with %v, want [type]", shared.ChangesWith)
+	}
+	if !strings.Contains(shared.ChangeError, `set type = "Shared"`) {
+		t.Errorf("shared change error does not point to type: %s", shared.ChangeError)
+	}
+
+	discovery := genframework.Attribute{TFName: "discovery"}
+	mailboxType("Mailbox", "Discovery", true, &discovery)
+	if discovery.StateValue != "DiscoveryMailbox" || !strings.Contains(discovery.ChangeError, "cannot be converted in place") {
+		t.Errorf("discovery = %+v", discovery)
+	}
+
+	typ := genframework.Attribute{TFName: "type"}
+	mailboxType("Mailbox", "Type", false, &typ)
+	if typ.StateField != "RecipientTypeDetails" || typ.StateMap["SharedMailbox"] != "Shared" || typ.StateMap["UserMailbox"] != "Regular" {
+		t.Errorf("type = %+v", typ)
+	}
+
 	for _, c := range []struct {
 		noun, name string
 		selector   bool
-	}{{"Mailbox", "Migration", true}, {"Mailbox", "Shared", false}, {"MailUser", "Shared", true}} {
-		if got := recipientTypeField(c.noun, c.name, c.selector); got != "" {
-			t.Errorf("%s %s selector=%v = %q, want empty", c.noun, c.name, c.selector, got)
+	}{{"Mailbox", "Migration", true}, {"Mailbox", "Shared", false}, {"MailUser", "Shared", true}, {"MailUser", "Type", false}} {
+		a := genframework.Attribute{TFName: "x"}
+		mailboxType(c.noun, c.name, c.selector, &a)
+		if a.StateField != "" || a.ChangeError != "" {
+			t.Errorf("%s %s selector=%v changed the attribute: %+v", c.noun, c.name, c.selector, a)
 		}
 	}
 }

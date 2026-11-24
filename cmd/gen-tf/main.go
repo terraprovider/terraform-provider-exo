@@ -203,8 +203,9 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			PointerParam: isPointer(p),
 			Delta:        at == genframework.TypeStringSet && inU && firstParam(name, setCmd).DeltaCapable(), // clear via Remove delta
 			Toggle:       toggle,
-			StateField:   firstNonEmpty(stateField(toggle), recipientTypeField(noun, name, selector)),
+			StateField:   stateField(toggle),
 		})
+		mailboxType(noun, name, selector, &attrs[len(attrs)-1])
 	}
 	if !hasCreateAttr(attrs) {
 		return genframework.Resource{}, false, "no mappable create parameters"
@@ -686,24 +687,51 @@ func genValidators(conflicts map[string][][2]string) ([]byte, error) {
 	return format.Source(b.Bytes())
 }
 
-// recipientTypeSwitches are the New-Mailbox switches that Get-Mailbox reports as RecipientTypeDetails.
-var recipientTypeSwitches = map[string]bool{"Discovery": true, "Equipment": true, "PublicFolder": true, "Room": true, "Shared": true}
-
-// recipientTypeField is the read-back property of a New-Mailbox type switch, or "".
-func recipientTypeField(noun, name string, selector bool) string {
-	if noun == "Mailbox" && selector && recipientTypeSwitches[name] {
-		return "RecipientTypeDetails"
-	}
-	return ""
+// recipientTypeDetails maps each New-Mailbox type switch to the
+// RecipientTypeDetails value Get-Mailbox reports for a mailbox created with it.
+var recipientTypeDetails = map[string]string{
+	"Discovery":    "DiscoveryMailbox",
+	"Equipment":    "EquipmentMailbox",
+	"PublicFolder": "PublicFolderMailbox",
+	"Room":         "RoomMailbox",
+	"Shared":       "SharedMailbox",
 }
 
-func firstNonEmpty(vals ...string) string {
-	for _, v := range vals {
-		if v != "" {
-			return v
-		}
+// mailboxTypes maps RecipientTypeDetails to the Set-Mailbox -Type value that
+// converts a mailbox to it in place.
+var mailboxTypes = map[string]string{
+	"EquipmentMailbox": "Equipment",
+	"RoomMailbox":      "Room",
+	"SharedMailbox":    "Shared",
+	"UserMailbox":      "Regular",
+}
+
+// mailboxType reads the exo_mailbox type switches and -Type from
+// RecipientTypeDetails, since Get-Mailbox returns no Shared, Room, ... or Type
+// property. Changing a type switch would replace the mailbox and delete its
+// content, so it fails the plan instead and points to type where Set-Mailbox
+// can convert the mailbox in place.
+func mailboxType(noun, name string, selector bool, a *genframework.Attribute) {
+	if noun != "Mailbox" {
+		return
 	}
-	return ""
+	if name == "Type" {
+		a.StateField, a.StateMap = "RecipientTypeDetails", mailboxTypes
+		return
+	}
+	details, ok := recipientTypeDetails[name]
+	if !ok || !selector {
+		return
+	}
+	a.StateField, a.StateValue = "RecipientTypeDetails", details
+	a.ChangesWith = []string{"type"} // Set-Mailbox -Type changes what the switch reads back
+	a.ChangeError = fmt.Sprintf("Changing %s on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. ", a.TFName)
+	if t, ok := mailboxTypes[details]; ok {
+		a.ChangeError += fmt.Sprintf("To convert it in place, set type = %q (or Regular, Room, Equipment, Shared) and remove %s from the configuration. ", t, a.TFName)
+	} else {
+		a.ChangeError += "This mailbox type cannot be converted in place. "
+	}
+	a.ChangeError += "To re-create the mailbox, destroy it first, then apply again."
 }
 
 func mandatoryIn(c spec.Cmdlet, name string) bool {

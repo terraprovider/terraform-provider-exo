@@ -237,7 +237,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"default_audit_set":                               schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -DefaultAuditSet parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
 			"default_public_folder_mailbox":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DefaultPublicFolderMailbox parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"deliver_to_mailbox_and_forward":                  schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -DeliverToMailboxAndForward parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"discovery":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Discovery parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"discovery":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Discovery parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(failOnChangeBool("Changing discovery on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. This mailbox type cannot be converted in place. To re-create the mailbox, destroy it first, then apply again."), "Changing it on an existing object fails the plan instead of replacing the object.", "Changing it on an existing object fails the plan instead of replacing the object."), boolplanmodifier.UseStateForUnknown(), unknownIfChangedBool("type")}},
 			"display_name":                                    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"elc_processing_disabled":                         schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ElcProcessingDisabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"email_address_display_names":                     schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -EmailAddressDisplayNames parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -245,7 +245,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"enable_room_mailbox_account":                     schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -EnableRoomMailboxAccount parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"end_date_for_retention_hold":                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EndDateForRetentionHold parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"enforced_timestamps":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -EnforcedTimestamps parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"equipment":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Equipment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"equipment":                                       schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Equipment parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(failOnChangeBool("Changing equipment on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. To convert it in place, set type = \"Equipment\" (or Regular, Room, Equipment, Shared) and remove equipment from the configuration. To re-create the mailbox, destroy it first, then apply again."), "Changing it on an existing object fails the plan instead of replacing the object.", "Changing it on an existing object fails the plan instead of replacing the object."), boolplanmodifier.UseStateForUnknown(), unknownIfChangedBool("type")}},
 			"exclude_from_all_holds":                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_all_org_holds":                      schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ExcludeFromAllOrgHolds parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"exclude_from_org_holds":                          schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -ExcludeFromOrgHolds parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -302,7 +302,7 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"provide_consent":                                 schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvideConsent parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"provisioned_for_office_graph":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -ProvisionedForOfficeGraph parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"proxy_email_address":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ProxyEmailAddress parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
-			"public_folder":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"public_folder":                                   schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -PublicFolder parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(failOnChangeBool("Changing public_folder on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. This mailbox type cannot be converted in place. To re-create the mailbox, destroy it first, then apply again."), "Changing it on an existing object fails the plan instead of replacing the object.", "Changing it on an existing object fails the plan instead of replacing the object."), boolplanmodifier.UseStateForUnknown(), unknownIfChangedBool("type")}},
 			"recalculate_inactive_mailbox":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -RecalculateInactiveMailbox parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"recipient_limits":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RecipientLimits parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"reject_messages_from":                            schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, Description: "Maps to the -RejectMessagesFrom parameter.", PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()}},
@@ -326,12 +326,12 @@ func (r *mailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"retention_policy":                                schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"retention_url":                                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RetentionUrl parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"role_assignment_policy":                          schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RoleAssignmentPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"room":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Room parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"room":                                            schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Room parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(failOnChangeBool("Changing room on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. To convert it in place, set type = \"Room\" (or Regular, Room, Equipment, Shared) and remove room from the configuration. To re-create the mailbox, destroy it first, then apply again."), "Changing it on an existing object fails the plan instead of replacing the object.", "Changing it on an existing object fails the plan instead of replacing the object."), boolplanmodifier.UseStateForUnknown(), unknownIfChangedBool("type")}},
 			"room_mailbox_password":                           schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Description: "Maps to the -RoomMailboxPassword parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"rules_quota":                                     schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -RulesQuota parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"scheduler_assistant":                             schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SchedulerAssistant parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
 			"send_moderation_notifications":                   schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SendModerationNotifications parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"shared":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Shared parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace(), boolplanmodifier.UseStateForUnknown()}},
+			"shared":                                          schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -Shared parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplaceIf(failOnChangeBool("Changing shared on an existing mailbox would replace it (Remove-Mailbox + New-Mailbox) and delete its content. To convert it in place, set type = \"Shared\" (or Regular, Room, Equipment, Shared) and remove shared from the configuration. To re-create the mailbox, destroy it first, then apply again."), "Changing it on an existing object fails the plan instead of replacing the object.", "Changing it on an existing object fails the plan instead of replacing the object."), boolplanmodifier.UseStateForUnknown(), unknownIfChangedBool("type")}},
 			"sharing_policy":                                  schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SharingPolicy parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"simple_display_name":                             schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -SimpleDisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"single_item_recovery_enabled":                    schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -SingleItemRecoveryEnabled parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
@@ -1607,6 +1607,12 @@ func (r *mailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			return prev(obj) && (obj["SingleItemRecoveryEnabled"] == nil || getBool(obj, "SingleItemRecoveryEnabled") == want)
 		}
 	}
+	if !cfg.Type.IsUnknown() && !cfg.Type.IsNull() && !cfg.Type.Equal(state.Type) {
+		prev, want := reflected, cfg.Type.ValueString()
+		reflected = func(obj map[string]any) bool {
+			return prev(obj) && stateStringReflects(obj, "RecipientTypeDetails", map[string]string{"EquipmentMailbox": "Equipment", "RoomMailbox": "Room", "SharedMailbox": "Shared", "UserMailbox": "Regular"}, want)
+		}
+	}
 	if !cfg.UniqueUnrestrictedGroupsLimitEnabled.IsUnknown() && !cfg.UniqueUnrestrictedGroupsLimitEnabled.IsNull() && !cfg.UniqueUnrestrictedGroupsLimitEnabled.Equal(state.UniqueUnrestrictedGroupsLimitEnabled) {
 		prev, want := reflected, cfg.UniqueUnrestrictedGroupsLimitEnabled.ValueBool()
 		reflected = func(obj map[string]any) bool {
@@ -1733,7 +1739,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.DefaultAuditSet = stringSetValue(ctx, getStringSlice(obj, "DefaultAuditSet"))
 	m.DefaultPublicFolderMailbox = types.StringValue(getObjectJSON(obj, "DefaultPublicFolderMailbox"))
 	m.DeliverToMailboxAndForward = types.BoolValue(getBool(obj, "DeliverToMailboxAndForward"))
-	m.Discovery = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Discovery"))
+	m.Discovery = types.BoolValue(stateBoolIs(obj, "RecipientTypeDetails", "DiscoveryMailbox", "Discovery"))
 	m.DisplayName = types.StringValue(getString(obj, "DisplayName"))
 	m.ElcProcessingDisabled = types.BoolValue(getBool(obj, "ElcProcessingDisabled"))
 	m.EmailAddressDisplayNames = stringSetValue(ctx, getStringSlice(obj, "EmailAddressDisplayNames"))
@@ -1741,7 +1747,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.EnableRoomMailboxAccount = types.BoolValue(getBool(obj, "EnableRoomMailboxAccount"))
 	m.EndDateForRetentionHold = types.StringValue(getObjectJSON(obj, "EndDateForRetentionHold"))
 	m.EnforcedTimestamps = types.StringValue(getString(obj, "EnforcedTimestamps"))
-	m.Equipment = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Equipment"))
+	m.Equipment = types.BoolValue(stateBoolIs(obj, "RecipientTypeDetails", "EquipmentMailbox", "Equipment"))
 	m.ExcludeFromAllHolds = types.BoolValue(getBool(obj, "ExcludeFromAllHolds"))
 	m.ExcludeFromAllOrgHolds = types.BoolValue(getBool(obj, "ExcludeFromAllOrgHolds"))
 	m.ExcludeFromOrgHolds = stringSetValue(ctx, getStringSlice(obj, "ExcludeFromOrgHolds"))
@@ -1797,7 +1803,7 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.ProvideConsent = types.BoolValue(getBool(obj, "ProvideConsent"))
 	m.ProvisionedForOfficeGraph = types.BoolValue(getBool(obj, "ProvisionedForOfficeGraph"))
 	m.ProxyEmailAddress = types.StringValue(getObjectJSON(obj, "ProxyEmailAddress"))
-	m.PublicFolder = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "PublicFolder"))
+	m.PublicFolder = types.BoolValue(stateBoolIs(obj, "RecipientTypeDetails", "PublicFolderMailbox", "PublicFolder"))
 	m.RecalculateInactiveMailbox = types.BoolValue(getBool(obj, "RecalculateInactiveMailbox"))
 	m.RecipientLimits = types.StringValue(getObjectJSON(obj, "RecipientLimits"))
 	m.RejectMessagesFrom = stringSetValue(ctx, getStringSlice(obj, "RejectMessagesFrom"))
@@ -1821,18 +1827,18 @@ func readMailbox(ctx context.Context, obj map[string]any, m *mailboxModel) {
 	m.RetentionPolicy = types.StringValue(getObjectJSON(obj, "RetentionPolicy"))
 	m.RetentionUrl = types.StringValue(getString(obj, "RetentionUrl"))
 	m.RoleAssignmentPolicy = types.StringValue(getObjectJSON(obj, "RoleAssignmentPolicy"))
-	m.Room = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Room"))
+	m.Room = types.BoolValue(stateBoolIs(obj, "RecipientTypeDetails", "RoomMailbox", "Room"))
 	m.RulesQuota = types.StringValue(getObjectJSON(obj, "RulesQuota"))
 	m.SchedulerAssistant = types.BoolValue(getBool(obj, "SchedulerAssistant"))
 	m.SendModerationNotifications = types.StringValue(getObjectJSON(obj, "SendModerationNotifications"))
-	m.Shared = types.BoolValue(getStateBool(obj, "RecipientTypeDetails", "Shared"))
+	m.Shared = types.BoolValue(stateBoolIs(obj, "RecipientTypeDetails", "SharedMailbox", "Shared"))
 	m.SharingPolicy = types.StringValue(getObjectJSON(obj, "SharingPolicy"))
 	m.SimpleDisplayName = types.StringValue(getString(obj, "SimpleDisplayName"))
 	m.SingleItemRecoveryEnabled = types.BoolValue(getBool(obj, "SingleItemRecoveryEnabled"))
 	m.StartDateForRetentionHold = types.StringValue(getObjectJSON(obj, "StartDateForRetentionHold"))
 	m.StsRefreshTokensValidFrom = types.StringValue(getObjectJSON(obj, "StsRefreshTokensValidFrom"))
 	m.TargetAllMDBs = types.BoolValue(getBool(obj, "TargetAllMDBs"))
-	m.Type = types.StringValue(getObjectJSON(obj, "Type"))
+	m.Type = types.StringValue(stateString(obj, "RecipientTypeDetails", map[string]string{"EquipmentMailbox": "Equipment", "RoomMailbox": "Room", "SharedMailbox": "Shared", "UserMailbox": "Regular"}))
 	m.UniqueRecipientsCountLimitLevel = types.StringValue(getObjectJSON(obj, "UniqueRecipientsCountLimitLevel"))
 	m.UniqueUnrestrictedGroupsLimitEnabled = types.BoolValue(getBool(obj, "UniqueUnrestrictedGroupsLimitEnabled"))
 	m.UpdateEnforcedTimestamp = types.BoolValue(getBool(obj, "UpdateEnforcedTimestamp"))
