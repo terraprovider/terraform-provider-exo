@@ -4,11 +4,16 @@ package provider
 
 import (
 	"context"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // generatedResources lists every generated resource constructor.
@@ -489,4 +494,89 @@ func generatedDataSources() []func() datasource.DataSource {
 // the object was created with; setting it then only records it.
 func replaceIfWriteOnlyRecorded(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 	resp.RequiresReplace = req.StateValue.ValueString() != ""
+}
+
+// failOnChangeBool fails the plan with msg when a configured value differs
+// from the value in state, instead of replacing the object. A value left
+// unconfigured (unknown here) and a new object never fail.
+func failOnChangeBool(msg string) boolplanmodifier.RequiresReplaceIfFunc {
+	return func(_ context.Context, req planmodifier.BoolRequest, resp *boolplanmodifier.RequiresReplaceIfFuncResponse) {
+		if req.PlanValue.IsUnknown() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+			return
+		}
+		resp.Diagnostics.AddAttributeError(req.Path, "Change would replace the object", msg)
+	}
+}
+
+// unknownIfChangedBool plans an unconfigured bool as unknown when one of the
+// named attributes may change, because that change also changes its read-back
+// value (see genframework Attribute.ChangesWith). An unconfigured linked
+// attribute keeps its state value; a configured one that is still unknown
+// (e.g. another resource's output) may change, so it counts as changed.
+func unknownIfChangedBool(attrs ...string) planmodifier.Bool {
+	return unknownIfChangedBoolModifier(attrs)
+}
+
+type unknownIfChangedBoolModifier []string
+
+func (m unknownIfChangedBoolModifier) Description(context.Context) string {
+	return "Planned as unknown when a linked attribute changes and this one is not configured."
+}
+
+func (m unknownIfChangedBoolModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m unknownIfChangedBoolModifier) PlanModifyBool(ctx context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
+	if !req.ConfigValue.IsNull() || req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+	for _, name := range m {
+		var configured, planned, prior attr.Value
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(name), &configured)...)
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root(name), &planned)...)
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(name), &prior)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		if configured == nil || configured.IsNull() {
+			continue
+		}
+		if configured.IsUnknown() || planned == nil || !planned.Equal(prior) {
+			resp.PlanValue = types.BoolUnknown()
+			return
+		}
+	}
+}
+
+// stateBoolIs is getStateBool with a match value other than "Enabled": true
+// when the string property stateKey equals value (case-insensitive), else
+// the bool property boolKey when stateKey is absent.
+func stateBoolIs(m map[string]any, stateKey, value, boolKey string) bool {
+	if s, ok := m[stateKey].(string); ok {
+		return strings.EqualFold(s, value)
+	}
+	return getBool(m, boolKey)
+}
+
+// stateString maps the string property key through values (keys compared
+// case-insensitively). An absent or unmapped value reads as "".
+func stateString(m map[string]any, key string, values map[string]string) string {
+	s, _ := m[key].(string)
+	for k, v := range values {
+		if strings.EqualFold(k, s) {
+			return v
+		}
+	}
+	return ""
+}
+
+// stateStringReflects reports whether the mapped string property key equals
+// want (case-insensitive). An object without the property counts as
+// reflected, so a post-write wait cannot stall on it.
+func stateStringReflects(m map[string]any, key string, values map[string]string, want string) bool {
+	if m[key] == nil {
+		return true
+	}
+	return strings.EqualFold(stateString(m, key, values), want)
 }

@@ -50,6 +50,30 @@ func TestAccMailbox_shared(t *testing.T) {
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Conflicting switches`),
 			},
+			{
+				// Flipping the type switch would delete the mailbox: the plan fails instead.
+				Config:      testAccMailboxSwitchConfig(name, "shared = false"),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Change would replace the object`),
+			},
+			{
+				// Set-Mailbox -Type converts it in place.
+				Config: testAccMailboxSwitchConfig(name, `type = "Room"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate)},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "type", "Room"),
+					resource.TestCheckResourceAttr(resourceName, "room", "true"),
+					resource.TestCheckResourceAttr(resourceName, "shared", "false"),
+				),
+			},
+			{
+				Config: testAccMailboxSwitchConfig(name, `type = "Room"`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
 		},
 	})
 }
@@ -76,4 +100,14 @@ resource "exo_mailbox" "test" {
   room   = true
 }
 `, name)
+}
+
+func testAccMailboxSwitchConfig(name, line string) string {
+	return fmt.Sprintf(`
+resource "exo_mailbox" "test" {
+  name         = %[1]q
+  display_name = %[1]q
+  %[2]s
+}
+`, name, line)
 }

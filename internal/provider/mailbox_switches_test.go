@@ -5,33 +5,72 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-func TestGetStateBoolReadsRecipientTypeDetails(t *testing.T) {
+func TestReadMailboxTypeFromRecipientTypeDetails(t *testing.T) {
+	switches := func(m mailboxModel) map[string]bool {
+		return map[string]bool{
+			"Shared": m.Shared.ValueBool(), "Room": m.Room.ValueBool(), "Equipment": m.Equipment.ValueBool(),
+			"Discovery": m.Discovery.ValueBool(), "PublicFolder": m.PublicFolder.ValueBool(),
+		}
+	}
 	cases := []struct {
-		name  string
-		obj   map[string]any
-		field string
-		want  bool
+		name     string
+		obj      map[string]any
+		switchOn string // "" = none
+		typ      string
 	}{
-		{"shared mailbox", map[string]any{"RecipientTypeDetails": "SharedMailbox", "IsShared": true}, "Shared", true},
-		{"user mailbox is not shared", map[string]any{"RecipientTypeDetails": "UserMailbox"}, "Shared", false},
-		{"room mailbox", map[string]any{"RecipientTypeDetails": "RoomMailbox"}, "Room", true},
-		{"room is not equipment", map[string]any{"RecipientTypeDetails": "RoomMailbox"}, "Equipment", false},
-		{"equipment mailbox", map[string]any{"RecipientTypeDetails": "EquipmentMailbox"}, "Equipment", true},
-		{"discovery mailbox", map[string]any{"RecipientTypeDetails": "DiscoveryMailbox"}, "Discovery", true},
-		{"public folder mailbox", map[string]any{"RecipientTypeDetails": "PublicFolderMailbox"}, "PublicFolder", true},
-		{"case-insensitive", map[string]any{"RecipientTypeDetails": "sharedmailbox"}, "Shared", true},
-		{"unmapped switch", map[string]any{"RecipientTypeDetails": "SharedMailbox"}, "Migration", false},
-		{"absent falls back to bool", map[string]any{"Shared": true}, "Shared", true},
+		{"shared mailbox", map[string]any{"RecipientTypeDetails": "SharedMailbox", "IsShared": true}, "Shared", "Shared"},
+		{"user mailbox", map[string]any{"RecipientTypeDetails": "UserMailbox"}, "", "Regular"},
+		{"room mailbox", map[string]any{"RecipientTypeDetails": "RoomMailbox"}, "Room", "Room"},
+		{"equipment mailbox", map[string]any{"RecipientTypeDetails": "EquipmentMailbox"}, "Equipment", "Equipment"},
+		{"discovery mailbox has no -Type", map[string]any{"RecipientTypeDetails": "DiscoveryMailbox"}, "Discovery", ""},
+		{"public folder mailbox has no -Type", map[string]any{"RecipientTypeDetails": "PublicFolderMailbox"}, "PublicFolder", ""},
+		{"case-insensitive", map[string]any{"RecipientTypeDetails": "sharedmailbox"}, "Shared", "Shared"},
+		{"absent falls back to the bool property", map[string]any{"Shared": true}, "Shared", ""},
 	}
 	for _, c := range cases {
-		if got := getStateBool(c.obj, "RecipientTypeDetails", c.field); got != c.want {
-			t.Errorf("%s: getStateBool = %v, want %v", c.name, got, c.want)
+		var m mailboxModel
+		readMailbox(context.Background(), c.obj, &m)
+		for name, on := range switches(m) {
+			if on != (name == c.switchOn) {
+				t.Errorf("%s: %s = %v", c.name, name, on)
+			}
+		}
+		if got := m.Type.ValueString(); got != c.typ {
+			t.Errorf("%s: type = %q, want %q", c.name, got, c.typ)
+		}
+	}
+}
+
+func TestMailboxTypeSwitchChangeFailsThePlan(t *testing.T) {
+	ctx := context.Background()
+	guard := failOnChangeBool("use type")
+	cases := []struct {
+		name        string
+		state, plan types.Bool
+		wantError   bool
+	}{
+		{"configured change", types.BoolValue(true), types.BoolValue(false), true},
+		{"unconfigured (unknown before UseStateForUnknown)", types.BoolValue(true), types.BoolUnknown(), false},
+		{"no prior value", types.BoolNull(), types.BoolValue(true), false},
+	}
+	for _, c := range cases {
+		var resp boolplanmodifier.RequiresReplaceIfFuncResponse
+		guard(ctx, planmodifier.BoolRequest{Path: path.Root("shared"), StateValue: c.state, PlanValue: c.plan}, &resp)
+		if resp.Diagnostics.HasError() != c.wantError {
+			t.Errorf("%s: error = %v, want %v", c.name, resp.Diagnostics, c.wantError)
+		}
+		if resp.RequiresReplace {
+			t.Errorf("%s: asked for replacement", c.name)
 		}
 	}
 }
@@ -108,5 +147,72 @@ func TestMailboxTypeSwitchesAreOptionalAndExclusive(t *testing.T) {
 	}
 	if !found {
 		t.Error("room and shared are not mutually exclusive")
+	}
+}
+
+// TestMailboxTypeChangeReplansSwitches: converting with type leaves the
+// unconfigured switches unknown, so the apply reads them back instead of
+// keeping the old state value (shared = true on what is now a room mailbox).
+func TestMailboxTypeChangeReplansSwitches(t *testing.T) {
+	ctx := context.Background()
+	var sr resource.SchemaResponse
+	(&mailboxResource{}).Schema(ctx, resource.SchemaRequest{}, &sr)
+	newState := func(typ string, shared bool) tfsdk.State {
+		st := tfsdk.State{Schema: sr.Schema, Raw: tftypes.NewValue(sr.Schema.Type().TerraformType(ctx), nil)}
+		for p, v := range map[string]attr.Value{"name": types.StringValue("mbx"), "type": types.StringValue(typ), "shared": types.BoolValue(shared)} {
+			if d := st.SetAttribute(ctx, path.Root(p), v); d.HasError() {
+				t.Fatal(d)
+			}
+		}
+		return st
+	}
+	state := newState("Shared", true)
+	cases := []struct {
+		name        string
+		plannedType string
+		wantUnknown bool
+	}{
+		{"type changed", "Room", true},
+		{"type unchanged", "Shared", false},
+		{"type unconfigured", "", false},
+		{"type configured but unknown", "?", true},
+	}
+	for _, c := range cases {
+		plan := newState("Shared", true)
+		cfgState := tfsdk.State{Schema: sr.Schema, Raw: tftypes.NewValue(sr.Schema.Type().TerraformType(ctx), nil)}
+		var typ types.String
+		switch c.plannedType {
+		case "":
+			typ = types.StringNull()
+		case "?":
+			typ = types.StringUnknown()
+		default:
+			typ = types.StringValue(c.plannedType)
+		}
+		if c.plannedType != "" {
+			plan = newState("Shared", true)
+			if d := plan.SetAttribute(ctx, path.Root("type"), typ); d.HasError() {
+				t.Fatal(d)
+			}
+		} else if d := plan.SetAttribute(ctx, path.Root("type"), types.StringUnknown()); d.HasError() {
+			t.Fatal(d) // unconfigured Optional+Computed: the framework plans it unknown
+		}
+		if d := cfgState.SetAttribute(ctx, path.Root("type"), typ); d.HasError() {
+			t.Fatal(d)
+		}
+		cfg := tfsdk.Config{Schema: sr.Schema, Raw: cfgState.Raw}
+		req := planmodifier.BoolRequest{
+			Path: path.Root("shared"), ConfigValue: types.BoolNull(), Config: cfg,
+			State: state, Plan: tfsdk.Plan{Schema: sr.Schema, Raw: plan.Raw},
+			StateValue: types.BoolValue(true), PlanValue: types.BoolValue(true),
+		}
+		resp := planmodifier.BoolResponse{PlanValue: req.PlanValue}
+		unknownIfChangedBool("type").PlanModifyBool(ctx, req, &resp)
+		if resp.Diagnostics.HasError() {
+			t.Fatalf("%s: %v", c.name, resp.Diagnostics)
+		}
+		if resp.PlanValue.IsUnknown() != c.wantUnknown {
+			t.Errorf("%s: shared planned %s, want unknown=%v", c.name, resp.PlanValue, c.wantUnknown)
+		}
 	}
 }

@@ -107,22 +107,10 @@ func getBool(m map[string]any, key string) bool {
 func getStateBool(m map[string]any, stateKey, boolKey string) bool {
 	if v, ok := m[stateKey]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			if stateKey == "RecipientTypeDetails" {
-				return strings.EqualFold(s, recipientTypeDetails[boolKey])
-			}
 			return strings.EqualFold(s, "Enabled")
 		}
 	}
 	return getBool(m, boolKey)
-}
-
-// recipientTypeDetails maps a New-Mailbox type switch to the RecipientTypeDetails it creates.
-var recipientTypeDetails = map[string]string{
-	"Discovery":    "DiscoveryMailbox",
-	"Equipment":    "EquipmentMailbox",
-	"PublicFolder": "PublicFolderMailbox",
-	"Room":         "RoomMailbox",
-	"Shared":       "SharedMailbox",
 }
 
 // conflictingSwitches rejects a configuration that sets both switches of a pair to true.
