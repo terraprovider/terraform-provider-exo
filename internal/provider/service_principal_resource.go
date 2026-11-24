@@ -54,9 +54,9 @@ func (r *servicePrincipalResource) Schema(_ context.Context, _ resource.SchemaRe
 			"identity":     schema.StringAttribute{Computed: true, Description: "Identity used to target the object in cmdlets.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"app_id":       schema.StringAttribute{Required: true, Description: "Maps to the -AppId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"display_name": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -DisplayName parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"object_id":    schema.StringAttribute{Required: true, Description: "Maps to the -ObjectId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"object_id":    schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ObjectId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 			"override_enforce_exo_app_rbac_permissions": schema.BoolAttribute{Optional: true, Computed: true, Description: "Maps to the -OverrideEnforceExoAppRbacPermissions parameter.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},
-			"service_id": schema.StringAttribute{Required: true, Description: "Maps to the -ServiceId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"service_id": schema.StringAttribute{Optional: true, Computed: true, Description: "Maps to the -ServiceId parameter.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

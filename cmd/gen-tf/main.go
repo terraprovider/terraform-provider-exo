@@ -10,8 +10,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"os"
 	"path/filepath"
 	"sort"
@@ -41,6 +43,7 @@ func main() {
 	byNoun := cat.ByNoun()
 	var resources []genframework.Resource
 	var skipped []string
+	conflicts := map[string][][2]string{}
 	for _, noun := range cat.CRUDComplete() {
 		if only != "" && noun != only {
 			continue
@@ -51,6 +54,9 @@ func main() {
 			continue
 		}
 		resources = append(resources, r)
+		if pairs := switchConflicts(byNoun[noun]["New"], r.Attributes); len(pairs) > 0 {
+			conflicts[noun] = pairs
+		}
 	}
 
 	// Config resources: Get+Set nouns with no New (org singletons + per-object
@@ -84,6 +90,9 @@ func main() {
 
 	files, err := genframework.Generate(cfg, resources)
 	check(err)
+	validators, err := genValidators(conflicts)
+	check(err)
+	files = append(files, genframework.File{Name: "zz_generated_validators.go", Content: validators})
 
 	check(os.MkdirAll(out, 0o755))
 	for _, f := range files {
@@ -152,7 +161,8 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		field := exportName(name)
 		_, inC := inNew[name]
 		_, inU := inSet[name]
-		required := inC && newCmd.Parameters != nil && mandatoryIn(newCmd, name)
+		mandatory := inC && newCmd.Parameters != nil && mandatoryIn(newCmd, name)
+		required := mandatory && mandatoryInEverySet(newCmd, name)
 		// New and Set bind the parameter differently (e.g. a -SkipReports switch on
 		// New but a Boolean on Set): one attribute cannot write both fields, so
 		// it follows New and becomes create-time only.
@@ -164,15 +174,15 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 		// -PublicFolder) rather than change a setting. And a Set without its own
 		// identity key may locate the object through a mandatory param (e.g.
 		// the rule-pack ID inside Set-ClassificationRuleCollection -FileData).
-		selector := required && firstParam(name, newCmd).Kind() == spec.KindSwitch
+		selector := mandatory && firstParam(name, newCmd).Kind() == spec.KindSwitch
 		inPlace := inU && setKey != "" && !namingParam[name] && !selector
 		// A bool that only New takes may still be switched in place by
 		// Enable-/Disable-<Noun> (e.g. a rule's -Enabled).
 		var toggle *genframework.Toggle
-		if inC && !inU && !required && attrType(p) == genframework.TypeBool {
+		if inC && !inU && !mandatory && attrType(p) == genframework.TypeBool {
 			toggle = toggleFor(name, noun, verbs)
 		}
-		replace := (required && !inPlace) || (inC && !inU && toggle == nil) || kindConflict
+		replace := (mandatory && !inPlace) || (inC && !inU && toggle == nil) || kindConflict
 		if replace {
 			inU = false // replace-only attributes are never updated in place
 		}
@@ -192,7 +202,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			PointerParam: isPointer(p),
 			Delta:        at == genframework.TypeStringSet && inU && firstParam(name, setCmd).DeltaCapable(), // clear via Remove delta
 			Toggle:       toggle,
-			StateField:   stateField(toggle),
+			StateField:   firstNonEmpty(stateField(toggle), recipientTypeField(noun, name, selector)),
 		})
 	}
 	if !hasCreateAttr(attrs) {
@@ -552,6 +562,135 @@ func firstParam(name string, cmds ...spec.Cmdlet) spec.Param {
 		}
 	}
 	return spec.Param{Name: name}
+}
+
+const allParameterSets = "__AllParameterSets"
+
+// mandatoryInEverySet reports whether c cannot run without the parameter name.
+func mandatoryInEverySet(c spec.Cmdlet, name string) bool {
+	p := firstParam(name, c)
+	for _, set := range parameterSets(c) {
+		if !mandatoryInSet(p, set) {
+			return false
+		}
+	}
+	return true
+}
+
+// parameterSets lists the named parameter sets of c, or __AllParameterSets when it has none.
+func parameterSets(c spec.Cmdlet) []string {
+	seen := map[string]bool{}
+	for _, p := range c.Parameters {
+		for _, s := range p.ParameterSets {
+			if s.Name != allParameterSets {
+				seen[s.Name] = true
+			}
+		}
+	}
+	if len(seen) == 0 {
+		return []string{allParameterSets}
+	}
+	return unionKeys(seen, nil)
+}
+
+// mandatoryInSet reports whether p is mandatory in the parameter set named set.
+func mandatoryInSet(p spec.Param, set string) bool {
+	for _, s := range p.ParameterSets {
+		if (s.Name == set || s.Name == allParameterSets) && s.Mandatory {
+			return true
+		}
+	}
+	return false
+}
+
+// switchConflicts pairs the attributes of mandatory New switches that share no parameter set.
+func switchConflicts(c spec.Cmdlet, attrs []genframework.Attribute) [][2]string {
+	tfNames := map[string]string{}
+	for _, a := range attrs {
+		tfNames[a.Field] = a.TFName
+	}
+	type selector struct {
+		tfName string
+		sets   map[string]bool
+	}
+	var sels []selector
+	for _, p := range c.Parameters {
+		n, ok := tfNames[exportName(p.Name)]
+		if !ok || p.Kind() != spec.KindSwitch || !p.Mandatory() {
+			continue
+		}
+		sets := map[string]bool{}
+		for _, s := range p.ParameterSets {
+			sets[s.Name] = true
+		}
+		if sets[allParameterSets] {
+			continue
+		}
+		sels = append(sels, selector{n, sets})
+	}
+	sort.Slice(sels, func(i, j int) bool { return sels[i].tfName < sels[j].tfName })
+	var pairs [][2]string
+	for i := range sels {
+		for j := i + 1; j < len(sels); j++ {
+			if !overlaps(sels[i].sets, sels[j].sets) {
+				pairs = append(pairs, [2]string{sels[i].tfName, sels[j].tfName})
+			}
+		}
+	}
+	return pairs
+}
+
+func overlaps(a, b map[string]bool) bool {
+	for k := range a {
+		if b[k] {
+			return true
+		}
+	}
+	return false
+}
+
+// genValidators renders the ConfigValidators of resources whose New switches conflict.
+func genValidators(conflicts map[string][][2]string) ([]byte, error) {
+	var b bytes.Buffer
+	b.WriteString("// Code generated by gen-tf; DO NOT EDIT.\n\npackage provider\n")
+	if len(conflicts) > 0 {
+		b.WriteString("\nimport (\n\t\"context\"\n\n\t\"github.com/hashicorp/terraform-plugin-framework/resource\"\n)\n")
+	}
+	nouns := make(map[string]bool, len(conflicts))
+	for n := range conflicts {
+		nouns[n] = true
+	}
+	for _, noun := range unionKeys(nouns, nil) {
+		recv := strings.ToLower(noun[:1]) + noun[1:] + "Resource"
+		fmt.Fprintf(&b, "\nvar _ resource.ResourceWithConfigValidators = &%s{}\n", recv)
+		fmt.Fprintf(&b, "\nfunc (r *%s) ConfigValidators(context.Context) []resource.ConfigValidator {\n", recv)
+		b.WriteString("\treturn []resource.ConfigValidator{conflictingSwitches{\n")
+		for _, p := range conflicts[noun] {
+			fmt.Fprintf(&b, "\t\t{%q, %q},\n", p[0], p[1])
+		}
+		b.WriteString("\t}}\n}\n")
+	}
+	return format.Source(b.Bytes())
+}
+
+// recipientTypeSwitches are the New-Mailbox switches that Get-Mailbox reports as RecipientTypeDetails.
+var recipientTypeSwitches = map[string]bool{"Discovery": true, "Equipment": true, "PublicFolder": true, "Room": true, "Shared": true}
+
+// recipientTypeField is the read-back property of a New-Mailbox type switch, or "".
+func recipientTypeField(noun, name string, selector bool) string {
+	if noun == "Mailbox" && selector && recipientTypeSwitches[name] {
+		return "RecipientTypeDetails"
+	}
+	return ""
+}
+
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func mandatoryIn(c spec.Cmdlet, name string) bool {
