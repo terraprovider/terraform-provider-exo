@@ -270,11 +270,10 @@ func readDkimSigningConfig(ctx context.Context, obj map[string]any, m *dkimSigni
 	m.Identity = types.StringValue(firstNonEmptyStr(getString(obj, "Identity"), getString(obj, "Guid"), getString(obj, "Name")))
 	m.AdminDisplayName = types.StringValue(getString(obj, "AdminDisplayName"))
 	m.BodyCanonicalization = types.StringValue(getObjectJSON(obj, "BodyCanonicalization"))
-	m.DomainName = types.StringValue(getObjectJSON(obj, "DomainName"))
+	m.DomainName = types.StringValue(getObjectJSON(obj, "Domain"))
 	m.Enabled = types.BoolValue(getBool(obj, "Enabled"))
 	m.HeaderCanonicalization = types.StringValue(getObjectJSON(obj, "HeaderCanonicalization"))
-	m.KeySize = types.Int64Value(getInt(obj, "KeySize"))
-	m.PublishTxtRecords = types.BoolValue(getBool(obj, "PublishTxtRecords"))
+	m.KeySize = types.Int64Value(getInt(obj, "Selector1KeySize"))
 	_ = ctx
 }
 
@@ -286,4 +285,7 @@ func (r *dkimSigningConfigResource) reconcileState(cfg, read *dkimSigningConfigM
 	read.HeaderCanonicalization = reconcile.KeepStr(cfg.HeaderCanonicalization, read.HeaderCanonicalization)
 	read.KeySize = reconcile.KeepInt64(cfg.KeySize, read.KeySize)
 	read.PublishTxtRecords = reconcile.KeepBool(cfg.PublishTxtRecords, read.PublishTxtRecords)
+	if read.PublishTxtRecords.IsUnknown() {
+		read.PublishTxtRecords = types.BoolNull()
+	}
 }
