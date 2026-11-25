@@ -49,8 +49,13 @@ func stringSetValue(ctx context.Context, vals []string) types.Set {
 	return set
 }
 
+// firstObject returns the first object of a cmdlet result, or nil when there
+// is none. An empty object counts as none: some Get-* cmdlets (e.g.
+// Get-DkimSigningConfig) answer an unknown -Identity with HTTP 200, a
+// "couldn't be found" warning and value [{}] instead of a 404. A real object
+// always carries at least Identity or Guid.
 func firstObject(v []map[string]any) map[string]any {
-	if len(v) == 0 {
+	if len(v) == 0 || len(v[0]) == 0 {
 		return nil
 	}
 	return v[0]

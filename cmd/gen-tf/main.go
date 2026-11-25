@@ -206,6 +206,7 @@ func buildResource(noun string, verbs map[string]spec.Cmdlet, byNoun map[string]
 			StateField:   stateField(toggle),
 		})
 		mailboxType(noun, name, selector, &attrs[len(attrs)-1])
+		readOverride(noun, name, &attrs[len(attrs)-1])
 	}
 	if !hasCreateAttr(attrs) {
 		return genframework.Resource{}, false, "no mappable create parameters"
@@ -423,6 +424,7 @@ func buildConfigResource(noun string, verbs map[string]spec.Cmdlet) (genframewor
 			PointerParam: isPointer(p),
 			Delta:        at == genframework.TypeStringSet && p.DeltaCapable(), // clear via Remove delta
 		})
+		readOverride(noun, name, &attrs[len(attrs)-1])
 	}
 	if len(attrs) == 0 {
 		return genframework.Resource{}, false, "no mappable settings"
@@ -704,6 +706,37 @@ var mailboxTypes = map[string]string{
 	"RoomMailbox":      "Room",
 	"SharedMailbox":    "Shared",
 	"UserMailbox":      "Regular",
+}
+
+// readAliases maps, per noun, a New-/Set- parameter to the differently named
+// property Get-<Noun> returns its value in. Without an alias the read looks up
+// the parameter name, reads an empty value and, for a Replace attribute, plans
+// a replacement on every refresh (e.g. DKIM -DomainName, returned as Domain).
+var readAliases = map[string]map[string]string{
+	"DkimSigningConfig": {
+		"DomainName": "Domain",
+		// ponytail: Selector1 only. After Rotate-DkimSigningConfig -KeySize the
+		// selectors can differ; read the larger of both if that bites.
+		"KeySize": "Selector1KeySize",
+	},
+}
+
+// writeOnlyParams lists, per noun, parameters Get-<Noun> does not return at
+// all (action switches). They are WriteOnly: the read keeps the configured or
+// state value instead of storing a zero value.
+var writeOnlyParams = map[string]map[string]bool{
+	"DkimSigningConfig": {"PublishTxtRecords": true},
+}
+
+// readOverride applies readAliases and writeOnlyParams to the attribute built
+// for param name of noun.
+func readOverride(noun, name string, a *genframework.Attribute) {
+	if api, ok := readAliases[noun][name]; ok {
+		a.APIName = api
+	}
+	if writeOnlyParams[noun][name] {
+		a.WriteOnly = true
+	}
 }
 
 // mailboxType reads the exo_mailbox type switches and -Type from
